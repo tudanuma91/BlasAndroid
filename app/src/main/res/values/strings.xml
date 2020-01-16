@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Blas</string>
+    <string name="menu_list_project">プロジェクト管理</string>
+    <string name="menu_list_data">データ管理</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="test_token">test_token</string>
+</resources>
