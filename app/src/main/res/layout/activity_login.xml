@@ -9,7 +9,7 @@
 
         <fragment
             android:id="@+id/fragmentLogin"
-            android:name="com.v3.basis.blas.LoginFragment"
+            android:name="com.v3.basis.blas.ui.login.LoginFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 

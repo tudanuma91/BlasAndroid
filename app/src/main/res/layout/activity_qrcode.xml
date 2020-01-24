@@ -4,17 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".BulletinBoardActivity">
-
+    tools:context=".activity.QrcodeActivity">
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
         <fragment
-            android:id="@+id/fragmentBulletinBoard"
-            android:name="com.v3.basis.blas.BulletinBoardFragment"
+            android:id="@+id/fragmentQrcode"
+            android:name="com.v3.basis.blas.ui.qrcode.QrcodeFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
-
     </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
