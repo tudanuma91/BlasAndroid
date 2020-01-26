@@ -12,4 +12,10 @@
     <string name="title_dashboard">掲示板</string>
     <string name="title_equipment_management">機器管理</string>
     <string name="title_data_management">データ管理</string>
+
+    <!-- エラーメッセージ -->
+    <string name="username_null">ユーザ名が指定されていません</string>
+    <string name="password_null">パスワードが指定されていません</string>
+    <string name="user_name_too_long">ユーザ名が長すぎます</string>
+    <string name="password_too_long">パスワードが長すぎます</string>
 </resources>

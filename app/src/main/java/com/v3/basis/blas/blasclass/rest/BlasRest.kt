@@ -1,18 +1,23 @@
 package com.v3.basis.blas.blasclass.rest
 
+import android.content.Intent
 import android.util.Log
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
+import android.os.AsyncTask
+import com.v3.basis.blas.activity.TerminalActivity
 
 /**
  * Restful通信をする際に使用するクラスの親クラス
  */
-open class BlasRest {
-    val URL = "http://192.168.0.101/blas7/api/v1/"
-    val CONTEXT_TIME_OUT = 1000
-    val READ_TIME_OUT = 1000
+abstract class BlasRest : AsyncTask<String, String, String>() {
+    companion object {
+        const val URL = "http://192.168.1.87/blas7/api/v1/"
+        const val CONTEXT_TIME_OUT = 1000
+        const val READ_TIME_OUT = 1000
+    }
 
     /**
      * オブジェクトをJSON文字列に変換するメソッド
@@ -80,11 +85,13 @@ open class BlasRest {
 
         //レスポンスデータを取得
         val responseData = con.inputStream
-        val response = BlasRest().is2String(responseData)
+        val response = this.is2String(responseData)
         con.disconnect()
 
         return response
     }
+}
 
-
+abstract class BlasCallback() {
+    abstract fun call(response:String)
 }

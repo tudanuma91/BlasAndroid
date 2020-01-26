@@ -8,7 +8,12 @@ import org.json.JSONObject
  * restfulのプロジェクト関係の処理を記すクラス
  */
 open class BlasRestProject : BlasRest() {
-    val GET_PGOJECT_URL = URL + "projects/search/"
+    override fun doInBackground(vararg params: String?): String {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    val GET_PGOJECT_URL = BlasRest.URL + "projects/search/"
+
 
     /**
      * JSON文字列からデータを取得する処理

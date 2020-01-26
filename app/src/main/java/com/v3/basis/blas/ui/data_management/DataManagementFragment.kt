@@ -26,7 +26,7 @@ import java.net.URL
 class DataManagementFragment : Fragment() {
 
     private lateinit var homeViewModel: DataManagementViewModel
-    val GET_PROJECT_URL = BlasRestProject().GET_PGOJECT_URL
+    //val GET_PROJECT_URL = BlasRestProject().GET_PGOJECT_URL
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         homeViewModel =
@@ -65,9 +65,9 @@ class DataManagementFragment : Fragment() {
             val key = listOf("token","name")
             //レスポンスデータを取得
             //レスポンスデータをJSON文字列にする
-            val response = BlasRest().getResponseData(params,key,"GET",GET_PROJECT_URL)
+           // val response = super.getResponseData(params,key,"GET",GET_PROJECT_URL)
 
-            return response
+            return null
         }
 
         /**

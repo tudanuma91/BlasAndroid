@@ -14,11 +14,9 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
         <activity android:name=".activity.QrcodeActivity"></activity>
-        <activity android:name=".activity.QrcodeActivity" />
         <activity
             android:name=".activity.TerminalActivity"
             android:label="@string/title_activity_terminal" />
-        <activity android:name=".BulletinBoardActivity" />
         <activity android:name=".activity.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
