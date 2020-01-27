@@ -91,6 +91,7 @@ class LoginFragment : Fragment() {
         return ret
     }
 
+
     /** ログインに成功したときにコールバックされ、
      * 掲示板の画面をキックする
      * @param in token ログインに成功したときのトークン
@@ -101,6 +102,7 @@ class LoginFragment : Fragment() {
         intent.putExtra("token",token)
         startActivity(intent)
     }
+
 
     /**
      * ログインに失敗した場合にコールバックされる

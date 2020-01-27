@@ -54,18 +54,19 @@ abstract class BlasRest : AsyncTask<String, String, String>() {
      * [戻り値]
      * responseData:オブジェクトを返却
      */
-    open fun getResponseData(params: Array<out String?>, key : List<String?>,method:String,targetUrl:String): String {
+    open fun getResponseData(payload:Map<String, String?>,method:String,targetUrl:String): String {
         val url = java.net.URL(targetUrl)
         val con = url.openConnection() as HttpURLConnection
 
         //POSTするデータの作成
+
         var postData :String = ""
-        for (i in params.indices){
-            if(i < params.lastIndex)
-                postData += "${key[i]}=${params[i]}&"
-            else
-                postData += "${key[i]}=${params[i]}"
+
+        for((k, v) in payload) {
+            postData += "${k}=${v}&"
         }
+        postData = postData.substring(0, postData.length - 1)
+
         Log.d("【rest/BlasRest】", "testutesttest:${postData}")
 
         //タイムアウトとメソッドの設定

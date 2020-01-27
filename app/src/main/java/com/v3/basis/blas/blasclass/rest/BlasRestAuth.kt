@@ -12,20 +12,27 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 
 /**
- * restfulの認証関係を記すクラス
+ * restfulの認証用クラス
  */
 open class BlasRestAuth(val loginSuccess:(String)->Unit, val loginError:(Int)->Unit) : BlasRest() {
     companion object {
         val LOGIN_URL = BlasRest.URL + "auth/login/"
     }
 
+    /**
+     * BLASと通信を行う
+     * @params post
+     */
     override fun doInBackground(vararg params: String?): String? {
         val key = listOf("name","password")
         //レスポンスデータを取得
         //レスポンスデータをJSON文字列にする
         var response:String? = null
         try {
-            response = super.getResponseData(params,key,"POST",LOGIN_URL)
+            //ここでマップを作成すればよいだけでは
+            var payload = mapOf("name" to params[0], "password" to params[1])
+
+            response = super.getResponseData(payload,"POST",LOGIN_URL)
         }
         catch(e: Exception) {
             Log.d("konishi", e.message)
@@ -34,6 +41,7 @@ open class BlasRestAuth(val loginSuccess:(String)->Unit, val loginError:(Int)->U
         return response
     }
 
+
     override fun onProgressUpdate(vararg values: String?) {
         super.onProgressUpdate(*values)
     }
@@ -41,7 +49,7 @@ open class BlasRestAuth(val loginSuccess:(String)->Unit, val loginError:(Int)->U
     override fun onPostExecute(result: String?) {
         if(result == null) {
             //val message = context.resources.getString(R.string.network_error)
-            loginError(1001)
+            loginError(BlasRestErrCode.NETWORK_ERROR)
             return
         }
 
@@ -49,7 +57,7 @@ open class BlasRestAuth(val loginSuccess:(String)->Unit, val loginError:(Int)->U
         //トークン取得
         val json = JSONObject(result)
         val error_code = json.getInt("error_code")
-        
+
         if(error_code == 0) {
             val records_json = json.getJSONObject("records")
             val token = records_json.getString("token")
