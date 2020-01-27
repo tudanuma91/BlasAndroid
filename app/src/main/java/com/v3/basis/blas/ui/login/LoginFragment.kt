@@ -15,6 +15,7 @@ import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.TerminalActivity
 import com.v3.basis.blas.blasclass.rest.BlasRestAuth
 import com.v3.basis.blas.blasclass.config.Params
+import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 
 /**
  * A simple [Fragment] subclass.
@@ -45,9 +46,11 @@ class LoginFragment : Fragment() {
             val password = view?.findViewById<EditText>(R.id.Password)?.text.toString()
 
             /* パラメータ―チェック */
-            if(_validation(username, password)) {
+            if(validation(username, password)) {
                 /* ログインを非同期で実行 */
-                BlasRestAuth(::loginSuccess).execute(username,password)
+                if(context != null) {
+                    BlasRestAuth(::loginSuccess, ::loginError).execute(username,password)
+                }
             }
         }
 
@@ -60,38 +63,72 @@ class LoginFragment : Fragment() {
      * @param password パスワード
      * @return 正常時true, 異常時falseを返す。
      */
-    private fun _validation(username:String, password:String):Boolean {
+    private fun validation(username:String, password:String):Boolean {
         var ret = true
 
-        if(username == null) {
+        if(username.isEmpty()) {
             /* ユーザ名、またはパスワードがnullの場合はエラー */
             Toast.makeText(getActivity(), R.string.username_null, Toast.LENGTH_LONG).show()
             ret = false
         }
 
-        if(password == null) {
+        if(password.isEmpty()) {
             Toast.makeText(getActivity(), R.string.password_null, Toast.LENGTH_LONG).show()
             ret = false
         }
+
         if(username.length > Params.USER_NAME_MAX_LEN) {
             /* ユーザ名が64文字より長い場合はエラー */
-            Toast.makeText(getActivity(), R.string.password_null, Toast.LENGTH_LONG).show()
+            Toast.makeText(getActivity(), R.string.user_name_too_long, Toast.LENGTH_LONG).show()
             ret = false
         }
         if(password.length > Params.PASSWORD_MAX_LEN) {
             /* パスワードが64文字より長い場合はエラー */
-            Toast.makeText(getActivity(), R.string.password_null, Toast.LENGTH_LONG).show()
+            Toast.makeText(getActivity(), R.string.password_too_long, Toast.LENGTH_LONG).show()
             ret = false
         }
 
         return ret
     }
-    /* ログインに成功したときにコールバックされる */
+
+
+    /** ログインに成功したときにコールバックされ、
+     * 掲示板の画面をキックする
+     * @param in token ログインに成功したときのトークン
+     */
     fun loginSuccess(token:String) {
         Log.d("BLAS", "Login成功")
         val intent = Intent(activity, TerminalActivity::class.java)
         intent.putExtra("token",token)
         startActivity(intent)
+    }
+
+
+    /**
+     * ログインに失敗した場合にコールバックされる
+     * @param in error_code ログイン失敗時のエラーコード
+     * @param in message ログインに失敗したときのメッセージ
+     * @return なし
+     */
+    fun loginError(error_code:Int) {
+        var message:String? = null
+
+        when(error_code) {
+            BlasRestErrCode.NETWORK_ERROR->{
+                //サーバと通信できません
+                message = getString(R.string.network_error)
+            }
+            BlasRestErrCode.AUTH_ACCOUNT_ERROR-> {
+                //ユーザ名，またはパスワードに誤りがあります
+                message = getString(R.string.account_error)
+            }
+            else-> {
+                //サーバでエラーが発生しました(要因コード)
+                message = getString(R.string.server_error, error_code)
+            }
+
+        }
+        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
     }
 
 }

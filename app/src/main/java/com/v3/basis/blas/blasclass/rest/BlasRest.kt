@@ -9,6 +9,7 @@ import java.net.HttpURLConnection
 import android.os.AsyncTask
 import com.v3.basis.blas.activity.TerminalActivity
 
+
 /**
  * Restful通信をする際に使用するクラスの親クラス
  */
@@ -17,6 +18,8 @@ abstract class BlasRest : AsyncTask<String, String, String>() {
         const val URL = "http://192.168.0.101/blas7/api/v1/"
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
+        const val SUCCESS = 0
+        const val ABNORMAL = 1
     }
 
     /**
@@ -51,18 +54,19 @@ abstract class BlasRest : AsyncTask<String, String, String>() {
      * [戻り値]
      * responseData:オブジェクトを返却
      */
-    open fun getResponseData(params: Array<out String?>, key : List<String?>,method:String,targetUrl:String): String {
+    open fun getResponseData(payload:Map<String, String?>,method:String,targetUrl:String): String {
         val url = java.net.URL(targetUrl)
         val con = url.openConnection() as HttpURLConnection
 
         //POSTするデータの作成
+
         var postData :String = ""
-        for (i in params.indices){
-            if(i < params.lastIndex)
-                postData += "${key[i]}=${params[i]}&"
-            else
-                postData += "${key[i]}=${params[i]}"
+
+        for((k, v) in payload) {
+            postData += "${k}=${v}&"
         }
+        postData = postData.substring(0, postData.length - 1)
+
         Log.d("【rest/BlasRest】", "testutesttest:${postData}")
 
         //タイムアウトとメソッドの設定
@@ -90,8 +94,4 @@ abstract class BlasRest : AsyncTask<String, String, String>() {
 
         return response
     }
-}
-
-abstract class BlasCallback() {
-    abstract fun call(response:String)
 }
