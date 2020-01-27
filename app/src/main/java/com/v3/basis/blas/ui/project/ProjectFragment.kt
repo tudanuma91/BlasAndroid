@@ -64,8 +64,9 @@ class ProjectFragment : Fragment() {
         override fun doInBackground(vararg params: String?): String? {
             val key = listOf("token", "name")
             //レスポンスデータを取得
+            val payload = mapOf("token" to params[0],"name" to params[1])
             //レスポンスデータをJSON文字列にする
-            val response = BlasRestProject().getResponseData(params, key, "GET", GET_PROJECT_URL)
+            val response = BlasRestProject().getResponseData(payload, "GET", GET_PROJECT_URL)
 
             return response
         }

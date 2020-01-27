@@ -67,7 +67,7 @@ abstract class BlasRest : AsyncTask<String, String, String>() {
         }
         postData = postData.substring(0, postData.length - 1)
 
-        Log.d("【rest/BlasRest】", "testutesttest:${postData}")
+        Log.d("【rest/BlasRest】", "postData:${postData}")
 
         //タイムアウトとメソッドの設定
         con.requestMethod = method
