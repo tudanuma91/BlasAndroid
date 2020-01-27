@@ -11,8 +11,8 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.rest.BlasRestProject
-import com.v3.basis.blas.ui.project.items_project_view.ItemsProjectViewAdapterAdapter
-import com.v3.basis.blas.ui.project.items_project_view.RowModel
+import com.v3.basis.blas.ui.project.project_list_view.ItemsProjectViewAdapterAdapter
+import com.v3.basis.blas.ui.project.project_list_view.RowModel
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 
@@ -62,10 +62,9 @@ class ProjectFragment : Fragment() {
          * APIを使用して、プロジェクト一覧を取得
          */
         override fun doInBackground(vararg params: String?): String? {
-            val key = listOf("token", "name")
-            //レスポンスデータを取得
+            //送信データ(payload)の作成
             val payload = mapOf("token" to params[0],"name" to params[1])
-            //レスポンスデータをJSON文字列にする
+            //レスポンスデータを取得
             val response = BlasRestProject().getResponseData(payload, "GET", GET_PROJECT_URL)
 
             return response
@@ -84,10 +83,11 @@ class ProjectFragment : Fragment() {
             Log.d("testtesttesttesttest","${projectList}")*/
             val recyclerView = view?.findViewById<RecyclerView>(R.id.recycler_list)
             val adapter = ItemsProjectViewAdapterAdapter(
-                createDataList(projectList),
+                BlasRestProject().createProjectList(projectList),
                 object : ItemsProjectViewAdapterAdapter.ListListener {
                     override fun onClickRow(tappedView: View, rowModel: RowModel) {
-                        Toast.makeText(activity, rowModel.title, Toast.LENGTH_LONG).show()
+                        Toast.makeText(activity, rowModel.text, Toast.LENGTH_LONG).show()
+                        Log.d("DataManagement", "click_NAME => ${rowModel.text}/click_ID => ${rowModel.detail}")
                     }
                 })
 
@@ -112,20 +112,5 @@ class ProjectFragment : Fragment() {
          }
      }*/
 
-    private fun createDataList(from: MutableList<MutableMap<String, String>>): List<RowModel> {
-        Log.d("Life Cycle", "createDataList")
-        Log.d("testtesttesttesttest", "${from.size}")
-        val dataList = mutableListOf<RowModel>()
-
-        for (i in from) {
-            val data: RowModel =
-                RowModel().also {
-                    it.detail = i.get("id").toString()
-                    it.text = i.get("name").toString()
-                }
-            dataList.add(data)
-        }
-        return dataList
-    }
 }
 

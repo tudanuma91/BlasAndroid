@@ -1,7 +1,7 @@
 package com.v3.basis.blas.blasclass.rest
 
 import android.util.Log
-import com.v3.basis.blas.blasclass.rest.BlasRest
+import com.v3.basis.blas.ui.project.project_list_view.RowModel
 import org.json.JSONObject
 
 /**
@@ -44,5 +44,21 @@ open class BlasRestProject : BlasRest() {
             projectList.add(project)
         }
         return projectList
+    }
+
+    open fun createProjectList(from: MutableList<MutableMap<String, String>>): List<RowModel> {
+        Log.d("Life Cycle", "createDataList")
+        Log.d("testtesttesttesttest", "${from.size}")
+        val dataList = mutableListOf<RowModel>()
+
+        for (i in from) {
+            val data: RowModel =
+                RowModel().also {
+                    it.detail = i.get("id").toString()
+                    it.text = i.get("name").toString()
+                }
+            dataList.add(data)
+        }
+        return dataList
     }
 }

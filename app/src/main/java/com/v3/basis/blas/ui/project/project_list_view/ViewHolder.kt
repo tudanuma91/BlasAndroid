@@ -1,4 +1,4 @@
-package com.v3.basis.blas.ui.project.items_project_view
+package com.v3.basis.blas.ui.project.project_list_view
 
 import android.view.View
 import android.widget.TextView
