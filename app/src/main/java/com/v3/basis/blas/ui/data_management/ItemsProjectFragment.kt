@@ -6,15 +6,21 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ListView
-import android.widget.SimpleAdapter
-import android.widget.TextView
+import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.rest.BlasRestProject
+import com.v3.basis.blas.ui.data_management.items_project_view.ItemsProjectViewAdapterAdapter
+import com.v3.basis.blas.ui.data_management.items_project_view.RowModel
+import androidx.appcompat.app.AppCompatActivity
+import android.widget.Toast
+import androidx.recyclerview.widget.RecyclerView
+import kotlinx.android.synthetic.main.fragment_data_management.view.*
+import java.lang.reflect.Array
+import kotlin.Array as Array1
 
 /**
  * 表示・遷移などデータ管理画面にかかわる処理を行う。
@@ -22,9 +28,13 @@ import com.v3.basis.blas.blasclass.rest.BlasRestProject
 class ItemsProjectFragment : Fragment() {
 
     private lateinit var homeViewModel: ItemsProjectViewModel
-    //val GET_PROJECT_URL = BlasRestProject().GET_PGOJECT_URL
+    val GET_PROJECT_URL = BlasRestProject().GET_PGOJECT_URL
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         homeViewModel =
             ViewModelProviders.of(this).get(ItemsProjectViewModel::class.java)
         //トークンの値を取得
@@ -34,17 +44,17 @@ class ItemsProjectFragment : Fragment() {
 
         //プロジェクトの取得
         val receiver = ProjectReceiver()
-        receiver.execute(token,null)
+        receiver.execute(token, null)
 
         val root = inflater.inflate(R.layout.fragment_data_management, container, false)
-        val textView: TextView = root.findViewById(R.id.text_data_management)
+        /** val textView: TextView = root.findViewById(R.id.text_data_management)
         homeViewModel.text.observe(this, Observer {
-            textView.text = it
-        })
+        textView.text = it
+        })*/
 
         //リストタップ時の処理
-        val lvProject = root.findViewById<ListView>(R.id.project_listView)
-        lvProject?.onItemClickListener = ListItemClickListener()
+        //val lvProject = root.findViewById<ListView>(R.id.project_listView)
+        // lvProject?.onItemClickListener = ListItemClickListener()
 
         return root
     }
@@ -53,17 +63,17 @@ class ItemsProjectFragment : Fragment() {
     /**
      * プロジェクト一覧を取得する処理
      */
-    private inner class  ProjectReceiver() : AsyncTask<String, String, String>(){
+    private inner class ProjectReceiver() : AsyncTask<String, String, String>() {
         /**
          * APIを使用して、プロジェクト一覧を取得
          */
         override fun doInBackground(vararg params: String?): String? {
-            //val key = listOf("token","name")
+            val key = listOf("token", "name")
             //レスポンスデータを取得
             //レスポンスデータをJSON文字列にする
-           // val response = super.getResponseData(params,key,"GET",GET_PROJECT_URL)
+            val response = BlasRestProject().getResponseData(params, key, "GET", GET_PROJECT_URL)
 
-            return null
+            return response
         }
 
         /**
@@ -71,13 +81,25 @@ class ItemsProjectFragment : Fragment() {
          */
         override fun onPostExecute(response: String) {
             //listView を取得する
-            val lvProjectList = view?.findViewById<ListView>(R.id.project_listView)
             val projectList = BlasRestProject().getProject(response)
-            val from = arrayOf("name","id")
-           // val Name = arrayOf("name")
+            /*val from = arrayOf("name","id")
             val to = intArrayOf(android.R.id.text1,android.R.id.text2)
             val adapter = SimpleAdapter(activity,projectList,android.R.layout.simple_expandable_list_item_2,from,to)
             lvProjectList?.adapter = adapter
+            Log.d("testtesttesttesttest","${projectList}")*/
+            val recyclerView = view?.findViewById<RecyclerView>(R.id.recycler_list)
+            val adapter = ItemsProjectViewAdapterAdapter(
+                createDataList(projectList),
+                object : ItemsProjectViewAdapterAdapter.ListListener {
+                    override fun onClickRow(tappedView: View, rowModel: RowModel) {
+                        Toast.makeText(activity, rowModel.title, Toast.LENGTH_LONG).show()
+                    }
+                })
+
+            recyclerView?.setHasFixedSize(true)
+            recyclerView?.layoutManager = LinearLayoutManager(activity)
+            recyclerView?.adapter = adapter
+
 
         }
     }
@@ -85,14 +107,30 @@ class ItemsProjectFragment : Fragment() {
     /**
      * リストをタップした時の処理
      */
-    private inner class   ListItemClickListener : AdapterView.OnItemClickListener{
-        override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-            Log.d("DataManagement", "start")
-            val item = parent?.getItemAtPosition(position) as MutableMap<String,String>
-            val pjName = item["name"]
-            val pjId = item["id"]
-            Log.d("DataManagement", "click_ID => ${pjId}/click_NAME => ${pjName}")
-        }
-    }
+    /* private inner class   ListItemClickListener : AdapterView.OnItemClickListener{
+         override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+             Log.d("DataManagement", "start")
+             val item = parent?.getItemAtPosition(position) as MutableMap<String,String>
+             val pjName = item["name"]
+             val pjId = item["id"]
+             Log.d("DataManagement", "click_ID => ${pjId}/click_NAME => ${pjName}")
+         }
+     }*/
 
+    private fun createDataList(from: MutableList<MutableMap<String, String>>): List<RowModel> {
+        Log.d("Life Cycle", "createDataList")
+        Log.d("testtesttesttesttest", "${from.size}")
+        val dataList = mutableListOf<RowModel>()
+
+        for (i in from) {
+            val data: RowModel =
+                RowModel().also {
+                    it.detail = i.get("id").toString()
+                    it.text = i.get("name").toString()
+                }
+            dataList.add(data)
+        }
+        return dataList
+    }
 }
+
