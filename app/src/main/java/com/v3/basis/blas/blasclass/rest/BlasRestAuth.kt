@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.core.content.ContextCompat.startActivity
+import com.v3.basis.blas.R
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStream
@@ -13,15 +14,23 @@ import java.net.HttpURLConnection
 /**
  * restfulの認証関係を記すクラス
  */
-open class BlasRestAuth(val loginSuccess:(String)->Unit) : BlasRest() {
+open class BlasRestAuth(val loginSuccess:(String)->Unit, val loginError:(Int)->Unit) : BlasRest() {
     companion object {
         val LOGIN_URL = BlasRest.URL + "auth/login/"
     }
-    override fun doInBackground(vararg params: String?): String {
+
+    override fun doInBackground(vararg params: String?): String? {
         val key = listOf("name","password")
         //レスポンスデータを取得
         //レスポンスデータをJSON文字列にする
-        val response = super.getResponseData(params,key,"POST",LOGIN_URL)
+        var response:String? = null
+        try {
+            response = super.getResponseData(params,key,"POST",LOGIN_URL)
+        }
+        catch(e: Exception) {
+            Log.d("konishi", e.message)
+        }
+
         return response
     }
 
@@ -30,33 +39,25 @@ open class BlasRestAuth(val loginSuccess:(String)->Unit) : BlasRest() {
     }
 
     override fun onPostExecute(result: String?) {
+        if(result == null) {
+            //val message = context.resources.getString(R.string.network_error)
+            loginError(1001)
+            return
+        }
+
         super.onPostExecute(result)
         //トークン取得
-        Log.d("konshi", result)
-        /* TODO:エラー時の処理を追加すること */
+        val json = JSONObject(result)
+        val error_code = json.getInt("error_code")
 
-        val token = this.getToken(result)
-        if(token != null && loginSuccess != null) {
+        if(error_code == 0) {
+            val records_json = json.getJSONObject("records")
+            val token = records_json.getString("token")
             loginSuccess(token)
         }
-    }
-
-    /**
-     * JSON文字列で渡されたレコードからトークンを取得する。
-     */
-    open fun getToken(response : String?):String?{
-        val rootJSON = JSONObject(response)
-        val error_code = rootJSON.getInt("error_code")
-        var token = null
-        if(error_code == 0) {
-            //JSON文字列からrecordsを取得
-            val recordsJSON = rootJSON.getJSONObject("records")
-            //取得したrecordsからtokenを取得
-            val token = recordsJSON.getString("token")
-            Log.d("【rest/BlasRestAuth】", "token:${token}")
+        else {
+            loginError(error_code)
         }
-
-        return token
     }
 
 }

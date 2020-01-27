@@ -13,9 +13,15 @@
     <string name="title_equipment_management">機器管理</string>
     <string name="title_data_management">データ管理</string>
 
-    <!-- エラーメッセージ -->
+    <!-- パラメータ―不正系 -->
     <string name="username_null">ユーザ名が指定されていません</string>
     <string name="password_null">パスワードが指定されていません</string>
     <string name="user_name_too_long">ユーザ名が長すぎます</string>
     <string name="password_too_long">パスワードが長すぎます</string>
+    <string name="account_error">ユーザ名，またはパスワードに誤りがあります</string>
+
+    <!-- 通信系 -->
+    <string name="network_error">サーバと通信できません</string>
+    <string name="server_error">サーバ内でエラーが発生しました。管理者に連絡してください。要因コード(%1$d)</string>
+
 </resources>

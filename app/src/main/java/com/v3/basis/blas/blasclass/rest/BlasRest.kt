@@ -9,6 +9,7 @@ import java.net.HttpURLConnection
 import android.os.AsyncTask
 import com.v3.basis.blas.activity.TerminalActivity
 
+
 /**
  * Restful通信をする際に使用するクラスの親クラス
  */
@@ -17,6 +18,8 @@ abstract class BlasRest : AsyncTask<String, String, String>() {
         const val URL = "http://192.168.1.87/blas7/api/v1/"
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
+        const val SUCCESS = 0
+        const val ABNORMAL = 1
     }
 
     /**
@@ -90,8 +93,4 @@ abstract class BlasRest : AsyncTask<String, String, String>() {
 
         return response
     }
-}
-
-abstract class BlasCallback() {
-    abstract fun call(response:String)
 }
