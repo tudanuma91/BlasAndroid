@@ -1,4 +1,4 @@
-package com.v3.basis.blas.ui.data_management
+package com.v3.basis.blas.ui.project
 
 import android.os.AsyncTask
 import android.os.Bundle
@@ -6,28 +6,22 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.rest.BlasRestProject
-import com.v3.basis.blas.ui.data_management.items_project_view.ItemsProjectViewAdapterAdapter
-import com.v3.basis.blas.ui.data_management.items_project_view.RowModel
-import androidx.appcompat.app.AppCompatActivity
+import com.v3.basis.blas.ui.project.items_project_view.ItemsProjectViewAdapterAdapter
+import com.v3.basis.blas.ui.project.items_project_view.RowModel
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.fragment_data_management.view.*
-import java.lang.reflect.Array
-import kotlin.Array as Array1
 
 /**
  * 表示・遷移などデータ管理画面にかかわる処理を行う。
  */
-class ItemsProjectFragment : Fragment() {
+class ProjectFragment : Fragment() {
 
-    private lateinit var homeViewModel: ItemsProjectViewModel
+    private lateinit var homeViewModel: ProjectViewModel
     val GET_PROJECT_URL = BlasRestProject().GET_PGOJECT_URL
 
     override fun onCreateView(
@@ -36,7 +30,7 @@ class ItemsProjectFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         homeViewModel =
-            ViewModelProviders.of(this).get(ItemsProjectViewModel::class.java)
+            ViewModelProviders.of(this).get(ProjectViewModel::class.java)
         //トークンの値を取得
         val extras = activity?.intent?.extras
         val token = extras?.getString("token")

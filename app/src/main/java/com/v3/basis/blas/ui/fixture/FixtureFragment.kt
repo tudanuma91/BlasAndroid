@@ -1,4 +1,4 @@
-package com.v3.basis.blas.ui.fixture_management
+package com.v3.basis.blas.ui.fixture
 
 import android.content.Intent
 import android.os.Bundle
@@ -14,20 +14,20 @@ import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.QrcodeActivity
 
 
-class FixtureProjectFragment : Fragment() {
+class FixtureFragment : Fragment() {
 
-    private lateinit var fixtureProjectViewModel: FixtureProjectViewModel
+    private lateinit var fixtureViewModel: FixtureViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        fixtureProjectViewModel =
-            ViewModelProviders.of(this).get(FixtureProjectViewModel::class.java)
+        fixtureViewModel =
+            ViewModelProviders.of(this).get(FixtureViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_equipment_management, container, false)
         val textView: TextView = root.findViewById(R.id.text_equip)
-        fixtureProjectViewModel.text.observe(this, Observer {
+        fixtureViewModel.text.observe(this, Observer {
             textView.text = it
         })
 
