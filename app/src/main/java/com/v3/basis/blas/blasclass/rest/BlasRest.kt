@@ -15,7 +15,7 @@ import com.v3.basis.blas.activity.TerminalActivity
  */
 abstract class BlasRest : AsyncTask<String, String, String>() {
     companion object {
-        const val URL = "http://192.168.1.87/blas7/api/v1/"
+        const val URL = "http://192.168.0.101/blas7/api/v1/"
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
         const val SUCCESS = 0
@@ -33,7 +33,7 @@ abstract class BlasRest : AsyncTask<String, String, String>() {
     open fun is2String(stream: InputStream): String{
        val sb = StringBuilder()
        val reader = BufferedReader(InputStreamReader(stream,"UTF-8"))
-        Log.d("test","{$reader}")
+        Log.d("[rest/BlasRest]","{$reader}")
        var line = reader.readLine()
        if(line != null){
            sb.append(line)
@@ -66,7 +66,7 @@ abstract class BlasRest : AsyncTask<String, String, String>() {
             else
                 postData += "${key[i]}=${params[i]}"
         }
-        Log.d("【rest/BlasRestAuth】", "testutesttest:${postData}")
+        Log.d("【rest/BlasRest】", "testutesttest:${postData}")
 
         //タイムアウトとメソッドの設定
         con.requestMethod = method

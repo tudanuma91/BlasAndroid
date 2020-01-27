@@ -49,7 +49,7 @@ open class BlasRestAuth(val loginSuccess:(String)->Unit, val loginError:(Int)->U
         //トークン取得
         val json = JSONObject(result)
         val error_code = json.getInt("error_code")
-
+        
         if(error_code == 0) {
             val records_json = json.getJSONObject("records")
             val token = records_json.getString("token")

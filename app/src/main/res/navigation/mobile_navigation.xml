@@ -13,13 +13,13 @@
 
     <fragment
         android:id="@+id/navigation_data_management"
-        android:name="com.v3.basis.blas.ui.data_management.DataManagementFragment"
+        android:name="com.v3.basis.blas.ui.data_management.ItemsProjectFragment"
         android:label="@string/title_data_management"
         tools:layout="@layout/fragment_data_management" />
 
     <fragment
         android:id="@+id/navigation_equipment_management"
-        android:name="com.v3.basis.blas.ui.equipment_management.EquipmentManagementFragment"
+        android:name="com.v3.basis.blas.ui.fixture_management.FixtureProjectFragment"
         android:label="@string/title_equipment_management"
         tools:layout="@layout/fragment_equipment_management" />
 
