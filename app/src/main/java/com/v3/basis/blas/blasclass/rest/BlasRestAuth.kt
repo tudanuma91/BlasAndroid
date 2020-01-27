@@ -36,6 +36,8 @@ open class BlasRestAuth(val loginSuccess:(String)->Unit) : BlasRest() {
         /* TODO:エラー時の処理を追加すること */
 
         val token = this.getToken(result)
+        Log.d("konshi", "${token}")
+        Log.d("konshi", "${loginSuccess}")
         if(token != null && loginSuccess != null) {
             loginSuccess(token)
         }
@@ -52,10 +54,9 @@ open class BlasRestAuth(val loginSuccess:(String)->Unit) : BlasRest() {
             //JSON文字列からrecordsを取得
             val recordsJSON = rootJSON.getJSONObject("records")
             //取得したrecordsからtokenを取得
-            val token = recordsJSON.getString("token")
-            Log.d("【rest/BlasRestAuth】", "token:${token}")
+            var token = recordsJSON.getString("token")
+            return token
         }
-
         return token
     }
 

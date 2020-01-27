@@ -1,13 +1,13 @@
-package com.v3.basis.blas.ui.equipment_management
+package com.v3.basis.blas.ui.data_management
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
-class EquipmentManagementViewModel : ViewModel() {
+class ItemsProjectViewModel : ViewModel() {
 
     private val _text = MutableLiveData<String>().apply {
-        value = "This is EquipmentManagement Fragment"
+        value = "プロジェクト一覧"
     }
     val text: LiveData<String> = _text
 }

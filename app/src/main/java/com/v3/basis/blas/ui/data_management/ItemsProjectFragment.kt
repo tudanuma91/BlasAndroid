@@ -14,23 +14,19 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.v3.basis.blas.R
-import com.v3.basis.blas.blasclass.rest.BlasRest
 import com.v3.basis.blas.blasclass.rest.BlasRestProject
-import org.json.JSONObject
-import java.net.HttpURLConnection
-import java.net.URL
 
 /**
  * 表示・遷移などデータ管理画面にかかわる処理を行う。
  */
-class DataManagementFragment : Fragment() {
+class ItemsProjectFragment : Fragment() {
 
-    private lateinit var homeViewModel: DataManagementViewModel
+    private lateinit var homeViewModel: ItemsProjectViewModel
     //val GET_PROJECT_URL = BlasRestProject().GET_PGOJECT_URL
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         homeViewModel =
-            ViewModelProviders.of(this).get(DataManagementViewModel::class.java)
+            ViewModelProviders.of(this).get(ItemsProjectViewModel::class.java)
         //トークンの値を取得
         val extras = activity?.intent?.extras
         val token = extras?.getString("token")
@@ -62,7 +58,7 @@ class DataManagementFragment : Fragment() {
          * APIを使用して、プロジェクト一覧を取得
          */
         override fun doInBackground(vararg params: String?): String? {
-            val key = listOf("token","name")
+            //val key = listOf("token","name")
             //レスポンスデータを取得
             //レスポンスデータをJSON文字列にする
            // val response = super.getResponseData(params,key,"GET",GET_PROJECT_URL)
