@@ -22,3 +22,6 @@ class ExampleInstrumentedTest {
         assertEquals("com.v3.basis.blas", appContext.packageName)
     }
 }
+fun main() {
+    println("test")
+}

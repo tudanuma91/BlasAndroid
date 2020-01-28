@@ -18,6 +18,7 @@ import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.activity.TerminalActivity
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
+import com.v3.basis.blas.blasclass.rest.BlasRestField
 
 /**
  * 表示・遷移などデータ管理画面にかかわる処理を行う。
@@ -25,7 +26,7 @@ import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 class ProjectFragment : Fragment() {
 
     private lateinit var homeViewModel: ProjectViewModel
-
+    private var token:String? = null
     override fun onCreateView(inflater: LayoutInflater,
                                container: ViewGroup?,
                                 savedInstanceState: Bundle?): View? {
@@ -33,15 +34,38 @@ class ProjectFragment : Fragment() {
         homeViewModel = ViewModelProviders.of(this).get(ProjectViewModel::class.java)
         //トークンの値を取得
         val extras = activity?.intent?.extras
-        val token = extras?.getString("token")
+        if(extras?.getString("token") != null) {
+            token = extras?.getString("token")
+        }
 
         //プロジェクトの取得
         var payload = mapOf("token" to token)
         BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
 
         val root = inflater.inflate(R.layout.fragment_data_management, container, false)
+
+
+        /* テスト用 */
+        var payload2 = mapOf("token" to token, "project_id" to 13.toString())
+        BlasRestField(payload2, ::fieldS, ::fieldE).execute()
         return root
     }
+
+    private fun fieldS(result:MutableList<MutableMap<String,String?>>?) {
+        if(result != null) {
+            result.forEach {
+                for ((k, v) in it) {
+                    Log.d("konishi succcess", "${k}  ${v}")
+                }
+            }
+        }
+        Toast.makeText(getActivity(), "field success", Toast.LENGTH_LONG).show()
+    }
+
+    private fun fieldE(errorCode:Int) {
+        Toast.makeText(getActivity(), "field error", Toast.LENGTH_LONG).show()
+    }
+
 
     /**
      * マップ形式からリスト形式に変換する

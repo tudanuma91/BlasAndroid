@@ -1,6 +1,7 @@
 package com.v3.basis.blas.blasclass.rest
 
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import java.io.BufferedReader
 import java.io.InputStream
@@ -8,8 +9,14 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import android.os.AsyncTask
 import com.v3.basis.blas.activity.TerminalActivity
+import org.json.JSONException
+import org.json.JSONObject
 
-
+data class RestfulRtn(
+    val errorCode: Int,
+    val message: String?,
+    val records: MutableList<MutableMap<String, String?>>?
+)
 /**
  * Restful通信をする際に使用するクラスの親クラス
  */
@@ -43,6 +50,27 @@ abstract class BlasRest : AsyncTask<String, String, String>() {
        return sb.toString()
    }
 
+    private fun methodGet(payload:Map<String, String?>, targetUrl:String):String {
+
+        var urlBuilder = Uri.Builder()
+        for((k, v) in payload) {
+            urlBuilder.appendQueryParameter(k, v)
+        }
+        var url = java.net.URL(targetUrl + urlBuilder.toString())
+
+        val con = url.openConnection() as HttpURLConnection
+        con.requestMethod = "GET"
+        con.connectTimeout = CONTEXT_TIME_OUT
+        con.readTimeout = READ_TIME_OUT
+        con.doOutput = false  //GETのときはtrueにしてはいけません
+
+        val responseData = con.inputStream
+        val response = this.is2String(responseData)
+        con.disconnect()
+
+        return response
+    }
+
     /**
      * restful通信を行いデータのオブジェクトを取得する
      * [引数]
@@ -55,45 +83,103 @@ abstract class BlasRest : AsyncTask<String, String, String>() {
      * responseData:オブジェクトを返却
      */
     open fun getResponseData(payload:Map<String, String?>,method:String,targetUrl:String): String {
-        val url = java.net.URL(targetUrl)
-        val con = url.openConnection() as HttpURLConnection
+        var response = ""
 
-        Log.d("konishi", "connect Ok")
-        //POSTするデータの作成
-
-        var postData :String = ""
-
-        for((k, v) in payload) {
-            postData += "${k}=${v}&"
+        if(method == "GET") {
+            response = methodGet(payload, targetUrl)
         }
+        else {
+            val url = java.net.URL(targetUrl)
+            val con = url.openConnection() as HttpURLConnection
 
-        postData = postData.substring(0, postData.length - 1)
+            Log.d("konishi", "connect Ok")
+            //POSTするデータの作成
 
-        Log.d("【rest/BlasRest】", "postData:${postData}")
+            var postData: String = ""
 
-        //タイムアウトとメソッドの設定
-        con.requestMethod = method
-        con.connectTimeout = CONTEXT_TIME_OUT
-        con.readTimeout = READ_TIME_OUT
+            for ((k, v) in payload) {
+                postData += "${k}=${v}&"
+            }
 
-        //リクエストパラメータの設定
-        con.doOutput = true
-        val outStream = con.outputStream
-        //リクエスト処理
-        outStream.write(postData.toByteArray())
-        outStream.flush()
-        //エラーコードなど飛んでくるのでログに出力する
-        val resCorde = con.responseCode
-        Log.d("【rest/BlasRestAuth】", "Http_status:${resCorde}")
+            postData = postData.substring(0, postData.length - 1)
 
-        //リクエスト処理処理終了
-        outStream.close()
+            Log.d("【rest/BlasRest】", "postData:${postData}")
 
-        //レスポンスデータを取得
-        val responseData = con.inputStream
-        val response = this.is2String(responseData)
-        con.disconnect()
+            //タイムアウトとメソッドの設定
+            con.requestMethod = method
+            con.connectTimeout = CONTEXT_TIME_OUT
+            con.readTimeout = READ_TIME_OUT
 
+            //リクエストパラメータの設定
+            con.doOutput = true
+            val outStream = con.outputStream
+            //リクエスト処理
+            outStream.write(postData.toByteArray())
+            outStream.flush()
+            //エラーコードなど飛んでくるのでログに出力する
+            val resCorde = con.responseCode
+            Log.d("【rest/BlasRestAuth】", "Http_status:${resCorde}")
+
+            //リクエスト処理処理終了
+            outStream.close()
+
+            //レスポンスデータを取得
+            val responseData = con.inputStream
+            response = this.is2String(responseData)
+            con.disconnect()
+        }
         return response
+    }
+
+    /**
+     * cakePHPから返却されたデータをandroidで使用しやすい形式に変換する。
+     * @param jsonRecord 文字列形式のjson
+     * @param tableName cakePHPのテーブル名
+     * @return RestfulRtnクラス(データクラス)
+     */
+    public fun cakeToAndroid(jsonRecord:String, tableName:String): RestfulRtn{
+        //返却用エラーコード
+        var errorCode = 0
+        //返却用メッセージ
+        var message = ""
+        //返却用リスト
+        var recordList:MutableList<MutableMap<String, String?>>? = mutableListOf<MutableMap<String, String?>>()
+
+        try {
+            val root = JSONObject(jsonRecord)
+            //エラーコード取得
+            errorCode = root.getInt("error_code")
+            //メッセージ取得
+            message = root.getString("message")
+
+            if(errorCode == 0) {
+                //正常時だけレコードがあるため、取得する
+                val records = root.getJSONArray("records")
+
+                for (i in 0 until records.length()) {
+
+                    var fields = JSONObject(records[i].toString())
+
+                    for (j in 0 until fields.length()) {
+                        var data = JSONObject(fields[tableName].toString())  //指定されたテーブルを取得する
+                        var recordMap = mutableMapOf<String, String?>()
+                        for (k in data.keys()) {
+                            recordMap[k] = data[k].toString()
+                        }
+                        if(recordList != null) {
+                            recordList.add(recordMap)
+                        }
+                    }
+                }
+            }
+            else {
+                recordList = null
+            }
+        }
+        catch(e: JSONException) {
+            Log.d("konishi", e.message)
+            recordList = null
+        }
+        return RestfulRtn(errorCode, message, recordList)
     }
 }

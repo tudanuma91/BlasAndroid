@@ -13,7 +13,7 @@ import org.json.JSONObject
 open class BlasRestProject(val payload:Map<String, String?>,
                            val projectSearchSuccess:(MutableMap<String,Int>)->Unit,
                            val projectSearchError:(Int)->Unit) : BlasRest() {
-    val GET_PGOJECT_URL = BlasRest.URL + "projects/search/"
+    val SEARCH_PGOJECT_URL = BlasRest.URL + "projects/search/"
 
 
     /**
@@ -25,7 +25,7 @@ open class BlasRestProject(val payload:Map<String, String?>,
         //レスポンスデータをJSON文字列にする
         var response:String? = null
         try {
-            response = super.getResponseData(payload,"GET", GET_PGOJECT_URL)
+            response = super.getResponseData(payload,"GET", SEARCH_PGOJECT_URL)
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)
