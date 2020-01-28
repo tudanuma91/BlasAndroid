@@ -12,9 +12,9 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 
 /**
- * restfulの認証用クラス
+ * restfulの認証APIクラス
  */
-open class BlasRestAuth(val loginSuccess:(String)->Unit, val loginError:(Int)->Unit) : BlasRest() {
+open class BlasRestAuth(val payload:Map<String, String?>, val loginSuccess:(String)->Unit, val loginError:(Int)->Unit) : BlasRest() {
     companion object {
         val LOGIN_URL = BlasRest.URL + "auth/login/"
     }
@@ -24,18 +24,14 @@ open class BlasRestAuth(val loginSuccess:(String)->Unit, val loginError:(Int)->U
      * @params post
      */
     override fun doInBackground(vararg params: String?): String? {
-        val key = listOf("name","password")
         //レスポンスデータを取得
         //レスポンスデータをJSON文字列にする
         var response:String? = null
         try {
-            //ここでマップを作成すればよいだけでは
-            var payload = mapOf("name" to params[0], "password" to params[1])
-
             response = super.getResponseData(payload,"POST",LOGIN_URL)
         }
         catch(e: Exception) {
-            Log.d("konishi", e.message)
+            Log.d("blas-log", e.message)
         }
 
         return response
@@ -67,5 +63,4 @@ open class BlasRestAuth(val loginSuccess:(String)->Unit, val loginError:(Int)->U
             loginError(error_code)
         }
     }
-
 }

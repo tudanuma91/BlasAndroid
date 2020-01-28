@@ -48,9 +48,8 @@ class LoginFragment : Fragment() {
             /* パラメータ―チェック */
             if(validation(username, password)) {
                 /* ログインを非同期で実行 */
-                if(context != null) {
-                    BlasRestAuth(::loginSuccess, ::loginError).execute(username,password)
-                }
+                var payload = mapOf("name" to username, "password" to password)
+                    BlasRestAuth(payload, ::loginSuccess, ::loginError).execute()
             }
         }
 
@@ -96,7 +95,7 @@ class LoginFragment : Fragment() {
      * 掲示板の画面をキックする
      * @param in token ログインに成功したときのトークン
      */
-    fun loginSuccess(token:String) {
+    private fun loginSuccess(token:String) {
         Log.d("BLAS", "Login成功")
         val intent = Intent(activity, TerminalActivity::class.java)
         intent.putExtra("token",token)
@@ -110,7 +109,7 @@ class LoginFragment : Fragment() {
      * @param in message ログインに失敗したときのメッセージ
      * @return なし
      */
-    fun loginError(error_code:Int) {
+    private fun loginError(error_code:Int) {
         var message:String? = null
 
         when(error_code) {

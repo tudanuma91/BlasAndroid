@@ -15,7 +15,7 @@ import com.v3.basis.blas.activity.TerminalActivity
  */
 abstract class BlasRest : AsyncTask<String, String, String>() {
     companion object {
-        const val URL = "http://192.168.0.101/blas7/api/v1/"
+        const val URL = "http://192.168.1.87/blas7/api/v1/"
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
         const val SUCCESS = 0
@@ -58,6 +58,7 @@ abstract class BlasRest : AsyncTask<String, String, String>() {
         val url = java.net.URL(targetUrl)
         val con = url.openConnection() as HttpURLConnection
 
+        Log.d("konishi", "connect Ok")
         //POSTするデータの作成
 
         var postData :String = ""
@@ -65,6 +66,7 @@ abstract class BlasRest : AsyncTask<String, String, String>() {
         for((k, v) in payload) {
             postData += "${k}=${v}&"
         }
+
         postData = postData.substring(0, postData.length - 1)
 
         Log.d("【rest/BlasRest】", "postData:${postData}")
