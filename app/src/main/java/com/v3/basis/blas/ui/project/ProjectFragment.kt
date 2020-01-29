@@ -49,18 +49,41 @@ class ProjectFragment : Fragment() {
 
         /* テスト用 */
         var payload2 = mapOf("token" to token, "project_id" to 13.toString())
-        BlasRestItem(payload2, ::fieldS, ::fieldE).execute()
+        BlasRestItem("search", payload2, ::fieldS, ::fieldE).execute()
+
+        var payload3 = mapOf("token" to token, "project_id" to 1.toString(), "fld1" to "hello from android")
+        BlasRestItem("create", payload3, ::itemCreateSuccess, ::itemCreateError).execute()
+
+        var payload4 = mapOf("token" to token, "item_id" to 406.toString())
+        BlasRestItem("delete", payload4, ::itemDeleteSuccess, ::itemDeleteError).execute()
+
+        var payload5 = mapOf("token" to token,  "project_id" to 1.toString(), "item_id" to 404.toString(),  "fld2" to "hello from konishi")
+        BlasRestItem("update", payload5, ::itemUpdateSuccess, ::itemUpdateError).execute()
+
         return root
     }
 
+    private fun itemCreateSuccess(result:MutableList<MutableMap<String,String?>>?) {
+        Toast.makeText(getActivity(), "追加しました", Toast.LENGTH_LONG).show()
+    }
+    private fun itemDeleteSuccess(result:MutableList<MutableMap<String,String?>>?) {
+        Toast.makeText(getActivity(), "削除しました", Toast.LENGTH_LONG).show()
+    }
+    private fun itemUpdateSuccess(result:MutableList<MutableMap<String,String?>>?) {
+        Toast.makeText(getActivity(), "更新しました", Toast.LENGTH_LONG).show()
+    }
+
+    private fun itemCreateError(errorCode:Int) {
+        Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
+    }
+
+    private fun itemDeleteError(errorCode:Int) {
+        Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
+    }
+    private fun itemUpdateError(errorCode:Int) {
+        Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
+    }
     private fun fieldS(result:MutableList<MutableMap<String,String?>>?) {
-        if(result != null) {
-            result.forEach {
-                for ((k, v) in it) {
-                    Log.d("konishi succcess", "${k}  ${v}")
-                }
-            }
-        }
         Toast.makeText(getActivity(), "field success", Toast.LENGTH_LONG).show()
     }
 
