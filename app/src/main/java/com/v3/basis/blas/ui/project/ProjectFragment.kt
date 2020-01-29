@@ -20,6 +20,7 @@ import com.v3.basis.blas.activity.TerminalActivity
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestOrgs
+import com.v3.basis.blas.blasclass.rest.BlasRestItem
 
 /**
  * 表示・遷移などデータ管理画面にかかわる処理を行う。
@@ -48,7 +49,7 @@ class ProjectFragment : Fragment() {
 
         /* テスト用 */
         var payload2 = mapOf("token" to token, "project_id" to 13.toString())
-        BlasRestOrgs(payload2, ::fieldS, ::fieldE).execute()
+        BlasRestItem(payload2, ::fieldS, ::fieldE).execute()
         return root
     }
 
