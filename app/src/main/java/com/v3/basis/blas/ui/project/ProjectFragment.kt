@@ -19,7 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.activity.TerminalActivity
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
-import com.v3.basis.blas.blasclass.rest.BlasRestOrgs
+import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 
 /**
@@ -48,8 +48,9 @@ class ProjectFragment : Fragment() {
 
 
         /* テスト用 */
+        /*
         var payload2 = mapOf("token" to token, "project_id" to 13.toString())
-        BlasRestItem("search", payload2, ::fieldS, ::fieldE).execute()
+        BlasRestFixture("search", payload2, ::fieldS, ::fieldE).execute()
 
         var payload3 = mapOf("token" to token, "project_id" to 1.toString(), "fld1" to "hello from android")
         BlasRestItem("create", payload3, ::itemCreateSuccess, ::itemCreateError).execute()
@@ -59,8 +60,16 @@ class ProjectFragment : Fragment() {
 
         var payload5 = mapOf("token" to token,  "project_id" to 1.toString(), "item_id" to 404.toString(),  "fld2" to "hello from konishi")
         BlasRestItem("update", payload5, ::itemUpdateSuccess, ::itemUpdateError).execute()
+        */
+
+     //   var payload2 = mapOf("token" to token, "project_id" to 13.toString(), "status" to 0.toString(), "serial_number" to "aiueo")
+     //   BlasRestFixture("create", payload2, ::fieldS, ::fieldE).execute()
+
+        var payload2 = mapOf("token" to token, "project_id" to 13.toString(), "serial_number" to "aiueoニュー")
+        BlasRestFixture("takeout", payload2, ::fieldS, ::fieldE).execute()
 
         return root
+
     }
 
     private fun itemCreateSuccess(result:MutableList<MutableMap<String,String?>>?) {
@@ -88,7 +97,7 @@ class ProjectFragment : Fragment() {
     }
 
     private fun fieldE(errorCode:Int) {
-        Toast.makeText(getActivity(), "field error", Toast.LENGTH_LONG).show()
+        Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
     }
 
 
