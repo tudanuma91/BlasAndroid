@@ -1,11 +1,10 @@
 package com.v3.basis.blas.blasclass.rest
 
 import android.util.Log
-import org.json.JSONException
-import org.json.JSONObject
+
 
 /**
- *
+ * BLASのプロジェクトに設定されているフィールド情報を取得するクラス
  */
 open class BlasRestField(val payload:Map<String, String?>,
                          val fieldSearchSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,
@@ -30,10 +29,14 @@ open class BlasRestField(val payload:Map<String, String?>,
         return response
     }
 
-    override fun onProgressUpdate(vararg values: String?) {
-        super.onProgressUpdate(*values)
-    }
 
+    /**
+     * プロジェクトに設定されているフィールドの情報を取得したときにコールされる
+     * 取得成功時、fieldSearchSuccessをコールする
+     * 失敗時、fieldSearchErrorをコールする
+     * @param なし
+     *
+     */
     override fun onPostExecute(result: String?) {
         if(result == null) {
             fieldSearchError(BlasRestErrCode.NETWORK_ERROR)
@@ -41,6 +44,7 @@ open class BlasRestField(val payload:Map<String, String?>,
         }
 
         super.onPostExecute(result)
+
         val rtn:RestfulRtn = cakeToAndroid(result, "Fields")
         if(rtn == null) {
             fieldSearchError(BlasRestErrCode.JSON_PARSE_ERROR)

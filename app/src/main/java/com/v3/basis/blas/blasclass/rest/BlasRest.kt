@@ -12,21 +12,30 @@ import com.v3.basis.blas.activity.TerminalActivity
 import org.json.JSONException
 import org.json.JSONObject
 
+/**
+ * 返却用データクラス
+ */
 data class RestfulRtn(
     val errorCode: Int,
     val message: String?,
     val records: MutableList<MutableMap<String, String?>>?
 )
+
+
 /**
  * Restful通信をする際に使用するクラスの親クラス
  */
-abstract class BlasRest : AsyncTask<String, String, String>() {
+open class BlasRest() : AsyncTask<String, String, String>() {
+
+
     companion object {
         const val URL = "http://192.168.1.87/blas7/api/v1/"
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
-        const val SUCCESS = 0
-        const val ABNORMAL = 1
+    }
+
+    override fun doInBackground(vararg params: String?): String? {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     /**
