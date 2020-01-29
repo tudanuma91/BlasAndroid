@@ -1,8 +1,10 @@
 package com.v3.basis.blas.ui.project
 
+import android.content.Context
 import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
+import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -18,9 +20,13 @@ import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.activity.TerminalActivity
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
-import com.v3.basis.blas.blasclass.rest.BlasRestField
+import com.v3.basis.blas.blasclass.rest.BlasRestImageField
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
-import com.v3.basis.blas.blasclass.rest.BlasRestItem
+import com.v3.basis.blas.blasclass.rest.BlasRestImage
+import java.io.BufferedInputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 
 /**
  * 表示・遷移などデータ管理画面にかかわる処理を行う。
@@ -29,6 +35,7 @@ class ProjectFragment : Fragment() {
 
     private lateinit var homeViewModel: ProjectViewModel
     private var token:String? = null
+
     override fun onCreateView(inflater: LayoutInflater,
                                container: ViewGroup?,
                                 savedInstanceState: Bundle?): View? {
@@ -65,35 +72,40 @@ class ProjectFragment : Fragment() {
      //   var payload2 = mapOf("token" to token, "project_id" to 13.toString(), "status" to 0.toString(), "serial_number" to "aiueo")
      //   BlasRestFixture("create", payload2, ::fieldS, ::fieldE).execute()
 
-        var payload2 = mapOf("token" to token, "project_id" to 13.toString(), "serial_number" to "aiueoニュー")
-        BlasRestFixture("takeout", payload2, ::fieldS, ::fieldE).execute()
+        var payload2 = mapOf("token" to token, "project_id" to 1.toString(), "item_id" to 401.toString())
+        BlasRestImage("donwload", payload2, ::fieldS, ::fieldE).execute()
 
         return root
 
     }
 
-    private fun itemCreateSuccess(result:MutableList<MutableMap<String,String?>>?) {
-        Toast.makeText(getActivity(), "追加しました", Toast.LENGTH_LONG).show()
-    }
-    private fun itemDeleteSuccess(result:MutableList<MutableMap<String,String?>>?) {
-        Toast.makeText(getActivity(), "削除しました", Toast.LENGTH_LONG).show()
-    }
-    private fun itemUpdateSuccess(result:MutableList<MutableMap<String,String?>>?) {
-        Toast.makeText(getActivity(), "更新しました", Toast.LENGTH_LONG).show()
-    }
-
-    private fun itemCreateError(errorCode:Int) {
-        Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
-    }
-
-    private fun itemDeleteError(errorCode:Int) {
-        Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
-    }
-    private fun itemUpdateError(errorCode:Int) {
-        Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
-    }
     private fun fieldS(result:MutableList<MutableMap<String,String?>>?) {
         Toast.makeText(getActivity(), "field success", Toast.LENGTH_LONG).show()
+        if(result != null) {
+            result.forEach {
+                /*for((v, k) in it) {
+                    Log.d("konishi", "${v} ${k}")
+                }*/
+                var base64_img = it["image"]
+                if(context != null){
+                    val img_byte = Base64.decode(base64_img, Base64.DEFAULT)
+                    val fileOutputStream: FileOutputStream = context!!.openFileOutput("supepe.jpg", Context.MODE_PRIVATE)
+                    fileOutputStream.write(img_byte)
+                    fileOutputStream.close()
+
+                    val fileInputStream: FileInputStream = context!!.openFileInput("supepe.jpg")
+                    val bytes = fileInputStream.readBytes()
+                    val aaa = Base64.encodeToString(bytes, Base64.DEFAULT)
+                    //Log.d("konishi", base64)
+                    Log.d("konishi", aaa)
+                }
+
+
+
+            }
+
+        }
+
     }
 
     private fun fieldE(errorCode:Int) {
