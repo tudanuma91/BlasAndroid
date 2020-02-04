@@ -13,7 +13,15 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".activity.QrcodeActivity"></activity>
+        <activity android:name=".activity.Test3Activity"></activity>
+        <activity android:name=".activity.Test2Activity" />
+        <activity android:name=".activity.Test1Activity" />
+        <activity android:name=".aaaActivity" />
+        <activity android:name=".Test1Activity" />
+        <activity
+            android:name=".activity.ItemListActivity"
+            android:label="@string/title_item_list" />
+        <activity android:name=".activity.QrcodeActivity" />
         <activity
             android:name=".activity.TerminalActivity"
             android:label="@string/title_activity_terminal" />

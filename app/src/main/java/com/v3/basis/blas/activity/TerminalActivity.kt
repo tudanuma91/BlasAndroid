@@ -9,7 +9,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.v3.basis.blas.R
 
-//ここにどんなアクティビティなのか書くこと
+//ログイン後の画面を表示する処理
 class TerminalActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

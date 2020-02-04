@@ -6,6 +6,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.login.LoginFragment">
 
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -28,15 +29,15 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:inputType="textPersonName"
-            android:text="konishiadmin" />
+            android:text="admin" />
 
         <EditText
             android:id="@+id/Password"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="textPassword"
             android:ems="10"
-            android:text="afd0279c" />
+            android:inputType="textPassword"
+            android:text="testtest" />
 
         <Button
             android:id="@+id/btnLogin"
@@ -50,15 +51,26 @@
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
-        <TextView
-            android:id="@+id/getToken"
-            android:layout_width="wrap_content"
+
+        <Button
+            android:id="@+id/login_test1"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            />
-
+            android:text="test1(小西用)_login" />
+        <Button
+            android:id="@+id/login_test2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="test2(岩崎用)_login" />
+        <Button
+            android:id="@+id/login_test3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="test3(木島用)_login" />
     </LinearLayout>
-
-
+    <FrameLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </FrameLayout>

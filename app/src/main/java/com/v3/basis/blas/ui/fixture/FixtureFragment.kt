@@ -25,7 +25,7 @@ class FixtureFragment : Fragment() {
     ): View? {
         fixtureViewModel =
             ViewModelProviders.of(this).get(FixtureViewModel::class.java)
-        val root = inflater.inflate(R.layout.fragment_equipment_management, container, false)
+        val root = inflater.inflate(R.layout.fragment_fixture, container, false)
         val textView: TextView = root.findViewById(R.id.text_equip)
         fixtureViewModel.text.observe(this, Observer {
             textView.text = it

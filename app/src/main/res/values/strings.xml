@@ -12,6 +12,7 @@
     <string name="title_dashboard">掲示板</string>
     <string name="title_equipment_management">機器管理</string>
     <string name="title_data_management">データ管理</string>
+    <string name="title_item_list">データ管理（登録データ一覧）</string>
 
     <!-- パラメータ―不正系 -->
     <string name="username_null">ユーザ名が指定されていません</string>

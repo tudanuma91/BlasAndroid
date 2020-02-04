@@ -12,10 +12,11 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import com.v3.basis.blas.R
-import com.v3.basis.blas.activity.TerminalActivity
+import com.v3.basis.blas.activity.*
 import com.v3.basis.blas.blasclass.rest.BlasRestAuth
 import com.v3.basis.blas.blasclass.config.Params
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
+import kotlinx.android.synthetic.main.fragment_login.*
 
 /**
  * A simple [Fragment] subclass.
@@ -34,6 +35,11 @@ class LoginFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_login,container,false)
         val loginBtn = view.findViewById<Button>(R.id.btnLogin)
+        //下記三種はテスト用
+        val test_1Btn = view.findViewById<Button>(R.id.login_test1)
+        val test_2Btn = view.findViewById<Button>(R.id.login_test2)
+        val test_3Btn = view.findViewById<Button>(R.id.login_test3)
+
 
         /**
          * ログインボタン押下時、BLASに対してログイン要求を非同期で行う。
@@ -52,6 +58,52 @@ class LoginFragment : Fragment() {
                     BlasRestAuth(payload, ::loginSuccess, ::loginError).execute()
             }
         }
+
+        //下記三つがテスト用の関数
+        test_1Btn.setOnClickListener{
+            Log.d("【LoginFragment】", "test_1Login開始")
+            /* パラメータ―取得 */
+            val username = view?.findViewById<EditText>(R.id.userName)?.text.toString()
+            val password = view?.findViewById<EditText>(R.id.Password)?.text.toString()
+
+            /* パラメータ―チェック */
+            if(validation(username, password)) {
+
+                /* ログインを非同期で実行 */
+                var payload = mapOf("name" to username, "password" to password)
+                BlasRestAuth(payload, ::testLoginSuccess1, ::testLoginError).execute()
+            }
+        }
+
+        test_2Btn.setOnClickListener{
+            Log.d("【LoginFragment】", "test_2Login開始")
+            /* パラメータ―取得 */
+            val username = view?.findViewById<EditText>(R.id.userName)?.text.toString()
+            val password = view?.findViewById<EditText>(R.id.Password)?.text.toString()
+
+            /* パラメータ―チェック */
+            if(validation(username, password)) {
+                /* ログインを非同期で実行 */
+
+                var payload = mapOf("name" to username, "password" to password)
+                BlasRestAuth(payload, ::testLoginSuccess2, ::loginError).execute()
+            }
+        }
+
+        test_3Btn.setOnClickListener{
+            Log.d("【LoginFragment】", "test_3Login開始")
+            /* パラメータ―取得 */
+            val username = view?.findViewById<EditText>(R.id.userName)?.text.toString()
+            val password = view?.findViewById<EditText>(R.id.Password)?.text.toString()
+
+            /* パラメータ―チェック */
+            if(validation(username, password)) {
+                /* ログインを非同期で実行 */
+                var payload = mapOf("name" to username, "password" to password)
+                BlasRestAuth(payload, ::testLoginSuccess3, ::loginError).execute()
+            }
+        }
+        //ここまでテスト用の関数
 
         return view
     }
@@ -129,5 +181,69 @@ class LoginFragment : Fragment() {
         }
         Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
     }
+
+    //下記三つはテスト用の関数
+    /** ログインに成功したときにコールバックされ、
+     * 掲示板の画面をキックする
+     * @param in token ログインに成功したときのトークン
+     */
+    private fun testLoginSuccess1(token:String) {
+        Log.d("BLAS", "Test1成功")
+        val intent = Intent(activity,Test1Activity::class.java)
+        intent.putExtra("token",token)
+        startActivity(intent)
+    }
+
+    /** ログインに成功したときにコールバックされ、
+     * 掲示板の画面をキックする
+     * @param in token ログインに成功したときのトークン
+     */
+    private fun testLoginSuccess2(token:String) {
+        Log.d("BLAS", "Test2成功")
+        val intent = Intent(activity, Test2Activity::class.java)
+        intent.putExtra("token",token)
+        startActivity(intent)
+    }
+
+    /** ログインに成功したときにコールバックされ、
+     * 掲示板の画面をキックする
+     * @param in token ログインに成功したときのトークン
+     */
+    private fun testLoginSuccess3(token:String) {
+        Log.d("BLAS", "Test3成功")
+        val intent = Intent(activity, Test3Activity::class.java)
+        intent.putExtra("token",token)
+        startActivity(intent)
+    }
+    //ここまでテスト用の関数
+
+
+    /**
+     * ログインに失敗した場合にコールバックされる
+     * @param in error_code ログイン失敗時のエラーコード
+     * @param in message ログインに失敗したときのメッセージ
+     * @return なし
+     */
+    private fun testLoginError(error_code:Int) {
+        var message:String? = null
+
+        when(error_code) {
+            BlasRestErrCode.NETWORK_ERROR->{
+                //サーバと通信できません
+                message = getString(R.string.network_error)
+            }
+            BlasRestErrCode.AUTH_ACCOUNT_ERROR-> {
+                //ユーザ名，またはパスワードに誤りがあります
+                message = getString(R.string.account_error)
+            }
+            else-> {
+                //サーバでエラーが発生しました(要因コード)
+                message = getString(R.string.server_error, error_code)
+            }
+
+        }
+        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+    }
+
 
 }

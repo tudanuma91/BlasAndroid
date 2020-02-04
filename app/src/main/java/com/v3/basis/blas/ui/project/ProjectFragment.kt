@@ -12,15 +12,17 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.rest.BlasRestProject
-import com.v3.basis.blas.ui.project.project_list_view.ItemsProjectViewAdapterAdapter
 import com.v3.basis.blas.ui.project.project_list_view.RowModel
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
+import com.v3.basis.blas.activity.ItemListActivity
 import com.v3.basis.blas.activity.TerminalActivity
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestOrgs
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
+import kotlinx.android.synthetic.main.fragment_project.*
+import com.v3.basis.blas.ui.project.project_list_view.ViewAdapterAdapter
 
 /**
  * 表示・遷移などデータ管理画面にかかわる処理を行う。
@@ -39,20 +41,19 @@ class ProjectFragment : Fragment() {
         if(extras?.getString("token") != null) {
             token = extras?.getString("token")
         }
-
         //プロジェクトの取得
         var payload = mapOf("token" to token)
         BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
 
-        val root = inflater.inflate(R.layout.fragment_data_management, container, false)
+        val root = inflater.inflate(R.layout.fragment_project, container, false)
 
 
         /* テスト用 */
-        var payload2 = mapOf("token" to token, "project_id" to 13.toString())
-        BlasRestItem(payload2, ::fieldS, ::fieldE).execute()
+        var payload2 = mapOf("token" to token, "project_id" to 1.toString())
+        BlasRestField(payload2, ::fieldS, ::fieldE).execute()
         return root
     }
-
+    /*
     private fun fieldS(result:MutableList<MutableMap<String,String?>>?) {
         if(result != null) {
             result.forEach {
@@ -60,6 +61,31 @@ class ProjectFragment : Fragment() {
                     Log.d("konishi succcess", "${k}  ${v}")
                 }
             }
+
+        }
+        Toast.makeText(getActivity(), "field success", Toast.LENGTH_LONG).show()
+    }*/
+
+    private fun fieldS(result:MutableList<MutableMap<String,String?>>?) {
+        val map = mutableMapOf<String,String>()
+        var col = "1"
+        //val cnt = 1
+        if(result != null) {
+            result.forEach {
+                for ((k, v) in it) {
+                    when(k){
+                        "col"->{ col = v.toString()}
+                        "name"->{map["fld_${col}(name)"] = v.toString()}
+                        "type"->{map["fld_${col}(type)"] = v.toString()}
+                        "choice"->{map["fld_${col}(choice)"] = v.toString()}
+                    }
+                    Log.d("konishi succcess", "${k}  ${v}")
+                }
+            }
+            for((k,v) in map){
+                Log.d("fld1_name", "NAME => ${k}=>${v}")
+            }
+
         }
         Toast.makeText(getActivity(), "field success", Toast.LENGTH_LONG).show()
     }
@@ -95,19 +121,24 @@ class ProjectFragment : Fragment() {
      */
     private fun projectSearchSuccess(result:MutableMap<String,Int>) {
 
-        val recyclerView = view?.findViewById<RecyclerView>(R.id.recycler_list)
+        val recyclerView = recycler_list
         var project_list = createProjectList(result)
-        val adapter = ItemsProjectViewAdapterAdapter(project_list,
-            object : ItemsProjectViewAdapterAdapter.ListListener {
+        val adapter = ViewAdapterAdapter(project_list,
+            object : ViewAdapterAdapter.ListListener {
                 override fun onClickRow(tappedView: View, rowModel: RowModel) {
                     Toast.makeText(activity, rowModel.text, Toast.LENGTH_LONG).show()
                     Log.d("DataManagement", "click_NAME => ${rowModel.text}/click_ID => ${rowModel.detail}")
+                    val intent = Intent(activity, ItemListActivity::class.java)
+                    intent.putExtra("token",token)
+                    intent.putExtra("project_id",rowModel.detail)
+                    startActivity(intent)
                 }
             })
 
         recyclerView?.setHasFixedSize(true)
         recyclerView?.layoutManager = LinearLayoutManager(activity)
         recyclerView?.adapter = adapter
+
     }
 
 

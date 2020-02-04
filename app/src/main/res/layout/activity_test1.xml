@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.Test1Activity">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -12,10 +14,11 @@
             android:layout_height="match_parent">
             <fragment
                 android:id="@+id/fragmentLogin"
-                android:name="com.v3.basis.blas.ui.login.LoginFragment"
+                android:name="com.v3.basis.blas.ui.test1.Test1Fragment"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
 
         </FrameLayout>
     </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,7 +5,7 @@ package com.v3.basis.blas.blasclass.queuing
  */
 abstract class BlasQueing {
     companion object {
-        const val test = "test"
+        const val test = "test1"
     }
 
     open fun create(){
