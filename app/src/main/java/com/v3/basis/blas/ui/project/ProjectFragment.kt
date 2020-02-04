@@ -13,28 +13,18 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
-import com.v3.basis.blas.blasclass.rest.BlasRestProject
 import com.v3.basis.blas.ui.project.project_list_view.RowModel
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.activity.ItemListActivity
 import com.v3.basis.blas.activity.TerminalActivity
-import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
-<<<<<<< HEAD
-import com.v3.basis.blas.blasclass.rest.BlasRestField
-import com.v3.basis.blas.blasclass.rest.BlasRestOrgs
-import com.v3.basis.blas.blasclass.rest.BlasRestItem
-import kotlinx.android.synthetic.main.fragment_project.*
+import com.v3.basis.blas.blasclass.rest.*
 import com.v3.basis.blas.ui.project.project_list_view.ViewAdapterAdapter
-=======
-import com.v3.basis.blas.blasclass.rest.BlasRestImageField
-import com.v3.basis.blas.blasclass.rest.BlasRestFixture
-import com.v3.basis.blas.blasclass.rest.BlasRestImage
+import kotlinx.android.synthetic.main.fragment_project.*
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
->>>>>>> 7f01166ccff83201912550c6c399ffc5c2416f1e
 
 /**
  * 表示・遷移などデータ管理画面にかかわる処理を行う。
@@ -42,30 +32,23 @@ import java.io.FileOutputStream
 class ProjectFragment : Fragment() {
 
     private lateinit var homeViewModel: ProjectViewModel
-    private var token:String? = null
+    private var token: String? = null
 
-    override fun onCreateView(inflater: LayoutInflater,
-                               container: ViewGroup?,
-                                savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
 
         homeViewModel = ViewModelProviders.of(this).get(ProjectViewModel::class.java)
         //トークンの値を取得
         val extras = activity?.intent?.extras
-        if(extras?.getString("token") != null) {
+        if (extras?.getString("token") != null) {
             token = extras?.getString("token")
         }
-        //プロジェクトの取得
-        var payload = mapOf("token" to token)
-        BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
 
         val root = inflater.inflate(R.layout.fragment_project, container, false)
 
-
-        /* テスト用 */
-<<<<<<< HEAD
-        var payload2 = mapOf("token" to token, "project_id" to 1.toString())
-        BlasRestField(payload2, ::fieldS, ::fieldE).execute()
-=======
         /*
         var payload2 = mapOf("token" to token, "project_id" to 13.toString())
         BlasRestFixture("search", payload2, ::fieldS, ::fieldE).execute()
@@ -80,46 +63,39 @@ class ProjectFragment : Fragment() {
         BlasRestItem("update", payload5, ::itemUpdateSuccess, ::itemUpdateError).execute()
         */
 
-     //   var payload2 = mapOf("token" to token, "project_id" to 13.toString(), "status" to 0.toString(), "serial_number" to "aiueo")
-     //   BlasRestFixture("create", payload2, ::fieldS, ::fieldE).execute()
+        //   var payload2 = mapOf("token" to token, "project_id" to 13.toString(), "status" to 0.toString(), "serial_number" to "aiueo")
+        //   BlasRestFixture("create", payload2, ::fieldS, ::fieldE).execute()
 
-        var payload2 = mapOf("token" to token, "project_id" to 1.toString(), "item_id" to 401.toString())
-        BlasRestImage("donwload", payload2, ::fieldS, ::fieldE).execute()
+        // var payload2 = mapOf("token" to token, "project_id" to 1.toString(), "item_id" to 401.toString())
+        // BlasRestImage("donwload", payload2, ::fieldS, ::fieldE).execute()
 
->>>>>>> 7f01166ccff83201912550c6c399ffc5c2416f1e
         return root
 
     }
-    /*
-    private fun fieldS(result:MutableList<MutableMap<String,String?>>?) {
-        if(result != null) {
-            result.forEach {
-                for ((k, v) in it) {
-                    Log.d("konishi succcess", "${k}  ${v}")
-                }
-            }
 
-        }
-        Toast.makeText(getActivity(), "field success", Toast.LENGTH_LONG).show()
-    }*/
-
-    private fun fieldS(result:MutableList<MutableMap<String,String?>>?) {
-<<<<<<< HEAD
-        val map = mutableMapOf<String,String>()
+    private fun fieldS(result: MutableList<MutableMap<String, String?>>?) {
+        val map = mutableMapOf<String, String>()
         var col = "1"
         //val cnt = 1
-        if(result != null) {
+        if (result != null) {
             result.forEach {
                 for ((k, v) in it) {
-                    when(k){
-                        "col"->{ col = v.toString()}
-                        "name"->{map["fld_${col}(name)"] = v.toString()}
-                        "type"->{map["fld_${col}(type)"] = v.toString()}
-                        "choice"->{map["fld_${col}(choice)"] = v.toString()}
+                    when (k) {
+                        "col" -> {
+                            col = v.toString()
+                        }
+                        "name" -> {
+                            map["fld_${col}(name)"] = v.toString()
+                        }
+                        "type" -> {
+                            map["fld_${col}(type)"] = v.toString()
+                        }
+                        "choice" -> {
+                            map["fld_${col}(choice)"] = v.toString()
+                        }
                     }
                     Log.d("konishi succcess", "${k}  ${v}")
-=======
-        Toast.makeText(getActivity(), "field success", Toast.LENGTH_LONG).show()
+                    /* Toast.makeText(getActivity(), "field success", Toast.LENGTH_LONG).show()
         if(result != null) {
             result.forEach {
                 /*for((v, k) in it) {
@@ -137,99 +113,109 @@ class ProjectFragment : Fragment() {
                     val aaa = Base64.encodeToString(bytes, Base64.DEFAULT)
                     //Log.d("konishi", base64)
                     Log.d("konishi", aaa)
->>>>>>> 7f01166ccff83201912550c6c399ffc5c2416f1e
+                }*/
+
+
                 }
-
-
-
+                for ((k, v) in map) {
+                    Log.d("fld1_name", "NAME => ${k}=>${v}")
+                }
             }
-<<<<<<< HEAD
-            for((k,v) in map){
-                Log.d("fld1_name", "NAME => ${k}=>${v}")
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        /*プロジェクトの取得*/
+        var payload = mapOf("token" to token)
+        BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
+
+        /* テスト用 */
+        var payload2 = mapOf("token" to token, "project_id" to 1.toString())
+        BlasRestField(payload2, ::fieldS, ::fieldE).execute()
+
+    }
+
+        private fun fieldE(errorCode: Int) {
+            Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
+        }
+
+
+        /**
+         * マップ形式からリスト形式に変換する
+         * @param projectのマップ形式のデータ
+         * @return プロジェクトのリスト
+         */
+        private fun createProjectList(from: MutableMap<String, Int>): List<RowModel> {
+            val dataList = mutableListOf<RowModel>()
+
+            for ((project_name, project_id) in from) {
+                val data: RowModel =
+                    RowModel().also {
+                        it.detail = project_id.toString()
+                        it.title = project_name
+                    }
+                dataList.add(data)
             }
-=======
->>>>>>> 7f01166ccff83201912550c6c399ffc5c2416f1e
+            return dataList
+        }
+
+        /**
+         * プロジェクトのデータ取得時にコールバックされる
+         * @param  プロジェクト名 to プロジェクトIDのマップ形式
+         * @return なし
+         */
+        private fun projectSearchSuccess(result: MutableMap<String, Int>) {
+
+            val recyclerView = recycler_list
+            var project_list = createProjectList(result)
+            val adapter = ViewAdapterAdapter(project_list,
+                object : ViewAdapterAdapter.ListListener {
+                    override fun onClickRow(tappedView: View, rowModel: RowModel) {
+                        Toast.makeText(activity, rowModel.title, Toast.LENGTH_LONG).show()
+                        Log.d(
+                            "DataManagement",
+                            "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
+                        )
+                        val intent = Intent(activity, ItemListActivity::class.java)
+                        intent.putExtra("token", token)
+                        intent.putExtra("project_id", rowModel.detail)
+                        startActivity(intent)
+                    }
+                })
+
+            recyclerView?.setHasFixedSize(true)
+            recyclerView?.layoutManager = LinearLayoutManager(activity)
+            recyclerView?.adapter = adapter
 
         }
 
-    }
 
-    private fun fieldE(errorCode:Int) {
-        Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
-    }
+        /**
+         * プロジェクト取得失敗時
+         * @param  error_code 失敗した要因コード
+         */
+        private fun projectSearchError(error_code: Int) {
+            var message: String? = null
 
-
-    /**
-     * マップ形式からリスト形式に変換する
-     * @param projectのマップ形式のデータ
-     * @return プロジェクトのリスト
-     */
-    private fun createProjectList(from: MutableMap<String, Int>): List<RowModel> {
-        val dataList = mutableListOf<RowModel>()
-
-        for ((project_name, project_id) in from) {
-            val data: RowModel =
-                RowModel().also {
-                    it.detail = project_id.toString()
-                    it.text = project_name
+            when (error_code) {
+                BlasRestErrCode.NETWORK_ERROR -> {
+                    //サーバと通信できません
+                    message = getString(R.string.network_error)
                 }
-            dataList.add(data)
-        }
-        return dataList
-    }
-
-    /**
-     * プロジェクトのデータ取得時にコールバックされる
-     * @param  プロジェクト名 to プロジェクトIDのマップ形式
-     * @return なし
-     */
-    private fun projectSearchSuccess(result:MutableMap<String,Int>) {
-
-        val recyclerView = recycler_list
-        var project_list = createProjectList(result)
-        val adapter = ViewAdapterAdapter(project_list,
-            object : ViewAdapterAdapter.ListListener {
-                override fun onClickRow(tappedView: View, rowModel: RowModel) {
-                    Toast.makeText(activity, rowModel.text, Toast.LENGTH_LONG).show()
-                    Log.d("DataManagement", "click_NAME => ${rowModel.text}/click_ID => ${rowModel.detail}")
-                    val intent = Intent(activity, ItemListActivity::class.java)
-                    intent.putExtra("token",token)
-                    intent.putExtra("project_id",rowModel.detail)
-                    startActivity(intent)
+                else -> {
+                    //サーバでエラーが発生しました(要因コード)
+                    message = getString(R.string.server_error, error_code)
                 }
-            })
 
-        recyclerView?.setHasFixedSize(true)
-        recyclerView?.layoutManager = LinearLayoutManager(activity)
-        recyclerView?.adapter = adapter
-
-    }
-
-
-    /**
-     * プロジェクト取得失敗時
-     * @param  error_code 失敗した要因コード
-     */
-    private fun projectSearchError(error_code:Int) {
-        var message:String? = null
-
-        when(error_code) {
-            BlasRestErrCode.NETWORK_ERROR->{
-                //サーバと通信できません
-                message = getString(R.string.network_error)
             }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, error_code)
-            }
-
+            Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+            val intent = Intent(activity, TerminalActivity::class.java)
+            //intent.putExtra("token",token)
+            startActivity(intent)
         }
-        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
-        val intent = Intent(activity, TerminalActivity::class.java)
-        //intent.putExtra("token",token)
-        startActivity(intent)
+
+
     }
 
-
-}
 

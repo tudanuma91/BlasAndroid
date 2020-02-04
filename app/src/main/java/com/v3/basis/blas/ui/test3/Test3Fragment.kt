@@ -26,8 +26,8 @@ class Test3Fragment : Fragment() {
             token = extras?.getString("token")
         }
         //トークンをtextViewにセット
-        val test = view.findViewById<TextView>(R.id.text_test3)
-        test.text = "token=${token}"
+
+
         //取得したトークンをログに出す
         Log.d("${fragmentName}","${token}")
         //変更を加えたviewを返す

@@ -19,7 +19,6 @@ class ViewAdapterAdapter(private val list: List<RowModel>, private val listener:
         Log.d("Life Cycle", "onBindViewHolder")
         holder.titleView.text = list[position].title
         holder.detailView.text = list[position].detail
-        holder.textView.text = list[position].text
         holder.itemView.setOnClickListener {
             listener.onClickRow(it, list[position])
         }

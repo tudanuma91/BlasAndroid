@@ -2,11 +2,11 @@ package com.v3.basis.blas.activity
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import android.widget.Button
+import androidx.fragment.app.Fragment
 import com.v3.basis.blas.R
-import com.v3.basis.blas.Test3RecyclerviewFragment
-import com.v3.basis.blas.ui.test1.Test1Fragment
-import kotlinx.android.synthetic.main.fragment_test3.*
+import com.v3.basis.blas.ui.test3.Test3First.ActivityFirstFragment
+import com.v3.basis.blas.ui.test3.Test3Second.Test3SecondFragment
 
 class Test3Activity : AppCompatActivity() {
 
@@ -14,28 +14,24 @@ class Test3Activity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_test3)
 
-         if(savedInstanceState == null){
-            /*login_test1.setOnClickListener{
-                Log.d("【test1】","test1がクリックされました")
-                val fragmentManager = supportFragmentManager
-                val fragmentTransaction = fragmentManager.beginTransaction()
-                // BackStackを設定
-                fragmentTransaction.addToBackStack(null)
-                // パラメータを設定
-                fragmentTransaction.replace(
-                    R.id.container,
-                    Test1Fragment.newInstance("Fragment1")
-                )
-                fragmentTransaction.commit()
-            }
-            login_test2.setOnClickListener{
-                Log.d("【test2】","test2がクリックされました")
-            }
-            login_test3.setOnClickListener{
-                Log.d("【test3】","test3がクリック
-                        */
-
+        val firstbutton = findViewById<Button>(R.id.firstButton)
+        val secondButton = findViewById<Button>(R.id.secondButton)
+        //FirstFragmentActivityクラスをインスタンス化その下も同様。
+        val firstFragment = ActivityFirstFragment()
+        val secondFragment = Test3SecondFragment()
+        //buttonをクリックしたときにreplaceFragmentメソッドを実行
+        firstbutton.setOnClickListener {
+            replaceFragment(firstFragment)
         }
-
+        secondButton.setOnClickListener {
+            replaceFragment(secondFragment)
+        }
+    }
+     //R.id.containerに引数で渡されたフラグメントを入れる。
+    fun replaceFragment(fragment: Fragment) {
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.container, fragment)
+        fragmentTransaction.commit()
     }
 }
