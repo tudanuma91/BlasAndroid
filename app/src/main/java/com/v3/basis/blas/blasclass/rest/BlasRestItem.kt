@@ -6,12 +6,12 @@ import android.util.Log
 /**
  * BLASのデータにアクセスするクラス
  */
-open class BlasRestItem(val payload:Map<String, String?>,
+open class BlasRestItem(val crud:String = "search",
+                         val payload:Map<String, String?>,
                          val funcSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,
                          val funcError:(Int)->Unit) : BlasRest() {
 
     companion object {
-        val ITEM_SEARCH_URL = BlasRest.URL + "items/search/"
         val TABLE_NAME = "Item"
     }
 
@@ -21,8 +21,32 @@ open class BlasRestItem(val payload:Map<String, String?>,
      */
     override fun doInBackground(vararg params: String?): String? {
         var response:String? = null
+        var method = "GET"
+        var blasUrl = BlasRest.URL + "items/search/"
+
+        when(crud) {
+            "search"->{
+                method = "GET"
+                blasUrl = BlasRest.URL + "items/search/"
+            }
+            "create"->{
+                method = "POST"
+                blasUrl = BlasRest.URL + "items/create/"
+            }
+            "update"->{
+                method = "PUT"
+                blasUrl = BlasRest.URL + "items/update/"
+            }
+            "delete"->{
+                method = "DELETE"
+                blasUrl = BlasRest.URL + "items/delete/"
+            }
+        }
+
         try {
-            response = super.getResponseData(payload,"GET", BlasRestItem.ITEM_SEARCH_URL)
+            Log.d("konishi", method)
+            Log.d("konishi", blasUrl)
+            response = super.getResponseData(payload,method, blasUrl)
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)
