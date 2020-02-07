@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/Linetest"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    tools:context=".ui.test3.Test3Second.Test3Second3Fragment"
     android:orientation="vertical">
-    <!--ただのTextViewです。stringファイルにテキストを設定しておきましょう。-->
-    <Button
-        android:id="@+id/btn_test3"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="テスト" />
+
+    <!-- TODO: Update blank fragment layout -->
 
     <Button
-        android:id="@+id/btn_test3_2"
-        android:layout_width="match_parent"
+        android:id="@+id/btn_test_datapick"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="時間" />
+        android:text="日付取得" />
+
+    <Button
+        android:id="@+id/btn_test_timepick"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="時間取得" />
+
 </LinearLayout>

@@ -25,9 +25,6 @@ class Test3Fragment : Fragment() {
         if(extras?.getString("token") != null) {
             token = extras?.getString("token")
         }
-        //トークンをtextViewにセット
-
-
         //取得したトークンをログに出す
         Log.d("${fragmentName}","${token}")
         //変更を加えたviewを返す

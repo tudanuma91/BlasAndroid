@@ -17,16 +17,17 @@
         <activity android:name=".activity.Test3Activity"></activity>
         <activity android:name=".activity.Test2Activity" />
         <activity android:name=".activity.Test1Activity" />
-        <activity android:name=".aaaActivity" />
-        <activity android:name=".Test1Activity" />
         <activity
             android:name=".activity.ItemListActivity"
             android:label="@string/title_item_list" />
-        <activity android:name=".activity.QrcodeActivity" />
+        <activity
+            android:name=".activity.QrcodeActivity" />
         <activity
             android:name=".activity.TerminalActivity"
             android:label="@string/title_activity_terminal" />
-        <activity android:name=".activity.LoginActivity">
+        <activity
+            android:name=".activity.LoginActivity"
+            android:label="@string/title_login">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
