@@ -16,7 +16,7 @@ import kotlinx.android.synthetic.main.fragment_test3_first.*
 /**
  * A simple [Fragment] subclass.
  */
-class ActivityFirstFragment : Fragment() {
+class Test3FirstFragment : Fragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
