@@ -1,14 +1,17 @@
 package com.v3.basis.blas.blasclass.rest
 
 import android.util.Log
+import kotlin.reflect.KFunction1
 
 
 /**
  * BLASのプロジェクトに設定されているフィールド情報を取得するクラス
  */
-open class BlasRestField(val payload:Map<String, String?>,
-                         val fieldSearchSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,
-                         val fieldSearchError:(Int)->Unit) : BlasRest() {
+open class BlasRestField(
+    val payload:Map<String, String?>,
+    val fieldSearchSuccess: KFunction1<@ParameterName(name = "result") MutableList<MutableMap<String, String?>>?, Unit>,
+    val fieldSearchError: KFunction1<@ParameterName(name = "errorCode") Int, Unit>
+) : BlasRest() {
 
     companion object {
         val FIELD_SEARCH_URL = BlasRest.URL + "project_fields/search/"
