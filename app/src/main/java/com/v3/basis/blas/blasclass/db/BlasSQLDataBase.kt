@@ -6,9 +6,9 @@ package com.v3.basis.blas.blasclass.db
 abstract class BlasSQLDataBase {
     companion object {
         //TODO:データベースのバージョン
-        val DB_version = 11.2
+        val DB_VERSION = 1
         //TODO:データベースの名前
-        val DB_name = "Database_Name"
+        val DB_NAME = "BLAS_DB"
     }
 
     open fun close(){
