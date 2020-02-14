@@ -1,10 +1,7 @@
 package com.v3.basis.blas.ui.project
 
-import android.content.Context
 import android.content.Intent
-import android.os.AsyncTask
 import android.os.Bundle
-import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -15,16 +12,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
 import com.v3.basis.blas.ui.project.project_list_view.RowModel
 import android.widget.Toast
-import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.activity.ItemListActivity
 import com.v3.basis.blas.activity.TerminalActivity
 import com.v3.basis.blas.blasclass.rest.*
 import com.v3.basis.blas.ui.project.project_list_view.ViewAdapterAdapter
 import kotlinx.android.synthetic.main.fragment_project.*
-import java.io.BufferedInputStream
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 
 /**
  * 表示・遷移などデータ管理画面にかかわる処理を行う。
@@ -131,8 +123,8 @@ class ProjectFragment : Fragment() {
         BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
 
         /* テスト用 */
-        var payload2 = mapOf("token" to token, "project_id" to 1.toString())
-        BlasRestField(payload2, ::fieldS, ::fieldE).execute()
+       // var payload2 = mapOf("token" to token, "project_id" to 1.toString())
+        //BlasRestField(payload2, ::fieldS, ::fieldE).execute()
 
     }
 

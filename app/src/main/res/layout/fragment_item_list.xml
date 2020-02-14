@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,11 +8,9 @@
     android:id="@+id/custom_view">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:id="@+id/item_list_text"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_list"
         android:layout_width="match_parent"
-        android:layout_height="379dp"
-        android:text="@string/hello_blank_fragment"
-        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+        android:layout_height="match_parent" />
 
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

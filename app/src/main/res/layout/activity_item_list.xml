@@ -11,7 +11,7 @@
         android:layout_height="match_parent">
 
         <fragment
-            android:id="@+id/fragmentLogin"
+            android:id="@+id/fragmentItemList"
             android:name="com.v3.basis.blas.ui.itemlist.ItemListFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
