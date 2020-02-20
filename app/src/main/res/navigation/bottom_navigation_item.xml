@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/navigation_graph"
+    app:startDestination="@id/data_list">
+
+    <fragment
+        android:id="@+id/data_list"
+        android:name="com.v3.basis.blas.ui.item.item_view.ItemViewFragment"
+        android:label="@string/navi_title_view"/>
+
+    <fragment
+        android:id="@+id/data_create"
+        android:name="com.v3.basis.blas.ui.item.item_create.ItemCreateFragment"
+        android:label="@string/navi_title_create"/>
+
+    <fragment
+        android:id="@+id/navi_search"
+        android:name="com.v3.basis.blas.ui.item.item_search.ItemSearchFragment"
+        android:label="@string/navi_title_search"/>
+
+    <fragment
+        android:id="@+id/navi_back"
+        android:name="com.v3.basis.blas.ui.item.item_create.ItemCreateFragment"
+        android:label="@string/navi_title_back"/>
+
+</navigation>

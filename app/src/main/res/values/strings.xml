@@ -24,5 +24,17 @@
     <string name="network_error">サーバと通信できません</string>
     <string name="server_error">サーバ内でエラーが発生しました。管理者に連絡してください。要因コード(%1$d)</string>
     <string name="String">test</string>
+    <string name="title_activity_item">ItemActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_notifications">Notifications</string>
+
+    <!--ナビバータイトル-->
+    <string name="navi_title_search">検索</string>
+    <string name="navi_title_view">一覧</string>
+    <string name="navi_title_create">作成</string>
+    <string name="navi_title_back">戻る</string>
+    <string name="navi_title_kenpin">検品</string>
+    <string name="navi_title_return">返却</string>
+    <string name="navi_title_motidasi">持ち出し</string>
 
 </resources>

@@ -16,7 +16,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:menu="@menu/bottom_nav_menu" />
+        app:menu="@menu/bottom_navigation_menu_terminal" />
 
     <fragment
         android:id="@+id/nav_host_fragment"
@@ -29,6 +29,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:navGraph="@navigation/mobile_navigation" />
+        app:navGraph="@navigation/bottom_navigation_terminal" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

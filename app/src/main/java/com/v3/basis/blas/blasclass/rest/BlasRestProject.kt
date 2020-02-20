@@ -1,7 +1,6 @@
 package com.v3.basis.blas.blasclass.rest
 
 import android.util.Log
-import com.v3.basis.blas.ui.project.project_list_view.RowModel
 import org.json.JSONObject
 
 /**

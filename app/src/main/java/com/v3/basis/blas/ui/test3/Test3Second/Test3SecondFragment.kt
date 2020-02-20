@@ -1,6 +1,6 @@
 package com.v3.basis.blas.ui.test3.Test3Second
 
-import android.graphics.Color
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -8,10 +8,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.TextView
 import com.v3.basis.blas.R
+import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.Test3Activity
 
 /**
@@ -23,7 +21,7 @@ import com.v3.basis.blas.activity.Test3Activity
  * create an instance of this fragment.
  */
 class Test3SecondFragment : Fragment() {
-
+    var token :String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,10 +29,16 @@ class Test3SecondFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         //もとになるviewの取得
+        val extras = activity?.intent?.extras
+        if(extras?.getString("token") != null) {
+            token = extras?.getString("token")
+        }
+
         val root = inflater.inflate(R.layout.fragment_test3_second, container, false)
         //ボタンの取得
         val button = root.findViewById<Button>(R.id.btn_test3)
         val button2 = root.findViewById<Button>(R.id.btn_test3_2)
+        val button3 = root.findViewById<Button>(R.id.button_test3_item)
         //アクティビティの取得
         val test3Activity = activity as Test3Activity?
         //フラグメントの作成
@@ -51,6 +55,13 @@ class Test3SecondFragment : Fragment() {
             test3Activity?.replaceFragment(second3Fragment)
             Log.d("aaa","よばれたよ！！")
         }
+        button3.setOnClickListener{
+            val intent = Intent(activity, ItemActivity::class.java)
+            intent.putExtra("token",token)
+            intent.putExtra("project_id","1")
+            startActivity(intent)
+        }
+
         return root
     }
 
