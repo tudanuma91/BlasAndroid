@@ -2,16 +2,11 @@
     <!--画面のタイトル-->
     <string name="app_name">Blas</string>
     <string name="title_login">ログイン画面</string>
-    <string name="menu_list_project">プロジェクト管理</string>
-    <string name="menu_list_data">データ管理</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="test_token">test_token</string>
     <string name="title_activity_terminal">TerminalActivity</string>
-    <string name="title_logout">ログアウト</string>
-    <string name="title_dashboard">掲示板</string>
-    <string name="title_equipment_management">機器管理</string>
-    <string name="title_data_management">データ管理</string>
-    <string name="title_item_list">データ管理（登録データ一覧）</string>
+    <string name="title_item_edit">データ編集画面</string>
+    <string name="title_item_image">画像編集画面</string>
 
     <!-- パラメータ―不正系 -->
     <string name="username_null">ユーザ名が指定されていません</string>
@@ -29,12 +24,23 @@
     <string name="title_notifications">Notifications</string>
 
     <!--ナビバータイトル-->
-    <string name="navi_title_search">検索</string>
-    <string name="navi_title_view">一覧</string>
-    <string name="navi_title_create">作成</string>
+    <!--ターミナル画面-->
+    <string name="navi_title_terminal_dashboard">掲示板機能</string>
+    <string name="navi_title_terminal_item">データ管理機能</string>
+    <string name="navi_title_terminal_fixture">機器管理機能</string>
+    <string name="navi_title_terminal_logout">ログアウト</string>
+    <!--データ管理画面-->
+    <string name="navi_title_item_search">データ検索</string>
+    <string name="navi_title_item_view">データ一覧</string>
+    <string name="navi_title_item_create">データ新規作成</string>
+    <!--機器管理画面-->
+    <string name="navi_title_fixture_search">機器検索</string>
+    <string name="navi_title_fixture_kenpin">機器検品</string>
+    <string name="navi_title_fixture_motidasi">機器持ち出し</string>
+    <string name="navi_title_fixture_return">機器返却</string>
+    <string name="navi_title_fixture_view">機器一覧</string>
+    <!--共通-->
     <string name="navi_title_back">戻る</string>
-    <string name="navi_title_kenpin">検品</string>
-    <string name="navi_title_return">返却</string>
-    <string name="navi_title_motidasi">持ち出し</string>
+
 
 </resources>

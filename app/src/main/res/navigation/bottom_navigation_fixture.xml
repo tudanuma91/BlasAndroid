@@ -3,31 +3,31 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/bottom_navigation_fixture.xml"
-    app:startDestination="@id/navi_fixture_list">
+    app:startDestination="@id/navi_fixture_view">
 
     <fragment
-        android:id="@+id/navi_fixture_list"
+        android:id="@+id/navi_fixture_view"
         android:name="com.v3.basis.blas.ui.fixture.fixture_view.FixtureViewFragment"
-        android:label="Fragment1"/>
+        android:label="@string/navi_title_fixture_view"/>
 
     <fragment
         android:id="@+id/navi_fixture_kenpin"
         android:name="com.v3.basis.blas.ui.fixture.fixture_kenpin.fixtureKenpinFragment"
-        android:label="Fragment2"/>
+        android:label="@string/navi_title_fixture_kenpin"/>
 
     <fragment
         android:id="@+id/navi_fixture_motidasi"
         android:name="com.v3.basis.blas.ui.fixture.fixture_motidasi.FixtureMotidasiFragment"
-        android:label="Fragment3"/>
+        android:label="@string/navi_title_fixture_motidasi"/>
 
     <fragment
         android:id="@+id/navi_fixture_return"
         android:name="com.v3.basis.blas.ui.fixture.fixture_return.FixtureReturnFragment"
-        android:label="Fragment4"/>
+        android:label="@string/navi_title_fixture_return"/>
 
     <fragment
         android:id="@+id/navi_fixture_search"
         android:name="com.v3.basis.blas.ui.fixture.fixture_search.FixtureSearchFragment"
-        android:label="Fragment4"/>
+        android:label="@string/navi_title_fixture_search"/>
 
 </navigation>

@@ -3,25 +3,25 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/navigation_graph"
-    app:startDestination="@id/data_list">
+    app:startDestination="@id/navi_item_view">
 
     <fragment
-        android:id="@+id/data_list"
+        android:id="@+id/navi_item_view"
         android:name="com.v3.basis.blas.ui.item.item_view.ItemViewFragment"
-        android:label="@string/navi_title_view"/>
+        android:label="@string/navi_title_item_view"/>
 
     <fragment
-        android:id="@+id/data_create"
+        android:id="@+id/navi_item_create"
         android:name="com.v3.basis.blas.ui.item.item_create.ItemCreateFragment"
-        android:label="@string/navi_title_create"/>
+        android:label="@string/navi_title_item_create"/>
 
     <fragment
-        android:id="@+id/navi_search"
+        android:id="@+id/navi_item_seach"
         android:name="com.v3.basis.blas.ui.item.item_search.ItemSearchFragment"
-        android:label="@string/navi_title_search"/>
+        android:label="@string/navi_title_item_search"/>
 
     <fragment
-        android:id="@+id/navi_back"
+        android:id="@+id/navi_item_back"
         android:name="com.v3.basis.blas.ui.item.item_create.ItemCreateFragment"
         android:label="@string/navi_title_back"/>
 

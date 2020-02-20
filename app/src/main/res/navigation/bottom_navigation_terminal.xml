@@ -8,24 +8,24 @@
     <fragment
         android:id="@+id/navigation_dashboard"
         android:name="com.v3.basis.blas.ui.terminal.dashboards.DashboardsFragment"
-        android:label="@string/title_dashboard"
+        android:label="@string/navi_title_terminal_dashboard"
         tools:layout="@layout/fragment_dashboards" />
 
     <fragment
         android:id="@+id/navigation_data_management"
         android:name="com.v3.basis.blas.ui.terminal.project.ProjectFragment"
-        android:label="@string/title_data_management"
-        tools:layout="@layout/fragment_data_management" />
+        android:label="@string/navi_title_terminal_item"
+        tools:layout="@layout/navi_title_terminal_dashboard" />
 
     <fragment
         android:id="@+id/navigation_equipment_management"
         android:name="com.v3.basis.blas.ui.terminal.fixture.FixtureFragment"
-        android:label="@string/title_equipment_management"
+        android:label="@string/navi_title_terminal_fixture"
         tools:layout="@layout/fragment_equipment_management" />
 
     <fragment
         android:id="@+id/navigation_logout"
         android:name="com.v3.basis.blas.ui.logout.LogoutFragment"
-        android:label="@string/title_logout"
+        android:label="@string/navi_title_terminal_logout"
         tools:layout="@layout/fragment_equipment_management"/>
 </navigation>

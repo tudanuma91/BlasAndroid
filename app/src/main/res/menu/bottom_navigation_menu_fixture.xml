@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/navi_fixture_list"
+        android:id="@+id/navi_fixture_view"
         android:icon="@drawable/ic_format_list_bulleted_black_24dp"
-        android:title="@string/navi_title_view"/>
+        android:title="@string/navi_title_fixture_view"/>
     <item
         android:id="@+id/navi_fixture_kenpin"
         android:icon="@drawable/ic_assignment_turned_in_black_24dp"
-        android:title="@string/navi_title_kenpin"/>
+        android:title="@string/navi_title_fixture_kenpin"/>
     <item
         android:id="@+id/navi_fixture_motidasi"
         android:icon="@drawable/ic_shop_two_black_24dp"
-        android:title="@string/navi_title_motidasi"/>
+        android:title="@string/navi_title_fixture_motidasi"/>
     <item
         android:id="@+id/navi_fixture_return"
         android:icon="@drawable/ic_replay_black_24dp"
-        android:title="@string/navi_title_return"/>
+        android:title="@string/navi_title_fixture_return"/>
     <item
         android:id="@+id/navi_fixture_search"
         android:icon="@drawable/ic_search_black_24dp"
-        android:title="@string/navi_title_search"/>
+        android:title="@string/navi_title_fixture_search"/>
 
 </menu>

@@ -4,21 +4,21 @@
     <item
         android:id="@+id/navigation_dashboard"
         android:icon="@drawable/ic_dashboard_black_24dp"
-        android:title="@string/title_dashboard" />
+        android:title="@string/navi_title_terminal_dashboard" />
 
     <item
         android:id="@+id/navigation_data_management"
         android:icon="@drawable/ic_date_range_black_24dp"
-        android:title="@string/title_data_management" />
+        android:title="@string/navi_title_terminal_item" />
 
     <item
         android:id="@+id/navigation_equipment_management"
         android:icon="@drawable/ic_build_black_24dp"
-        android:title="@string/title_equipment_management" />
+        android:title="@string/navi_title_terminal_fixture" />
 
     <item
         android:id="@+id/navigation_logout"
         android:icon="@drawable/ic_redo_black_24dp"
-        android:title="@string/title_logout" />
+        android:title="@string/navi_title_terminal_logout" />
 
 </menu>
