@@ -1,16 +1,17 @@
 package com.v3.basis.blas.blasclass.rest
 
-import android.content.Intent
+import android.content.ContentValues
 import android.net.Uri
 import android.util.Log
-import java.io.BufferedReader
-import java.io.InputStream
-import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import android.os.AsyncTask
-import com.v3.basis.blas.activity.TerminalActivity
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.PARAM_FILE_DIR
 import org.json.JSONException
 import org.json.JSONObject
+import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
+import java.io.*
+import java.util.*
+
 
 /**
  * 返却用データクラス
@@ -29,10 +30,15 @@ open class BlasRest() : AsyncTask<String, String, String>() {
 
 
     companion object {
-        const val URL = "http://192.168.0.101/blas7/api/v1/"
+        // const val URL = "http://192.168.0.101/blas7/api/v1/"
+        const val URL = "http://192.168.1.8/api/v1/"
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
     }
+
+   // val context = BlasApp.applicationContext()
+   // val dbHelper = BlasSQLDataBaseHelper(context, BlasSQLDataBase.DB_NAME, null, BlasSQLDataBase.DB_VERSION);
+   //  val database = dbHelper.writableDatabase
 
     override fun doInBackground(vararg params: String?): String? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -94,6 +100,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
     open fun getResponseData(payload:Map<String, String?>,method:String,targetUrl:String): String {
         var response = ""
 
+
         if(method == "GET") {
             response = methodGet(payload, targetUrl)
         }
@@ -129,6 +136,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
             val resCorde = con.responseCode
             Log.d("【rest/BlasRestAuth】", "Http_status:${resCorde}")
 
+
             //リクエスト処理処理終了
             outStream.close()
 
@@ -138,6 +146,50 @@ open class BlasRest() : AsyncTask<String, String, String>() {
             con.disconnect()
         }
         return response
+    }
+
+
+    /**
+     * restful通信を行う為、SqliteDBに処理を保存する
+     * [引数]
+     * payload(リスト) : トークンや入力されたデータ等、送信するデータの値を格納した配列
+     * method(文字列) : 通信方式
+     * targetUrl(文字列) : 接続するURL
+     *
+     * [戻り値]
+     */
+    open fun reqDataSave(payload:Map<String, String?>,method:String,targetUrl:String) {
+
+        Log.d("【reqDataSave】", "開始")
+
+        //　パラメータのファイルの書込み
+        val uid = UUID.randomUUID().toString()
+        val filePath = PARAM_FILE_DIR + uid + ".txt"
+        val file = FileWriter(filePath)
+        val pw = PrintWriter(BufferedWriter(file))
+
+        var paramData: String = ""
+        for ((k, v) in payload) {
+            paramData += "${k}=${v}&"
+        }
+        paramData = paramData.substring(0, paramData.length - 1)
+
+        pw.println(paramData)
+        pw.close()
+
+        val values = ContentValues()
+        values.put("uri", targetUrl)
+        values.put("method", method)
+        values.put("param_file", filePath)
+        values.put("retry_count", 0)
+        values.put("status", 0)
+
+        try {
+            database.insertOrThrow("RequestTable", null, values)
+        }catch(exception: Exception) {
+            Log.e("insertError", exception.toString())
+        }
+
     }
 
     /**
