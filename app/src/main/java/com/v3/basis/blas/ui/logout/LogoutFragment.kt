@@ -1,5 +1,6 @@
 package com.v3.basis.blas.ui.logout
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +15,20 @@ class LogoutFragment : Fragment() {
 
     private lateinit var notificationsViewModel: LogoutViewModel
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        AlertDialog.Builder(activity)
+            .setTitle("メッセージ")
+            .setMessage("ログアウトしますか？")
+            .setPositiveButton("YES",{dialog, which ->
+                //TODO YESを押したときの処理
+            })
+            .setNegativeButton("NO", { dialog, which ->
+                //TODO NOを押したときの処理
+            })
+            .show()
+
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -26,6 +41,7 @@ class LogoutFragment : Fragment() {
         notificationsViewModel.text.observe(this, Observer {
             textView.text = it
         })
+
         return root
     }
 }

@@ -8,6 +8,7 @@
     tools:context=".activity.ItemActivity">
 
 
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/item_list_bottom_navigation"
         android:layout_width="match_parent"

@@ -2,6 +2,7 @@ package com.v3.basis.blas.activity
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.MenuItem
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI.setupWithNavController
@@ -23,13 +24,28 @@ class ItemActivity : AppCompatActivity() {
             setOf(
                 R.id.navi_item_view,
                 R.id.navi_item_create,
-                R.id.navi_item_seach,
-                R.id.navi_item_back
+                R.id.navi_item_seach
+               // R.id.navi_item_back
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         //setupWithNavController
 
+        //左上の戻るボタン実装の処理
+        val actionbar = supportActionBar
+        actionbar?.setDisplayHomeAsUpEnabled(true)
+        actionbar?.setHomeButtonEnabled(true)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                //Write your logic here
+                this.finish()
+                return true
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
     }
 
    /* fun replaceFragment(fragment: Fragment) {

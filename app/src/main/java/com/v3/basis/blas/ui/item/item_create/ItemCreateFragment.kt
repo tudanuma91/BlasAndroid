@@ -8,11 +8,13 @@ import android.view.View
 import android.view.ViewGroup
 
 import com.v3.basis.blas.R
+import com.v3.basis.blas.activity.ItemActivity
 
 /**
  * A simple [Fragment] subclass.
  */
 class ItemCreateFragment : Fragment() {
+    var fragmentTitle:String = ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
