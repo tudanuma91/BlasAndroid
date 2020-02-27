@@ -49,6 +49,7 @@ class ItemViewFragment : Fragment() {
         val extras = activity?.intent?.extras
         if(extras?.getString("token") != null) {
             token = extras?.getString("token")
+            Log.d("token_item","${token}")
         }
         if(extras?.getString("project_id") != null) {
             project_id = extras?.getString("project_id")
@@ -56,30 +57,6 @@ class ItemViewFragment : Fragment() {
 
         val root = inflater.inflate(R.layout.fragment_item_view, container, false)
 
-
-        //リロードのぐるぐる出す処理
-        val mSwipeRefresh = root.findViewById<SwipeRefreshLayout>(R.id.swipe)
-
-
-        //下にスワイプした時の処理
-        mSwipeRefresh.setOnRefreshListener {
-            //ここにリロード処理
-            //https://stackoverflow.com/questions/20702333/refresh-fragment-at-reload/20702418
-            //https://tutorialmore.com/questions-776478.htm
-            //TODO Twitterみたいなリロードできるようにする。
-            //activityを削除、再生成する処理
-            activity?.finish()
-            val intent = Intent(activity, ItemActivity::class.java)
-            intent.putExtra("project_id",project_id)
-            intent.putExtra("toke",token)
-            startActivity(intent)
-
-            //上記の処理が終了次第ぐるぐるの表記をなくす処理
-            if (mSwipeRefresh.isRefreshing()) {
-                mSwipeRefresh.setRefreshing(false)
-            }
-            Log.d("【test】","リロードしました")
-        }
         return root
     }
 

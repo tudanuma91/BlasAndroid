@@ -1,4 +1,4 @@
-package com.v3.basis.blas.ui.item.item_view
+package com.v3.basis.blas.ui.fixture.fixture_view
 
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,7 +11,7 @@ class ViewAdapter(private val list: List<RowModel>, private val listener: ListLi
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolders {
         Log.d("Adapter", "onCreateViewHolder")
-        val rowView: View = LayoutInflater.from(parent.context).inflate(R.layout.list_item, parent, false)
+        val rowView: View = LayoutInflater.from(parent.context).inflate(R.layout.list_fixture, parent, false)
         return ViewHolders(rowView)
     }
 

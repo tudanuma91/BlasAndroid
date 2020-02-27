@@ -1,4 +1,4 @@
-package com.v3.basis.blas.ui.terminal.project.project_list_view
+package com.v3.basis.blas.ui.terminal.fixture.project_list_view
 
 import android.util.Log
 import android.view.LayoutInflater
