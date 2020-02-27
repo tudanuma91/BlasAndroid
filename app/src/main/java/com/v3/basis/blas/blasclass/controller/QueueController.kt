@@ -2,24 +2,24 @@ package com.v3.basis.blas.blasclass.controller
 import android.net.Uri
 import android.util.Log
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.PARAM_FILE_DIR
-import com.v3.basis.blas.blasclass.app.is2String
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.READ_TIME_OUT_POST
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.REQUEST_TABLE
+import com.v3.basis.blas.blasclass.app.comIs2String
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
 import com.v3.basis.blas.blasclass.rest.BlasRest
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileNotFoundException
-import java.io.FileReader
 import java.lang.Exception
 import java.net.HttpURLConnection
 import kotlin.concurrent.thread
-import kotlin.concurrent.withLock
 
 
 /**
  * データ形式を決めること
  */
 data class RestRequestData(
-    val queue_id:Int,                         /** 通信通番 */
+    val request_id:Int,                         /** 通信通番 */
     val uri:String,                            /** 要求コード */
     val method:String,                         /** リクエストのパラメーター */
     val param_file:String,                    /** リクエストのパラメーター */
@@ -41,15 +41,6 @@ object QueueController {
      * スレッドを開始する
      */
     public fun start() {
-        try {
-            /**
-             * 停止前の未送信データを復元する
-             */
-            reqList = loadQueueFromDB()
-        }
-        catch(e: Exception) {
-            Log.e("DbLoadError", e.toString())
-        }
 
         thread{
             stop_flg = false
@@ -62,6 +53,41 @@ object QueueController {
      */
     public fun stop() {
         stop_flg = true
+    }
+
+    /**
+     * 送信スレッド
+     */
+    @Synchronized public fun mainLoop() {
+
+        var resCorde : Int
+        var response : String
+
+        /* 通信のバックグラウンド処理 */
+        while(!stop_flg) {
+            try {
+
+                reqList = loadQueueFromDB()
+
+                for (i in reqList.indices) {
+                    var result  = doPost(reqList[i])
+
+                    // 正常の場合
+                    if(result.first < 300){
+                        doSuccess(reqList[i],result.second)
+                    }
+
+                }
+
+            }
+            catch(e:Exception) {
+                Log.e("mainLoopError", e.toString())
+            }
+            /* キューデータを通信エラーになるまでループする */
+
+            Thread.sleep(10* 1000)
+        }
+
     }
 
     /**
@@ -87,12 +113,12 @@ object QueueController {
                     Log.d("【DBセレクト】","開始")
                     dataList.add(RestRequestData(
                         c.getInt(0),c.getString(1),c.getString(2),c.getString(3),
-                                 c.getInt(4),c.getInt(5),c.getInt(6)
+                        c.getInt(4),c.getInt(5),c.getInt(6)
                     ))
 
                     c.moveToNext()
                 }
-             }
+            }
             c.close()
         }catch(e: Exception) {
             Log.e("DbSelectError", e.toString())
@@ -101,41 +127,7 @@ object QueueController {
         return dataList
     }
 
-
-    /**
-     * 送信を要求する
-     */
-    public fun submit(payLoad:MutableMap<String, String>, viewCallBack:(String)->Unit) {
-        lock.withLock {
-            /**
-             * DBにレコードを追加する。
-             * DBはアプリケーションの不意のシャットダウンや再起動で復活させるため。
-             */
-        }
-    }
-
-    /**
-     * 未送信データのキューを取得する
-     */
-    private fun getQueueList():Int {
-        var queueId = 1
-        return queueId
-    }
-
-
-    /**
-     * 指定したIDのノードを削除する。削除するのは送信できた
-     * リクエストののノード。
-     */
-    private fun delQueueNode(queueId:Int) {
-        lock.withLock {
-            /**
-             * キューからノードを削除する
-             */
-        }
-    }
-
-    private fun doConnection(reqArray:RestRequestData) : String {
+    private fun doPost(reqArray:RestRequestData) :  Pair <Int,String> {
         val param : String = ""
 
         //ファイルからパラメータ取得
@@ -146,56 +138,51 @@ object QueueController {
             Log.e("FileReadError", e.toString())
         }
 
-        var url = java.net.URL(reqArray.uri + param )
+        val url = java.net.URL(reqArray.uri)
         val con = url.openConnection() as HttpURLConnection
+
+        Log.d("【Queue】", "param:${param}")
+
+        //タイムアウトとメソッドの設定
         con.requestMethod = reqArray.method
         con.connectTimeout = BlasRest.CONTEXT_TIME_OUT
-        con.readTimeout = BlasRest.READ_TIME_OUT
+        con.readTimeout = READ_TIME_OUT_POST
 
-        if(reqArray.method == "GET") {
-            con.doOutput = false  //GETのときはtrueにしてはいけません
-        }else{
-            con.doOutput = true
-        }
-        // TODO 関数移すかも
-        /*　
+        //リクエストパラメータの設定
+        con.doOutput = true
+        val outStream = con.outputStream
+        //リクエスト処理
+        outStream.write(param.toByteArray())
+        outStream.flush()
+        //エラーコードなど飛んでくるのでログに出力する
+        val resCorde = con.responseCode
+        Log.d("【rest/BlasRestAuth】", "Http_status:${resCorde}")
+
+        //リクエスト処理処理終了
+        outStream.close()
+
+        //レスポンスデータを取得
         val responseData = con.inputStream
-        val response = is2String(responseData)
-        con.disconnect()
+        val response = comIs2String(responseData)
 
-        return response
-        */
+        con.disconnect()
+        return Pair(resCorde,response)
+
     }
 
-    /**
-     * 送信スレッド
-     */
-    @Synchronized public fun mainLoop() {
-        /* 通信のバックグラウンド処理 */
-        while(!stop_flg) {
-            try {
-                /* キューからデータを取り出す */
-                for (i in reqList.indices) {
-                    doConnection(reqList[i])
-                }
+    private fun doSuccess(reqArray:RestRequestData,response :String) {
 
-                /* 送信 */
+        //DBからデータを削除する
+        val whereClauses = "id = ?"
+        val whereArgs = arrayOf(reqArray.request_id.toString())
 
-                /* 正常 */
-//                キュー消す
-
-                /* 異常 */
-
-            }
-            catch(e:Exception) {
-
-            }
-            /* キューデータを通信エラーになるまでループする */
-
-            Thread.sleep(10* 1000)
+        try {
+            database.delete(REQUEST_TABLE, whereClauses, whereArgs)
+        }catch(exception: Exception) {
+            Log.e("deleteData " + reqArray.request_id, exception.toString())
         }
 
-    }
 
+    }
 
 }

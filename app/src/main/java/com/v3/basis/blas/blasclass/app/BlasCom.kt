@@ -17,7 +17,7 @@ class BlasCom {
      * [返り値]
      * sb.toString(文字列) : streamを文字列にして返す。
      * */
-    fun is2String(stream: InputStream): String{
+    fun comIs2String(stream: InputStream): String{
         val sb = StringBuilder()
         val reader = BufferedReader(InputStreamReader(stream,"UTF-8"))
         Log.d("[rest/BlasRest]","{$reader}")
