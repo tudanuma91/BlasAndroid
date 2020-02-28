@@ -5,6 +5,7 @@ import com.v3.basis.blas.blasclass.app.BlasDef.Companion.PARAM_FILE_DIR
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.READ_TIME_OUT_POST
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.REQUEST_TABLE
 import com.v3.basis.blas.blasclass.app.comIs2String
+import com.v3.basis.blas.blasclass.db.BlasSQLDataBase
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
 import com.v3.basis.blas.blasclass.rest.BlasRest
 import java.io.BufferedReader
@@ -91,7 +92,7 @@ object QueueController {
     }
 
     /**
-     * DBからキューリストを復元する
+     * DBからキューリストを作成する
      */
     private fun loadQueueFromDB():MutableList<RestRequestData>{
         /**
@@ -130,9 +131,13 @@ object QueueController {
     private fun doPost(reqArray:RestRequestData) :  Pair <Int,String> {
         val param : String = ""
 
+        val fileDir = BlasSQLDataBase.context.getFilesDir().getPath()
+        val filePath: String = fileDir + "/" + reqArray.param_file
+        val test = "なんでみえない"
+
         //ファイルからパラメータ取得
         try{
-            val reader: BufferedReader = File(PARAM_FILE_DIR + reqArray.param_file).bufferedReader()
+            val reader: BufferedReader = File(filePath).bufferedReader()
             val param = reader.use { it.readText() }
         }catch (e: FileNotFoundException){
             Log.e("FileReadError", e.toString())

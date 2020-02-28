@@ -5,12 +5,16 @@ import android.net.Uri
 import android.util.Log
 import java.net.HttpURLConnection
 import android.os.AsyncTask
+import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.PARAM_FILE_DIR
+import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
 import org.json.JSONException
 import org.json.JSONObject
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
 import java.io.*
 import java.util.*
+
+
 
 
 /**
@@ -31,7 +35,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
 
     companion object {
         // const val URL = "http://192.168.0.101/blas7/api/v1/"
-        const val URL = "http://192.168.1.8/api/v1/"
+        const val URL = "http://192.168.1.8/blas7/api/v1/"
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
         var submitList = mutableMapOf<Int,String>()
@@ -101,11 +105,10 @@ open class BlasRest() : AsyncTask<String, String, String>() {
     open fun getResponseData(payload:Map<String, String?>,method:String,targetUrl:String): String {
         var response = ""
 
-
-        if(method == "GET") {
+        if( (method == "GET") or (method == "DELETE") ) {
             response = methodGet(payload, targetUrl)
-        }
-        else {
+        } else {
+
             val url = java.net.URL(targetUrl)
             val con = url.openConnection() as HttpURLConnection
 
@@ -145,6 +148,9 @@ open class BlasRest() : AsyncTask<String, String, String>() {
             val responseData = con.inputStream
             response = this.is2String(responseData)
             con.disconnect()
+
+
+
         }
         return response
     }
@@ -165,7 +171,11 @@ open class BlasRest() : AsyncTask<String, String, String>() {
 
         //　パラメータのファイルの書込み
         val uid = UUID.randomUUID().toString()
-        val filePath = PARAM_FILE_DIR + uid + ".txt"
+
+        val fileDir = BlasApp.applicationContext().getFilesDir().getPath()
+        val fileName = "param_" + uid + ".txt"
+
+        val filePath = fileDir+ "/" + fileName
         val file = FileWriter(filePath)
         val pw = PrintWriter(BufferedWriter(file))
 
@@ -181,7 +191,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
         val values = ContentValues()
         values.put("uri", targetUrl)
         values.put("method", method)
-        values.put("param_file", filePath)
+        values.put("param_file", fileName)
         values.put("retry_count", 0)
         values.put("status", 0)
 
