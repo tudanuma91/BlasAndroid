@@ -29,19 +29,13 @@ object QueueController {
      * スレッドを開始する
      */
     public fun start() {
-        try {
-            /**
-             * 停止前の未送信データを復元する
-             */
-            reqList = loadQueueFromDB()
-        }
-        catch(e: Exception) {
-
-        }
-
         thread{
             stop_flg = false
-            mainLoop()
+            while(!stop_flg) {
+                mainLoop()
+                /* キューデータを通信エラーになるまでループする */
+                Thread.sleep(10* 1000)
+            }
         }
     }
 
@@ -103,27 +97,29 @@ object QueueController {
      */
     @Synchronized public fun mainLoop() {
         /* 通信のバックグラウンド処理 */
-        while(!stop_flg) {
-            try {
-                /* キューからデータを取り出す */
-
-                /* 送信 */
-
-                /* 正常 */
-                キュー消す
-
-                /* 異常 */
-
+            /*
+            // キューからデータを取り出す
+            val queue_list = getQueueList()
+            foreach(queue in queue_list) {
+                try{
+                    // 送信
+                    if(sendToBlasRequest()) {
+                        // 正常に送信できた
+                        delQueue(queueId)
+                        callBackFun = submit_list[queueId]
+                        //viewに結果を返す
+                        callBackFun(引数未定)
+                    }
+                    else {
+                        //エラーこいたので、後で再送する
+                        break
+                    }
+                }
+                catch(e:Exception) {
+                    //エラーこいたので、後で再送する
+                    break
+                }
             }
-            catch(e:Exception) {
-
-            }
-            /* キューデータを通信エラーになるまでループする */
-
-            Thread.sleep(10* 1000)
-        }
-
+        }*/
     }
-
-
 }
