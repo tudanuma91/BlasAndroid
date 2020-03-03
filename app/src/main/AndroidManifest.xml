@@ -14,7 +14,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:name=".blasclass.app.BlasApp">
+        <activity android:name=".activity.Test3Activity"></activity>
+        <activity android:name=".activity.Test2Activity" />
+        <activity android:name=".activity.Test1Activity" />
         <activity
             android:name=".activity.ItemImageActivity"
             android:label="@string/title_item_image"/>
