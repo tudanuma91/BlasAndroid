@@ -11,7 +11,7 @@ import android.database.sqlite.SQLiteOpenHelper
 class BlasSQLDataBaseHelper(context: Context?, databaseName:String, factory: SQLiteDatabase.CursorFactory?, version: Int): SQLiteOpenHelper(context, databaseName, factory, version) {
 
     companion object {
-        const val CRT_QUE_TABLE = "create table if not exists QueueTable (queue_id integer primary key, uri text, method text, param_file text, retry_count integer, error_code integer, status integer)"
+        const val CRT_QUE_TABLE = "create table if not exists RequestTable (queue_id integer primary key autoincrement,uri text, method text, param_file text, retry_count integer, error_code integer, status integer)"
     }
 
 
