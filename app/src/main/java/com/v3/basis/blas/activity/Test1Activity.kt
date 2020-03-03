@@ -5,6 +5,7 @@ import android.os.Bundle
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.controller.QueueController
 
+
 /**
  * 小西用実験コード
  */
@@ -23,6 +24,7 @@ class Test1Activity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         QueueController.stop()
+       // RestController.stop()
     }
 
     override fun onResume() {

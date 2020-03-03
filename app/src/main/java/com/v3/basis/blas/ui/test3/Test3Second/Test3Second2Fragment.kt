@@ -87,6 +87,10 @@ class Test3Second2Fragment : Fragment() {
         checkbox.setText("aiueo")
         checkbox.setLayoutParams(LayoutParams)
         test.addView(checkbox)
+        val checkbox2 = CheckBox(activity)
+        checkbox2.setText("kakikukeko")
+        checkbox2.setLayoutParams(LayoutParams)
+        test.addView(checkbox2)
 
         //ボタン押下時の処理
         button.setOnClickListener{

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/navigation_graph"
+    app:startDestination="@id/navi_item_view">
+
+    <fragment
+        android:id="@+id/navi_item_view"
+        android:name="com.v3.basis.blas.ui.item.item_view.ItemViewFragment"
+        android:label="@string/navi_title_item_view">
+    </fragment>
+
+    <fragment
+        android:id="@+id/navi_item_create"
+        android:name="com.v3.basis.blas.ui.item.item_create.ItemCreateFragment"
+        android:label="@string/navi_title_item_create"/>
+
+    <fragment
+        android:id="@+id/navi_item_seach"
+        android:name="com.v3.basis.blas.ui.item.item_search.ItemSearchFragment"
+        android:label="@string/navi_title_item_search">
+    </fragment>
+
+    <!--<fragment
+        android:id="@+id/navi_item_back"
+        android:name="com.v3.basis.blas.ui.item.item_create.ItemCreateFragment"
+        android:label="@string/navi_title_back">
+    </fragment>-->
+
+    <fragment
+        android:id="@+id/terminal"
+        android:name="com.v3.basis.blas.ui.terminal.dashboards.DashboardsFragment"
+        />
+
+</navigation>

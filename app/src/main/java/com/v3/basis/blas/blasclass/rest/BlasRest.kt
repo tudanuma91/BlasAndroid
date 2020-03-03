@@ -1,16 +1,21 @@
 package com.v3.basis.blas.blasclass.rest
 
-import android.content.Intent
+import android.content.ContentValues
 import android.net.Uri
 import android.util.Log
-import java.io.BufferedReader
-import java.io.InputStream
-import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import android.os.AsyncTask
-import com.v3.basis.blas.activity.TerminalActivity
+import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.PARAM_FILE_DIR
+import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
 import org.json.JSONException
 import org.json.JSONObject
+import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
+import java.io.*
+import java.util.*
+
+
+
 
 /**
  * 返却用データクラス
@@ -22,17 +27,23 @@ data class RestfulRtn(
 )
 
 
+
+
 /**
  * Restful通信をする際に使用するクラスの親クラス
  */
 open class BlasRest() : AsyncTask<String, String, String>() {
 
-
     companion object {
-        const val URL = "http://192.168.0.101/blas7/api/v1/"
+        // const val URL = "http://192.168.0.101/blas7/api/v1/"
+        const val URL = "http://192.168.1.8/blas7/api/v1/"
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
+      //  var submitList = mutableMapOf<Int,(MutableMap<String, Int>)->Unit,Int >()
     }
+
+
+
 
     override fun doInBackground(vararg params: String?): String? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -65,6 +76,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
         for((k, v) in payload) {
             urlBuilder.appendQueryParameter(k, v)
         }
+
         var url = java.net.URL(targetUrl + urlBuilder.toString())
 
         val con = url.openConnection() as HttpURLConnection
@@ -94,10 +106,10 @@ open class BlasRest() : AsyncTask<String, String, String>() {
     open fun getResponseData(payload:Map<String, String?>,method:String,targetUrl:String): String {
         var response = ""
 
-        if(method == "GET") {
+        if( (method == "GET") or (method == "DELETE") ) {
             response = methodGet(payload, targetUrl)
-        }
-        else {
+        } else {
+
             val url = java.net.URL(targetUrl)
             val con = url.openConnection() as HttpURLConnection
 
@@ -129,6 +141,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
             val resCorde = con.responseCode
             Log.d("【rest/BlasRestAuth】", "Http_status:${resCorde}")
 
+
             //リクエスト処理処理終了
             outStream.close()
 
@@ -136,8 +149,62 @@ open class BlasRest() : AsyncTask<String, String, String>() {
             val responseData = con.inputStream
             response = this.is2String(responseData)
             con.disconnect()
+
+
+
         }
         return response
+    }
+
+
+    /**
+     * restful通信を行う為、SqliteDBに処理を保存する
+     * [引数]
+     * payload(リスト) : トークンや入力されたデータ等、送信するデータの値を格納した配列
+     * method(文字列) : 通信方式
+     * targetUrl(文字列) : 接続するURL
+     *
+     * [戻り値]
+     */
+    open fun reqDataSave(payload:Map<String, String?>,method:String,targetUrl:String,funSuccess:(MutableMap<String,Int>)->Unit,funError:(Int)->Unit) {
+
+        Log.d("【reqDataSave】", "開始")
+
+        //　パラメータのファイルの書込み
+        val uid = UUID.randomUUID().toString()
+
+        val fileDir = BlasApp.applicationContext().getFilesDir().getPath()
+        val fileName = "param_" + uid + ".txt"
+
+        val filePath = fileDir+ "/" + fileName
+        val file = FileWriter(filePath)
+        val pw = PrintWriter(BufferedWriter(file))
+
+        var paramData: String = ""
+        for ((k, v) in payload) {
+            paramData += "${k}=${v}&"
+        }
+        paramData = paramData.substring(0, paramData.length - 1)
+
+        pw.println(paramData)
+        pw.close()
+
+        val values = ContentValues()
+        values.put("uri", targetUrl)
+        values.put("method", method)
+        values.put("param_file", fileName)
+        values.put("retry_count", 0)
+        values.put("status", 0)
+
+        try {
+           val last_insert  = database.insertOrThrow("RequestTable", null, values)
+           // submitList.put(last_insert.toInt(),funSuccess,funError)
+
+        }catch(exception: Exception) {
+            Log.e("insertError", exception.toString())
+        }
+
+
     }
 
     /**

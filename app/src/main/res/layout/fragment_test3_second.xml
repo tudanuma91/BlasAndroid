@@ -17,4 +17,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="時間" />
+
+    <Button
+        android:id="@+id/button_test3_item"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="アイテムリスト" />
 </LinearLayout>

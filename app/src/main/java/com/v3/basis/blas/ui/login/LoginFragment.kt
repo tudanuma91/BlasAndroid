@@ -46,6 +46,7 @@ class LoginFragment : Fragment() {
          * 成功時はloginSuccessメソッドを、失敗時はloginErrorメソッドをコールバックする。
          */
         loginBtn.setOnClickListener{
+
             Log.d("【LoginFragment】", "Login開始")
             /* パラメータ―取得 */
             val username = view?.findViewById<EditText>(R.id.userName)?.text.toString()

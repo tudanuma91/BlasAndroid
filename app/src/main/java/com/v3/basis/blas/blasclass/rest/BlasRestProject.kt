@@ -1,7 +1,6 @@
 package com.v3.basis.blas.blasclass.rest
 
 import android.util.Log
-import com.v3.basis.blas.ui.project.project_list_view.RowModel
 import org.json.JSONObject
 
 /**
@@ -26,6 +25,10 @@ open class BlasRestProject(val payload:Map<String, String?>,
         var response:String? = null
         try {
             response = super.getResponseData(payload,"GET", SEARCH_PGOJECT_URL)
+
+            // TODO テスト用に呼出し
+          //  super.reqDataSave(payload,"GET",SEARCH_PGOJECT_URL,projectSearchSuccess,projectSearchError)
+
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)

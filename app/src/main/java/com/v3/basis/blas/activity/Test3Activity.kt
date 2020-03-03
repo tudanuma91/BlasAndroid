@@ -1,5 +1,6 @@
 package com.v3.basis.blas.activity
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -40,6 +41,7 @@ class Test3Activity : AppCompatActivity() {
                 setContentView(R.layout.activity_test3)
                 val firstbutton = findViewById<Button>(R.id.firstButton)
                 val secondButton = findViewById<Button>(R.id.secondButton)
+                val itemList = findViewById<Button>(R.id.itembutton)
 
                 //FirstFragmentActivityクラスをインスタンス化その下も同様。
                 val firstFragment = Test3FirstFragment()
@@ -51,6 +53,7 @@ class Test3Activity : AppCompatActivity() {
                 secondButton.setOnClickListener {
                     replaceFragment(secondFragment)
                 }
+
             }
             2->{//テスト画面へ遷移
                 setContentView(R.layout.activity_test2)
