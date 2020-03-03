@@ -25,10 +25,11 @@ open class BlasRestProject(val payload:Map<String, String?>,
         //レスポンスデータをJSON文字列にする
         var response:String? = null
         try {
-           // response = super.getResponseData(payload,"GET", SEARCH_PGOJECT_URL)
+            response = super.getResponseData(payload,"GET", SEARCH_PGOJECT_URL)
 
-            // TODO テスト用に呼出し変更
-            super.reqDataSave(payload,"GET",SEARCH_PGOJECT_URL)
+            // TODO テスト用に呼出し
+          //  super.reqDataSave(payload,"GET",SEARCH_PGOJECT_URL,projectSearchSuccess,projectSearchError)
+
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)

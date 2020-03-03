@@ -27,23 +27,23 @@ data class RestfulRtn(
 )
 
 
+
+
 /**
  * Restful通信をする際に使用するクラスの親クラス
  */
 open class BlasRest() : AsyncTask<String, String, String>() {
-
 
     companion object {
         // const val URL = "http://192.168.0.101/blas7/api/v1/"
         const val URL = "http://192.168.1.8/blas7/api/v1/"
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
-        var submitList = mutableMapOf<Int,String>()
+      //  var submitList = mutableMapOf<Int,(MutableMap<String, Int>)->Unit,Int >()
     }
 
-   // val context = BlasApp.applicationContext()
-   // val dbHelper = BlasSQLDataBaseHelper(context, BlasSQLDataBase.DB_NAME, null, BlasSQLDataBase.DB_VERSION);
-   //  val database = dbHelper.writableDatabase
+
+
 
     override fun doInBackground(vararg params: String?): String? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -76,6 +76,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
         for((k, v) in payload) {
             urlBuilder.appendQueryParameter(k, v)
         }
+
         var url = java.net.URL(targetUrl + urlBuilder.toString())
 
         val con = url.openConnection() as HttpURLConnection
@@ -165,7 +166,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
      *
      * [戻り値]
      */
-    open fun reqDataSave(payload:Map<String, String?>,method:String,targetUrl:String) {
+    open fun reqDataSave(payload:Map<String, String?>,method:String,targetUrl:String,funSuccess:(MutableMap<String,Int>)->Unit,funError:(Int)->Unit) {
 
         Log.d("【reqDataSave】", "開始")
 
@@ -196,10 +197,13 @@ open class BlasRest() : AsyncTask<String, String, String>() {
         values.put("status", 0)
 
         try {
-            database.insertOrThrow("RequestTable", null, values)
+           val last_insert  = database.insertOrThrow("RequestTable", null, values)
+           // submitList.put(last_insert.toInt(),funSuccess,funError)
+
         }catch(exception: Exception) {
             Log.e("insertError", exception.toString())
         }
+
 
     }
 
