@@ -29,9 +29,6 @@
 
         <activity android:name=".activity.FixtureActivity"/>
         <activity android:name=".activity.ItemActivity" />
-        <activity android:name=".activity.Test3Activity" />
-        <activity android:name=".activity.Test2Activity" />
-        <activity android:name=".activity.Test1Activity" />
         <activity android:name=".activity.TerminalActivity" />
         <activity
             android:name=".activity.LoginActivity"

@@ -10,8 +10,6 @@ import java.net.HttpURLConnection
 import android.os.AsyncTask
 import android.widget.Toast
 import com.v3.basis.blas.blasclass.app.BlasApp
-import com.v3.basis.blas.blasclass.app.BlasDef.Companion.PARAM_FILE_DIR
-import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
 import org.json.JSONException
 import org.json.JSONObject
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
