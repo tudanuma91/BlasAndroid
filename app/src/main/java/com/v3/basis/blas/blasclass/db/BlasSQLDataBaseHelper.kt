@@ -6,8 +6,8 @@ import android.database.sqlite.SQLiteOpenHelper
 
 /**
  * テーブルの作成を行うクラス
+ *
  */
-
 class BlasSQLDataBaseHelper(context: Context?, databaseName:String, factory: SQLiteDatabase.CursorFactory?, version: Int): SQLiteOpenHelper(context, databaseName, factory, version) {
 
     companion object {
