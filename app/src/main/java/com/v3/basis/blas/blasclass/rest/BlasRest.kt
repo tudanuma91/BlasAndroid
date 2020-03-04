@@ -6,8 +6,6 @@ import android.util.Log
 import java.net.HttpURLConnection
 import android.os.AsyncTask
 import com.v3.basis.blas.blasclass.app.BlasApp
-import com.v3.basis.blas.blasclass.app.BlasDef.Companion.PARAM_FILE_DIR
-import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
 import org.json.JSONException
 import org.json.JSONObject
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
@@ -41,8 +39,6 @@ open class BlasRest() : AsyncTask<String, String, String>() {
         const val READ_TIME_OUT = 1000
       //  var submitList = mutableMapOf<Int,(MutableMap<String, Int>)->Unit,Int >()
     }
-
-
 
 
     override fun doInBackground(vararg params: String?): String? {
