@@ -241,7 +241,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
         }
 
     }
-    /*
+
 
     /**
      * cakePHPから返却されたデータをandroidで使用しやすい形式に変換する。

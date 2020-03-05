@@ -1,11 +1,8 @@
 package com.v3.basis.blas.blasclass.rest
 
 import android.util.Log
-<<<<<<< HEAD
+
 import org.json.JSONObject
-=======
-import com.v3.basis.blas.blasclass.app.cakeToAndroid
->>>>>>> d9a1e1c03c769fc6b3f1f62b6c69d2a1a8e31c59
 
 open class BlasRestFixture(val crud:String = "search",
                             val payload:Map<String, String?>,
