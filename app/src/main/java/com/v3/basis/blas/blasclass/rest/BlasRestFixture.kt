@@ -1,6 +1,7 @@
 package com.v3.basis.blas.blasclass.rest
 
 import android.util.Log
+import com.v3.basis.blas.blasclass.app.cakeToAndroid
 
 open class BlasRestFixture(val crud:String = "search",
                             val payload:Map<String, String?>,
@@ -62,6 +63,7 @@ open class BlasRestFixture(val crud:String = "search",
 
         try {
             response = super.getResponseData(payload,method, blasUrl)
+
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)

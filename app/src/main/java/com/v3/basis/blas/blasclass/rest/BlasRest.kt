@@ -6,13 +6,12 @@ import android.util.Log
 import java.net.HttpURLConnection
 import android.os.AsyncTask
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.controller.RestRequestData
 import org.json.JSONException
 import org.json.JSONObject
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
 import java.io.*
 import java.util.*
-
-
 
 
 /**
@@ -24,8 +23,12 @@ data class RestfulRtn(
     val records: MutableList<MutableMap<String, String?>>?
 )
 
-
-
+data class FuncList(
+    var id: Int = 0,
+    var successFun: (MutableList<MutableMap<String, String?>>?)->Unit,
+    var errorFun: (Int)->Unit,
+    var tableName:String
+)
 
 /**
  * Restful通信をする際に使用するクラスの親クラス
@@ -37,9 +40,8 @@ open class BlasRest() : AsyncTask<String, String, String>() {
         const val URL = "http://192.168.1.8/blas7/api/v1/"
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
-      //  var submitList = mutableMapOf<Int,(MutableMap<String, Int>)->Unit,Int >()
+        var queuefuncList = mutableListOf<FuncList>()
     }
-
 
     override fun doInBackground(vararg params: String?): String? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -159,10 +161,13 @@ open class BlasRest() : AsyncTask<String, String, String>() {
      * payload(リスト) : トークンや入力されたデータ等、送信するデータの値を格納した配列
      * method(文字列) : 通信方式
      * targetUrl(文字列) : 接続するURL
+     * funSuccess(リストマップ):成功時のコールバック
+     * funError(マップ):エラー時のコールバック
+     * tableName(テーブル名)
      *
      * [戻り値]
      */
-    open fun reqDataSave(payload:Map<String, String?>,method:String,targetUrl:String,funSuccess:(MutableMap<String,Int>)->Unit,funError:(Int)->Unit) {
+    open fun reqDataSave(payload:Map<String, String?>,method:String,targetUrl:String,funSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,funError:(Int)->Unit,tableName:String) {
 
         Log.d("【reqDataSave】", "開始")
 
@@ -193,15 +198,18 @@ open class BlasRest() : AsyncTask<String, String, String>() {
         values.put("status", 0)
 
         try {
-           val last_insert  = database.insertOrThrow("RequestTable", null, values)
-           // submitList.put(last_insert.toInt(),funSuccess,funError)
+            val last_insert  = database.insertOrThrow("RequestTable", null, values)
+
+            var reqFunc = FuncList(last_insert.toInt(),funSuccess,funError,tableName)
+
+            queuefuncList.add(reqFunc)
 
         }catch(exception: Exception) {
             Log.e("insertError", exception.toString())
         }
 
-
     }
+    /*
 
     /**
      * cakePHPから返却されたデータをandroidで使用しやすい形式に変換する。
@@ -254,4 +262,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
         }
         return RestfulRtn(errorCode, message, recordList)
     }
+
+     */
+
 }
