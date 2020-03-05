@@ -37,7 +37,7 @@ class LogoutFragment : Fragment() {
         notificationsViewModel =
             ViewModelProviders.of(this).get(LogoutViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_logout, container, false)
-        val textView: TextView = root.findViewById(R.id.text_logout)
+        val textView: TextView = root.findViewById(R.id.logout)
         notificationsViewModel.text.observe(this, Observer {
             textView.text = it
         })

@@ -1,8 +1,10 @@
 package com.v3.basis.blas.activity
 
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI.setupWithNavController
@@ -53,6 +55,21 @@ class ItemActivity : AppCompatActivity() {
             }
             else -> return super.onOptionsItemSelected(item)
         }
+    }
+
+    fun replaceFragment(fragment: Fragment) {
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.frame_item, fragment)
+        fragmentTransaction.commit()
+        Log.d("title","呼ばれた")
+    }
+
+    fun deleteFragment(fragment: Fragment){
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+        fragmentTransaction.remove(fragment)
+        fragmentTransaction.commit()
     }
 
    /* fun replaceFragment(fragment: Fragment) {

@@ -37,8 +37,12 @@ data class RestfulRtn(
 open class BlasRest() : AsyncTask<String, String, String>() {
 
     companion object {
+<<<<<<< HEAD
+        const val URL = "http://192.168.0.101/blas7/api/v1/"
+=======
         // const val URL = "http://192.168.0.101/blas7/api/v1/"
         const val URL = "http://192.168.1.87/blas7/api/v1/"
+>>>>>>> 0937a29a6a4b57302e25194f89eb80efb279a996
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
         val context = BlasApp.applicationContext()
@@ -111,6 +115,8 @@ open class BlasRest() : AsyncTask<String, String, String>() {
         con.connectTimeout = CONTEXT_TIME_OUT
         con.readTimeout = READ_TIME_OUT
         con.doOutput = false  //GETのときはtrueにしてはいけません
+        //responseDataがnull?
+        //どちらにしても下行 val responseData = con.inputStreamが機能していない可能性が高い
 
         val responseData = con.inputStream
         val response = this.is2String(responseData)
@@ -166,7 +172,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
             outStream.flush()
             //エラーコードなど飛んでくるのでログに出力する
             val resCorde = con.responseCode
-            Log.d("【rest/BlasRestAuth】", "Http_status:${resCorde}")
+            Log.d("【BlasRest】", "Http_status:${resCorde}")
 
 
             //リクエスト処理処理終了
