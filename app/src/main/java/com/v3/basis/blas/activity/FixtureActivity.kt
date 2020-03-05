@@ -32,10 +32,18 @@ class FixtureActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
 
-        //左上の戻るボタン実装の処理
-        val actionbar = supportActionBar
-        actionbar?.setDisplayHomeAsUpEnabled(true)
-        actionbar?.setHomeButtonEnabled(true)
+        /**
+         * 戻るボタンが非表示になる問題の修正
+         * [setupActionBarWithNavController]内部で[setDisplayHomeAsUpEnabled]をfalseにする処理が走るため、
+         * リスナーにて再度[setDisplayHomeAsUpEnabled]trueとする。
+         */
+        navController.addOnDestinationChangedListener{ _, destination, _ ->
+            supportActionBar?.apply {
+                title = destination.label
+                setDisplayHomeAsUpEnabled(true)
+                setHomeButtonEnabled(true)
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
