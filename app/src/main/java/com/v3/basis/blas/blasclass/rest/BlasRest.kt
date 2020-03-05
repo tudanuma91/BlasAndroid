@@ -29,7 +29,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
 
 
     companion object {
-        const val URL = "http://192.168.0.102/blas7/api/v1/"
+        const val URL = "http://192.168.0.101/blas7/api/v1/"
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
     }
@@ -72,6 +72,8 @@ open class BlasRest() : AsyncTask<String, String, String>() {
         con.connectTimeout = CONTEXT_TIME_OUT
         con.readTimeout = READ_TIME_OUT
         con.doOutput = false  //GETのときはtrueにしてはいけません
+        //responseDataがnull?
+        //どちらにしても下行 val responseData = con.inputStreamが機能していない可能性が高い
 
         val responseData = con.inputStream
         val response = this.is2String(responseData)
@@ -127,7 +129,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
             outStream.flush()
             //エラーコードなど飛んでくるのでログに出力する
             val resCorde = con.responseCode
-            Log.d("【rest/BlasRestAuth】", "Http_status:${resCorde}")
+            Log.d("【BlasRest】", "Http_status:${resCorde}")
 
             //リクエスト処理処理終了
             outStream.close()

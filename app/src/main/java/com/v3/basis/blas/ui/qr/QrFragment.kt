@@ -1,7 +1,8 @@
-package com.v3.basis.blas.ui.fixture.fixture_return
+package com.v3.basis.blas.ui.qr
 
 
-import android.Manifest
+import android.Manifest.permission.*
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -12,27 +13,28 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.PermissionChecker
+import androidx.core.content.PermissionChecker.checkSelfPermission
 import com.google.zxing.ResultPoint
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
+
 import com.v3.basis.blas.R
-import kotlinx.android.synthetic.main.fragment_fixture_motidasi.*
-import kotlinx.android.synthetic.main.fragment_fixture_return.*
 import kotlinx.android.synthetic.main.fragment_qr.*
-import kotlinx.android.synthetic.main.fragment_qr.qr_view
+import java.util.jar.Manifest
 
 /**
  * A simple [Fragment] subclass.
  */
-class FixtureReturnFragment : Fragment() {
+class QrFragment : Fragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_fixture_return, container, false)
+        val root = inflater.inflate(R.layout.fragment_qr, container, false)
+
+        return root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -63,33 +65,15 @@ class FixtureReturnFragment : Fragment() {
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
 
-        val isReadPermissionGranted = (activity?.let {
-            PermissionChecker.checkSelfPermission(
-                it,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            )
-        } == PackageManager.PERMISSION_GRANTED)
-        val isWritePermissionGranted = (activity?.let {
-            PermissionChecker.checkSelfPermission(
-                it,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            )
-        } == PackageManager.PERMISSION_GRANTED)
-        val isCameraPermissionGranted = (activity?.let {
-            PermissionChecker.checkSelfPermission(
-                it,
-                Manifest.permission.CAMERA
-            )
-        } == PackageManager.PERMISSION_GRANTED)
+        val isReadPermissionGranted = (activity?.let { checkSelfPermission(it,READ_EXTERNAL_STORAGE) } == PackageManager.PERMISSION_GRANTED)
+        val isWritePermissionGranted = (activity?.let { checkSelfPermission(it,WRITE_EXTERNAL_STORAGE) } == PackageManager.PERMISSION_GRANTED)
+        val isCameraPermissionGranted = (activity?.let { checkSelfPermission(it,CAMERA) } == PackageManager.PERMISSION_GRANTED)
 
         if (isReadPermissionGranted && isWritePermissionGranted && isCameraPermissionGranted) {
             openQRCamera() // ← カメラ起動
             Log.d("OK","こっちだぜ")
         } else {
-            requestPermissions(arrayOf(
-                Manifest.permission.CAMERA,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ), REQUEST_CAMERA_PERMISSION)
+            requestPermissions(arrayOf(CAMERA,WRITE_EXTERNAL_STORAGE), REQUEST_CAMERA_PERMISSION)
             Log.d("いいや","こっちだ")
         }
     }
@@ -102,7 +86,7 @@ class FixtureReturnFragment : Fragment() {
                     Log.d("QRCode", "$result")
                     Log.d("QRCode", "だよ！！！")
                     val aaa = "test"
-                    return_result_text.text = "$result"
+                    result_text.text = "$result"
                 }else{
                     result_text.text = "読み取り中"
                 }

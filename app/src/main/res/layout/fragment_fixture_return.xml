@@ -7,14 +7,36 @@
     tools:context=".ui.fixture.fixture_return.FixtureReturnFragment">
 
     <!-- TODO: Update blank fragment layout -->
+    <!-- TODO: Update blank fragment layout -->
+    <com.journeyapps.barcodescanner.CompoundBarcodeView
+        android:id="@+id/qr_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_bias="0.0" android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent" android:layout_marginTop="8dp"
+        app:layout_constraintTop_toTopOf="parent" android:layout_marginEnd="8dp" android:layout_marginRight="8dp"
+        android:layout_marginLeft="8dp" android:layout_marginStart="8dp"/>
+
     <TextView
-        android:id="@+id/textView1"
-        android:text="返却を行う画面\n設計メモ_BlasIPhoneアプリ化 \n6.7.5.返却画面を参考にすること"
+        android:id="@+id/return_result_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/qr_view"
+        app:layout_constraintEnd_toEndOf="@+id/qr_view"
+        app:layout_constraintStart_toStartOf="@+id/qr_view" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="返却画面"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

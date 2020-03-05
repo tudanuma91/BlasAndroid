@@ -4,7 +4,9 @@
     android:id="@+id/scroller"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/white"
     tools:context=".ui.test3.Test3Second.Test3Second2Fragment">
+
     <LinearLayout
         android:id="@+id/framer"
         android:layout_width="match_parent"
