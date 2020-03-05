@@ -1,16 +1,23 @@
 package com.v3.basis.blas.blasclass.rest
 
-import android.content.Intent
+import android.content.ContentValues
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.net.Uri
 import android.util.Log
-import java.io.BufferedReader
-import java.io.InputStream
-import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import android.os.AsyncTask
-import com.v3.basis.blas.activity.TerminalActivity
+import android.widget.Toast
+import com.v3.basis.blas.blasclass.app.BlasApp
 import org.json.JSONException
 import org.json.JSONObject
+import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
+import java.io.*
+import java.util.*
+
+
+
 
 /**
  * 返却用データクラス
@@ -22,22 +29,57 @@ data class RestfulRtn(
 )
 
 
+
+
 /**
  * Restful通信をする際に使用するクラスの親クラス
  */
 open class BlasRest() : AsyncTask<String, String, String>() {
 
-
     companion object {
+<<<<<<< HEAD
         const val URL = "http://192.168.0.101/blas7/api/v1/"
+=======
+        // const val URL = "http://192.168.0.101/blas7/api/v1/"
+        const val URL = "http://192.168.1.87/blas7/api/v1/"
+>>>>>>> 0937a29a6a4b57302e25194f89eb80efb279a996
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
+        val context = BlasApp.applicationContext()
+        var cacheFileName = ""
     }
 
     override fun doInBackground(vararg params: String?): String? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    override fun onPostExecute(result: String?) {
+        var json:JSONObject? = null
+        var errorCode:Int = 0
+        try {
+            json = JSONObject(result)
+            //エラーコード取得
+            errorCode = json.getInt("error_code")
+        }
+        catch (e: JSONException){
+            //JSONの展開に失敗
+            Toast.makeText(context, "データ取得失敗", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        //正常時だけキャッシュに保存する
+        if(errorCode == 0) {
+            //正常のときだけキャッシュにjsonファイルを保存する
+            try {
+                if(result != null) {
+                    saveJson(cacheFileName, result)
+                }
+            }
+            catch(e: Exception) {
+                Toast.makeText(context, e.message, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
     /**
      * オブジェクトをJSON文字列に変換するメソッド
      * [引数]
@@ -65,6 +107,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
         for((k, v) in payload) {
             urlBuilder.appendQueryParameter(k, v)
         }
+
         var url = java.net.URL(targetUrl + urlBuilder.toString())
 
         val con = url.openConnection() as HttpURLConnection
@@ -96,10 +139,10 @@ open class BlasRest() : AsyncTask<String, String, String>() {
     open fun getResponseData(payload:Map<String, String?>,method:String,targetUrl:String): String {
         var response = ""
 
-        if(method == "GET") {
+        if( (method == "GET") or (method == "DELETE") ) {
             response = methodGet(payload, targetUrl)
-        }
-        else {
+        } else {
+
             val url = java.net.URL(targetUrl)
             val con = url.openConnection() as HttpURLConnection
 
@@ -131,6 +174,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
             val resCorde = con.responseCode
             Log.d("【BlasRest】", "Http_status:${resCorde}")
 
+
             //リクエスト処理処理終了
             outStream.close()
 
@@ -140,6 +184,57 @@ open class BlasRest() : AsyncTask<String, String, String>() {
             con.disconnect()
         }
         return response
+    }
+
+
+    /**
+     * restful通信を行う為、SqliteDBに処理を保存する
+     * [引数]
+     * payload(リスト) : トークンや入力されたデータ等、送信するデータの値を格納した配列
+     * method(文字列) : 通信方式
+     * targetUrl(文字列) : 接続するURL
+     *
+     * [戻り値]
+     */
+    open fun reqDataSave(payload:Map<String, String?>,method:String,targetUrl:String,funSuccess:(MutableMap<String,Int>)->Unit,funError:(Int)->Unit) {
+
+        Log.d("【reqDataSave】", "開始")
+
+        //　パラメータのファイルの書込み
+        val uid = UUID.randomUUID().toString()
+
+        val fileDir = BlasApp.applicationContext().getFilesDir().getPath()
+        val fileName = "param_" + uid + ".txt"
+
+        val filePath = fileDir+ "/" + fileName
+        val file = FileWriter(filePath)
+        val pw = PrintWriter(BufferedWriter(file))
+
+        var paramData: String = ""
+        for ((k, v) in payload) {
+            paramData += "${k}=${v}&"
+        }
+        paramData = paramData.substring(0, paramData.length - 1)
+
+        pw.println(paramData)
+        pw.close()
+
+        val values = ContentValues()
+        values.put("uri", targetUrl)
+        values.put("method", method)
+        values.put("param_file", fileName)
+        values.put("retry_count", 0)
+        values.put("status", 0)
+
+        try {
+           val last_insert  = database.insertOrThrow("RequestTable", null, values)
+           // submitList.put(last_insert.toInt(),funSuccess,funError)
+
+        }catch(exception: Exception) {
+            Log.e("insertError", exception.toString())
+        }
+
+
     }
 
     /**
@@ -192,5 +287,39 @@ open class BlasRest() : AsyncTask<String, String, String>() {
             recordList = null
         }
         return RestfulRtn(errorCode, message, recordList)
+    }
+
+    /**
+     * 電波測定用関数
+     */
+    fun isOnline(context: Context): Boolean? {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
+        return activeNetwork?.isConnectedOrConnecting
+    }
+
+    /**
+     * キャッシュ保存
+     * @param fileName キャッシュの保存ファイル名
+     * @param jsonText json形式のテキスト
+     */
+    fun saveJson(fileName:String, jsonText:String) {
+        File(fileName).writer().use {
+            it.write(jsonText)
+        }
+    }
+
+    /**
+     * json形式のテキストファイルを読み込み，jsonObjectとして返却する
+     * @param fileName 読み込むファイル名
+     * @return JSONObject
+     */
+    fun loadJson(fileName:String):JSONObject {
+        var jsonText = ""
+        File(fileName).reader().use {
+            jsonText = it.readText()
+
+        }
+        return JSONObject(jsonText)
     }
 }

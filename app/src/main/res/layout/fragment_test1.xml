@@ -5,11 +5,17 @@
     android:layout_height="match_parent"
     tools:context=".ui.test3.Test3Fragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:id="@+id/text_test1"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:orientation="vertical">
 
+
+        <Button
+            android:id="@+id/prj_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="プロジェクト取得" />
+
+    </LinearLayout>
 </FrameLayout>

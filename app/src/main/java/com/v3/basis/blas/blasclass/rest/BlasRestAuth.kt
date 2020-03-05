@@ -16,7 +16,8 @@ import java.net.HttpURLConnection
  */
 open class BlasRestAuth(val payload:Map<String, String?>, val loginSuccess:(String)->Unit, val loginError:(Int)->Unit) : BlasRest() {
     companion object {
-        val LOGIN_URL = BlasRest.URL + "auth/login/"
+        private val LOGIN_URL = BlasRest.URL + "auth/login/"
+        private val cacheFileName = context.filesDir.toString() + "/token.json"
     }
 
     /**
@@ -51,7 +52,9 @@ open class BlasRestAuth(val payload:Map<String, String?>, val loginSuccess:(Stri
 
         super.onPostExecute(result)
         //トークン取得
+
         val json = JSONObject(result)
+
         val error_code = json.getInt("error_code")
 
         if(error_code == 0) {
