@@ -7,14 +7,70 @@
     tools:context=".ui.fixture.fixture_kenpin.fixtureKenpinFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:id="@+id/textView1"
-        android:text="検品する画面\n設計メモ_BlasIPhoneアプリ化 \n6.7.3.検品を参考にすること"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+
+    <com.journeyapps.barcodescanner.CompoundBarcodeView
+        android:id="@+id/qr_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio=""
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0">
+
+    </com.journeyapps.barcodescanner.CompoundBarcodeView>
+
+    <TextView
+        android:id="@+id/kenpin_result_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="64dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:text=""
+        android:textColor="@color/zxing_status_text"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/qr_view" />
+
+    <TextView
+        android:id="@+id/project_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="TextView"
+        android:textColor="@color/zxing_status_text"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <TextView
+        android:id="@+id/message_kenpin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="200dp"
+        android:textColor="@color/zxing_status_text"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/qr_view"
+        app:layout_constraintStart_toStartOf="@+id/qr_view"
+        app:layout_constraintTop_toTopOf="@+id/qr_view" />
+
+    <ImageButton
+        android:id="@+id/btnLight2"
+        android:layout_width="79dp"
+        android:layout_height="67dp"
+        android:layout_marginBottom="32dp"
+        android:background="@drawable/light_button_background"
+        android:baselineAlignBottom="false"
+        android:contentDescription="TODO"
+        app:layout_constraintBottom_toBottomOf="@+id/qr_view"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/ic_wb_incandescent_black_24dp" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

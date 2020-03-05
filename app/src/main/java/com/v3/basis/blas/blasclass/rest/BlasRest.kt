@@ -1,10 +1,14 @@
 package com.v3.basis.blas.blasclass.rest
 
 import android.content.ContentValues
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.net.Uri
 import android.util.Log
 import java.net.HttpURLConnection
 import android.os.AsyncTask
+import android.widget.Toast
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.controller.RestRequestData
 import org.json.JSONException
@@ -37,16 +41,45 @@ open class BlasRest() : AsyncTask<String, String, String>() {
 
     companion object {
         // const val URL = "http://192.168.0.101/blas7/api/v1/"
-        const val URL = "http://192.168.1.8/blas7/api/v1/"
+        const val URL = "http://192.168.1.87/blas7/api/v1/"
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
         var queuefuncList = mutableListOf<FuncList>()
+        val context = BlasApp.applicationContext()
+        var cacheFileName = ""
     }
 
     override fun doInBackground(vararg params: String?): String? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    override fun onPostExecute(result: String?) {
+        var json:JSONObject? = null
+        var errorCode:Int = 0
+        try {
+            json = JSONObject(result)
+            //エラーコード取得
+            errorCode = json.getInt("error_code")
+        }
+        catch (e: JSONException){
+            //JSONの展開に失敗
+            Toast.makeText(context, "データ取得失敗", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        //正常時だけキャッシュに保存する
+        if(errorCode == 0) {
+            //正常のときだけキャッシュにjsonファイルを保存する
+            try {
+                if(result != null) {
+                    saveJson(cacheFileName, result)
+                }
+            }
+            catch(e: Exception) {
+                Toast.makeText(context, e.message, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
     /**
      * オブジェクトをJSON文字列に変換するメソッド
      * [引数]
@@ -82,6 +115,8 @@ open class BlasRest() : AsyncTask<String, String, String>() {
         con.connectTimeout = CONTEXT_TIME_OUT
         con.readTimeout = READ_TIME_OUT
         con.doOutput = false  //GETのときはtrueにしてはいけません
+        //responseDataがnull?
+        //どちらにしても下行 val responseData = con.inputStreamが機能していない可能性が高い
 
         val responseData = con.inputStream
         val response = this.is2String(responseData)
@@ -137,7 +172,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
             outStream.flush()
             //エラーコードなど飛んでくるのでログに出力する
             val resCorde = con.responseCode
-            Log.d("【rest/BlasRestAuth】", "Http_status:${resCorde}")
+            Log.d("【BlasRest】", "Http_status:${resCorde}")
 
 
             //リクエスト処理処理終了
@@ -147,9 +182,6 @@ open class BlasRest() : AsyncTask<String, String, String>() {
             val responseData = con.inputStream
             response = this.is2String(responseData)
             con.disconnect()
-
-
-
         }
         return response
     }
@@ -263,6 +295,37 @@ open class BlasRest() : AsyncTask<String, String, String>() {
         return RestfulRtn(errorCode, message, recordList)
     }
 
+    /**
+     * 電波測定用関数
      */
+    fun isOnline(context: Context): Boolean? {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
+        return activeNetwork?.isConnectedOrConnecting
+    }
 
+    /**
+     * キャッシュ保存
+     * @param fileName キャッシュの保存ファイル名
+     * @param jsonText json形式のテキスト
+     */
+    fun saveJson(fileName:String, jsonText:String) {
+        File(fileName).writer().use {
+            it.write(jsonText)
+        }
+    }
+
+    /**
+     * json形式のテキストファイルを読み込み，jsonObjectとして返却する
+     * @param fileName 読み込むファイル名
+     * @return JSONObject
+     */
+    fun loadJson(fileName:String):JSONObject {
+        var jsonText = ""
+        File(fileName).reader().use {
+            jsonText = it.readText()
+
+        }
+        return JSONObject(jsonText)
+    }
 }

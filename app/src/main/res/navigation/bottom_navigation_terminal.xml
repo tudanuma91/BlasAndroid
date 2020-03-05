@@ -22,7 +22,6 @@
         android:name="com.v3.basis.blas.ui.terminal.fixture.FixtureFragment"
         android:label="@string/navi_title_terminal_fixture"
         tools:layout="@layout/fragment_equipment_management" />
-
     <fragment
         android:id="@+id/navigation_logout"
         android:name="com.v3.basis.blas.ui.logout.LogoutFragment"

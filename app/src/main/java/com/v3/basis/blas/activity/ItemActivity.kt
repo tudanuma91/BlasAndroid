@@ -1,8 +1,10 @@
 package com.v3.basis.blas.activity
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI.setupWithNavController
@@ -29,12 +31,19 @@ class ItemActivity : AppCompatActivity() {
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
-        //setupWithNavController
 
-        //左上の戻るボタン実装の処理
-        val actionbar = supportActionBar
-        actionbar?.setDisplayHomeAsUpEnabled(true)
-        actionbar?.setHomeButtonEnabled(true)
+        /**
+         * 戻るボタンが非表示になる問題の修正
+         * [setupActionBarWithNavController]内部で[setDisplayHomeAsUpEnabled]をfalseにする処理が走るため、
+         * リスナーにて再度[setDisplayHomeAsUpEnabled]trueとする。
+         */
+        navController.addOnDestinationChangedListener{ _, destination, _ ->
+            supportActionBar?.apply {
+                title = destination.label
+                setDisplayHomeAsUpEnabled(true)
+                setHomeButtonEnabled(true)
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -46,6 +55,21 @@ class ItemActivity : AppCompatActivity() {
             }
             else -> return super.onOptionsItemSelected(item)
         }
+    }
+
+    fun replaceFragment(fragment: Fragment) {
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.frame_item, fragment)
+        fragmentTransaction.commit()
+        Log.d("title","呼ばれた")
+    }
+
+    fun deleteFragment(fragment: Fragment){
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+        fragmentTransaction.remove(fragment)
+        fragmentTransaction.commit()
     }
 
    /* fun replaceFragment(fragment: Fragment) {

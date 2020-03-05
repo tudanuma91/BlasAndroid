@@ -10,12 +10,8 @@ import kotlin.reflect.KFunction1
  */
 open class BlasRestField(
     val payload:Map<String, String?>,
-//    val fieldSearchSuccess: KFunction1<@ParameterName(name = "result") MutableList<MutableMap<String, String?>>?, Unit>,
-//    val fieldSearchError: KFunction1<@ParameterName(name = "errorCode") Int, Unit>
-    val fieldSearchSuccess: (MutableList<MutableMap<String, String?>>?)->Unit,
-    val fieldSearchError: (Int)->Unit
-
-
+    val fieldSearchSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,
+    val fieldSearchError:(Int)->Unit
 ) : BlasRest() {
 
     companion object {

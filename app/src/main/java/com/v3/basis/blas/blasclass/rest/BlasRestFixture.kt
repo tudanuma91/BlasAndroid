@@ -48,7 +48,7 @@ open class BlasRestFixture(val crud:String = "search",
                 blasUrl = BlasRest.URL + "fixtures/delete/"
             }
             "kenpin"->{
-                method = "POST"
+                method = "PUT"
                 blasUrl = BlasRest.URL + "fixtures/kenpin/"
             }
             "takeout"->{
@@ -62,6 +62,8 @@ open class BlasRestFixture(val crud:String = "search",
         }
 
         try {
+            Log.d("konishi", method)
+            Log.d("konishi", blasUrl)
             response = super.getResponseData(payload,method, blasUrl)
 
         }

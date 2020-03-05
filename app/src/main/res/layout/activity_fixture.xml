@@ -18,6 +18,7 @@
         android:id="@+id/nav_host_fragment_fixture"
         android:layout_height="match_parent"
         android:layout_width="match_parent"
+        android:layout_marginBottom="70dp"
         android:name="androidx.navigation.fragment.NavHostFragment"
         app:navGraph="@navigation/bottom_navigation_fixture"/>
 

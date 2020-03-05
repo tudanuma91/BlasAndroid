@@ -39,6 +39,7 @@ class LoginFragment : Fragment() {
         val test_1Btn = view.findViewById<Button>(R.id.login_test1)
         val test_2Btn = view.findViewById<Button>(R.id.login_test2)
         val test_3Btn = view.findViewById<Button>(R.id.login_test3)
+        val qr = view.findViewById<Button>(R.id.btnQR)
 
 
         /**
@@ -103,6 +104,11 @@ class LoginFragment : Fragment() {
                 var payload = mapOf("name" to username, "password" to password)
                 BlasRestAuth(payload, ::testLoginSuccess3, ::loginError).execute()
             }
+        }
+
+        qr.setOnClickListener{
+            val intent = Intent(activity, QRActivity::class.java)
+            startActivity(intent)
         }
         //ここまでテスト用の関数
 
