@@ -82,6 +82,8 @@ class fixtureKenpinFragment : Fragment() {
         list.forEach {
             Log.d("kentakijima","${it}")
         }
+        
+
         McameraManager!!.registerTorchCallback(object : CameraManager.TorchCallback() {
             //トーチモードが変更された時の処理
             override fun onTorchModeChanged(cameraId: String, enabled: Boolean) {

@@ -37,12 +37,9 @@ data class RestfulRtn(
 open class BlasRest() : AsyncTask<String, String, String>() {
 
     companion object {
-<<<<<<< HEAD
+
         const val URL = "http://192.168.0.101/blas7/api/v1/"
-=======
-        // const val URL = "http://192.168.0.101/blas7/api/v1/"
-        const val URL = "http://192.168.1.87/blas7/api/v1/"
->>>>>>> 0937a29a6a4b57302e25194f89eb80efb279a996
+
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
         val context = BlasApp.applicationContext()
