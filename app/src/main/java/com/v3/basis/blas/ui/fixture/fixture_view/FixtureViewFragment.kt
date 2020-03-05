@@ -24,6 +24,7 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusFinishInst
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusNotTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
+import org.json.JSONObject
 
 
 /**
@@ -139,12 +140,39 @@ class FixtureViewFragment : Fragment() {
     /**
      * 機器管理取得時
      */
-    private fun fixtureGetSuccess(result: MutableList<MutableMap<String, String?>>?) {
+    private fun fixtureGetSuccess(result: JSONObject) {
         //カラム順に並べ替える
         Log.d("testtest","${result}")
+        val records = result.getJSONArray("records")
+        for(i in 0 until records.length()) {
+            val fields = JSONObject(records[i].toString())
+            val fixture = fields.getJSONObject("Fixture")
+            val fixtureId = fixture.getInt("fixture_id")
+            val fixtureStatus = fixture.getString("status")
+            val serialNumber = fixture.getString("serial_number")
+            val fixUser = fields.getJSONObject("FixUser").getString("name")
+            val takeOutUser = fields.getJSONObject("TakeOutUser").getString("name")
+            val rtnUser = fields.getJSONObject("RtnUser").getString("name")
+            val itemUser = fields.getJSONObject("ItemUser").getString("name")
+            val fixOrg = fields.getJSONObject("FixOrg").getString("name")
+            val takeOutOrg = fields.getJSONObject("TakeOutOrg").getString("name")
+            val rtnOrg = fields.getJSONObject("RtnOrg").getString("name")
+            val itemOrg = fields.getJSONObject("ItemOrg").getString("name")
 
-        if(result != null){
-            result.forEach {
+            valueMap[fixtureId] = mutableMapOf("serial_number" to serialNumber,
+                                                 "status" to fixtureStatus,
+                                                 "fix_user" to fixUser,
+                                                 "takeout_user" to takeOutUser,
+                                                 "rtn_user" to rtnUser,
+                                                 "item_user" to itemUser,
+                                                 "fix_org" to fixOrg,
+                                                 "takeout_org" to takeOutOrg,
+                                                 "rtn_org" to rtnOrg,
+                                                 "item_org" to itemOrg)
+        }
+        /*
+        if(records != null){
+            records.forEach {
                 val id = it["fixture_id"]?.toInt()
                 if(id != null){
                     valueMap[id] = it
@@ -154,7 +182,7 @@ class FixtureViewFragment : Fragment() {
         Log.d("value_map","${valueMap}")
         Log.d("value_map","${valueMap.size}")
         valueSize = valueMap.size
-
+*/
         if(valueMap.isNotEmpty()) {
             setAdapter()
         }
@@ -189,21 +217,21 @@ class FixtureViewFragment : Fragment() {
             else -> { }
         }
         value += "\n【検品した会社】"
-        value += "\n  ${list["fix_org_id"]}"
+        value += "\n  ${list["fix_org"]}"
         value += "\n【検品したユーザ】"
-        value += "\n  ${list["fix_user_id"]}"
+        value += "\n  ${list["fix_user"]}"
         value += "\n【持出した会社】"
-        value += "\n  ${list["takeout_org_id"]}"
+        value += "\n  ${list["takeout_org"]}"
         value += "\n【持出したユーザ】"
-        value += "\n  ${list["takeout_user_id"]}"
+        value += "\n  ${list["takeout_user"]}"
         value += "\n【返却した会社】"
-        value += "\n  ${list["rtn_org_id"]}"
+        value += "\n  ${list["rtn_org"]}"
         value += "\n【返却したユーザ】"
-        value += "\n  ${list["rtn_user_id"]}"
+        value += "\n  ${list["rtn_user"]}"
         value += "\n【設置した会社】"
-        value += "\n  ${list["item_org_id"]}"
+        value += "\n  ${list["item_org"]}"
         value += "\n【設置したユーザ】"
-        value += "\n  ${list["item_user_id"]}"
+        value += "\n  ${list["item_user"]}"
 
         return value
     }

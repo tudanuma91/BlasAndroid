@@ -1,10 +1,11 @@
 package com.v3.basis.blas.blasclass.rest
 
 import android.util.Log
+import org.json.JSONObject
 
 open class BlasRestFixture(val crud:String = "search",
                             val payload:Map<String, String?>,
-                            val funcSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,
+                            val funcSuccess:(JSONObject)->Unit,
                             val funcError:(Int)->Unit) : BlasRest(){
 
     companion object {
@@ -86,16 +87,15 @@ open class BlasRestFixture(val crud:String = "search",
         }
 
         super.onPostExecute(result)
-
-        val rtn:RestfulRtn = cakeToAndroid(result, TABLE_NAME)
-        if(rtn == null) {
-            funcError(BlasRestErrCode.JSON_PARSE_ERROR)
-        }
-        else if(rtn.errorCode == 0) {
-            funcSuccess(rtn.records)
+        val json = JSONObject(result)
+       // val rtn:RestfulRtn = cakeToAndroid(result, TABLE_NAME)
+        val errorCode = json.getInt("error_code")
+        //val records = json.getJSONArray("records")
+        if(errorCode == 0) {
+            funcSuccess(json)
         }
         else {
-            funcError(rtn.errorCode)
+            funcError(errorCode)
         }
     }
 }

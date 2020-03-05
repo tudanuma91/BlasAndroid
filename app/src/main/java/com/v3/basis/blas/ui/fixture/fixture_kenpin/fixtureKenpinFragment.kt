@@ -29,6 +29,7 @@ import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import kotlinx.android.synthetic.main.fragment_fixture_kenpin.*
 import kotlinx.android.synthetic.main.fragment_qr.*
 import kotlinx.android.synthetic.main.fragment_qr.qr_view
+import org.json.JSONObject
 import java.lang.Exception
 
 /**
@@ -211,7 +212,7 @@ class fixtureKenpinFragment : Fragment() {
         }
     }
 
-    private fun success(result: MutableList<MutableMap<String, String?>>?){
+    private fun success(result: JSONObject){
         Log.d("OK","作成完了")
         message_kenpin.setTextColor(Color.GREEN)
         message_kenpin.text = "QRコードを読み取りました"
