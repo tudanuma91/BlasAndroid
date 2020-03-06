@@ -51,7 +51,7 @@ class Test3SecondFragment : Fragment() {
         val button = root.findViewById<Button>(R.id.btn_test3)
         val button2 = root.findViewById<Button>(R.id.btn_test3_2)
         val button3 = root.findViewById<Button>(R.id.button_test3_item)
-        Mbutton = root.findViewById<Button>(R.id.btnLight2)
+        Mbutton = root.findViewById<Button>(R.id.btnLightKenpin)
 
         //McameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager?
         McameraManager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager?

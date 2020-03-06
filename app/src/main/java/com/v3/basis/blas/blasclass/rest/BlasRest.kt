@@ -10,13 +10,12 @@ import java.net.HttpURLConnection
 import android.os.AsyncTask
 import android.widget.Toast
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.controller.RestRequestData
 import org.json.JSONException
 import org.json.JSONObject
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
 import java.io.*
 import java.util.*
-
-
 
 
 /**
@@ -28,8 +27,12 @@ data class RestfulRtn(
     val records: MutableList<MutableMap<String, String?>>?
 )
 
-
-
+data class FuncList(
+    var id: Int = 0,
+    var successFun: (MutableList<MutableMap<String, String?>>?)->Unit,
+    var errorFun: (Int)->Unit,
+    var tableName:String
+)
 
 /**
  * Restful通信をする際に使用するクラスの親クラス
@@ -37,11 +40,10 @@ data class RestfulRtn(
 open class BlasRest() : AsyncTask<String, String, String>() {
 
     companion object {
-
         const val URL = "http://192.168.0.101/blas7/api/v1/"
-
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
+        var queuefuncList = mutableListOf<FuncList>()
         val context = BlasApp.applicationContext()
         var cacheFileName = ""
     }
@@ -190,10 +192,13 @@ open class BlasRest() : AsyncTask<String, String, String>() {
      * payload(リスト) : トークンや入力されたデータ等、送信するデータの値を格納した配列
      * method(文字列) : 通信方式
      * targetUrl(文字列) : 接続するURL
+     * funSuccess(リストマップ):成功時のコールバック
+     * funError(マップ):エラー時のコールバック
+     * tableName(テーブル名)
      *
      * [戻り値]
      */
-    open fun reqDataSave(payload:Map<String, String?>,method:String,targetUrl:String,funSuccess:(MutableMap<String,Int>)->Unit,funError:(Int)->Unit) {
+    open fun reqDataSave(payload:Map<String, String?>,method:String,targetUrl:String,funSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,funError:(Int)->Unit,tableName:String) {
 
         Log.d("【reqDataSave】", "開始")
 
@@ -224,15 +229,18 @@ open class BlasRest() : AsyncTask<String, String, String>() {
         values.put("status", 0)
 
         try {
-           val last_insert  = database.insertOrThrow("RequestTable", null, values)
-           // submitList.put(last_insert.toInt(),funSuccess,funError)
+            val last_insert  = database.insertOrThrow("RequestTable", null, values)
+
+            var reqFunc = FuncList(last_insert.toInt(),funSuccess,funError,tableName)
+
+            queuefuncList.add(reqFunc)
 
         }catch(exception: Exception) {
             Log.e("insertError", exception.toString())
         }
 
-
     }
+
 
     /**
      * cakePHPから返却されたデータをandroidで使用しやすい形式に変換する。

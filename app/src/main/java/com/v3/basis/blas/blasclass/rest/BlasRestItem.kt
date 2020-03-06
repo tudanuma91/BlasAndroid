@@ -1,6 +1,7 @@
 package com.v3.basis.blas.blasclass.rest
 
 import android.util.Log
+import com.v3.basis.blas.blasclass.app.cakeToAndroid
 
 
 /**
@@ -46,7 +47,12 @@ open class BlasRestItem(val crud:String = "search",
         try {
             Log.d("konishi", method)
             Log.d("konishi", blasUrl)
+
             response = super.getResponseData(payload,method, blasUrl)
+
+            //TODO テスト用にキューの呼出し追加
+         //   super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
+
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)

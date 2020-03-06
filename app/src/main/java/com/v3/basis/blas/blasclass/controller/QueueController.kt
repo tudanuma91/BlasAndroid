@@ -1,13 +1,15 @@
 package com.v3.basis.blas.blasclass.controller
 import android.net.Uri
 import android.util.Log
-import com.v3.basis.blas.blasclass.app.BlasDef.Companion.PARAM_FILE_DIR
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.READ_TIME_OUT_POST
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.REQUEST_TABLE
-import com.v3.basis.blas.blasclass.app.comIs2String
+import com.v3.basis.blas.blasclass.app.Is2String
+import com.v3.basis.blas.blasclass.app.cakeToAndroid
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase
+import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
-import com.v3.basis.blas.blasclass.rest.BlasRest
+import com.v3.basis.blas.blasclass.rest.*
+import com.v3.basis.blas.blasclass.rest.BlasRest.Companion.queuefuncList
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileNotFoundException
@@ -73,9 +75,10 @@ object QueueController {
                 for (i in reqList.indices) {
                     var result  = doConnect(reqList[i])
 
+
                     // 正常の場合
                     if(result.first < 300){
-                        doSuccess(reqList[i],result.second)
+                        queueSuccess(reqList[i],result.second)
                     }
 
                 }
@@ -134,15 +137,13 @@ object QueueController {
 
     private fun doConnect(reqArray:RestRequestData) :  Pair <Int,String> {
         var param:String = ""
-        val fileDir = BlasSQLDataBase.context.getFilesDir().getPath()
+        val fileDir = context.getFilesDir().getPath()
         val filePath: String = fileDir + "/" + reqArray.param_file
         val response:String
         var resCorde:Int = 0
 
         //ファイルからパラメータ取得
         try{
-            // val reader: BufferedReader = File(filePath).bufferedReader()
-            // val param = reader.use { it.readText() }
              param = File(filePath).readText(Charsets.UTF_8)
        }catch (e: FileNotFoundException){
             Log.e("FileReadError", e.toString())
@@ -154,7 +155,6 @@ object QueueController {
             return Pair(resCorde,response)
         }
 
-        // TODO メソッドがポストなっていて、暫定で設定したプロジェクトコントろらーはゲットの為、エラーが起きてると思われる。
         val url = java.net.URL(reqArray.uri)
         val con = url.openConnection() as HttpURLConnection
 
@@ -180,7 +180,7 @@ object QueueController {
 
         //レスポンスデータを取得
         val responseData = con.inputStream
-        response = comIs2String(responseData)
+        response = Is2String(responseData)
 
         con.disconnect()
         return Pair(resCorde,response)
@@ -199,7 +199,7 @@ object QueueController {
         con.doOutput = false  //GETのときはtrueにしてはいけません
 
         val responseData = con.inputStream
-        val response = comIs2String(responseData)
+        val response = Is2String(responseData)
         val resCorde = con.responseCode
         con.disconnect()
 
@@ -207,12 +207,32 @@ object QueueController {
 
     }
 
-    private fun doSuccess(reqArray:RestRequestData,response :String) {
+    private fun queueSuccess(reqArray:RestRequestData,response :String) {
 
-        //DBからデータを削除する
         val whereClauses = "queue_id = ?"
         val whereArgs = arrayOf(reqArray.request_id.toString())
+        lateinit var queueFunc:FuncList
 
+        for(i in queuefuncList){
+            if (i.id == reqArray.request_id){
+                queueFunc = FuncList(i.id,i.successFun,i.errorFun,i.tableName)
+            }
+        }
+
+        val tableName = queueFunc.tableName
+
+        val rtn: RestfulRtn = cakeToAndroid(response, tableName)
+        if(rtn == null) {
+            queueFunc.errorFun(BlasRestErrCode.JSON_PARSE_ERROR)
+        }
+        else if(rtn.errorCode == 0) {
+            queueFunc.successFun(rtn.records)
+        }
+        else {
+            queueFunc.errorFun(rtn.errorCode)
+        }
+
+        //DBからデータを削除する
         try {
             database.delete(REQUEST_TABLE, whereClauses, whereArgs)
         }catch(exception: Exception) {

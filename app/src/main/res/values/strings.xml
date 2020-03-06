@@ -42,5 +42,19 @@
     <!--共通-->
     <string name="navi_title_back">戻る</string>
 
+    <!--　メッセージ -->
+    <string name="success_qr">QRコード読を読み取りました</string>
+    <string name="error_create_qr">すでに登録済のQRコードです</string>
+    <string name="error_session_qr">通信エラーのため、機器情報を登録できません</string>
+
+
+    <!-- 選択肢 -->
+    <string-array name="fixture_status_list">
+        <item>すべて</item>
+        <item>持出可</item>
+        <item>持出中</item>
+        <item>設置済</item>
+        <item>持出不可</item>
+    </string-array>
 
 </resources>

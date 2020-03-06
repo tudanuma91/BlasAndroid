@@ -17,7 +17,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
-
         android:hardwareAccelerated="true"
         android:name=".blasclass.app.BlasApp">
         <activity android:name=".activity.QRActivity"></activity>
