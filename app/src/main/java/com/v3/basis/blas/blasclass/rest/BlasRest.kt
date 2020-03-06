@@ -40,7 +40,12 @@ data class FuncList(
 open class BlasRest() : AsyncTask<String, String, String>() {
 
     companion object {
+<<<<<<< HEAD
         const val URL = "http://192.168.0.101/blas7/api/v1/"
+=======
+        // const val URL = "http://192.168.0.101/blas7/api/v1/"
+        const val URL = "http://192.168.1.8/blas7/api/v1/"
+>>>>>>> 86ea5baa3778495fc8f12a4c69ec9a00cf01e884
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
         var queuefuncList = mutableListOf<FuncList>()

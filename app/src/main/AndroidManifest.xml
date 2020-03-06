@@ -17,8 +17,16 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
+<<<<<<< HEAD
         android:hardwareAccelerated="true"
         android:name=".blasclass.app.BlasApp">
+=======
+        android:name=".blasclass.app.BlasApp"
+        android:hardwareAccelerated="true">
+        <activity android:name=".activity.Test3Activity"></activity>
+        <activity android:name=".activity.Test2Activity" />
+        <activity android:name=".activity.Test1Activity" />
+>>>>>>> 86ea5baa3778495fc8f12a4c69ec9a00cf01e884
         <activity android:name=".activity.QRActivity"></activity>
         <activity android:name=".activity.Test3Activity"></activity>
         <activity android:name=".activity.Test2Activity" />
