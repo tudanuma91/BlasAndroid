@@ -19,6 +19,9 @@
         android:usesCleartextTraffic="true"
         android:name=".blasclass.app.BlasApp"
         android:hardwareAccelerated="true">
+        <activity android:name=".activity.Test3Activity"></activity>
+        <activity android:name=".activity.Test2Activity" />
+        <activity android:name=".activity.Test1Activity" />
         <activity android:name=".activity.QRActivity"></activity>
         <activity
             android:name=".activity.ItemImageActivity"
