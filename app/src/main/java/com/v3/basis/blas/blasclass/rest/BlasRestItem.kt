@@ -48,10 +48,10 @@ open class BlasRestItem(val crud:String = "search",
             Log.d("konishi", method)
             Log.d("konishi", blasUrl)
 
-            response = super.getResponseData(payload,method, blasUrl)
+         //   response = super.getResponseData(payload,method, blasUrl)
 
             //TODO テスト用にキューの呼出し追加
-         //   super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
+            super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
 
         }
         catch(e: Exception) {
