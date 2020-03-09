@@ -11,6 +11,7 @@ import android.os.AsyncTask
 import android.widget.Toast
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.controller.RestRequestData
+import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
 import org.json.JSONException
 import org.json.JSONObject
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
@@ -37,7 +38,11 @@ data class FuncList(
 /**
  * Restful通信をする際に使用するクラスの親クラス
  */
-open class BlasRest() : AsyncTask<String, String, String>() {
+open class BlasRest(
+    val payload:Map<String, String?>
+    , val successFun:(JSONObject)->Unit
+    , val errorFun:(Int)->Unit
+) : AsyncTask<String, String, String>() {
 
     companion object {
 
@@ -73,6 +78,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
             try {
                 if(result != null) {
                     saveJson(cacheFileName, result)
+
                 }
             }
             catch(e: Exception) {

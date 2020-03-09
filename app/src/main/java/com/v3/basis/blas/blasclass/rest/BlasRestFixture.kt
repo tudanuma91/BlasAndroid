@@ -5,9 +5,11 @@ import android.util.Log
 import org.json.JSONObject
 
 open class BlasRestFixture(val crud:String = "search",
-                            val payload:Map<String, String?>,
-                            val funcSuccess:(JSONObject)->Unit,
-                            val funcError:(Int)->Unit) : BlasRest(){
+                           payload:Map<String, String?>,
+                           successFun:(JSONObject)->Unit,
+                           errorFun:(Int)->Unit)
+    : BlasRest( payload,successFun,errorFun ){
+
 
     companion object {
         val TABLE_NAME = "Fixture"
@@ -84,7 +86,7 @@ open class BlasRestFixture(val crud:String = "search",
      */
     override fun onPostExecute(result: String?) {
         if(result == null) {
-            funcError(BlasRestErrCode.NETWORK_ERROR)
+            errorFun(BlasRestErrCode.NETWORK_ERROR)
             return
         }
 
@@ -94,10 +96,10 @@ open class BlasRestFixture(val crud:String = "search",
         val errorCode = json.getInt("error_code")
         //val records = json.getJSONArray("records")
         if(errorCode == 0) {
-            funcSuccess(json)
+            successFun(json)
         }
         else {
-            funcError(errorCode)
+            errorFun(errorCode)
         }
     }
 }

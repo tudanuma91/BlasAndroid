@@ -1,9 +1,7 @@
 package com.v3.basis.blas.blasclass.rest
 
-import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import com.v3.basis.blas.R
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
@@ -14,9 +12,11 @@ import java.io.File
  * @param in projectSearchSuccess プロジェクト取得時にコールバックする関数
  * @param in projectSearchError プロジェクト取得失敗時にコールバックする関数
  */
-open class BlasRestProject(val payload:Map<String, String?>,
-                            val projectSearchSuccess:(MutableMap<String,Int>)->Unit,
-                            val projectSearchError:(Int)->Unit) : BlasRest() {
+open class BlasRestProject(
+    payload:Map<String, String?>,
+    successFun:(JSONObject)->Unit,
+    errorFun:(Int)->Unit
+) : BlasRest( payload,successFun, errorFun ) {
 
     private val SEARCH_PGOJECT_URL = BlasRest.URL + "projects/search/"
     init{
@@ -55,18 +55,20 @@ open class BlasRestProject(val payload:Map<String, String?>,
             if(File(cacheFileName).exists()) {
                 try {
                     val json = loadJson(cacheFileName)
-                    val projectMap = convProjectData(json)
-                    projectSearchSuccess(projectMap)
+                    //val projectMap = convProjectData(json)
+                    //successFun(projectMap)
+                    successFun(json)
+
                 }
                 catch(e: Exception) {
                     //キャッシュの読み込み失敗
-                    projectSearchError(BlasRestErrCode.NETWORK_ERROR)
+                    errorFun(BlasRestErrCode.NETWORK_ERROR)
                     return
                 }
             }
             else {
                 //キャッシュファイルがないため、エラーにする
-                projectSearchError(BlasRestErrCode.NETWORK_ERROR)
+                errorFun(BlasRestErrCode.NETWORK_ERROR)
                 return
             }
         }
@@ -96,7 +98,8 @@ open class BlasRestProject(val payload:Map<String, String?>,
                     if(json != null) {
                         val projectMap = convProjectData(json)
                         //コールバック
-                        projectSearchSuccess(projectMap)
+                        //successFun(projectMap)
+                        successFun(json)
                     }
                 }
             }
@@ -109,11 +112,12 @@ open class BlasRestProject(val payload:Map<String, String?>,
             if(File(cacheFileName).exists()) {
                 val json = loadJson(cacheFileName)
                 val projectMap = convProjectData(json)
-                projectSearchSuccess(projectMap)
+                //successFun(projectMap)
+                successFun(json)
             }
             else {
                 //キャッシュファイルがないので諦めてエラーを返す
-                projectSearchError(errorCode)
+                errorFun(errorCode)
             }
         }
     }

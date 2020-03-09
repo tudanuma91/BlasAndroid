@@ -1,15 +1,17 @@
 package com.v3.basis.blas.blasclass.rest
 
 import android.util.Log
-import com.v3.basis.blas.blasclass.app.cakeToAndroid
+import org.json.JSONObject
 
 
 /**
  * BLASの会社情報を取得するクラス
  */
-open class BlasRestOrgs(val payload:Map<String, String?>,
-                         val orgsSearchSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,
-                         val orgsSearchError:(Int)->Unit) : BlasRest() {
+open class BlasRestOrgs(
+    payload:Map<String, String?>,
+    successFun:(JSONObject)->Unit,
+    errorFun:(Int)->Unit
+) : BlasRest( payload,successFun,errorFun ) {
 
     companion object {
         val ORGS_SEARCH_URL = BlasRest.URL + "orgs/search/"
@@ -40,7 +42,7 @@ open class BlasRestOrgs(val payload:Map<String, String?>,
      */
     override fun onPostExecute(result: String?) {
         if(result == null) {
-            orgsSearchError(BlasRestErrCode.NETWORK_ERROR)
+            errorFun(BlasRestErrCode.NETWORK_ERROR)
             return
         }
 
@@ -48,13 +50,14 @@ open class BlasRestOrgs(val payload:Map<String, String?>,
 
         val rtn:RestfulRtn = cakeToAndroid(result, "Orgs")
         if(rtn == null) {
-            orgsSearchError(BlasRestErrCode.JSON_PARSE_ERROR)
+            errorFun(BlasRestErrCode.JSON_PARSE_ERROR)
         }
         else if(rtn.errorCode == 0) {
-            orgsSearchSuccess(rtn.records)
+            //successFun(rtn.records)
+            successFun(JSONObject(result))
         }
         else {
-            orgsSearchError(rtn.errorCode)
+            errorFun(rtn.errorCode)
         }
     }
 }

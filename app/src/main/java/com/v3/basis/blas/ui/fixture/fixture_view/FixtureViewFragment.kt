@@ -24,6 +24,8 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusFinishInst
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusNotTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
+import com.v3.basis.blas.blasclass.rest.BlasRestUtil
+import com.v3.basis.blas.blasclass.rest.RestfulRtn
 import org.json.JSONObject
 
 
@@ -141,6 +143,7 @@ class FixtureViewFragment : Fragment() {
      * 機器管理取得時
      */
     private fun fixtureGetSuccess(result: JSONObject) {
+
         //カラム順に並べ替える
         Log.d("testtest","${result}")
         val records = result.getJSONArray("records")
@@ -239,7 +242,13 @@ class FixtureViewFragment : Fragment() {
     /**
      * 会社取得成功時
      */
-    private fun orgGetSuccess(result: MutableList<MutableMap<String, String?>>?){
+    //private fun orgGetSuccess(result: MutableList<MutableMap<String, String?>>?){
+    private fun orgGetSuccess(json : JSONObject){
+
+        val jsonStr = json.toString()
+        val rtn: RestfulRtn = BlasRestUtil().cakeToAndroid(jsonStr, "Orgs")
+        val result = rtn.records
+
         Log.d("取得成功","${result}")
     }
 

@@ -17,6 +17,7 @@ import com.v3.basis.blas.activity.TerminalActivity
 import com.v3.basis.blas.blasclass.rest.*
 import com.v3.basis.blas.ui.terminal.project.project_list_view.ViewAdapterAdapter
 import kotlinx.android.synthetic.main.fragment_project.*
+import org.json.JSONObject
 
 /**
  * 表示・遷移などデータ管理画面にかかわる処理を行う。
@@ -65,7 +66,13 @@ class ProjectFragment : Fragment() {
 
     }
 
-    private fun fieldS(result: MutableList<MutableMap<String, String?>>?) {
+//    private fun fieldS(result: MutableList<MutableMap<String, String?>>?) {
+    private fun fieldS(json: JSONObject) {
+
+        val jsonStr = json.toString()
+        val rtn:RestfulRtn = BlasRestUtil().cakeToAndroid(jsonStr, BlasRestImage.TABLE_NAME)
+        val result = rtn.records
+
         val map = mutableMapOf<String, String>()
         var col = "1"
         //val cnt = 1
@@ -157,7 +164,10 @@ class ProjectFragment : Fragment() {
          * @param  プロジェクト名 to プロジェクトIDのマップ形式
          * @return なし
          */
-        private fun projectSearchSuccess(result: MutableMap<String, Int>) {
+        //private fun projectSearchSuccess(result: MutableMap<String, Int>) {
+        private fun projectSearchSuccess(json : JSONObject) {
+
+            val result = BlasRestUtil().convProjectData(json)
 
             val recyclerView = recycler_list
             var project_list = createProjectList(result)

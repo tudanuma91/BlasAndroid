@@ -1,16 +1,18 @@
 package com.v3.basis.blas.blasclass.rest
 import android.util.Base64
 import android.util.Log
-import com.v3.basis.blas.blasclass.app.cakeToAndroid
+import org.json.JSONObject
 
 
 /**
  * BLASのデータにアクセスするクラス
  */
-open class BlasRestImage(val crud:String = "download",
-                        val payload:Map<String, String?>,
-                        val funcSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,
-                        val funcError:(Int)->Unit) : BlasRest() {
+open class BlasRestImage(
+    val crud:String = "download",
+    payload:Map<String, String?>,
+    successFun:(JSONObject)->Unit,
+    errorFun:(Int)->Unit
+) : BlasRest( payload,successFun,errorFun) {
 
     companion object {
         val TABLE_NAME = "Image"
@@ -59,7 +61,7 @@ open class BlasRestImage(val crud:String = "download",
      */
     override fun onPostExecute(result: String?) {
         if(result == null) {
-            funcError(BlasRestErrCode.NETWORK_ERROR)
+            errorFun(BlasRestErrCode.NETWORK_ERROR)
             return
         }
 
@@ -67,13 +69,14 @@ open class BlasRestImage(val crud:String = "download",
 
         val rtn:RestfulRtn = cakeToAndroid(result, TABLE_NAME)
         if(rtn == null) {
-            funcError(BlasRestErrCode.JSON_PARSE_ERROR)
+            errorFun(BlasRestErrCode.JSON_PARSE_ERROR)
         }
         else if(rtn.errorCode == 0) {
-            funcSuccess(rtn.records)
+            //successFun(rtn.records)
+            successFun( JSONObject(result) )
         }
         else {
-            funcError(rtn.errorCode)
+            errorFun(rtn.errorCode)
         }
     }
 

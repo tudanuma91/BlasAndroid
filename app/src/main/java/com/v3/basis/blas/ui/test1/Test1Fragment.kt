@@ -10,7 +10,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
-import androidx.work.*
 
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.TerminalActivity
@@ -22,6 +21,7 @@ import com.v3.basis.blas.blasclass.rest.BlasRestProject
 import java.util.concurrent.TimeUnit
 import android.net.NetworkInfo
 import android.net.ConnectivityManager
+import org.json.JSONObject
 
 
 class Test1Fragment : Fragment() {
@@ -51,7 +51,7 @@ class Test1Fragment : Fragment() {
         BlasRestProject(payload, ::projectSuccess, ::projectError).execute()
     }
 
-    private fun projectSuccess(result: MutableMap<String, Int>?) {
+    private fun projectSuccess(result: JSONObject) {
         Log.d("konishi", result.toString())
     }
 
