@@ -9,6 +9,7 @@ import android.util.Log
 import java.net.HttpURLConnection
 import android.os.AsyncTask
 import android.widget.Toast
+import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.controller.RestRequestData
 import org.json.JSONException
