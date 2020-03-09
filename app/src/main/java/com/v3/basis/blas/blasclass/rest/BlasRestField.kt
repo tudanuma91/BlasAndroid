@@ -1,15 +1,18 @@
 package com.v3.basis.blas.blasclass.rest
 
 import android.util.Log
-import org.json.JSONObject
+import com.v3.basis.blas.blasclass.app.cakeToAndroid
+import kotlin.reflect.KFunction1
 
 
 /**
  * BLASのプロジェクトに設定されているフィールド情報を取得するクラス
  */
 open class BlasRestField(
-    payload:Map<String, String?>, successFun:(JSONObject)->Unit, errorFun:(Int)->Unit
-) : BlasRest( payload,successFun,errorFun ) {
+    val payload:Map<String, String?>,
+    val fieldSearchSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,
+    val fieldSearchError:(Int)->Unit
+) : BlasRest() {
 
     companion object {
         val FIELD_SEARCH_URL = BlasRest.URL + "project_fields/search/"
@@ -25,7 +28,7 @@ open class BlasRestField(
             response = super.getResponseData(payload,"GET", BlasRestField.FIELD_SEARCH_URL)
 
             //TODO テスト用にキューの呼出し追加
-         //   super.reqDataSave(payload,"GET",FIELD_SEARCH_URL,fieldSearchSuccess,fieldSearchError,"Fields")
+            //   super.reqDataSave(payload,"GET",FIELD_SEARCH_URL,fieldSearchSuccess,fieldSearchError,"Fields")
 
         }
         catch(e: Exception) {
@@ -44,7 +47,7 @@ open class BlasRestField(
      */
     override fun onPostExecute(result: String?) {
         if(result == null) {
-            errorFun(BlasRestErrCode.NETWORK_ERROR)
+            fieldSearchError(BlasRestErrCode.NETWORK_ERROR)
             return
         }
 
@@ -52,14 +55,13 @@ open class BlasRestField(
 
         val rtn:RestfulRtn = cakeToAndroid(result, "Fields")
         if(rtn == null) {
-            errorFun(BlasRestErrCode.JSON_PARSE_ERROR)
+            fieldSearchError(BlasRestErrCode.JSON_PARSE_ERROR)
         }
         else if(rtn.errorCode == 0) {
-            //successFun(rtn.records)
-            successFun( JSONObject(result) )
+            fieldSearchSuccess(rtn.records)
         }
         else {
-            errorFun(rtn.errorCode)
+            fieldSearchError(rtn.errorCode)
         }
     }
 }

@@ -11,7 +11,6 @@ import android.os.AsyncTask
 import android.widget.Toast
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.controller.RestRequestData
-import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
 import org.json.JSONException
 import org.json.JSONObject
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
@@ -38,11 +37,7 @@ data class FuncList(
 /**
  * Restful通信をする際に使用するクラスの親クラス
  */
-open class BlasRest(
-    val payload:Map<String, String?>
-    , val successFun:(JSONObject)->Unit
-    , val errorFun:(Int)->Unit
-) : AsyncTask<String, String, String>() {
+open class BlasRest() : AsyncTask<String, String, String>() {
 
     companion object {
 
@@ -78,7 +73,6 @@ open class BlasRest(
             try {
                 if(result != null) {
                     saveJson(cacheFileName, result)
-
                 }
             }
             catch(e: Exception) {
@@ -95,17 +89,17 @@ open class BlasRest(
      * sb.toString(文字列) : streamを文字列にして返す。
      * */
     open fun is2String(stream: InputStream): String{
-       val sb = StringBuilder()
-       val reader = BufferedReader(InputStreamReader(stream,"UTF-8"))
+        val sb = StringBuilder()
+        val reader = BufferedReader(InputStreamReader(stream,"UTF-8"))
         Log.d("[rest/BlasRest]","{$reader}")
-       var line = reader.readLine()
-       if(line != null){
-           sb.append(line)
-           line = reader.readLine()
-       }
-       reader.close()
-       return sb.toString()
-   }
+        var line = reader.readLine()
+        if(line != null){
+            sb.append(line)
+            line = reader.readLine()
+        }
+        reader.close()
+        return sb.toString()
+    }
 
     private fun methodGet(payload:Map<String, String?>, targetUrl:String):String {
 

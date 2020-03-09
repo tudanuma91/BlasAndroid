@@ -17,11 +17,9 @@ import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.TerminalActivity
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestProject
-import com.v3.basis.blas.blasclass.rest.BlasRestUtil
 import com.v3.basis.blas.ui.terminal.fixture.project_list_view.RowModel
 import com.v3.basis.blas.ui.terminal.fixture.project_list_view.ViewAdapterAdapter
 import kotlinx.android.synthetic.main.fragment_project.*
-import org.json.JSONObject
 
 
 class FixtureFragment : Fragment() {
@@ -60,10 +58,7 @@ class FixtureFragment : Fragment() {
         }
     }
 
-//    private fun projectSearchSuccess(result: MutableMap<String, Int>) {
-    private fun projectSearchSuccess(json : JSONObject) {
-
-        val result = BlasRestUtil().convProjectData(json)
+    private fun projectSearchSuccess(result: MutableMap<String, Int>) {
 
         val recyclerView = recycler_list
         var project_list = createProjectList(result)

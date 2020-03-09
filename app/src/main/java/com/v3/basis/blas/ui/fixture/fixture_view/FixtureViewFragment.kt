@@ -24,8 +24,6 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusFinishInst
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusNotTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
-import com.v3.basis.blas.blasclass.rest.BlasRestUtil
-import com.v3.basis.blas.blasclass.rest.RestfulRtn
 import org.json.JSONObject
 
 
@@ -143,7 +141,6 @@ class FixtureViewFragment : Fragment() {
      * 機器管理取得時
      */
     private fun fixtureGetSuccess(result: JSONObject) {
-
         //カラム順に並べ替える
         Log.d("testtest","${result}")
         val records = result.getJSONArray("records")
@@ -163,15 +160,15 @@ class FixtureViewFragment : Fragment() {
             val itemOrg = fields.getJSONObject("ItemOrg").getString("name")
 
             valueMap[fixtureId] = mutableMapOf("serial_number" to serialNumber,
-                                                 "status" to fixtureStatus,
-                                                 "fix_user" to fixUser,
-                                                 "takeout_user" to takeOutUser,
-                                                 "rtn_user" to rtnUser,
-                                                 "item_user" to itemUser,
-                                                 "fix_org" to fixOrg,
-                                                 "takeout_org" to takeOutOrg,
-                                                 "rtn_org" to rtnOrg,
-                                                 "item_org" to itemOrg)
+                "status" to fixtureStatus,
+                "fix_user" to fixUser,
+                "takeout_user" to takeOutUser,
+                "rtn_user" to rtnUser,
+                "item_user" to itemUser,
+                "fix_org" to fixOrg,
+                "takeout_org" to takeOutOrg,
+                "rtn_org" to rtnOrg,
+                "item_org" to itemOrg)
         }
         /*
         if(records != null){
@@ -242,13 +239,7 @@ class FixtureViewFragment : Fragment() {
     /**
      * 会社取得成功時
      */
-    //private fun orgGetSuccess(result: MutableList<MutableMap<String, String?>>?){
-    private fun orgGetSuccess(json : JSONObject){
-
-        val jsonStr = json.toString()
-        val rtn: RestfulRtn = BlasRestUtil().cakeToAndroid(jsonStr, "Orgs")
-        val result = rtn.records
-
+    private fun orgGetSuccess(result: MutableList<MutableMap<String, String?>>?){
         Log.d("取得成功","${result}")
     }
 

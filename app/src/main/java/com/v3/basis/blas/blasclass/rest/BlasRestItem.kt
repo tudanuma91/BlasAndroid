@@ -1,18 +1,16 @@
 package com.v3.basis.blas.blasclass.rest
 
 import android.util.Log
-import org.json.JSONObject
+import com.v3.basis.blas.blasclass.app.cakeToAndroid
 
 
 /**
  * BLASのデータにアクセスするクラス
  */
-open class BlasRestItem(
-    val crud:String = "search",
-    payload:Map<String, String?>,
-    successFun:(JSONObject)->Unit,
-    errorFun:(Int)->Unit
-) : BlasRest( payload,successFun,errorFun ) {
+open class BlasRestItem(val crud:String = "search",
+                        val payload:Map<String, String?>,
+                        val funcSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,
+                        val funcError:(Int)->Unit) : BlasRest() {
 
     companion object {
         val TABLE_NAME = "Item"
@@ -53,7 +51,7 @@ open class BlasRestItem(
             response = super.getResponseData(payload,method, blasUrl)
 
             //TODO テスト用にキューの呼出し追加
-         //   super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
+            //   super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
 
         }
         catch(e: Exception) {
@@ -72,7 +70,7 @@ open class BlasRestItem(
      */
     override fun onPostExecute(result: String?) {
         if(result == null) {
-            errorFun(BlasRestErrCode.NETWORK_ERROR)
+            funcError(BlasRestErrCode.NETWORK_ERROR)
             return
         }
 
@@ -80,14 +78,13 @@ open class BlasRestItem(
 
         val rtn:RestfulRtn = cakeToAndroid(result, TABLE_NAME)
         if(rtn == null) {
-            errorFun(BlasRestErrCode.JSON_PARSE_ERROR)
+            funcError(BlasRestErrCode.JSON_PARSE_ERROR)
         }
         else if(rtn.errorCode == 0) {
-            //successFun(rtn.records)
-            successFun( JSONObject(result) )
+            funcSuccess(rtn.records)
         }
         else {
-            errorFun(rtn.errorCode)
+            funcError(rtn.errorCode)
         }
     }
 }

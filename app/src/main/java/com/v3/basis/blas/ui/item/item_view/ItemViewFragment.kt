@@ -17,10 +17,6 @@ import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import kotlinx.android.synthetic.main.fragment_item_view.*
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.v3.basis.blas.activity.ItemActivity
-import com.v3.basis.blas.blasclass.app.cakeToAndroid
-import com.v3.basis.blas.blasclass.rest.BlasRestUtil
-import com.v3.basis.blas.blasclass.rest.RestfulRtn
-import org.json.JSONObject
 
 
 /**
@@ -188,15 +184,20 @@ class ItemViewFragment : Fragment() {
     }
 
     /**
+     * データ取得時
+     */
+    private fun itemRecv(result: MutableList<MutableMap<String, String?>>?) {
+        itemList = result
+        if(itemList != null && !fieldMap.isEmpty()) {
+            setAdapter()
+        }
+
+    }
+
+    /**
      * フィールド取得時
      */
-//    private fun fieldRecv(result: MutableList<MutableMap<String, String?>>?) {
-    private fun fieldRecv(json: JSONObject) {
-
-        val jsonStr = json.toString()
-        val rtn: RestfulRtn =   BlasRestUtil().cakeToAndroid(jsonStr, "Fields")
-        val result = rtn.records
-
+    private fun fieldRecv(result: MutableList<MutableMap<String, String?>>?) {
         //カラム順に並べ替える
         if(result != null){
             result.forEach {
@@ -212,24 +213,6 @@ class ItemViewFragment : Fragment() {
             setAdapter()
         }
     }
-
-    /**
-     * データ取得時
-     */
-    //private fun itemRecv(result: MutableList<MutableMap<String, String?>>?) {
-    private fun itemRecv(json : JSONObject) {
-
-        val jsonStr = json.toString()
-        val rtn:RestfulRtn = BlasRestUtil().cakeToAndroid(jsonStr, BlasRestItem.TABLE_NAME)
-        val result = rtn.records
-
-        itemList = result
-        if(itemList != null && !fieldMap.isEmpty()) {
-            setAdapter()
-        }
-
-    }
-
 
     /**
      * フィールド取得失敗時

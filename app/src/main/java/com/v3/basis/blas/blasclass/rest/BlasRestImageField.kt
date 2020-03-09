@@ -1,17 +1,15 @@
 package com.v3.basis.blas.blasclass.rest
 
 import android.util.Log
-import org.json.JSONObject
+import com.v3.basis.blas.blasclass.app.cakeToAndroid
 
 
 /**
  * BLASのプロジェクトに設定されているフィールド情報を取得するクラス
  */
-open class BlasRestImageField(
-    payload:Map<String, String?>,
-    successFun:(JSONObject)->Unit,
-    errorFun:(Int)->Unit
-) : BlasRest( payload,successFun,errorFun ) {
+open class BlasRestImageField(val payload:Map<String, String?>,
+                              val funcSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,
+                              val funcError:(Int)->Unit) : BlasRest() {
 
     companion object {
         val SEARCH_URL = BlasRest.URL + "project_images/search/"
@@ -43,7 +41,7 @@ open class BlasRestImageField(
      */
     override fun onPostExecute(result: String?) {
         if(result == null) {
-            errorFun(BlasRestErrCode.NETWORK_ERROR)
+            funcError(BlasRestErrCode.NETWORK_ERROR)
             return
         }
 
@@ -51,14 +49,13 @@ open class BlasRestImageField(
 
         val rtn:RestfulRtn = cakeToAndroid(result, TABLE_NAME)
         if(rtn == null) {
-            errorFun(BlasRestErrCode.JSON_PARSE_ERROR)
+            funcError(BlasRestErrCode.JSON_PARSE_ERROR)
         }
         else if(rtn.errorCode == 0) {
-            //successFun(rtn.records)
-            successFun( JSONObject(result) )
+            funcSuccess(rtn.records)
         }
         else {
-            errorFun(rtn.errorCode)
+            funcError(rtn.errorCode)
         }
     }
 }

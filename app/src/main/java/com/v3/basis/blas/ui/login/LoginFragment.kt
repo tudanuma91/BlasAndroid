@@ -17,7 +17,6 @@ import com.v3.basis.blas.blasclass.rest.BlasRestAuth
 import com.v3.basis.blas.blasclass.config.Params
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import kotlinx.android.synthetic.main.fragment_login.*
-import org.json.JSONObject
 
 /**
  * A simple [Fragment] subclass.
@@ -58,7 +57,7 @@ class LoginFragment : Fragment() {
             if(validation(username, password)) {
                 /* ログインを非同期で実行 */
                 var payload = mapOf("name" to username, "password" to password)
-                    BlasRestAuth(payload, ::loginSuccess, ::loginError).execute()
+                BlasRestAuth(payload, ::loginSuccess, ::loginError).execute()
             }
         }
 
@@ -151,25 +150,12 @@ class LoginFragment : Fragment() {
     }
 
 
-
-    private fun getTokenFromJsonStr( jsonStr : String ) : String {
-        val json = JSONObject(jsonStr)
-        val records_json = json.getJSONObject("records")
-        val token = records_json.getString("token")
-
-        return token
-    }
-
     /** ログインに成功したときにコールバックされ、
      * 掲示板の画面をキックする
      * @param in token ログインに成功したときのトークン
      */
-    private fun loginSuccess( json : JSONObject ) {
+    private fun loginSuccess(token:String) {
         Log.d("BLAS", "Login成功")
-
-        val records_json = json.getJSONObject("records")
-        val token = records_json.getString("token")
-
         val intent = Intent(activity, TerminalActivity::class.java)
         intent.putExtra("token",token)
         startActivity(intent)
@@ -208,13 +194,8 @@ class LoginFragment : Fragment() {
      * 掲示板の画面をキックする
      * @param in token ログインに成功したときのトークン
      */
-    private fun testLoginSuccess1(json : JSONObject) {
+    private fun testLoginSuccess1(token:String) {
         Log.d("BLAS", "Test1成功")
-
-        val records_json = json.getJSONObject("records")
-        val token = records_json.getString("token")
-
-
         val intent = Intent(activity,Test1Activity::class.java)
         intent.putExtra("token",token)
         startActivity(intent)
@@ -224,12 +205,8 @@ class LoginFragment : Fragment() {
      * 掲示板の画面をキックする
      * @param in token ログインに成功したときのトークン
      */
-    private fun testLoginSuccess2(json : JSONObject) {
+    private fun testLoginSuccess2(token:String) {
         Log.d("BLAS", "Test2成功")
-
-        val records_json = json.getJSONObject("records")
-        val token = records_json.getString("token")
-
         val intent = Intent(activity, Test2Activity::class.java)
         intent.putExtra("token",token)
         startActivity(intent)
@@ -239,12 +216,8 @@ class LoginFragment : Fragment() {
      * 掲示板の画面をキックする
      * @param in token ログインに成功したときのトークン
      */
-    private fun testLoginSuccess3(json : JSONObject) {
+    private fun testLoginSuccess3(token:String) {
         Log.d("BLAS", "Test3成功")
-
-        val records_json = json.getJSONObject("records")
-        val token = records_json.getString("token")
-
         val intent = Intent(activity, Test3Activity::class.java)
         intent.putExtra("token",token)
         startActivity(intent)
