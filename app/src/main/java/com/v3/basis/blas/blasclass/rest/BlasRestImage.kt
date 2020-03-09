@@ -8,9 +8,9 @@ import com.v3.basis.blas.blasclass.app.cakeToAndroid
  * BLASのデータにアクセスするクラス
  */
 open class BlasRestImage(val crud:String = "download",
-                        val payload:Map<String, String?>,
-                        val funcSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,
-                        val funcError:(Int)->Unit) : BlasRest() {
+                         val payload:Map<String, String?>,
+                         val funcSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,
+                         val funcError:(Int)->Unit) : BlasRest() {
 
     companion object {
         val TABLE_NAME = "Image"

@@ -91,17 +91,17 @@ open class BlasRest() : AsyncTask<String, String, String>() {
      * sb.toString(文字列) : streamを文字列にして返す。
      * */
     open fun is2String(stream: InputStream): String{
-       val sb = StringBuilder()
-       val reader = BufferedReader(InputStreamReader(stream,"UTF-8"))
+        val sb = StringBuilder()
+        val reader = BufferedReader(InputStreamReader(stream,"UTF-8"))
         Log.d("[rest/BlasRest]","{$reader}")
-       var line = reader.readLine()
-       if(line != null){
-           sb.append(line)
-           line = reader.readLine()
-       }
-       reader.close()
-       return sb.toString()
-   }
+        var line = reader.readLine()
+        if(line != null){
+            sb.append(line)
+            line = reader.readLine()
+        }
+        reader.close()
+        return sb.toString()
+    }
 
     private fun methodGet(payload:Map<String, String?>, targetUrl:String):String {
 

@@ -8,8 +8,8 @@ import com.v3.basis.blas.blasclass.app.cakeToAndroid
  * BLASの会社情報を取得するクラス
  */
 open class BlasRestOrgs(val payload:Map<String, String?>,
-                         val orgsSearchSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,
-                         val orgsSearchError:(Int)->Unit) : BlasRest() {
+                        val orgsSearchSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,
+                        val orgsSearchError:(Int)->Unit) : BlasRest() {
 
     companion object {
         val ORGS_SEARCH_URL = BlasRest.URL + "orgs/search/"

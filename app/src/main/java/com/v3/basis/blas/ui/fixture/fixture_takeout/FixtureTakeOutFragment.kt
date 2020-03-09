@@ -1,12 +1,13 @@
-package com.v3.basis.blas.ui.fixture.fixture_return
-
+package com.v3.basis.blas.ui.fixture.fixture_takeout
 
 import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
 import android.hardware.camera2.CameraManager
-import android.os.Build
+import android.media.AudioManager
+import android.media.ToneGenerator
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -14,27 +15,25 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.core.content.PermissionChecker
 import androidx.fragment.app.FragmentActivity
-import com.google.zxing.ResultPoint
-import com.journeyapps.barcodescanner.BarcodeCallback
-import com.journeyapps.barcodescanner.BarcodeResult
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureActivity
 import com.v3.basis.blas.ui.fixture.fixture_kenpin.FixtureKenpinFragment
+import com.v3.basis.blas.ui.fixture.fixture_return.FixtureReturnFragment
 import kotlinx.android.synthetic.main.fragment_fixture_takeout.*
-import kotlinx.android.synthetic.main.fragment_fixture_return.*
-import kotlinx.android.synthetic.main.fragment_qr.*
 import kotlinx.android.synthetic.main.fragment_qr.qr_view
 import java.lang.Exception
 
+
 /**
  * A simple [Fragment] subclass.
+ * Activities that contain this fragment must implement the
+ * [FixtureTakeOutFragment.OnFragmentInteractionListener] interface
+ * to handle interaction events.
+ * Use the [FixtureTakeOutFragment.newInstance] factory method to
+ * create an instance of this fragment.
  */
-class FixtureReturnFragment : Fragment() {
-
+class FixtureTakeOutFragment : Fragment() {
     companion object {
         const val REQUEST_CAMERA_PERMISSION:Int = 1
     }
@@ -45,7 +44,6 @@ class FixtureReturnFragment : Fragment() {
     private var projectName:String? =null
     private var projectId:String? = null
     private var fragm : FragmentActivity? = null
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -69,9 +67,10 @@ class FixtureReturnFragment : Fragment() {
         }
 
 
-        val root = inflater.inflate(R.layout.fragment_fixture_return, container, false)
+        val root = inflater.inflate(R.layout.fragment_fixture_takeout, container, false)
+
         //プロジェクト名をここで入れる。
-        val project_name =root.findViewById<TextView>(R.id.return_project_name)
+        val project_name =root.findViewById<TextView>(R.id.takeout_project_name)
         project_name.text = projectName
 
 
@@ -79,7 +78,7 @@ class FixtureReturnFragment : Fragment() {
         //現在エラーが出ているので使用不可
         //TODO : ここのエラーを解消すること！！
 
-        val btn_light = root.findViewById<ImageButton>(R.id.returnBtnLight)
+        val btn_light = root.findViewById<ImageButton>(R.id.takeoutBtnLight)
         McameraManager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager?
 
 
@@ -121,19 +120,18 @@ class FixtureReturnFragment : Fragment() {
     private fun initQRCamera() {//QRコードリーダ起動
         //権限チェック
         val setPermisson =FixtureActivity().permissionChk(fragm)
-
         //カメラの起動
         if (setPermisson) {
             qr_view.resume()
             FixtureActivity().openQRCamera(
-                "return",
+                "takeout",
                 qr_view,
                 fragm,
                 token,
                 projectId,
-                return_result_text,
-                return_message
-            )
+                takeout_result_text,
+                takeout_message
+                )
         } else {
             requestPermissions(arrayOf(
                 Manifest.permission.CAMERA,
@@ -144,7 +142,6 @@ class FixtureReturnFragment : Fragment() {
     }
 
 
-
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when(requestCode) {
@@ -152,11 +149,8 @@ class FixtureReturnFragment : Fragment() {
         }
     }
 
-
     fun callOnPouse(){
         onPause()
     }
-
-
 
 }

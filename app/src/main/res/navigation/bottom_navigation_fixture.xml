@@ -12,12 +12,12 @@
 
     <fragment
         android:id="@+id/navi_fixture_kenpin"
-        android:name="com.v3.basis.blas.ui.fixture.fixture_kenpin.fixtureKenpinFragment"
+        android:name="com.v3.basis.blas.ui.fixture.fixture_kenpin.FixtureKenpinFragment"
         android:label="@string/navi_title_fixture_kenpin"/>
 
     <fragment
         android:id="@+id/navi_fixture_motidasi"
-        android:name="com.v3.basis.blas.ui.fixture.fixture_motidasi.FixtureMotidasiFragment"
+        android:name="com.v3.basis.blas.ui.fixture.fixture_takeout.FixtureTakeOutFragment"
         android:label="@string/navi_title_fixture_motidasi"/>
 
     <fragment

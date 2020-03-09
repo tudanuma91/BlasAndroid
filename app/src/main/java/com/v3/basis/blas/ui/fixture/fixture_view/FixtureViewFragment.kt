@@ -160,15 +160,15 @@ class FixtureViewFragment : Fragment() {
             val itemOrg = fields.getJSONObject("ItemOrg").getString("name")
 
             valueMap[fixtureId] = mutableMapOf("serial_number" to serialNumber,
-                                                 "status" to fixtureStatus,
-                                                 "fix_user" to fixUser,
-                                                 "takeout_user" to takeOutUser,
-                                                 "rtn_user" to rtnUser,
-                                                 "item_user" to itemUser,
-                                                 "fix_org" to fixOrg,
-                                                 "takeout_org" to takeOutOrg,
-                                                 "rtn_org" to rtnOrg,
-                                                 "item_org" to itemOrg)
+                "status" to fixtureStatus,
+                "fix_user" to fixUser,
+                "takeout_user" to takeOutUser,
+                "rtn_user" to rtnUser,
+                "item_user" to itemUser,
+                "fix_org" to fixOrg,
+                "takeout_org" to takeOutOrg,
+                "rtn_org" to rtnOrg,
+                "item_org" to itemOrg)
         }
         /*
         if(records != null){
@@ -208,30 +208,30 @@ class FixtureViewFragment : Fragment() {
         var value:String? =null
         value = "【シリアルナンバー】"
         value += "\n  ${list["serial_number"]}"
-        value += "\n【ステータス】"
+        value += "\n\nステータス："
         value += when(list["status"]){//config.FixtureTypeにて定義している。
-            canTakeOut -> {"\n  ${statusCanTakeOut}"}
-            takeOut -> {"\n  ${statusTakeOut}"}
-            finishInstall -> {"\n  ${statusFinishInstall}"}
-            notTakeOut -> {"\n  ${statusNotTakeOut}"}
+            canTakeOut -> {"${statusCanTakeOut}"}
+            takeOut -> {"${statusTakeOut}"}
+            finishInstall -> {"${statusFinishInstall}"}
+            notTakeOut -> {"${statusNotTakeOut}"}
             else -> { }
         }
-        value += "\n【検品した会社】"
-        value += "\n  ${list["fix_org"]}"
-        value += "\n【検品したユーザ】"
-        value += "\n  ${list["fix_user"]}"
-        value += "\n【持出した会社】"
-        value += "\n  ${list["takeout_org"]}"
-        value += "\n【持出したユーザ】"
-        value += "\n  ${list["takeout_user"]}"
-        value += "\n【返却した会社】"
-        value += "\n  ${list["rtn_org"]}"
-        value += "\n【返却したユーザ】"
-        value += "\n  ${list["rtn_user"]}"
-        value += "\n【設置した会社】"
-        value += "\n  ${list["item_org"]}"
-        value += "\n【設置したユーザ】"
-        value += "\n  ${list["item_user"]}"
+        value += "\n\n\n検品した会社："
+        value += setValue(list["fix_org"]!!)
+        value += "\n検品したユーザ："
+        value += setValue(list["fix_user"]!!)
+        value += "\n\n持出した会社："
+        value += setValue(list["takeout_org"]!!)
+        value += "\n持出したユーザ："
+        value += setValue(list["takeout_user"]!!)
+        value += "\n\n返却した会社："
+        value += setValue(list["rtn_org"]!!)
+        value += "\n返却したユーザ："
+        value += setValue(list["rtn_user"]!!)
+        value += "\n\n設置した会社："
+        value += setValue(list["item_org"]!!)
+        value += "\n設置したユーザ："
+        value += setValue(list["item_user"]!!)
 
         return value
     }
@@ -248,6 +248,14 @@ class FixtureViewFragment : Fragment() {
      */
     private fun orgGetError(errorCode: Int){
         Log.d("取得失敗","${errorCode}")
+    }
+
+    private fun setValue(value:String): String {
+        if(value == "null"){
+            return "  "
+        }else{
+            return value
+        }
     }
 
 }

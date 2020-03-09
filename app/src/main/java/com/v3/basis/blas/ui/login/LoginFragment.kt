@@ -57,7 +57,7 @@ class LoginFragment : Fragment() {
             if(validation(username, password)) {
                 /* ログインを非同期で実行 */
                 var payload = mapOf("name" to username, "password" to password)
-                    BlasRestAuth(payload, ::loginSuccess, ::loginError).execute()
+                BlasRestAuth(payload, ::loginSuccess, ::loginError).execute()
             }
         }
 

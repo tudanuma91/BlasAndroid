@@ -26,11 +26,11 @@ android {
     flavorDimensions "default"
     productFlavors {
         develop {
-            buildConfigField 'String', 'API_URL', '"http://192.168.1.87/blas7/api/v1/"'
+            buildConfigField 'String', 'API_URL', '"http://192.168.0.101/blas7/api/v1/"'
         }
         production {
             //TODO: Replace to web server url
-            buildConfigField 'String', 'API_URL', '"http://192.168.1.87/blas7/api/v1/"'
+            buildConfigField 'String', 'API_URL', '"http://192.168.0.101/blas7/api/v1/"'
         }
         //  TODO: Delete when product release
         fukuda {
