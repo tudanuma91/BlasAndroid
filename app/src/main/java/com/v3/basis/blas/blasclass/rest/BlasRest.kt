@@ -9,6 +9,7 @@ import android.util.Log
 import java.net.HttpURLConnection
 import android.os.AsyncTask
 import android.widget.Toast
+import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.controller.RestRequestData
 import org.json.JSONException
@@ -40,8 +41,9 @@ data class FuncList(
 open class BlasRest() : AsyncTask<String, String, String>() {
 
     companion object {
-
-        const val URL = "http://192.168.0.101/blas7/api/v1/"
+        // const val URL = "http://192.168.0.101/blas7/api/v1/"
+//        const val URL = "http://192.168.1.87/blas7/api/v1/"
+        const val URL = BuildConfig.API_URL
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
         var queuefuncList = mutableListOf<FuncList>()
