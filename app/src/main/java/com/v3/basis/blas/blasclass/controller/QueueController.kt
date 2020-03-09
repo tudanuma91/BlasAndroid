@@ -1,14 +1,18 @@
 package com.v3.basis.blas.blasclass.controller
+import android.content.ContentValues
 import android.net.Uri
 import android.util.Log
+import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.READ_TIME_OUT_POST
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.REQUEST_TABLE
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.STS_RETRY_MAX
 import com.v3.basis.blas.blasclass.app.Is2String
 import com.v3.basis.blas.blasclass.app.cakeToAndroid
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
 import com.v3.basis.blas.blasclass.rest.*
+import com.v3.basis.blas.blasclass.rest.BlasRest.Companion.context
 import com.v3.basis.blas.blasclass.rest.BlasRest.Companion.queuefuncList
 import java.io.BufferedReader
 import java.io.File
@@ -75,10 +79,11 @@ object QueueController {
                 for (i in reqList.indices) {
                     var result  = doConnect(reqList[i])
 
-
                     // 正常の場合
                     if(result.first < 300){
                         queueSuccess(reqList[i],result.second)
+                    }else{
+                        queueError(reqList[i],result.second)
                     }
 
                 }
@@ -137,7 +142,7 @@ object QueueController {
 
     private fun doConnect(reqArray:RestRequestData) :  Pair <Int,String> {
         var param:String = ""
-        val fileDir = context.getFilesDir().getPath()
+        val fileDir = BlasApp.applicationContext().getFilesDir().getPath()
         val filePath: String = fileDir + "/" + reqArray.param_file
         val response:String
         var resCorde:Int = 0
@@ -240,6 +245,29 @@ object QueueController {
         }
 
     }
+
+    private fun queueError(reqArray:RestRequestData,response :String) {
+
+        //ステータス、リトライ回数を更新する
+        val values = ContentValues()
+        val retry_count = reqArray.retry_count + 1
+
+        if(retry_count >= 100) {
+            values.put("status", STS_RETRY_MAX)
+        }
+
+        values.put("retry_count", retry_count)
+        val whereClauses = "id = ?"
+        val whereArgs = arrayOf(reqArray.request_id.toString())
+
+        try {
+            database.update(REQUEST_TABLE, values, whereClauses, whereArgs)
+        }catch(exception: Exception) {
+            Log.e("updateData " + reqArray.request_id, exception.toString())
+        }
+
+    }
+
 
     private fun queueRefresh(reqArray:RestRequestData,response :String) {
         val sql = "delete from RequestTable"
