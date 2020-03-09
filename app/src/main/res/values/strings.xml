@@ -57,4 +57,22 @@
         <item>持出不可</item>
     </string-array>
 
+    <!-- 画面の項目等 -->
+    <string name="col_serialnumber">シリアルナンバー：</string>
+    <string name="col_data_id">データID：</string>
+    <string name="col_status">ステータス：</string>
+    <string name="col_kenpin_user">検品したユーザ：</string>
+    <string name="col_takeout_user">持出したユーザ：</string>
+    <string name="col_return_user">返却したユーザ：</string>
+    <string name="col_item_user">設置したユーザ：</string>
+    <string name="col_kenpin_org">検品した会社：</string>
+    <string name="col_takeout_org">持出した会社：</string>
+    <string name="col_return_org">返却した会社：</string>
+    <string name="col_item_org">設置した会社：</string>
+    <string name="col_kenpin_date">検品した日：</string>
+    <string name="col_takeout_date">持出した日：</string>
+    <string name="col_return_date">返却した日：</string>
+    <string name="col_item_date">設置した日：</string>
+
+
 </resources>

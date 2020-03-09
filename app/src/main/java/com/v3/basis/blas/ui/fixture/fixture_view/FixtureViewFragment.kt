@@ -148,27 +148,22 @@ class FixtureViewFragment : Fragment() {
             val fields = JSONObject(records[i].toString())
             val fixture = fields.getJSONObject("Fixture")
             val fixtureId = fixture.getInt("fixture_id")
-            val fixtureStatus = fixture.getString("status")
-            val serialNumber = fixture.getString("serial_number")
-            val fixUser = fields.getJSONObject("FixUser").getString("name")
-            val takeOutUser = fields.getJSONObject("TakeOutUser").getString("name")
-            val rtnUser = fields.getJSONObject("RtnUser").getString("name")
-            val itemUser = fields.getJSONObject("ItemUser").getString("name")
-            val fixOrg = fields.getJSONObject("FixOrg").getString("name")
-            val takeOutOrg = fields.getJSONObject("TakeOutOrg").getString("name")
-            val rtnOrg = fields.getJSONObject("RtnOrg").getString("name")
-            val itemOrg = fields.getJSONObject("ItemOrg").getString("name")
 
-            valueMap[fixtureId] = mutableMapOf("serial_number" to serialNumber,
-                                                 "status" to fixtureStatus,
-                                                 "fix_user" to fixUser,
-                                                 "takeout_user" to takeOutUser,
-                                                 "rtn_user" to rtnUser,
-                                                 "item_user" to itemUser,
-                                                 "fix_org" to fixOrg,
-                                                 "takeout_org" to takeOutOrg,
-                                                 "rtn_org" to rtnOrg,
-                                                 "item_org" to itemOrg)
+            valueMap[fixtureId] = mutableMapOf("serial_number" to fixture.getString("serial_number"),
+                "status" to fixture.getString("status"),
+                "fix_user" to fields.getJSONObject("FixUser").getString("name"),
+                "takeout_user" to fields.getJSONObject("TakeOutUser").getString("name"),
+                "rtn_user" to fields.getJSONObject("RtnUser").getString("name"),
+                "item_user" to fields.getJSONObject("ItemUser").getString("name"),
+                "fix_org" to fields.getJSONObject("FixOrg").getString("name"),
+                "takeout_org" to fields.getJSONObject("TakeOutOrg").getString("name"),
+                "rtn_org" to fields.getJSONObject("RtnOrg").getString("name"),
+                "item_org" to fields.getJSONObject("ItemOrg").getString("name"),
+                "fix_date" to fixture.getString("fix_date"),
+                "takeout_date" to fixture.getString("takeout_date"),
+                "rtn_date" to fixture.getString("rtn_date"),
+                "item_date" to fixture.getString("item_date")
+                )
         }
         /*
         if(records != null){
@@ -206,9 +201,9 @@ class FixtureViewFragment : Fragment() {
      */
     private fun createValue(list: MutableMap<String,String?>): String? {
         var value:String? =null
-        value = "【シリアルナンバー】"
+        value = "【${getString(R.string.col_serialnumber)}】"
         value += "\n  ${list["serial_number"]}"
-        value += "\n\nステータス："
+        value += "\n\n${getString(R.string.col_serialnumber)}"
         value += when(list["status"]){//config.FixtureTypeにて定義している。
             canTakeOut -> {"${statusCanTakeOut}"}
             takeOut -> {"${statusTakeOut}"}
@@ -216,22 +211,30 @@ class FixtureViewFragment : Fragment() {
             notTakeOut -> {"${statusNotTakeOut}"}
             else -> { }
         }
-        value += "\n\n\n検品した会社："
+        value += "\n\n\n${getString(R.string.col_kenpin_org)}"
         value += setValue(list["fix_org"]!!)
-        value += "\n検品したユーザ："
+        value += "\n${getString(R.string.col_kenpin_user)}"
         value += setValue(list["fix_user"]!!)
-        value += "\n\n持出した会社："
+        value += "\n${getString(R.string.col_kenpin_date)}"
+        value += setValue(list["fix_date"]!!)
+        value += "\n\n${getString(R.string.col_takeout_org)}"
         value += setValue(list["takeout_org"]!!)
-        value += "\n持出したユーザ："
+        value += "\n${getString(R.string.col_takeout_user)}"
         value += setValue(list["takeout_user"]!!)
-        value += "\n\n返却した会社："
+        value += "\n${getString(R.string.col_takeout_date)}"
+        value += setValue(list["takeout_date"]!!)
+        value += "\n\n${getString(R.string.col_return_org)}"
         value += setValue(list["rtn_org"]!!)
-        value += "\n返却したユーザ："
+        value += "\n${getString(R.string.col_return_user)}"
         value += setValue(list["rtn_user"]!!)
-        value += "\n\n設置した会社："
+        value += "\n${getString(R.string.col_return_date)}"
+        value += setValue(list["rtn_date"]!!)
+        value += "\n\n${getString(R.string.col_item_org)}"
         value += setValue(list["item_org"]!!)
-        value += "\n設置したユーザ："
+        value += "\n${getString(R.string.col_item_user)}"
         value += setValue(list["item_user"]!!)
+        value += "\n${getString(R.string.col_item_date)}"
+        value += setValue(list["item_date"]!!)
 
         return value
     }
