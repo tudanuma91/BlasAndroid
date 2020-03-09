@@ -15,8 +15,8 @@ import java.io.File
  * @param in projectSearchError プロジェクト取得失敗時にコールバックする関数
  */
 open class BlasRestProject(val payload:Map<String, String?>,
-                            val projectSearchSuccess:(MutableMap<String,Int>)->Unit,
-                            val projectSearchError:(Int)->Unit) : BlasRest() {
+                           val projectSearchSuccess:(MutableMap<String,Int>)->Unit,
+                           val projectSearchError:(Int)->Unit) : BlasRest() {
 
     private val SEARCH_PGOJECT_URL = BlasRest.URL + "projects/search/"
     init{

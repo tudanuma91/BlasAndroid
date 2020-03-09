@@ -123,91 +123,91 @@ class ProjectFragment : Fragment() {
         BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
 
         /* テスト用 */
-       // var payload2 = mapOf("token" to token, "project_id" to 1.toString())
+        // var payload2 = mapOf("token" to token, "project_id" to 1.toString())
         //BlasRestField(payload2, ::fieldS, ::fieldE).execute()
 
     }
 
-        private fun fieldE(errorCode: Int) {
-            Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
-        }
+    private fun fieldE(errorCode: Int) {
+        Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
+    }
 
 
-        /**
-         * マップ形式からリスト形式に変換する
-         * @param projectのマップ形式のデータ
-         * @return プロジェクトのリスト
-         */
-        private fun createProjectList(from: MutableMap<String, Int>): List<RowModel> {
-            val dataList = mutableListOf<RowModel>()
+    /**
+     * マップ形式からリスト形式に変換する
+     * @param projectのマップ形式のデータ
+     * @return プロジェクトのリスト
+     */
+    private fun createProjectList(from: MutableMap<String, Int>): List<RowModel> {
+        val dataList = mutableListOf<RowModel>()
 
-            for ((project_name, project_id) in from) {
-                val data: RowModel =
-                    RowModel().also {
-                        it.detail = project_id.toString()
-                        it.title = project_name
-                    }
-                dataList.add(data)
-            }
-            return dataList
-        }
-
-        /**
-         * プロジェクトのデータ取得時にコールバックされる
-         * @param  プロジェクト名 to プロジェクトIDのマップ形式
-         * @return なし
-         */
-        private fun projectSearchSuccess(result: MutableMap<String, Int>) {
-
-            val recyclerView = recycler_list
-            var project_list = createProjectList(result)
-            val adapter = ViewAdapterAdapter(project_list,
-                object : ViewAdapterAdapter.ListListener {
-                    override fun onClickRow(tappedView: View, rowModel: RowModel) {
-                        Toast.makeText(activity, rowModel.title, Toast.LENGTH_LONG).show()
-                        Log.d(
-                            "DataManagement",
-                            "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
-                        )
-                        val intent = Intent(activity, ItemActivity::class.java)
-                        intent.putExtra("token", token)
-                        intent.putExtra("project_id", rowModel.detail)
-                        startActivity(intent)
-                    }
-                })
-
-            recyclerView?.setHasFixedSize(true)
-            recyclerView?.layoutManager = LinearLayoutManager(activity)
-            recyclerView?.adapter = adapter
-
-        }
-
-
-        /**
-         * プロジェクト取得失敗時
-         * @param  error_code 失敗した要因コード
-         */
-        private fun projectSearchError(error_code: Int) {
-            var message: String? = null
-
-            when (error_code) {
-                BlasRestErrCode.NETWORK_ERROR -> {
-                    //サーバと通信できません
-                    message = getString(R.string.network_error)
+        for ((project_name, project_id) in from) {
+            val data: RowModel =
+                RowModel().also {
+                    it.detail = project_id.toString()
+                    it.title = project_name
                 }
-                else -> {
-                    //サーバでエラーが発生しました(要因コード)
-                    message = getString(R.string.server_error, error_code)
-                }
-
-            }
-            Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
-            val intent = Intent(activity, TerminalActivity::class.java)
-            //intent.putExtra("token",token)
-            startActivity(intent)
+            dataList.add(data)
         }
+        return dataList
+    }
 
+    /**
+     * プロジェクトのデータ取得時にコールバックされる
+     * @param  プロジェクト名 to プロジェクトIDのマップ形式
+     * @return なし
+     */
+    private fun projectSearchSuccess(result: MutableMap<String, Int>) {
+
+        val recyclerView = recycler_list
+        var project_list = createProjectList(result)
+        val adapter = ViewAdapterAdapter(project_list,
+            object : ViewAdapterAdapter.ListListener {
+                override fun onClickRow(tappedView: View, rowModel: RowModel) {
+                    Toast.makeText(activity, rowModel.title, Toast.LENGTH_LONG).show()
+                    Log.d(
+                        "DataManagement",
+                        "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
+                    )
+                    val intent = Intent(activity, ItemActivity::class.java)
+                    intent.putExtra("token", token)
+                    intent.putExtra("project_id", rowModel.detail)
+                    startActivity(intent)
+                }
+            })
+
+        recyclerView?.setHasFixedSize(true)
+        recyclerView?.layoutManager = LinearLayoutManager(activity)
+        recyclerView?.adapter = adapter
 
     }
+
+
+    /**
+     * プロジェクト取得失敗時
+     * @param  error_code 失敗した要因コード
+     */
+    private fun projectSearchError(error_code: Int) {
+        var message: String? = null
+
+        when (error_code) {
+            BlasRestErrCode.NETWORK_ERROR -> {
+                //サーバと通信できません
+                message = getString(R.string.network_error)
+            }
+            else -> {
+                //サーバでエラーが発生しました(要因コード)
+                message = getString(R.string.server_error, error_code)
+            }
+
+        }
+        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+        val intent = Intent(activity, TerminalActivity::class.java)
+        //intent.putExtra("token",token)
+        startActivity(intent)
+    }
+
+
+}
 
 

@@ -149,6 +149,7 @@ class FixtureViewFragment : Fragment() {
             val fixture = fields.getJSONObject("Fixture")
             val fixtureId = fixture.getInt("fixture_id")
 
+
             valueMap[fixtureId] = mutableMapOf("serial_number" to fixture.getString("serial_number"),
                 "status" to fixture.getString("status"),
                 "fix_user" to fields.getJSONObject("FixUser").getString("name"),

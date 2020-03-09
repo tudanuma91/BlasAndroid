@@ -8,9 +8,9 @@ import com.v3.basis.blas.blasclass.app.cakeToAndroid
  * BLASのデータにアクセスするクラス
  */
 open class BlasRestItem(val crud:String = "search",
-                         val payload:Map<String, String?>,
-                         val funcSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,
-                         val funcError:(Int)->Unit) : BlasRest() {
+                        val payload:Map<String, String?>,
+                        val funcSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,
+                        val funcError:(Int)->Unit) : BlasRest() {
 
     companion object {
         val TABLE_NAME = "Item"
@@ -51,7 +51,7 @@ open class BlasRestItem(val crud:String = "search",
             response = super.getResponseData(payload,method, blasUrl)
 
             //TODO テスト用にキューの呼出し追加
-         //   super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
+            //   super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
 
         }
         catch(e: Exception) {
