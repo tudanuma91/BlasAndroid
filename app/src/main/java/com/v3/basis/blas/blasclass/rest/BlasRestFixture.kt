@@ -5,9 +5,9 @@ import android.util.Log
 import org.json.JSONObject
 
 open class BlasRestFixture(val crud:String = "search",
-                            val payload:Map<String, String?>,
-                            val funcSuccess:(JSONObject)->Unit,
-                            val funcError:(Int)->Unit) : BlasRest(){
+                           val payload:Map<String, String?>,
+                           val funcSuccess:(JSONObject)->Unit,
+                           val funcError:(Int)->Unit) : BlasRest(){
 
     companion object {
         val TABLE_NAME = "Fixture"
@@ -90,7 +90,7 @@ open class BlasRestFixture(val crud:String = "search",
 
         super.onPostExecute(result)
         val json = JSONObject(result)
-       // val rtn:RestfulRtn = cakeToAndroid(result, TABLE_NAME)
+        // val rtn:RestfulRtn = cakeToAndroid(result, TABLE_NAME)
         val errorCode = json.getInt("error_code")
         //val records = json.getJSONArray("records")
         if(errorCode == 0) {

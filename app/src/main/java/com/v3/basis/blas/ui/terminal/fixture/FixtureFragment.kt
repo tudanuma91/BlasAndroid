@@ -73,6 +73,7 @@ class FixtureFragment : Fragment() {
                     val intent = Intent(activity, FixtureActivity::class.java)
                     intent.putExtra("token", token)
                     intent.putExtra("project_id", rowModel.detail)
+                    intent.putExtra("project_name", rowModel.title)
                     startActivity(intent)
                 }
             })

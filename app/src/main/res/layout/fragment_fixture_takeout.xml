@@ -4,9 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.fixture.fixture_kenpin.FixtureKenpinFragment">
-
-    <!-- TODO: Update blank fragment layout -->
+    tools:context=".ui.fixture.fixture_takeout.FixtureTakeOutFragment">
 
     <com.journeyapps.barcodescanner.CompoundBarcodeView
         android:id="@+id/qr_view"
@@ -23,7 +21,7 @@
     </com.journeyapps.barcodescanner.CompoundBarcodeView>
 
     <TextView
-        android:id="@+id/kenpin_result_text"
+        android:id="@+id/takeout_result_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -38,7 +36,7 @@
         app:layout_constraintTop_toTopOf="@+id/qr_view" />
 
     <TextView
-        android:id="@+id/kenpin_project_name"
+        android:id="@+id/takeout_project_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -49,7 +47,7 @@
         app:layout_constraintStart_toStartOf="parent"/>
 
     <TextView
-        android:id="@+id/kenpin_message"
+        android:id="@+id/takeout_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="200dp"
@@ -60,7 +58,7 @@
         app:layout_constraintTop_toTopOf="@+id/qr_view" />
 
     <ImageButton
-        android:id="@+id/kenpinBtnLight"
+        android:id="@+id/takeoutBtnLight"
         android:layout_width="79dp"
         android:layout_height="67dp"
         android:layout_marginBottom="32dp"
@@ -71,6 +69,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:srcCompat="@drawable/ic_wb_incandescent_black_24dp" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -40,10 +40,10 @@ data class FuncList(
 open class BlasRest() : AsyncTask<String, String, String>() {
 
     companion object {
-        // const val URL = "http://192.168.0.101/blas7/api/v1/"
-        const val URL = "http://192.168.1.8/blas7/api/v1/"
-        const val CONTEXT_TIME_OUT = 10000
-        const val READ_TIME_OUT = 10000
+
+        const val URL = "http://192.168.0.101/blas7/api/v1/"
+        const val CONTEXT_TIME_OUT = 1000
+        const val READ_TIME_OUT = 1000
         var queuefuncList = mutableListOf<FuncList>()
         val context = BlasApp.applicationContext()
         var cacheFileName = ""
@@ -89,17 +89,17 @@ open class BlasRest() : AsyncTask<String, String, String>() {
      * sb.toString(文字列) : streamを文字列にして返す。
      * */
     open fun is2String(stream: InputStream): String{
-       val sb = StringBuilder()
-       val reader = BufferedReader(InputStreamReader(stream,"UTF-8"))
+        val sb = StringBuilder()
+        val reader = BufferedReader(InputStreamReader(stream,"UTF-8"))
         Log.d("[rest/BlasRest]","{$reader}")
-       var line = reader.readLine()
-       if(line != null){
-           sb.append(line)
-           line = reader.readLine()
-       }
-       reader.close()
-       return sb.toString()
-   }
+        var line = reader.readLine()
+        if(line != null){
+            sb.append(line)
+            line = reader.readLine()
+        }
+        reader.close()
+        return sb.toString()
+    }
 
     private fun methodGet(payload:Map<String, String?>, targetUrl:String):String {
 
