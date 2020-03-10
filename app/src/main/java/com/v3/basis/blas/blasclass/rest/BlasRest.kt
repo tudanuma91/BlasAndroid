@@ -5,17 +5,18 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.net.Uri
-import android.util.Log
-import java.net.HttpURLConnection
 import android.os.AsyncTask
+import android.util.Log
 import android.widget.Toast
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.app.BlasApp
-import com.v3.basis.blas.blasclass.controller.RestRequestData
+import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
 import org.json.JSONException
 import org.json.JSONObject
-import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
 import java.io.*
+import java.net.HttpURLConnection
+import java.net.InetAddress
+import java.net.NetworkInterface
 import java.util.*
 
 
@@ -42,7 +43,8 @@ open class BlasRest() : AsyncTask<String, String, String>() {
 
     companion object {
 
-        const val URL = "http://192.168.1.8/blas7/api/v1/"
+        const val URL = BuildConfig.API_URL
+//        const val URL = "http://192.168.1.8/blas7/api/v1/"
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
         var queuefuncList = mutableListOf<FuncList>()

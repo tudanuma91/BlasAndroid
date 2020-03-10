@@ -4,17 +4,15 @@ package com.v3.basis.blas.ui.login
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.*
-import com.v3.basis.blas.blasclass.rest.BlasRestAuth
 import com.v3.basis.blas.blasclass.config.Params
+import com.v3.basis.blas.blasclass.rest.BlasRestAuth
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import kotlinx.android.synthetic.main.fragment_login.*
 
@@ -33,86 +31,41 @@ class LoginFragment : Fragment() {
      * @return フラグメントのUIビューを返す
      */
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_login,container,false)
-        val loginBtn = view.findViewById<Button>(R.id.btnLogin)
-        //下記三種はテスト用
-        val test_1Btn = view.findViewById<Button>(R.id.login_test1)
-        val test_2Btn = view.findViewById<Button>(R.id.login_test2)
-        val test_3Btn = view.findViewById<Button>(R.id.login_test3)
-        val qr = view.findViewById<Button>(R.id.btnQR)
 
+        return inflater.inflate(R.layout.fragment_login,container,false)
+    }
 
-        /**
-         * ログインボタン押下時、BLASに対してログイン要求を非同期で行う。
-         * 成功時はloginSuccessメソッドを、失敗時はloginErrorメソッドをコールバックする。
-         */
-        loginBtn.setOnClickListener{
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-            Log.d("【LoginFragment】", "Login開始")
-            /* パラメータ―取得 */
-            val username = view?.findViewById<EditText>(R.id.userName)?.text.toString()
-            val password = view?.findViewById<EditText>(R.id.Password)?.text.toString()
+        super.onViewCreated(view, savedInstanceState)
 
-            /* パラメータ―チェック */
-            if(validation(username, password)) {
-                /* ログインを非同期で実行 */
-                var payload = mapOf("name" to username, "password" to password)
-                BlasRestAuth(payload, ::loginSuccess, ::loginError).execute()
-            }
-        }
+        setListener(btnLogin, ::loginSuccess, ::loginError)
+        setListener(login_test1, ::testLoginSuccess1, ::loginError)
+        setListener(login_test2, ::testLoginSuccess2, ::loginError)
+        setListener(login_test3, ::testLoginSuccess3, ::loginError)
 
-        //下記三つがテスト用の関数
-        test_1Btn.setOnClickListener{
-            Log.d("【LoginFragment】", "test_1Login開始")
-            /* パラメータ―取得 */
-            val username = view?.findViewById<EditText>(R.id.userName)?.text.toString()
-            val password = view?.findViewById<EditText>(R.id.Password)?.text.toString()
-
-            /* パラメータ―チェック */
-            if(validation(username, password)) {
-
-                /* ログインを非同期で実行 */
-                var payload = mapOf("name" to username, "password" to password)
-                BlasRestAuth(payload, ::testLoginSuccess1, ::testLoginError).execute()
-            }
-        }
-
-        test_2Btn.setOnClickListener{
-            Log.d("【LoginFragment】", "test_2Login開始")
-            /* パラメータ―取得 */
-            val username = view?.findViewById<EditText>(R.id.userName)?.text.toString()
-            val password = view?.findViewById<EditText>(R.id.Password)?.text.toString()
-
-            /* パラメータ―チェック */
-            if(validation(username, password)) {
-                /* ログインを非同期で実行 */
-
-                var payload = mapOf("name" to username, "password" to password)
-                BlasRestAuth(payload, ::testLoginSuccess2, ::loginError).execute()
-            }
-        }
-
-        test_3Btn.setOnClickListener{
-            Log.d("【LoginFragment】", "test_3Login開始")
-            /* パラメータ―取得 */
-            val username = view?.findViewById<EditText>(R.id.userName)?.text.toString()
-            val password = view?.findViewById<EditText>(R.id.Password)?.text.toString()
-
-            /* パラメータ―チェック */
-            if(validation(username, password)) {
-                /* ログインを非同期で実行 */
-                var payload = mapOf("name" to username, "password" to password)
-                BlasRestAuth(payload, ::testLoginSuccess3, ::loginError).execute()
-            }
-        }
-
-        qr.setOnClickListener{
+        btnQR.setOnClickListener {
             val intent = Intent(activity, QRActivity::class.java)
             startActivity(intent)
         }
-        //ここまでテスト用の関数
+    }
 
-        return view
+    /**
+     * ログインボタン押下時、BLASに対してログイン要求を非同期で行う。
+     * 成功時はloginSuccessメソッドを、失敗時はloginErrorメソッドをコールバックする。
+     */
+    private fun setListener(view: View, login: (String)->Unit, error: (Int)->Unit) {
+
+        view.setOnClickListener{
+            Log.d("【LoginFragment】", "Login開始")
+            val username = userName.text.toString()
+            val pass = password.text.toString()
+
+            if(validation(username, pass)) {
+                val payload = mapOf("name" to username, "password" to pass)
+                BlasRestAuth(payload, login, error).execute()
+            }
+        }
     }
 
     /**
@@ -222,35 +175,4 @@ class LoginFragment : Fragment() {
         intent.putExtra("token",token)
         startActivity(intent)
     }
-    //ここまでテスト用の関数
-
-
-    /**
-     * ログインに失敗した場合にコールバックされる
-     * @param in error_code ログイン失敗時のエラーコード
-     * @param in message ログインに失敗したときのメッセージ
-     * @return なし
-     */
-    private fun testLoginError(error_code:Int) {
-        var message:String? = null
-
-        when(error_code) {
-            BlasRestErrCode.NETWORK_ERROR->{
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            BlasRestErrCode.AUTH_ACCOUNT_ERROR-> {
-                //ユーザ名，またはパスワードに誤りがあります
-                message = getString(R.string.account_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, error_code)
-            }
-
-        }
-        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
-    }
-
-
 }

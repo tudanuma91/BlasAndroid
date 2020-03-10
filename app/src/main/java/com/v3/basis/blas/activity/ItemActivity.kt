@@ -10,6 +10,8 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI.setupWithNavController
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.v3.basis.blas.R
+import com.v3.basis.blas.ui.ext.setActionBarTitle
+import com.v3.basis.blas.ui.ext.showBackKeyForActionBar
 import kotlinx.android.synthetic.main.activity_item.*
 
 class ItemActivity : AppCompatActivity() {
@@ -38,11 +40,8 @@ class ItemActivity : AppCompatActivity() {
          * リスナーにて再度[setDisplayHomeAsUpEnabled]trueとする。
          */
         navController.addOnDestinationChangedListener{ _, destination, _ ->
-            supportActionBar?.apply {
-                title = destination.label
-                setDisplayHomeAsUpEnabled(true)
-                setHomeButtonEnabled(true)
-            }
+            showBackKeyForActionBar()
+            supportActionBar?.title = destination.label
         }
     }
 

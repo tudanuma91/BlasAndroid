@@ -1,33 +1,32 @@
 package com.v3.basis.blas.ui.item.item_view
 
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
+import com.v3.basis.blas.ui.ext.getStringExtra
 import kotlinx.android.synthetic.main.fragment_item_view.*
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.v3.basis.blas.activity.ItemActivity
 
 
 /**
  * A simple [Fragment] subclass.
  */
 class ItemViewFragment : Fragment() {
+
     private var token:String? = null
-    private var project_id:String? = null
-    private var fieldMap: MutableMap<Int, MutableMap<String, String?>> = mutableMapOf<Int, MutableMap<String, String?>>()
-    private var itemList:MutableList<MutableMap<String, String?>>? = null
-    private var dataList = mutableListOf<RowModel>()
+    private var projectId:String? = null
+    private val fieldMap: MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
+    private val itemList: MutableList<MutableMap<String, String?>> = mutableListOf()
+    private val dataList = mutableListOf<RowModel>()
+
     private val adapter:ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
         override fun onClickRow(tappedView: View, rowModel: RowModel) {
             //カードタップ時の処理
@@ -36,28 +35,17 @@ class ItemViewFragment : Fragment() {
                 "DataManagement",
                 "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
             )
-
         }
-
     })
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        // Inflate the layout for this fragment
         super.onCreateView(inflater, container, savedInstanceState)
 
         Log.d("【onCreateView】","呼ばれた")
-        val extras = activity?.intent?.extras
-        if(extras?.getString("token") != null) {
-            token = extras?.getString("token")
-            Log.d("token_item","${token}")
-        }
-        if(extras?.getString("project_id") != null) {
-            project_id = extras?.getString("project_id")
-        }
+        token = getStringExtra("token")
+        projectId = getStringExtra("project_id")
 
-        val root = inflater.inflate(R.layout.fragment_item_view, container, false)
-
-        return root
+        return inflater.inflate(R.layout.fragment_item_view, container, false)
     }
 
 
@@ -66,13 +54,13 @@ class ItemViewFragment : Fragment() {
         Log.d("lifeCycle", "onViewCreated")
         //リサイクラ-viewを取得
         //基本的にデータはまだ到着していないため、空のアクティビティとadapterだけ設定しておく
-        val recyclerView = recycler_list
+        val recyclerView = recyclerView
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(activity)
         recyclerView.adapter = adapter
 
         //呼ぶタイミングを確定させる！！
-        var payload2 = mapOf("token" to token, "project_id" to project_id)
+        val payload2 = mapOf("token" to token, "project_id" to projectId)
         BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
         BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
 
@@ -85,12 +73,12 @@ class ItemViewFragment : Fragment() {
         //val aaa = pref.getStringSet("item_col${project_id}",mutableSetOf())
         var cnt = 1
         var old_item_id = "0"
-        itemList?.forEach {
+        itemList.forEach {
             cnt += 1
         }
 
         //データ管理のループ
-        itemList?.forEach {
+        itemList.forEach {
             val itemRecord = it
             val colMax = fieldMap.size
             val item_id = it["item_id"]
@@ -166,9 +154,7 @@ class ItemViewFragment : Fragment() {
     private fun setAdapter() {
         Log.d("konishi", "setAdapter")
         createDataList()
-        if(adapter != null){
-            adapter.notifyItemInserted(0)
-        }
+        adapter.notifyItemInserted(0)
 
         /*
         val adapter = ViewAdapter(createDataList(), object : ViewAdapter.ListListener {
@@ -187,11 +173,11 @@ class ItemViewFragment : Fragment() {
      * データ取得時
      */
     private fun itemRecv(result: MutableList<MutableMap<String, String?>>?) {
-        itemList = result
-        if(itemList != null && !fieldMap.isEmpty()) {
+        itemList.clear()
+        result?.also { itemList.addAll(0, it) }
+        if (itemList.isNotEmpty() && fieldMap.isNotEmpty()) {
             setAdapter()
         }
-
     }
 
     /**
@@ -209,7 +195,7 @@ class ItemViewFragment : Fragment() {
             }
         }
 
-        if(itemList != null && !fieldMap.isEmpty()) {
+        if(itemList.isNotEmpty() && fieldMap.isNotEmpty()) {
             setAdapter()
         }
     }
@@ -219,10 +205,8 @@ class ItemViewFragment : Fragment() {
      */
     private fun fieldRecvError(errorCode: Int) {
         Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
-        //エラーのため、データを初期化する
-        itemList = null
-        fieldMap = mutableMapOf<Int, MutableMap<String, String?>>()
-
+        itemList.clear()
+        fieldMap.clear()
     }
 
     /**
@@ -231,8 +215,8 @@ class ItemViewFragment : Fragment() {
     private fun itemRecvError(errorCode: Int) {
         Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
         //エラーのため、データを初期化する
-        itemList = null
-        fieldMap = mutableMapOf<Int, MutableMap<String, String?>>()
+        itemList.clear()
+        fieldMap.clear()
     }
 
 }
