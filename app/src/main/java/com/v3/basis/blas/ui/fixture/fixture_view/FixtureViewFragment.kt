@@ -12,10 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.blasclass.rest.BlasRestOrgs
-import com.v3.basis.blas.ui.fixture.fixture_view.RowModel
-import com.v3.basis.blas.ui.fixture.fixture_view.ViewAdapter
 import kotlinx.android.synthetic.main.fragment_item_view.*
-import com.v3.basis.blas.blasclass.config.FixtureType
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.canTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.finishInstall
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.notTakeOut
@@ -24,6 +21,7 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusFinishInst
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusNotTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
+import com.v3.basis.blas.ui.ext.getStringExtra
 import org.json.JSONObject
 
 
@@ -31,11 +29,13 @@ import org.json.JSONObject
  * A simple [Fragment] subclass.
  */
 class FixtureViewFragment : Fragment() {
+
     private var token:String? = null
     private var project_id:String? = null
     private var dataList = mutableListOf<RowModel>()
-    private var valueMap : MutableMap<Int, MutableMap<String, String?>> = mutableMapOf<Int, MutableMap<String, String?>>()
+    private val valueMap : MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
     private var valueSize :Int = 0
+
     private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
         override fun onClickRow(tappedView: View, rowModel: com.v3.basis.blas.ui.fixture.fixture_view.RowModel) {
             //カードタップ時の処理
@@ -50,21 +50,13 @@ class FixtureViewFragment : Fragment() {
     })
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        // Inflate the layout for this fragment
+
         super.onCreateView(inflater, container, savedInstanceState)
         Log.d("【onCreateView】","呼ばれた")
-        val extras = activity?.intent?.extras
-        if(extras?.getString("token") != null) {
-            token = extras?.getString("token")
-            Log.d("token_fixture","${token}")
-        }
-        if(extras?.getString("project_id") != null) {
-            project_id = extras?.getString("project_id")
-            Log.d("project_id","${project_id}")
-        }
+        token = getStringExtra("token")
+        project_id = getStringExtra("project_id")
 
-        val root = inflater.inflate(R.layout.fragment_item_view, container, false)
-        return root
+        return inflater.inflate(R.layout.fragment_item_view, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -73,28 +65,28 @@ class FixtureViewFragment : Fragment() {
         Log.d("lifeCycle", "onViewCreated")
         //リサイクラ-viewを取得
         //基本的にデータはまだ到着していないため、空のアクティビティとadapterだけ設定しておく
-        val recyclerView = recycler_list
+        val recyclerView = recyclerView
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(activity)
         recyclerView.adapter = adapter
 
-        var payload = mapOf("token" to token )
+        val payload = mapOf("token" to token )
         Log.d("会社を取得する","取得開始")
         Log.d("会社を取得する","${token}")
         BlasRestOrgs(payload, ::orgGetSuccess, ::orgGetError).execute()
 
         //呼ぶタイミングを確定させる！！
-        var payload2 = mapOf("token" to token, "project_id" to project_id)
+        val payload2 = mapOf("token" to token, "project_id" to project_id)
         Log.d("testtest","取得する")
         BlasRestFixture("search",payload2, ::fixtureGetSuccess, ::fixtureGetError).execute()
     }
 
     private fun createDataList(): List<RowModel> {
-        var cnt = 1
+        val cnt = 1
         Log.d("aaaa","${cnt}")
 
         //データ管理のループ
-        valueMap?.forEach {
+        valueMap.forEach {
             /*val itemRecord = it
             val colMax = valueMap.size
             val item_id = it["item_id"]
@@ -131,10 +123,7 @@ class FixtureViewFragment : Fragment() {
     private fun setAdapter() {
         Log.d("konishi", "setAdapter")
         createDataList()
-        if(adapter != null){
-            adapter.notifyItemInserted(0)
-        }
-
+        adapter.notifyItemInserted(0)
     }
 
     /**
@@ -194,11 +183,9 @@ class FixtureViewFragment : Fragment() {
     private fun fixtureGetError(errorCode: Int) {
         Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
         //エラーのため、データを初期化する
-        valueMap = mutableMapOf<Int, MutableMap<String, String?>>()
+        valueMap.clear()
         Log.d("取得失敗","取得失敗")
         Log.d("取得失敗","${errorCode}")
-
-
     }
 
     /**

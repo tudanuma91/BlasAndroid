@@ -28,6 +28,7 @@ import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.CompoundBarcodeView
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
+import com.v3.basis.blas.ui.ext.showBackKeyForActionBar
 import com.v3.basis.blas.ui.fixture.fixture_kenpin.FixtureKenpinFragment
 import com.v3.basis.blas.ui.fixture.fixture_return.FixtureReturnFragment
 import com.v3.basis.blas.ui.fixture.fixture_takeout.FixtureTakeOutFragment
@@ -49,13 +50,11 @@ class FixtureActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_fixture)
-
-
         val navController = findNavController(R.id.nav_host_fragment_fixture)
         setupWithNavController(bottom_navigation_fixture, navController)
-
 
         //タイトルバーの名称を変更する処理
         val appBarConfiguration = AppBarConfiguration(
@@ -75,14 +74,10 @@ class FixtureActivity : AppCompatActivity() {
          * リスナーにて再度[setDisplayHomeAsUpEnabled]trueとする。
          */
         navController.addOnDestinationChangedListener{ _, destination, _ ->
-            supportActionBar?.apply {
-                title = destination.label
-                setDisplayHomeAsUpEnabled(true)
-                setHomeButtonEnabled(true)
-            }
+            showBackKeyForActionBar()
+            supportActionBar?.title = destination.label
         }
     }
-
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
@@ -94,49 +89,6 @@ class FixtureActivity : AppCompatActivity() {
             else -> return super.onOptionsItemSelected(item)
         }
     }
-
-    /**
-     * パーミッションをとる関数。
-     */
-    fun checkPermissions(fragm:FragmentActivity?) {//許可取り
-        // すでに許可をしていた場合はスキップする
-        if (fragm?.let { ContextCompat.checkSelfPermission(it, android.Manifest.permission.CAMERA) } == PackageManager.PERMISSION_GRANTED) {
-            //多分こいつが呼ばれていないせい
-            //qr_view.resume()
-        }
-
-        if (fragm?.let { ActivityCompat.shouldShowRequestPermissionRationale(it, android.Manifest.permission.CAMERA) }!!) {
-            ActivityCompat.requestPermissions(fragm!!, arrayOf(android.Manifest.permission.CAMERA), 999)
-        }
-    }
-
-
-    /**
-     * パーミッションのチェック
-     */
-    fun permissionChk(fragm: FragmentActivity?): Boolean {
-        val isReadPermissionGranted = (fragm?.let {
-            PermissionChecker.checkSelfPermission(
-                it,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            )
-        } == PackageManager.PERMISSION_GRANTED)
-        val isWritePermissionGranted = (fragm?.let {
-            PermissionChecker.checkSelfPermission(
-                it,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            )
-        } == PackageManager.PERMISSION_GRANTED)
-        val isCameraPermissionGranted = (fragm?.let {
-            PermissionChecker.checkSelfPermission(
-                it,
-                Manifest.permission.CAMERA
-            )
-        } == PackageManager.PERMISSION_GRANTED)
-        //上三つの変数すべてtrueの時、trueを返す。それ以外はfalse
-        return isReadPermissionGranted && isWritePermissionGranted && isCameraPermissionGranted
-    }
-
 
     /**
      * QRカメラを起動する関数

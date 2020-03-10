@@ -18,6 +18,8 @@ import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureActivity
+import com.v3.basis.blas.ui.ext.checkPermissions
+import com.v3.basis.blas.ui.ext.permissionChk
 import com.v3.basis.blas.ui.fixture.fixture_kenpin.FixtureKenpinFragment
 import com.v3.basis.blas.ui.fixture.fixture_return.FixtureReturnFragment
 import kotlinx.android.synthetic.main.fragment_fixture_takeout.*
@@ -113,13 +115,13 @@ class FixtureTakeOutFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         //許可取ってカメラを起動する
         fragm = activity
-        FixtureActivity().checkPermissions(fragm)
+        requireActivity().checkPermissions()
         initQRCamera()
     }
 
     private fun initQRCamera() {//QRコードリーダ起動
         //権限チェック
-        val setPermisson =FixtureActivity().permissionChk(fragm)
+        val setPermisson = requireActivity().permissionChk()
         //カメラの起動
         if (setPermisson) {
             qr_view.resume()

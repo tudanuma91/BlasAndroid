@@ -3,32 +3,23 @@ package com.v3.basis.blas.ui.fixture.fixture_return
 
 import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
 import android.hardware.camera2.CameraManager
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.core.content.PermissionChecker
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import com.google.zxing.ResultPoint
-import com.journeyapps.barcodescanner.BarcodeCallback
-import com.journeyapps.barcodescanner.BarcodeResult
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureActivity
+import com.v3.basis.blas.ui.ext.checkPermissions
+import com.v3.basis.blas.ui.ext.permissionChk
 import com.v3.basis.blas.ui.fixture.fixture_kenpin.FixtureKenpinFragment
-import kotlinx.android.synthetic.main.fragment_fixture_takeout.*
 import kotlinx.android.synthetic.main.fragment_fixture_return.*
-import kotlinx.android.synthetic.main.fragment_qr.*
 import kotlinx.android.synthetic.main.fragment_qr.qr_view
-import java.lang.Exception
 
 /**
  * A simple [Fragment] subclass.
@@ -51,21 +42,22 @@ class FixtureReturnFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         super.onCreateView(inflater, container, savedInstanceState)
+
         //トークンとプロジェクトIDの取得
-        val extras = activity?.intent?.extras
-        if(extras?.getString("token") != null) {
-            token = extras?.getString("token")
-            Log.d("token_fixture","${token}")
-        }
-        if(extras?.getString("project_id") != null) {
-            projectId = extras?.getString("project_id")
-            Log.d("project_id","${projectId}")
-        }
-        if(extras?.getString("project_name") != null) {
-            projectName = extras?.getString("project_name")
-            Log.d("project_name","${projectName}")
+        activity?.intent?.extras?.apply {
+            if(getString("token") != null) {
+                token = getString("token")
+                Log.d("token_fixture","${token}")
+            }
+            if(getString("project_id") != null) {
+                projectId = getString("project_id")
+                Log.d("project_id","${projectId}")
+            }
+            if(getString("project_name") != null) {
+                projectName = getString("project_name")
+                Log.d("project_name","${projectName}")
+            }
         }
 
 
@@ -114,13 +106,13 @@ class FixtureReturnFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         //許可取ってカメラを起動する
         fragm = activity
-        FixtureActivity().checkPermissions(fragm)
+        requireActivity().checkPermissions()
         initQRCamera()
     }
 
     private fun initQRCamera() {//QRコードリーダ起動
         //権限チェック
-        val setPermisson =FixtureActivity().permissionChk(fragm)
+        val setPermisson = requireActivity().permissionChk()
 
         //カメラの起動
         if (setPermisson) {

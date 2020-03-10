@@ -6,46 +6,36 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureActivity
-import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.TerminalActivity
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestProject
+import com.v3.basis.blas.ui.ext.getStringExtra
 import com.v3.basis.blas.ui.terminal.fixture.project_list_view.RowModel
 import com.v3.basis.blas.ui.terminal.fixture.project_list_view.ViewAdapterAdapter
 import kotlinx.android.synthetic.main.fragment_project.*
-
 
 class FixtureFragment : Fragment() {
 
     private lateinit var fixtureViewModel: FixtureViewModel
     private var token: String? = null
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        fixtureViewModel =
-            ViewModelProviders.of(this).get(FixtureViewModel::class.java)
-        val extras = activity?.intent?.extras
-        if (extras?.getString("token") != null) {
-            token = extras?.getString("token")
-        }
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        val root = inflater.inflate(R.layout.fragment_fixture, container, false)
-        return root
+        fixtureViewModel = ViewModelProviders.of(this).get(FixtureViewModel::class.java)
+        token = getStringExtra("token")
+
+        return inflater.inflate(R.layout.fragment_fixture, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        var payload = mapOf("token" to token)
+        val payload = mapOf("token" to token)
         BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
     }
 
@@ -60,9 +50,8 @@ class FixtureFragment : Fragment() {
 
     private fun projectSearchSuccess(result: MutableMap<String, Int>) {
 
-        val recyclerView = recycler_list
-        var project_list = createProjectList(result)
-        val adapter = ViewAdapterAdapter(project_list,
+        val projectList = createProjectList(result)
+        val adapter = ViewAdapterAdapter(projectList,
             object : ViewAdapterAdapter.ListListener {
                 override fun onClickRow(tappedView: View, rowModel: RowModel) {
                     Toast.makeText(activity, rowModel.title, Toast.LENGTH_LONG).show()
@@ -78,10 +67,9 @@ class FixtureFragment : Fragment() {
                 }
             })
 
-        recyclerView?.setHasFixedSize(true)
-        recyclerView?.layoutManager = LinearLayoutManager(activity)
-        recyclerView?.adapter = adapter
-
+        recyclerView.setHasFixedSize(true)
+        recyclerView.layoutManager = LinearLayoutManager(activity)
+        recyclerView.adapter = adapter
     }
 
 
