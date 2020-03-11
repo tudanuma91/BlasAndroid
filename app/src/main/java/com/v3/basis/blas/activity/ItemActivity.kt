@@ -1,12 +1,11 @@
 package com.v3.basis.blas.activity
 
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -19,6 +18,12 @@ import com.v3.basis.blas.blasclass.config.FieldType
 import kotlinx.android.synthetic.main.activity_item.*
 
 class ItemActivity : AppCompatActivity() {
+
+    data class formType(var type: String?,
+                        var title: String?,
+                        var choiceValue: List<String?>?,
+                        var nullable:String?,
+                        var unique:String?)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,20 +101,48 @@ class ItemActivity : AppCompatActivity() {
      *                typeがMULTIPLE_SELECTION(複数選択) => 値を返す
      *                それ以外 => nullを返す
      */
-    fun typeCheck(list:MutableMap<String, String?>?): Triple<String?, String? ,MutableMap<String, String?>?> {
-        val choiceValue:MutableMap<String, String?>? = null
+    fun typeCheck(list:MutableMap<String, String?>?): formType {
+        var choiceValue:List<String>? = null
         var rtnType:String? =null
         var rtnTitle :String?= null
+        var nullable:String? = null
+        var unique:String? = null
+        var formInfo =  formType(rtnType,rtnTitle, choiceValue, nullable,unique)
         if(list!=null){
+            formInfo.title = list.get("name")
+            formInfo.nullable = list.get("essential").toString()
+            formInfo.unique = list.get("unique_chk").toString()
+
             val chkType = list.get("type")
             when(chkType){
                 FieldType.TEXT_FIELD->{
-                    rtnType =  FieldType.TEXT_FIELD
-                    rtnTitle = list.get("name")
+                    //自由入力(1行)
+                    formInfo.type =  FieldType.TEXT_FIELD
+                }
+                FieldType.TEXT_AREA->{
+                    //自由入力(複数行)
+                    formInfo.type = FieldType.TEXT_AREA
+                }
+                FieldType.DATE_TIME->{
+                    //日付入力
+                    formInfo.type = FieldType.DATE_TIME
+                }
+                FieldType.TIME->{
+                    //時間入力
+                    formInfo.type = FieldType.TIME
+                }
+                FieldType.SINGLE_SELECTION->{
+                    //単一選択
+                    formInfo.type = FieldType.SINGLE_SELECTION
+                    formInfo.choiceValue =list["choice"]!!.split(",")
+                }
+                FieldType.MULTIPLE_SELECTION->{
+                    formInfo.type = FieldType.MULTIPLE_SELECTION
+                    formInfo.choiceValue = list["choice"]!!.split(",")
                 }
             }
         }
-        return Triple(rtnType,rtnTitle,choiceValue)
+        return formInfo
     }
 
 
@@ -125,10 +158,15 @@ class ItemActivity : AppCompatActivity() {
      *         titleがnullの時 => タイトルnullのまま作成
      *         それ以外 => titleの値をタイトルに反映する
      */
-    fun createFormSectionTitle(title:String?, params:LinearLayout.LayoutParams?, act:FragmentActivity?): TextView {
+    fun createFormSectionTitle(title:String?, params:LinearLayout.LayoutParams?, act:FragmentActivity?,nullable: String?): TextView {
         val view = TextView(act)
-        val formTitle = if(title != null){"${title}"}else{" "}
+        var formTitle = if(title != null){"${title}"}else{" "}
+        if(nullable == FieldType.TURE) {
+             formTitle = if(title != null){"${title}(必須入力)"}else{" "}
+        }
         view.setText("${formTitle}")
+        //文字の色変更したい。
+        view.setTextColor(Color.BLACK)
         view.setLayoutParams(params)
         return view
     }
@@ -149,6 +187,48 @@ class ItemActivity : AppCompatActivity() {
         edit.setLayoutParams(params)
         edit.id = cnt
         return edit
+    }
+
+    fun createTextAlea(params:LinearLayout.LayoutParams?, act:FragmentActivity?,cnt:Int): EditText {
+        val edit = EditText(act)
+        edit.setText("")
+        edit.height = 350
+        edit.setLayoutParams(params)
+        edit.id = cnt
+        return edit
+    }
+
+    fun createDateTime(params:LinearLayout.LayoutParams?, act:FragmentActivity?,cnt:Int): EditText {
+        val edit = EditText(act)
+        edit.setText("")
+        edit.inputType = 1
+        edit.setLayoutParams(params)
+        edit.id = cnt
+        edit.isFocusableInTouchMode = false
+        return edit
+    }
+
+    fun createSingleSelection(params:LinearLayout.LayoutParams?, act:FragmentActivity?,value:String?): RadioButton {
+        val r_button = RadioButton(act)
+        r_button.setText(value)
+        return r_button
+
+    }
+
+    fun createMutipleSelection(params:LinearLayout.LayoutParams?, act:FragmentActivity?,it:String?,cnt: Int): CheckBox {
+        val checkbox = CheckBox(act)
+        checkbox.setText(it)
+        checkbox.setLayoutParams(params)
+        checkbox.id = cnt
+        checkbox.isChecked = false
+        return checkbox
+    }
+
+    fun createSelectionGroup(params:LinearLayout.LayoutParams?, act:FragmentActivity?,cnt:Int): RadioGroup {
+        val r_group = RadioGroup(act)
+        r_group.setLayoutParams(params)
+        r_group.id = cnt
+        return r_group
     }
 
 }

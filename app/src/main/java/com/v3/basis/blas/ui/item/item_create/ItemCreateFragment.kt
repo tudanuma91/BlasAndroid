@@ -1,6 +1,9 @@
 package com.v3.basis.blas.ui.item.item_create
 
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.icu.text.CaseMap
 import android.os.Bundle
 import android.provider.ContactsContract
 import android.util.Log
@@ -17,6 +20,7 @@ import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestImageField
 import com.v3.basis.blas.ui.item.item_view.ItemViewFragment
+import java.util.*
 
 /**
  * A simple [Fragment] subclass.
@@ -25,16 +29,20 @@ class ItemCreateFragment : Fragment() {
     private var token: String? = null
     private var projectId: String? = null
     private var rootView: LinearLayout? = null
-    private var act:FragmentActivity? = null
-    private var editMap:MutableMap<String, EditText?>? = mutableMapOf<String, EditText?>()
-    private var fieldMap: MutableMap<Int, MutableMap<String, String?>> =
-        mutableMapOf<Int, MutableMap<String, String?>>()
-    private var layoutParams = LinearLayout.LayoutParams(
-        LinearLayout.LayoutParams.MATCH_PARENT,
-        LinearLayout.LayoutParams.MATCH_PARENT
-    )
-
-    //data class formEditText(var id: Int, var editText: EditText)
+    private var formInfoMap:MutableMap<String, MutableMap<String, String?>> = mutableMapOf()
+    private var editMap:MutableMap<String, EditText?>? = mutableMapOf()
+    private var radioGroupMap:MutableMap<String,RadioGroup?>? = mutableMapOf()
+    private var radioValue :MutableMap<String,RadioButton?>? = mutableMapOf()
+    private var checkMap:MutableMap<CheckBox?,String?>? = mutableMapOf()
+   // private var fieldMap: MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
+    private var layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
+    private var layoutParamsSpace = LinearLayout.LayoutParams( LinearLayout.LayoutParams.MATCH_PARENT,50)
+    private val calender = Calendar.getInstance()
+    private val year = calender.get(Calendar.YEAR)
+    private val month = calender.get(Calendar.MONTH)
+    private val day = calender.get(Calendar.DAY_OF_MONTH)
+    private val hour = calender.get(Calendar.YEAR)
+    private val minute = calender.get(Calendar.MONTH)
 
 
     override fun onCreateView(
@@ -58,8 +66,7 @@ class ItemCreateFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         //コンテンツを配置するLinearLayoutを取得
-        rootView = view.findViewById<LinearLayout>(com.v3.basis.blas.R.id.item_create_liner)
-        act = activity
+        rootView = view.findViewById<LinearLayout>(R.id.item_create_liner)
         //レイアウトの設置位置の設定
         val payload = mapOf("token" to token, "project_id" to projectId)
         BlasRestField(payload, ::getSuccess, ::getFail).execute()
@@ -70,160 +77,158 @@ class ItemCreateFragment : Fragment() {
         button.setLayoutParams(layoutParams)
         rootView!!.addView(button)
 
-        //テキストの作成処理
-        val text = createTextBox(activity)
-        rootView!!.addView(text)
-
-        //editテキストの追加処理
-        val edit = EditText(activity)
-        edit.setText("ddd")
-        edit.setLayoutParams(layoutParams)
-        rootView!!.addView(edit)
-        //array!!.set(key="col_aaa",value = edit)
-
-
-        //ラジオボタンの追加処理
-        //ラジオグループを追加（ラジオグループを実装した時のみ、複数選択肢から一つを選ぶという処理が可能）
-        val r_group = RadioGroup(activity)
-        //選択肢1
-        val r_button = RadioButton(activity)
-        r_button.setText("1")
-        r_group.addView(r_button)
-        //選択肢2
-        val r_button2 = RadioButton(activity)
-        r_button2.setText("2")
-        r_group.addView(r_button2)
-        rootView!!.addView(r_group)
-        //初期チェックしている処理
-        r_button2.isChecked = true
-
-        //チェックボックスの追加処理
-        val checkbox = CheckBox(activity)
-        checkbox.setText("aiueo")
-        checkbox.setLayoutParams(layoutParams)
-        rootView!!.addView(checkbox)
-        val checkbox2 = CheckBox(activity)
-        checkbox2.setText("kakikukeko")
-        checkbox2.setLayoutParams(layoutParams)
-        rootView!!.addView(checkbox2)
-
         //ボタン押下時の処理
         button.setOnClickListener{
             //editTextの値取得時
-            Log.d("test!!!","${edit.text}")
-            //radiobuttonにてチェックされている値の取得
-            Log.d("test!!!","${r_group.getCheckedRadioButtonId()}")
-            //Log.d("test!!!","${}")
             editMap!!.forEach {
                 Log.d("aaaa","${it.value!!.id}")
-                Log.d("aaaa","${it.value!!.text}")
+                //if(it.value!!.text.toString().isEmpty()){
+                  //  it.value!!.setError("文字を入力してください")
+               // }
+
             }
+            radioGroupMap!!.forEach{
+                Log.d("bbb","${it.value!!.id}")
+                Log.d("bbb","${radioValue!!.get("${it.value!!.getCheckedRadioButtonId()}")}")
+                //radioValue!!.forEach{
+                    //it.value!!.setError("チェックしてください")
+                //}
+
+            }
+            checkMap!!.forEach{
+                Log.d("ccc","${it.key!!.id}/${it.key!!.text}")
+                if(it.key!!.isChecked){
+                    Log.d("取得完了","${it.value}")
+                }
+            }
+
+            formInfoMap.forEach{
+                Log.d("aaaa","${it}")
+            }
+
         }
-
-
-        /*
-        [処理内容メモ]
-        <<フォーム作成の処理(formCreate(col_type,value,action))>>
-        onViewCreatedにover rideすること。
-        処理内容は新規作成・または更新時にフォームを作成・表示する
-
-        col_type : マップにて入力項目の属性を取得。
-        value : マップにてタップされたitem_idのvalueを取得
-        action : フォームが行うaction。現在はcreateかupdateを想定。
-        ===================================================
-        foreach(登録している項目の数)
-        when
-            TEXT_FIELD=> EditTextの文字入力
-            TEXT_AREA=>  EditTextの文字入力( android:inputType="textMultiLine")
-            ⒶDATE_TIME => DateTime入力する必要あり
-            ⒶTIME =>　    Time入力する必要あり
-            SINGLE_SELECTION => radiobuttonにて選択し作成。checkedを使う。
-            MULTIPLE_SELECTION => checkbocにて選択し作成。命名規則で判別するので規則を考えること
-            　=>fld_〇_選択肢を変数として使用。
-
-            <--下4つは今のところノープラン-->
-            KENPIN_RENDOU_QR
-            SIG_FOX
-            QR_CODE
-            TEKKILYO_RENDOU_QR
-            <------------------------------>
-        ※Ⓐについては入力形式をDBのほうに合わせる必要があるため追加で調査する必要あり。入力のさせ方に工夫必要！
-        ※update時については、初期値を入力すること。
-
-
-       <<データ新規登録処理(dataCreate(value,data_rule,target))>>
-        set.onClickListner(ボタン押下時の処理)に設定すること。
-        処理内容は新規作成・または更新時にフォームを作成・表示する
-
-        value : マップにて入力された項目とその値をマップで取得
-        data_rule : 項目ごとの制約をまとめたマップを取得
-        target : itemなのかkikiなのかを判別
-        ===================================================
-        data_ruleにて以下の判定を行う。
-            ①data-typeにてunique_chkがtrue=>重複を認めない
-        　   data-typeにてunique_chkがfalse=>重複を許可
-            ②data-typeにて、nullableがfalse =>nullを認めない
-        　   data-typeにて、nullableがtrue =>nullを許可
-            ①②の判定がうまくいかなかった場合、トーストにてエラーを周知。項目とエラー内容を表示する
-        入力されたデータを取得
-        restfulを用いてデータの新規作成を行う
-        できなかった場合、errorを表示する。（サーバーエラー？）=>ここちょっといらないかもしれない
-        return データ一覧画面に戻る。
-
-
-        <<データの更新処理(dataUpdate(value,data_rule,target))>>
-        set.onClickListner(ボタン押下時の処理)に設定すること。
-        処理内容は新規作成・または更新時にフォームを作成・表示する
-
-        value : マップにて入力された項目とその値をマップで取得
-        data_rule : 項目ごとの制約をまとめたマップを取得
-        target : itemなのかkikiなのかを判別
-        ===================================================
-        data_ruleにて以下の判定を行う。
-            ①data-typeにてunique_chkがtrue=>重複を認めない
-        　   data-typeにてunique_chkがfalse=>重複を許可
-            ②data-typeにて、nullableがfalse =>nullを認めない
-        　   data-typeにて、nullableがtrue =>nullを許可
-            ①②の判定がうまくいかなかった場合、トーストにてエラーを周知。項目とエラー内容を表示する
-        入力されたデータを取得
-        restfulを用いてデータの更新処理を行う
-        できなかった場合、errorを表示する。（サーバーエラー？）=>ここちょっといらないかもしれない
-        return データ一覧画面に戻る。
-
-         */
-    }
-
-    private fun createTextBox(activity: FragmentActivity?): TextView {
-        val text = TextView(activity)
-        text.setText("aiueo")
-        text.setLayoutParams(layoutParams)
-        return text
     }
 
     private fun getSuccess(result: MutableList<MutableMap<String, String?>>?) {
         //カラム順に並べ替える
         var cnt = 1
+        var radioCount = 1
+        var checkCount = 1
         if (result != null) {
-            result.forEach {
+            //colによる並び替えが発生しているため、ソートを行う
+            val resultSort = result!!.sortedBy { it["col"]!!.toInt() }
+            resultSort.forEach {
                 Log.d("aaaaaaa","${it}")
-                val (type,title,choiceValue) = ItemActivity().typeCheck(it)
-                when(type){
+
+                /**
+                 * formInfoには以下の情報が入っている。
+                 * ・title => 項目のタイトル
+                 * ・type => 項目のタイプ(日付入力など)
+                 * ・choiceValue => 項目が持つ選択肢
+                 * ・nullable => 項目がnullが許容するかの定義
+                 * ・unique => 項目が重複を許可するかの定義
+                 */
+                val formInfo= ItemActivity().typeCheck(it)
+                //先に項目のタイトルをセットする
+                val formSectionTitle = ItemActivity().createFormSectionTitle(formInfo.title,layoutParams,activity,formInfo.nullable)
+                //formSectionTitle.setError("入力必須です")
+                rootView!!.addView(formSectionTitle)
+
+                //フォームの項目の情報をメンバ変数に格納
+                val typeMap :MutableMap<String,String?> = mutableMapOf()
+                typeMap.set(key = "type",value = "${formInfo.type}")
+                typeMap.set(key = "nulable",value = "${formInfo.nullable}")
+                typeMap.set(key = "unique",value = "${formInfo.unique}")
+                formInfoMap.set(key = "${cnt}",value =typeMap )
+
+                when(formInfo.type){
                     FieldType.TEXT_FIELD->{
-                        val formSectionTitle = ItemActivity().createFormSectionTitle(title,layoutParams,act)
-                        val info = ItemActivity().createTextField(layoutParams,act,cnt)
-                        rootView!!.addView(formSectionTitle)
-                        rootView!!.addView(info)
-                        editMap!!.set(key="col_${cnt}",value = info)
+                        //自由入力(1行)
+                        //editTextを作成
+                        val formPart = ItemActivity().createTextField(layoutParams,activity,cnt)
+                        rootView!!.addView(formPart)
+                        //配列にeditTextの情報を格納。
+                        editMap!!.set(key="col_${cnt}",value = formPart)
                     }
 
+                    FieldType.TEXT_AREA->{
+                        //自由入力(複数行)
+                        //editTextを作成
+                        val formPart = ItemActivity().createTextAlea(layoutParams,activity,cnt)
+                        rootView!!.addView(formPart)
+                        //配列にeditTextの情報を格納
+                        editMap!!.set(key="col_${cnt}",value = formPart)
+                    }
+
+                    FieldType.DATE_TIME->{
+                        //日付入力
+                        //editTextを作成
+                        val formPart = ItemActivity().createDateTime(layoutParams,activity,cnt)
+                        rootView!!.addView(formPart)
+
+                        //editTextタップ時の処理
+                        formPart.setOnClickListener{
+                           val dtp = DatePickerDialog(getContext()!!, DatePickerDialog.OnDateSetListener{ view, y, m, d ->
+                               Toast.makeText(activity, "日付を選択しました${y}/${m+1}/${d}", Toast.LENGTH_LONG).show()
+                               //フォーマットを作成
+                               formPart.setText(String.format("%d/%02d/%02d",y,m+1,d))
+                           }, year,month,day)
+                           dtp.show()
+                       }
+                        //配列にeditTextを格納
+                        editMap!!.set(key="col_${cnt}",value = formPart)
+                    }
+
+                    FieldType.TIME->{
+                        //時間入力
+                        //editText作成
+                        val formPart = ItemActivity().createDateTime(layoutParams,activity,cnt)
+                        rootView!!.addView(formPart)
+
+                        //editTextタップ時の処理
+                        formPart.setOnClickListener{
+                            val tp = TimePickerDialog(getContext()!!,TimePickerDialog.OnTimeSetListener{view,hour,minute->
+                                Toast.makeText(activity, "時間を選択しました${hour}:${minute}", Toast.LENGTH_LONG).show()
+                                formPart.setText(String.format("%02d:%02d",hour,minute))
+                            },hour,minute,true)
+                            tp.show()
+                        }
+
+                        //配列にeditTextを格納
+                        editMap!!.set(key="col_${cnt}",value = formPart)
+                    }
+
+                    FieldType.SINGLE_SELECTION->{
+                        //ラジオボタンの時
+                        val formGroup = ItemActivity().createSelectionGroup(layoutParams,activity,cnt)
+                        formInfo.choiceValue!!.forEach {
+                            val formPart = ItemActivity().createSingleSelection(layoutParams,activity,it)
+                            radioValue!!.set(key ="${radioCount}",value = formPart )
+                            radioCount += 1
+                            formGroup.addView(formPart)
+
+                        }
+                        rootView!!.addView(formGroup)
+                        radioGroupMap!!.set(key="col_${cnt}",value = formGroup)
+                    }
+
+                    FieldType.MULTIPLE_SELECTION->{
+                        //チェックボックスの時
+                        formInfo.choiceValue!!.forEach {
+                            val formPart = ItemActivity().createMutipleSelection(layoutParams,activity,it,checkCount)
+                            Log.d("testtestest","${formPart.id}")
+                            rootView!!.addView(formPart)
+                            checkMap!!.set(key=formPart,value = "${formPart.text}")
+                            checkCount += 1
+
+                        }
+                    }
                 }
+                //フォームセクションごとにスペース入れる処理。試しに入れてみた。
+                val space = Space(activity)
+                space.setLayoutParams(layoutParamsSpace)
+                rootView!!.addView(space)
                 cnt += 1
-               /* if(type !=null && title != null) {
-                    val formTitle = ItemActivity().createFormTitle(title,layoutParams,act)
-                    rootView!!.addView(formTitle)
-                    //val formPart = ItemActivity().createFormPart(type, title, choiceValue, null,layoutParams,act)
-                    //rootView!!.addView(formPart)
-                }*/
             }
         }
     }
@@ -234,8 +239,7 @@ class ItemCreateFragment : Fragment() {
     private fun getFail(errorCode: Int) {
         Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
         //エラーのため、データを初期化する
-        fieldMap = mutableMapOf<Int, MutableMap<String, String?>>()
-
-
+        //fieldMap = mutableMapOf<Int, MutableMap<String, String?>>()
     }
+
 }
