@@ -19,6 +19,9 @@ class ViewAdapter(private val list: List<RowModel>, private val listener: ListLi
         Log.d("Adapter", "onBindViewHolder")
         holder.titleView.text = list[position].title
         holder.detailView.text = list[position].detail
+        holder.token = list[position].token
+        holder.projectId = list[position].projectId
+        holder.itemList = list[position].itemList
         holder.itemView.setOnClickListener {
             listener.onClickRow(it, list[position])
         }

@@ -1,5 +1,6 @@
 package com.v3.basis.blas.ui.fixture.fixture_search
 
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Context
 import android.net.Uri
@@ -8,6 +9,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.CalendarView
 import android.widget.EditText
 import android.widget.Toast
@@ -28,6 +30,7 @@ class FixtureSearchFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
     }
 
     override fun onCreateView(
@@ -53,6 +56,20 @@ class FixtureSearchFragment : Fragment() {
             date.show()
             val aaa = year.toString()
             kenpinDayMin.setText(aaa)
+        }
+
+        val btnSearch = root.findViewById<Button>(R.id.fixSerchBtn)
+        btnSearch.setOnClickListener{
+            AlertDialog.Builder(activity)
+                .setTitle("メッセージ")
+                .setMessage("検索結果が表示されます。\n検索機能は現在作成中です。")
+                .setPositiveButton("戻る",{dialog, which ->
+                    //TODO YESを押したときの処理
+                })
+                /*.setNegativeButton("NO", { dialog, which ->
+                    //TODO NOを押したときの処理
+                })*/
+                .show()
         }
         return root
     }

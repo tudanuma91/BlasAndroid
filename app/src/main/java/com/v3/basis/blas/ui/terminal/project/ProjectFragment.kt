@@ -15,6 +15,7 @@ import android.widget.Toast
 import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.TerminalActivity
 import com.v3.basis.blas.blasclass.rest.*
+import com.v3.basis.blas.ui.ext.getStringExtra
 import com.v3.basis.blas.ui.terminal.project.project_list_view.ViewAdapterAdapter
 import kotlinx.android.synthetic.main.fragment_project.*
 
@@ -33,13 +34,7 @@ class ProjectFragment : Fragment() {
     ): View? {
 
         homeViewModel = ViewModelProviders.of(this).get(ProjectViewModel::class.java)
-        //トークンの値を取得
-        val extras = activity?.intent?.extras
-        if (extras?.getString("token") != null) {
-            token = extras?.getString("token")
-        }
-
-        val root = inflater.inflate(R.layout.fragment_project, container, false)
+        token = getStringExtra("token") //トークンの値を取得
 
         /*
         var payload2 = mapOf("token" to token, "project_id" to 13.toString())
@@ -61,7 +56,7 @@ class ProjectFragment : Fragment() {
         // var payload2 = mapOf("token" to token, "project_id" to 1.toString(), "item_id" to 401.toString())
         // BlasRestImage("donwload", payload2, ::fieldS, ::fieldE).execute()
 
-        return root
+        return inflater.inflate(R.layout.fragment_project, container, false)
 
     }
 
@@ -159,7 +154,7 @@ class ProjectFragment : Fragment() {
      */
     private fun projectSearchSuccess(result: MutableMap<String, Int>) {
 
-        val recyclerView = recycler_list
+        val recyclerView = recyclerView
         var project_list = createProjectList(result)
         val adapter = ViewAdapterAdapter(project_list,
             object : ViewAdapterAdapter.ListListener {
