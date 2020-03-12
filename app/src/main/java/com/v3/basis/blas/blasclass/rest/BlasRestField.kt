@@ -1,7 +1,10 @@
 package com.v3.basis.blas.blasclass.rest
 
 import android.util.Log
+import android.widget.Toast
 import com.v3.basis.blas.blasclass.app.cakeToAndroid
+import org.json.JSONException
+import org.json.JSONObject
 import kotlin.reflect.KFunction1
 
 
@@ -10,7 +13,7 @@ import kotlin.reflect.KFunction1
  */
 open class BlasRestField(
     val payload:Map<String, String?>,
-    val fieldSearchSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,
+    val fieldSearchSuccess:(JSONObject)->Unit,
     val fieldSearchError:(Int)->Unit
 ) : BlasRest() {
 
@@ -53,15 +56,27 @@ open class BlasRestField(
 
         super.onPostExecute(result)
 
-        val rtn:RestfulRtn = cakeToAndroid(result, "Fields")
-        if(rtn == null) {
-            fieldSearchError(BlasRestErrCode.JSON_PARSE_ERROR)
+        // val rtn:RestfulRtn = cakeToAndroid(result, "Fields")
+
+        //BLASから取得したデータをjson形式に変換する
+        var json: JSONObject? = null
+        var errorCode:Int
+        try {
+            json = JSONObject(result)
+            //エラーコード取得
+            errorCode = json.getInt("error_code")
+
+        } catch (e: JSONException){
+            //JSONの展開に失敗
+            Toast.makeText(context, "データ取得失敗", Toast.LENGTH_LONG).show()
+            return
         }
-        else if(rtn.errorCode == 0) {
-            fieldSearchSuccess(rtn.records)
+
+        if(errorCode == 0) {
+            fieldSearchSuccess(json)
         }
         else {
-            fieldSearchError(rtn.errorCode)
+            fieldSearchError(errorCode)
         }
     }
 }

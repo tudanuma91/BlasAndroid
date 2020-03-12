@@ -15,7 +15,7 @@ import java.io.File
  * @param in projectSearchError プロジェクト取得失敗時にコールバックする関数
  */
 open class BlasRestProject(val payload:Map<String, String?>,
-                           val projectSearchSuccess:(MutableMap<String,Int>)->Unit,
+                           val projectSearchSuccess:(JSONObject)->Unit,
                            val projectSearchError:(Int)->Unit) : BlasRest() {
 
     private val SEARCH_PGOJECT_URL = BlasRest.URL + "projects/search/"
@@ -66,6 +66,11 @@ open class BlasRestProject(val payload:Map<String, String?>,
      */
     override fun onPostExecute(result: String?) {
 
+        if(result == null) {
+            projectSearchError(BlasRestErrCode.NETWORK_ERROR)
+            return
+        }
+
         super.onPostExecute(result)
 
         //BLASから取得したデータをjson形式に変換する
@@ -89,9 +94,9 @@ open class BlasRestProject(val payload:Map<String, String?>,
                 if(result != null) {
                     saveJson(cacheFileName, result)
                     if(json != null) {
-                        val projectMap = convProjectData(json)
+                        // val projectMap = convProjectData(json)
                         //コールバック
-                        projectSearchSuccess(projectMap)
+                        projectSearchSuccess(json)
                     }
                 }
             }
