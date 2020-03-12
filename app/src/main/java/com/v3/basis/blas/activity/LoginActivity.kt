@@ -13,8 +13,7 @@ import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.view.MenuItem
 import androidx.core.content.ContextCompat.getSystemService
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-
-
+import com.v3.basis.blas.ui.ext.showBackKeyForActionBar
 
 
 //ログイン画面を表示する処理
@@ -22,11 +21,7 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-
-        val actionbar = supportActionBar
-        //こいつで表示
-        actionbar?.setDisplayHomeAsUpEnabled(true)
-        actionbar?.setHomeButtonEnabled(true)
+        showBackKeyForActionBar()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

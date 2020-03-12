@@ -11,7 +11,6 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.snackbar.Snackbar
 import com.v3.basis.blas.R
 import kotlinx.android.synthetic.main.fragment_test3_first.*
 
@@ -51,7 +50,7 @@ class Test3FirstFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         ENTER_DATA_LIST = createEnterdataList(DATA_SIZE)
         DATA_LIST = createDataList(ENTER_DATA_LIST,0,PAGE_NUMBER)
-        val recyclerview = recycler_list
+        val recyclerview = recyclerView
         val adapter =ViewAdapter(DATA_LIST,
             object : ViewAdapter.ListListener{
                 override fun onClickRow(tappendView: View, rowModel: RowModel) {

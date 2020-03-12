@@ -33,8 +33,7 @@ class ItemCreateFragment : Fragment() {
     private var editMap:MutableMap<String, EditText?>? = mutableMapOf()
     private var radioGroupMap:MutableMap<String,RadioGroup?>? = mutableMapOf()
     private var radioValue :MutableMap<String,RadioButton?>? = mutableMapOf()
-    private var checkMap:MutableMap<CheckBox?,String?>? = mutableMapOf()
-   // private var fieldMap: MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
+    private var checkMap:MutableMap<String,MutableMap<String?,CheckBox?>>? = mutableMapOf()
     private var layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
     private var layoutParamsSpace = LinearLayout.LayoutParams( LinearLayout.LayoutParams.MATCH_PARENT,50)
     private val calender = Calendar.getInstance()
@@ -67,46 +66,14 @@ class ItemCreateFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         //コンテンツを配置するLinearLayoutを取得
         rootView = view.findViewById<LinearLayout>(R.id.item_create_liner)
+        //フォームセクションごとにスペース入れる処理。試しに入れてみた。
+        val space = Space(activity)
+        space.setLayoutParams(layoutParamsSpace)
+        rootView!!.addView(space)
         //レイアウトの設置位置の設定
         val payload = mapOf("token" to token, "project_id" to projectId)
         BlasRestField(payload, ::getSuccess, ::getFail).execute()
 
-        //ボタンの作成処理
-        val button = Button(activity)
-        button.text = "send"
-        button.setLayoutParams(layoutParams)
-        rootView!!.addView(button)
-
-        //ボタン押下時の処理
-        button.setOnClickListener{
-            //editTextの値取得時
-            editMap!!.forEach {
-                Log.d("aaaa","${it.value!!.id}")
-                //if(it.value!!.text.toString().isEmpty()){
-                  //  it.value!!.setError("文字を入力してください")
-               // }
-
-            }
-            radioGroupMap!!.forEach{
-                Log.d("bbb","${it.value!!.id}")
-                Log.d("bbb","${radioValue!!.get("${it.value!!.getCheckedRadioButtonId()}")}")
-                //radioValue!!.forEach{
-                    //it.value!!.setError("チェックしてください")
-                //}
-
-            }
-            checkMap!!.forEach{
-                Log.d("ccc","${it.key!!.id}/${it.key!!.text}")
-                if(it.key!!.isChecked){
-                    Log.d("取得完了","${it.value}")
-                }
-            }
-
-            formInfoMap.forEach{
-                Log.d("aaaa","${it}")
-            }
-
-        }
     }
 
     private fun getSuccess(result: MutableList<MutableMap<String, String?>>?) {
@@ -130,14 +97,14 @@ class ItemCreateFragment : Fragment() {
                  */
                 val formInfo= ItemActivity().typeCheck(it)
                 //先に項目のタイトルをセットする
-                val formSectionTitle = ItemActivity().createFormSectionTitle(formInfo.title,layoutParams,activity,formInfo.nullable)
+                val formSectionTitle = ItemActivity().createFormSectionTitle(layoutParams,activity,formInfo)
                 //formSectionTitle.setError("入力必須です")
                 rootView!!.addView(formSectionTitle)
 
                 //フォームの項目の情報をメンバ変数に格納
                 val typeMap :MutableMap<String,String?> = mutableMapOf()
                 typeMap.set(key = "type",value = "${formInfo.type}")
-                typeMap.set(key = "nulable",value = "${formInfo.nullable}")
+                typeMap.set(key = "require",value = "${formInfo.require}")
                 typeMap.set(key = "unique",value = "${formInfo.unique}")
                 formInfoMap.set(key = "${cnt}",value =typeMap )
 
@@ -146,6 +113,9 @@ class ItemCreateFragment : Fragment() {
                         //自由入力(1行)
                         //editTextを作成
                         val formPart = ItemActivity().createTextField(layoutParams,activity,cnt)
+                        if(formInfo.require == FieldType.TURE){
+                            formPart.setError("必須入力の項目です")
+                        }
                         rootView!!.addView(formPart)
                         //配列にeditTextの情報を格納。
                         editMap!!.set(key="col_${cnt}",value = formPart)
@@ -155,6 +125,9 @@ class ItemCreateFragment : Fragment() {
                         //自由入力(複数行)
                         //editTextを作成
                         val formPart = ItemActivity().createTextAlea(layoutParams,activity,cnt)
+                        if(formInfo.require == FieldType.TURE){
+                            formPart.setError("必須入力の項目です")
+                        }
                         rootView!!.addView(formPart)
                         //配列にeditTextの情報を格納
                         editMap!!.set(key="col_${cnt}",value = formPart)
@@ -164,6 +137,9 @@ class ItemCreateFragment : Fragment() {
                         //日付入力
                         //editTextを作成
                         val formPart = ItemActivity().createDateTime(layoutParams,activity,cnt)
+                        if(formInfo.require == FieldType.TURE){
+                            formPart.setError("必須入力の項目です")
+                        }
                         rootView!!.addView(formPart)
 
                         //editTextタップ時の処理
@@ -183,6 +159,9 @@ class ItemCreateFragment : Fragment() {
                         //時間入力
                         //editText作成
                         val formPart = ItemActivity().createDateTime(layoutParams,activity,cnt)
+                        if(formInfo.require == FieldType.TURE){
+                            formPart.setError("必須入力の項目です")
+                        }
                         rootView!!.addView(formPart)
 
                         //editTextタップ時の処理
@@ -214,14 +193,17 @@ class ItemCreateFragment : Fragment() {
 
                     FieldType.MULTIPLE_SELECTION->{
                         //チェックボックスの時
+                        var colCheckMap : MutableMap<String?,CheckBox?> = mutableMapOf()
                         formInfo.choiceValue!!.forEach {
                             val formPart = ItemActivity().createMutipleSelection(layoutParams,activity,it,checkCount)
                             Log.d("testtestest","${formPart.id}")
                             rootView!!.addView(formPart)
-                            checkMap!!.set(key=formPart,value = "${formPart.text}")
+                            colCheckMap!!.set(key = "col_${cnt}_${checkCount}",value = formPart)
+                           // checkMap!!.set(key = "col_${cnt}_${checkCount}",value = formPart)
                             checkCount += 1
 
                         }
+                        checkMap!!.set(key = "col_${cnt}",value = colCheckMap)
                     }
                 }
                 //フォームセクションごとにスペース入れる処理。試しに入れてみた。
@@ -229,6 +211,50 @@ class ItemCreateFragment : Fragment() {
                 space.setLayoutParams(layoutParamsSpace)
                 rootView!!.addView(space)
                 cnt += 1
+            }
+            //ボタンの作成処理
+            val button = Button(activity)
+            button.text = "send"
+            button.setLayoutParams(layoutParams)
+            rootView!!.addView(button)
+
+            //ボタン押下時の処理
+            button.setOnClickListener{
+                var cnt = 1
+                formInfoMap.forEach{
+                    when(it.value["type"]){
+                        FieldType.TEXT_FIELD,
+                        FieldType.TEXT_AREA,
+                        FieldType.DATE_TIME,
+                        FieldType.TIME->{
+                            //自由入力(1行)・自由入力(複数行)・日付入力・時間入力
+                            val editText = editMap!!.get("col_${cnt}")
+                            Log.d("aaa","${editText!!.text}")
+                        }
+                        FieldType.SINGLE_SELECTION->{
+                            //ラジオボタン
+                            val radioGroup = radioGroupMap!!.get("col_${cnt}")
+                            val checkedRadioId = radioGroup!!.checkedRadioButtonId.toString()
+                            Log.d("bbb","${checkedRadioId}")
+                            val aaa = radioValue!!.get(checkedRadioId)
+                            if(aaa != null) {
+                                Log.d("tttt", "${aaa.text}")
+                            }
+                        }
+                        FieldType.MULTIPLE_SELECTION->{
+                            //チェックボックス
+                            val colCheckMap = checkMap!!.get("col_${cnt}")
+                            colCheckMap!!.forEach {
+                                if(it.value!!.isChecked){
+                                    Log.d("cccc","${it.value!!.text}")
+                                    val aaa = it.value!!.text.toString()
+                                }
+                            }
+                        }
+                    }
+                    cnt += 1
+                }
+
             }
         }
     }

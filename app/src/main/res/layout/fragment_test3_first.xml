@@ -7,7 +7,7 @@
     <!--ただのTextViewです。stringファイルにテキストを設定しておきましょう。-->
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_list"
+        android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

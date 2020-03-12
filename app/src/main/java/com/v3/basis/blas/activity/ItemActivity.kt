@@ -15,6 +15,8 @@ import androidx.navigation.ui.NavigationUI.setupWithNavController
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.config.FieldType
+import com.v3.basis.blas.ui.ext.showBackKeyForActionBar
+
 import kotlinx.android.synthetic.main.activity_item.*
 
 class ItemActivity : AppCompatActivity() {
@@ -22,7 +24,7 @@ class ItemActivity : AppCompatActivity() {
     data class formType(var type: String?,
                         var title: String?,
                         var choiceValue: List<String?>?,
-                        var nullable:String?,
+                        var require:String?,
                         var unique:String?)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,11 +51,8 @@ class ItemActivity : AppCompatActivity() {
          * リスナーにて再度[setDisplayHomeAsUpEnabled]trueとする。
          */
         navController.addOnDestinationChangedListener{ _, destination, _ ->
-            supportActionBar?.apply {
-                title = destination.label
-                setDisplayHomeAsUpEnabled(true)
-                setHomeButtonEnabled(true)
-            }
+            showBackKeyForActionBar()
+            supportActionBar?.title = destination.label
         }
     }
 
@@ -84,6 +83,8 @@ class ItemActivity : AppCompatActivity() {
     }
 
 
+
+
     /**
      * 取得したアイテムフィールドから項目のタイプ・名前・選択肢を返す
      * [引数]
@@ -110,7 +111,7 @@ class ItemActivity : AppCompatActivity() {
         var formInfo =  formType(rtnType,rtnTitle, choiceValue, nullable,unique)
         if(list!=null){
             formInfo.title = list.get("name")
-            formInfo.nullable = list.get("essential").toString()
+            formInfo.require = list.get("essential").toString()
             formInfo.unique = list.get("unique_chk").toString()
 
             val chkType = list.get("type")
@@ -158,12 +159,37 @@ class ItemActivity : AppCompatActivity() {
      *         titleがnullの時 => タイトルnullのまま作成
      *         それ以外 => titleの値をタイトルに反映する
      */
-    fun createFormSectionTitle(title:String?, params:LinearLayout.LayoutParams?, act:FragmentActivity?,nullable: String?): TextView {
+    fun createFormSectionTitle(params:LinearLayout.LayoutParams?, act:FragmentActivity?,formInfo:formType): TextView {
         val view = TextView(act)
-        var formTitle = if(title != null){"${title}"}else{" "}
-        if(nullable == FieldType.TURE) {
-             formTitle = if(title != null){"${title}(必須入力)"}else{" "}
+        var formTitle = if(formInfo.title != null){"${formInfo.title}"}else{" "}
+        if(formInfo.require == FieldType.TURE) {
+            when(formInfo.type){
+                FieldType.SINGLE_SELECTION->{view.setError("入力必須項目です")}
+                FieldType.MULTIPLE_SELECTION->{view.setError("入力必須項目です")}
+            }
         }
+        view.setText("${formTitle}")
+        //文字の色変更したい。
+        view.setTextColor(Color.BLACK)
+        view.setLayoutParams(params)
+        return view
+    }
+
+    /**
+     * 取得した項目名をフォームの項目のタイトルにセットする。
+     * [引数]
+     * title => string。取得したタイトルを指定
+     * params => LinearLayout.params。表示するviewの設定を指定
+     * act => FragmentActivity。この操作を行うactivity指定
+     *
+     * [返り値]
+     * view => paramsの設定を反映したにtextViewを作成。titleをタイトルに反映して返す。
+     *         titleがnullの時 => タイトルnullのまま作成
+     *         それ以外 => titleの値をタイトルに反映する
+     */
+    fun createFormSectionTitleSearch(params:LinearLayout.LayoutParams?, act:FragmentActivity?,formInfo:formType): TextView {
+        val view = TextView(act)
+        val formTitle = if(formInfo.title != null){"${formInfo.title}"}else{" "}
         view.setText("${formTitle}")
         //文字の色変更したい。
         view.setTextColor(Color.BLACK)
