@@ -34,14 +34,29 @@ open class BlasRestProject(val payload:Map<String, String?>,
         var response:String? = null
         try {
             response = super.getResponseData(payload,"GET", SEARCH_PGOJECT_URL)
+
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)
+
+            //通信エラーが発生したため、キャッシュを読み込む
+            if(File(cacheFileName).exists()) {
+                try {
+                    response = loadJson(cacheFileName)
+                } catch(e: Exception) {
+                    //キャッシュの読み込み失敗
+                    projectSearchError(BlasRestErrCode.NETWORK_ERROR)
+                    return response
+                }
+            } else {
+                //キャッシュファイルがないため、エラーにする
+                projectSearchError(BlasRestErrCode.NETWORK_ERROR)
+                return response
+            }
         }
 
         return response
     }
-
 
     /**
      * プロジェクト一覧を取得する
@@ -50,45 +65,25 @@ open class BlasRestProject(val payload:Map<String, String?>,
      * 　　　　　異常時：projectSearchErrorをコールバックする。
      */
     override fun onPostExecute(result: String?) {
-        if(result == null) {
-            //通信エラーが発生したため、キャッシュを読み込む
-            if(File(cacheFileName).exists()) {
-                try {
-                    val json = loadJson(cacheFileName)
-                    val projectMap = convProjectData(json)
-                    projectSearchSuccess(projectMap)
-                }
-                catch(e: Exception) {
-                    //キャッシュの読み込み失敗
-                    projectSearchError(BlasRestErrCode.NETWORK_ERROR)
-                    return
-                }
-            }
-            else {
-                //キャッシュファイルがないため、エラーにする
-                projectSearchError(BlasRestErrCode.NETWORK_ERROR)
-                return
-            }
-        }
 
         super.onPostExecute(result)
 
         //BLASから取得したデータをjson形式に変換する
         var json:JSONObject? = null
-        var errorCode:Int = 0
+        var errorCode:Int
         try {
             json = JSONObject(result)
             //エラーコード取得
             errorCode = json.getInt("error_code")
-        }
-        catch (e: JSONException){
+
+        } catch (e: JSONException){
             //JSONの展開に失敗
             Toast.makeText(context, "データ取得失敗", Toast.LENGTH_LONG).show()
             return
         }
 
         //正常時だけキャッシュに保存する
-        if(errorCode == 0) {
+        if(errorCode == 0 && result != null) {
             //正常のときだけキャッシュにjsonファイルを保存する
             try {
                 if(result != null) {
@@ -103,19 +98,10 @@ open class BlasRestProject(val payload:Map<String, String?>,
             catch(e: Exception) {
                 Toast.makeText(context, e.message, Toast.LENGTH_LONG).show()
             }
+        } else {
+            projectSearchError(errorCode)
         }
-        else {
-            //エラーが発生したため、通信エラーなのでキャッシュを読む
-            if(File(cacheFileName).exists()) {
-                val json = loadJson(cacheFileName)
-                val projectMap = convProjectData(json)
-                projectSearchSuccess(projectMap)
-            }
-            else {
-                //キャッシュファイルがないので諦めてエラーを返す
-                projectSearchError(errorCode)
-            }
-        }
+
     }
 
     private fun convProjectData(json:JSONObject):MutableMap<String, Int> {

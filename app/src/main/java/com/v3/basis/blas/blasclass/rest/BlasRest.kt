@@ -322,12 +322,13 @@ open class BlasRest() : AsyncTask<String, String, String>() {
      * @param fileName 読み込むファイル名
      * @return JSONObject
      */
-    fun loadJson(fileName:String):JSONObject {
+    fun loadJson(fileName:String):String {
         var jsonText = ""
         File(fileName).reader().use {
             jsonText = it.readText()
 
         }
-        return JSONObject(jsonText)
+        // return JSONObject(jsonText)
+        return jsonText
     }
 }
