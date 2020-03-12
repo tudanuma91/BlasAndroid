@@ -41,6 +41,7 @@ class ItemEditFragment : Fragment() {
     private val day = calender.get(Calendar.DAY_OF_MONTH)
     private val hour = calender.get(Calendar.YEAR)
     private val minute = calender.get(Calendar.MONTH)
+    private var valueList:ArrayList<String?> = arrayListOf()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -117,6 +118,9 @@ class ItemEditFragment : Fragment() {
                         val formPart = ItemActivity().createTextField(layoutParams,activity,cnt)
                         if(formInfo.require == FieldType.TURE){
                             formPart.setError("必須入力の項目です")
+                        }
+                        if(valueList[cnt] != null){
+                            formPart.setText(valueList[cnt])
                         }
                         rootView!!.addView(formPart)
                         //配列にeditTextの情報を格納。

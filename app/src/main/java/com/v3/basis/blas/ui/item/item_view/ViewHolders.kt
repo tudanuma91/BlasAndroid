@@ -40,26 +40,25 @@ class ViewHolders(itemView: View) : RecyclerView.ViewHolder(itemView){
         }
 
         //画像アイコンタップ時の処理
-        val valueList :Array<String?> = arrayOf("test")
+        val valueList :ArrayList<String?> = arrayListOf()
+        var check =false
         image2.setOnClickListener{
-            itemList.forEach{
-                if(it["item_id"] == titleView.text.toString() ){
-                    for(i  in 1..150){
-                        //valueList.add(i,it.get("fld_${i}"))
-                       // valueList.set(i,it.get("fld_${i}"))
+            for(i in 0..itemList.size){
+                val list = itemList.get(i)
+                if(list["item_id"] == titleView.text.toString() ) {
+                    for (i in 1..150) {
+                        valueList.add("${list["fld${i}"]}")
+                        // valueList.set(i,it.get("fld_${i}"))
                     }
-                    return@forEach
+                  break
                 }
-            }
-            valueList.forEach {
-                Log.d("aaaaaaaaaaa","${it}")
             }
             val context = itemView.context
             val intent = Intent(context, ItemEditActivity::class.java)
             intent.putExtra("item_id", "${titleView.text}")
             intent.putExtra("token", token)
             intent.putExtra("project_id", projectId)
-            //intent.putExtra("value_list",valueList)
+            intent.putExtra("value_list",valueList)
             context.startActivity(intent)
         }
 
