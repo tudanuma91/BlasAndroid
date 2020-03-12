@@ -17,9 +17,11 @@ import androidx.fragment.app.FragmentActivity
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.blasclass.config.FieldType
+import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestImageField
 import com.v3.basis.blas.ui.item.item_view.ItemViewFragment
+import org.json.JSONObject
 import java.util.*
 
 /**
@@ -76,15 +78,16 @@ class ItemCreateFragment : Fragment() {
 
     }
 
-    private fun getSuccess(result: MutableList<MutableMap<String, String?>>?) {
+    private fun getSuccess(result: JSONObject?) {
         //カラム順に並べ替える
         var cnt = 1
         var radioCount = 1
         var checkCount = 1
         if (result != null) {
             //colによる並び替えが発生しているため、ソートを行う
-            val resultSort = result!!.sortedBy { it["col"]!!.toInt() }
-            resultSort.forEach {
+           // val resultSort = result!!.sortedBy { it["col"]!!.toInt() }
+            val sortFormFieldList = RestHelper().createFormField(result)
+            sortFormFieldList.forEach {
                 Log.d("aaaaaaa","${it}")
 
                 /**

@@ -42,7 +42,6 @@ class FixtureActivity : AppCompatActivity() {
         VibrationEffect.DEFAULT_AMPLITUDE
     )
     private var tone: ToneGenerator = ToneGenerator(AudioManager.STREAM_SYSTEM, ToneGenerator.MAX_VOLUME)
-    private var fragm :FragmentActivity? = null
 
    /* QRコード読を読み取りました</string>
     <string name="error_create_qr">すでに登録済のQRコードです</string>

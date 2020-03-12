@@ -14,9 +14,11 @@ import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.Test3Activity
 import com.v3.basis.blas.blasclass.config.FieldType
+import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.ui.item.item_result.ItemResultFragment
 import com.v3.basis.blas.ui.test3.Test3Second.Test3Second2Fragment
+import org.json.JSONObject
 import java.util.*
 
 /**
@@ -75,15 +77,14 @@ class ItemSearchFragment : Fragment() {
         BlasRestField(payload, ::getSuccess, ::getFail).execute()
     }
 
-    private fun getSuccess(result: MutableList<MutableMap<String, String?>>?) {
+    private fun getSuccess(result:JSONObject?) {
         //カラム順に並べ替える
         var cnt = 1
-        var radioCount = 1
         var checkCount = 1
         if (result != null) {
             //colによる並び替えが発生しているため、ソートを行う
-            val resultSort = result!!.sortedBy { it["col"]!!.toInt() }
-            resultSort.forEach {
+            val sortFormFieldList = RestHelper().createFormField(result)
+            sortFormFieldList.forEach  {
                 Log.d("aaaaaaa","${it}")
 
                 /**

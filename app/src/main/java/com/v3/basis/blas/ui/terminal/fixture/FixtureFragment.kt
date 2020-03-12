@@ -13,12 +13,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureActivity
 import com.v3.basis.blas.activity.TerminalActivity
+import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestProject
 import com.v3.basis.blas.ui.ext.getStringExtra
 import com.v3.basis.blas.ui.terminal.fixture.project_list_view.RowModel
 import com.v3.basis.blas.ui.terminal.fixture.project_list_view.ViewAdapterAdapter
 import kotlinx.android.synthetic.main.fragment_project.*
+import org.json.JSONObject
 
 class FixtureFragment : Fragment() {
 
@@ -48,9 +50,9 @@ class FixtureFragment : Fragment() {
         }
     }
 
-    private fun projectSearchSuccess(result: MutableMap<String, Int>) {
-
-        val projectList = createProjectList(result)
+    private fun projectSearchSuccess(result:JSONObject) {
+        val newMap = RestHelper().createProjectList(result)
+        val projectList = createProjectList(newMap)
         val adapter = ViewAdapterAdapter(projectList,
             object : ViewAdapterAdapter.ListListener {
                 override fun onClickRow(tappedView: View, rowModel: RowModel) {
@@ -102,13 +104,15 @@ class FixtureFragment : Fragment() {
      * @param projectのマップ形式のデータ
      * @return プロジェクトのリスト
      */
-    private fun createProjectList(from: MutableMap<String, Int>): List<RowModel> {
+    private fun createProjectList(from: MutableMap<String,MutableMap<String, String>>): List<RowModel> {
         val dataList = mutableListOf<RowModel>()
 
-        for ((project_name, project_id) in from) {
+        from.forEach{
+            val project_name = it.value["project_name"].toString()
+            val project_id = it.value["project_id"].toString()
             val data: RowModel =
                 RowModel().also {
-                    it.detail = project_id.toString()
+                    it.detail = project_id
                     it.title = project_name
                 }
             dataList.add(data)

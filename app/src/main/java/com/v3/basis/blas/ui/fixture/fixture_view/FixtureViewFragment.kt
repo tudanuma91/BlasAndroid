@@ -70,11 +70,6 @@ class FixtureViewFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(activity)
         recyclerView.adapter = adapter
 
-        val payload = mapOf("token" to token )
-        Log.d("会社を取得する","取得開始")
-        Log.d("会社を取得する","${token}")
-        BlasRestOrgs(payload, ::orgGetSuccess, ::orgGetError).execute()
-
         //呼ぶタイミングを確定させる！！
         val payload2 = mapOf("token" to token, "project_id" to project_id)
         Log.d("testtest","取得する")
@@ -227,19 +222,6 @@ class FixtureViewFragment : Fragment() {
         return value
     }
 
-    /**
-     * 会社取得成功時
-     */
-    private fun orgGetSuccess(result: MutableList<MutableMap<String, String?>>?){
-        Log.d("取得成功","${result}")
-    }
-
-    /**
-     * 会社取得失敗時
-     */
-    private fun orgGetError(errorCode: Int){
-        Log.d("取得失敗","${errorCode}")
-    }
 
     private fun setValue(value:String): String {
         if(value == "null"){

@@ -14,10 +14,12 @@ import com.v3.basis.blas.ui.terminal.project.project_list_view.RowModel
 import android.widget.Toast
 import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.TerminalActivity
+import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.*
 import com.v3.basis.blas.ui.ext.getStringExtra
 import com.v3.basis.blas.ui.terminal.project.project_list_view.ViewAdapterAdapter
 import kotlinx.android.synthetic.main.fragment_project.*
+import org.json.JSONObject
 
 /**
  * 表示・遷移などデータ管理画面にかかわる処理を行う。
@@ -60,56 +62,6 @@ class ProjectFragment : Fragment() {
 
     }
 
-    private fun fieldS(result: MutableList<MutableMap<String, String?>>?) {
-        val map = mutableMapOf<String, String>()
-        var col = "1"
-        //val cnt = 1
-        if (result != null) {
-            result.forEach {
-                for ((k, v) in it) {
-                    when (k) {
-                        "col" -> {
-                            col = v.toString()
-                        }
-                        "name" -> {
-                            map["fld_${col}(name)"] = v.toString()
-                        }
-                        "type" -> {
-                            map["fld_${col}(type)"] = v.toString()
-                        }
-                        "choice" -> {
-                            map["fld_${col}(choice)"] = v.toString()
-                        }
-                    }
-                    Log.d("konishi succcess", "${k}  ${v}")
-                    /* Toast.makeText(getActivity(), "field success", Toast.LENGTH_LONG).show()
-        if(result != null) {
-            result.forEach {
-                /*for((v, k) in it) {
-                    Log.d("konishi", "${v} ${k}")
-                }*/
-                var base64_img = it["image"]
-                if(context != null){
-                    val img_byte = Base64.decode(base64_img, Base64.DEFAULT)
-                    val fileOutputStream: FileOutputStream = context!!.openFileOutput("supepe.jpg", Context.MODE_PRIVATE)
-                    fileOutputStream.write(img_byte)
-                    fileOutputStream.close()
-
-                    val fileInputStream: FileInputStream = context!!.openFileInput("supepe.jpg")
-                    val bytes = fileInputStream.readBytes()
-                    val aaa = Base64.encodeToString(bytes, Base64.DEFAULT)
-                    //Log.d("konishi", base64)
-                    Log.d("konishi", aaa)
-                }*/
-
-
-                }
-                for ((k, v) in map) {
-                    Log.d("fld1_name", "NAME => ${k}=>${v}")
-                }
-            }
-        }
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -133,13 +85,14 @@ class ProjectFragment : Fragment() {
      * @param projectのマップ形式のデータ
      * @return プロジェクトのリスト
      */
-    private fun createProjectList(from: MutableMap<String, Int>): List<RowModel> {
+    private fun createProjectList(from: MutableMap<String,MutableMap<String, String>>): List<RowModel> {
         val dataList = mutableListOf<RowModel>()
-
-        for ((project_name, project_id) in from) {
+        from.forEach{
+            val project_name = it.value["project_name"].toString()
+            val project_id = it.value["project_id"].toString()
             val data: RowModel =
                 RowModel().also {
-                    it.detail = project_id.toString()
+                    it.detail = project_id
                     it.title = project_name
                 }
             dataList.add(data)
@@ -152,10 +105,10 @@ class ProjectFragment : Fragment() {
      * @param  プロジェクト名 to プロジェクトIDのマップ形式
      * @return なし
      */
-    private fun projectSearchSuccess(result: MutableMap<String, Int>) {
-
+    private fun projectSearchSuccess(result: JSONObject) {
+        val newMap = RestHelper().createProjectList(result)
         val recyclerView = recyclerView
-        var project_list = createProjectList(result)
+        var project_list = createProjectList(newMap)
         val adapter = ViewAdapterAdapter(project_list,
             object : ViewAdapterAdapter.ListListener {
                 override fun onClickRow(tappedView: View, rowModel: RowModel) {
