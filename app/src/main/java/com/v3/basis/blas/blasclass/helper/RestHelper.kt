@@ -62,6 +62,7 @@ class RestHelper {
      * 登録したデータを取得する
      * この処理すごいもったいないからあとで何とかしましょう！！
      */
+    //TODO:この処理何とかすること！！
     fun createItemList(result:JSONObject): MutableList<MutableMap<String, String?>> {
         Log.d("fun_createFieldList","start")
         val rtnMap :MutableList<MutableMap<String, String?>> = mutableListOf()
