@@ -5,6 +5,7 @@ import android.widget.Toast
 import com.v3.basis.blas.blasclass.app.cakeToAndroid
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.File
 
 
 /**
@@ -17,6 +18,10 @@ open class BlasRestImage(val crud:String = "download",
 
     companion object {
         val TABLE_NAME = "Image"
+    }
+
+    init{
+        cacheFileName = context.filesDir.toString() +  "/image_" + payload["item_id"] + ".json"
     }
 
     /**
@@ -48,6 +53,22 @@ open class BlasRestImage(val crud:String = "download",
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)
+
+            if(method == "GET") {
+
+                //通信エラーが発生したため、キャッシュを読み込む
+                if (File(cacheFileName).exists()) {
+                    try {
+                        response = loadJson(cacheFileName)
+                    } catch (e: Exception) {
+                        //キャッシュの読み込み失敗
+                        funcError(BlasRestErrCode.FILE_READ_ERROR)
+                    }
+                } else {
+                    //キャッシュファイルがないため、エラーにする
+                    funcError(BlasRestErrCode.NETWORK_ERROR)
+                }
+            }
         }
         return response
     }

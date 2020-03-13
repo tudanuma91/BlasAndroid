@@ -23,7 +23,6 @@ open class BlasRestProject(val payload:Map<String, String?>,
         cacheFileName = context.filesDir.toString() + "/project.json"
     }
 
-
     /**
      * プロジェクト一覧取得要求をBLASに送信する
      * @param in params 指定なし
@@ -45,13 +44,11 @@ open class BlasRestProject(val payload:Map<String, String?>,
                     response = loadJson(cacheFileName)
                 } catch(e: Exception) {
                     //キャッシュの読み込み失敗
-                    projectSearchError(BlasRestErrCode.NETWORK_ERROR)
-                    return response
+                    projectSearchError(BlasRestErrCode.FILE_READ_ERROR)
                 }
             } else {
                 //キャッシュファイルがないため、エラーにする
                 projectSearchError(BlasRestErrCode.NETWORK_ERROR)
-                return response
             }
         }
 

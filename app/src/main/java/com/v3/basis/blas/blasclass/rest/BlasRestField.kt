@@ -21,6 +21,10 @@ open class BlasRestField(
         val FIELD_SEARCH_URL = BlasRest.URL + "project_fields/search/"
     }
 
+    init{
+        cacheFileName = context.filesDir.toString() +  "/field_" + payload["project_id"] + ".json"
+    }
+
     /**
      * プロジェクトに設定されているフィールドの情報取得要求を行う
      * @param in params 指定なし

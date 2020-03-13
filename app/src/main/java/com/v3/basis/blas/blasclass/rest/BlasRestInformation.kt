@@ -37,9 +37,11 @@ open class BlasRestInformation(val crud:String = "search",
         when(crud) {
             "search" -> {
                 blasUrl = BlasRest.URL + "informations/search/"
+                cacheFileName = context.filesDir.toString() + "/information.json"
             }
             "download" -> {
                 blasUrl = BlasRest.URL + "informations/download/"
+                cacheFileName = context.filesDir.toString() +  "/infoFile_" + payload["information_id"] + ".json"
             }
         }
 
