@@ -89,7 +89,7 @@ class ItemViewFragment : Fragment() {
         itemList.forEach {
             val itemRecord = it
             val colMax = fieldMap.size
-            val item_id = it["item_id"]
+            val item_id = itemRecord["item_id"].toString()
             var text: String? = "String"
             var loopcnt = 1
             Log.d("freaga","${it}")
@@ -128,7 +128,7 @@ class ItemViewFragment : Fragment() {
                     it.itemList = itemList
                 }
                 dataList.add(rowModel)
-               // old_item_id = item_id!!
+                old_item_id = item_id!!
             }
         }
         return dataList

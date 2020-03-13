@@ -75,6 +75,7 @@ class RestHelper {
             val item = jsonField.getJSONObject("Item")
             Log.d("ssss","${item}")
             Log.d("ssss","${itemList.length()}")
+            valueMap.set(key = "item_id",value = item["item_id"].toString() )
             for(j in 1 ..150 ){
                 valueMap.set(key = "fld${j}",value = item["fld${j}"].toString())
             }

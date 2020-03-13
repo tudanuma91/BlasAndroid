@@ -121,9 +121,9 @@ class ItemEditFragment : Fragment() {
                         if(formInfo.require == FieldType.TURE){
                             formPart.setError("必須入力の項目です")
                         }
-                        if(valueList[cnt] != null){
+                       /* if(valueList[cnt] != null){
                             formPart.setText(valueList[cnt])
-                        }
+                        }*/
                         rootView!!.addView(formPart)
                         //配列にeditTextの情報を格納。
                         editMap!!.set(key="col_${cnt}",value = formPart)
