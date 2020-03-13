@@ -1,7 +1,10 @@
 package com.v3.basis.blas.blasclass.rest
 import android.util.Base64
 import android.util.Log
+import android.widget.Toast
 import com.v3.basis.blas.blasclass.app.cakeToAndroid
+import org.json.JSONException
+import org.json.JSONObject
 
 
 /**
@@ -9,7 +12,7 @@ import com.v3.basis.blas.blasclass.app.cakeToAndroid
  */
 open class BlasRestImage(val crud:String = "download",
                          val payload:Map<String, String?>,
-                         val funcSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,
+                         val funcSuccess:(JSONObject)->Unit,
                          val funcError:(Int)->Unit) : BlasRest() {
 
     companion object {
@@ -65,15 +68,28 @@ open class BlasRestImage(val crud:String = "download",
 
         super.onPostExecute(result)
 
-        val rtn:RestfulRtn = cakeToAndroid(result, TABLE_NAME)
-        if(rtn == null) {
+        //BLASから取得したデータをjson形式に変換する
+        var json:JSONObject? = null
+        var errorCode:Int
+        try {
+            json = JSONObject(result)
+            //エラーコード取得
+            errorCode = json.getInt("error_code")
+
+        } catch (e: JSONException){
+            //JSONの展開に失敗
+            Toast.makeText(context, "データ取得失敗", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        if(json == null) {
             funcError(BlasRestErrCode.JSON_PARSE_ERROR)
         }
-        else if(rtn.errorCode == 0) {
-            funcSuccess(rtn.records)
+        else if(errorCode == 0) {
+            funcSuccess(json)
         }
         else {
-            funcError(rtn.errorCode)
+            funcError(errorCode)
         }
     }
 

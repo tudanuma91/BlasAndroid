@@ -14,11 +14,13 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemActivity
+import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.ext.getStringExtra
 import kotlinx.android.synthetic.main.fragment_item_view.*
 import kotlinx.android.synthetic.main.list_item.*
+import org.json.JSONObject
 
 
 /**
@@ -77,9 +79,6 @@ class ItemViewFragment : Fragment() {
 
     private fun createDataList(): List<RowModel> {
 
-        //プレファレンスにアクセス。値を取得する
-        //val pref = PreferenceManager.getDefaultSharedPreferences(activity)
-        //val aaa = pref.getStringSet("item_col${project_id}",mutableSetOf())
         var cnt = 1
         var old_item_id = "0"
         itemList.forEach {
@@ -93,6 +92,7 @@ class ItemViewFragment : Fragment() {
             val item_id = it["item_id"]
             var text: String? = "String"
             var loopcnt = 1
+            Log.d("freaga","${it}")
 
             if (item_id?.toInt() !== old_item_id.toInt()) {
                 //Log.d("【old_item_id】", "${old_item_id}")
@@ -108,10 +108,10 @@ class ItemViewFragment : Fragment() {
                         //カラム名取得
                         //val colName = fieldMap[col]!!["name"]
                         //カラム名の取得
-                        text = "${fieldMap[col]!!["name"]}"
+                        text = "${fieldMap[col]!!["field_name"]}"
                         text += "\n${itemRecord[fldName]}"
                     } else {
-                        text += "\n${fieldMap[col]!!["name"]}"
+                        text += "\n${fieldMap[col]!!["field_name"]}"
                         text += "\n${itemRecord[fldName]}"
                     }
                     loopcnt += 1
@@ -128,7 +128,7 @@ class ItemViewFragment : Fragment() {
                     it.itemList = itemList
                 }
                 dataList.add(rowModel)
-                old_item_id = item_id!!
+               // old_item_id = item_id!!
             }
         }
         return dataList
@@ -146,9 +146,12 @@ class ItemViewFragment : Fragment() {
     /**
      * データ取得時
      */
-    private fun itemRecv(result: MutableList<MutableMap<String, String?>>?) {
+    private fun itemRecv(result: JSONObject) {
         itemList.clear()
-        result?.also { itemList.addAll(0, it) }
+        Log.d("aaaaaaa","${result}")
+        val itemMap = RestHelper().createItemList(result)
+
+        itemMap?.also { itemList.addAll(0, itemMap) }
         if (itemList.isNotEmpty() && fieldMap.isNotEmpty()) {
             setAdapter()
         }
@@ -157,16 +160,15 @@ class ItemViewFragment : Fragment() {
     /**
      * フィールド取得時
      */
-    private fun fieldRecv(result: MutableList<MutableMap<String, String?>>?) {
+    private fun fieldRecv(result: JSONObject) {
         //カラム順に並べ替える
-        if(result != null){
-            result.forEach {
-                val col = it["col"]?.toInt()
-                if(col != null){
-                    //から矛盾にデータを入れ替える。リスト形式からmap形式に変更
-                    fieldMap[col] = it
-                }
-            }
+        fieldMap.clear()
+        Log.d("aaaaa","${result}")
+        val fieldList = RestHelper().createFieldList(result)
+        var cnt = 1
+        fieldList.forEach{
+            fieldMap[cnt] = it
+            cnt +=1
         }
 
         if(itemList.isNotEmpty() && fieldMap.isNotEmpty()) {

@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.v3.basis.blas.blasclass.rest
 
 import android.content.ContentValues
@@ -39,6 +41,7 @@ data class FuncList(
 /**
  * Restful通信をする際に使用するクラスの親クラス
  */
+@Suppress("DEPRECATION")
 open class BlasRest() : AsyncTask<String, String, String>() {
 
     companion object {

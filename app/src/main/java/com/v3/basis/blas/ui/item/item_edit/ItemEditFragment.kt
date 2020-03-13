@@ -13,7 +13,9 @@ import android.widget.*
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.blasclass.config.FieldType
+import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestField
+import org.json.JSONObject
 import java.util.*
 
 /**
@@ -78,7 +80,7 @@ class ItemEditFragment : Fragment() {
         BlasRestField(payload, ::getSuccess, ::getFail).execute()
     }
 
-    private fun getSuccess(result: MutableList<MutableMap<String, String?>>?) {
+    private fun getSuccess(result: JSONObject?) {
         //カラム順に並べ替える
         Log.d("呼ばれた","呼ばれた")
         var cnt = 1
@@ -86,8 +88,8 @@ class ItemEditFragment : Fragment() {
         var checkCount = 1
         if (result != null) {
             //colによる並び替えが発生しているため、ソートを行う
-            val resultSort = result!!.sortedBy { it["col"]!!.toInt() }
-            resultSort.forEach {
+            val sortFormFieldList = RestHelper().createFormField(result)
+            sortFormFieldList.forEach {
                 Log.d("aaaaaaa","${it}")
 
                 /**
