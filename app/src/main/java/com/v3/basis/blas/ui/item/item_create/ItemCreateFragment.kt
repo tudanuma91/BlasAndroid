@@ -3,6 +3,7 @@ package com.v3.basis.blas.ui.item.item_create
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Intent
 import android.icu.text.CaseMap
 import android.os.Bundle
 import android.provider.ContactsContract
@@ -20,8 +21,10 @@ import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestImageField
+import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.item.item_view.ItemViewFragment
 import org.json.JSONObject
+import java.nio.channels.NonReadableChannelException
 import java.util.*
 
 /**
@@ -109,6 +112,7 @@ class ItemCreateFragment : Fragment() {
                 typeMap.set(key = "type",value = "${formInfo.type}")
                 typeMap.set(key = "require",value = "${formInfo.require}")
                 typeMap.set(key = "unique",value = "${formInfo.unique}")
+                typeMap.set(key = "field_col",value = "${formInfo.field_col}")
                 formInfoMap.set(key = "${cnt}",value =typeMap )
 
                 when(formInfo.type){
@@ -223,8 +227,19 @@ class ItemCreateFragment : Fragment() {
 
             //ボタン押下時の処理
             button.setOnClickListener{
+                Log.d("ItemCreateFragment","「SEND」ボタンが押されました")
+
                 var cnt = 1
+                var params = mutableMapOf<String,String?>()
+
                 formInfoMap.forEach{
+
+                    Log.d("send button","it.value === " + it.value)
+
+                    //val field_col = Integer.parseInt(editMap!!.get("field_col").toString())
+                    val field_col = it.value["field_col"].toString()
+                    //val field_col = "0"
+
                     when(it.value["type"]){
                         FieldType.TEXT_FIELD,
                         FieldType.TEXT_AREA,
@@ -233,6 +248,8 @@ class ItemCreateFragment : Fragment() {
                             //自由入力(1行)・自由入力(複数行)・日付入力・時間入力
                             val editText = editMap!!.get("col_${cnt}")
                             Log.d("aaa","${editText!!.text}")
+
+                            params[ field_col ]   = editText!!.text.toString()
                         }
                         FieldType.SINGLE_SELECTION->{
                             //ラジオボタン
@@ -243,23 +260,78 @@ class ItemCreateFragment : Fragment() {
                             if(aaa != null) {
                                 Log.d("tttt", "${aaa.text}")
                             }
+
+                            if( radioValue!!.get(checkedRadioId) != null ) {
+                                params[ field_col ]   = radioValue!!.get(checkedRadioId)!!.text.toString()
+                            }
+
                         }
                         FieldType.MULTIPLE_SELECTION->{
                             //チェックボックス
                             val colCheckMap = checkMap!!.get("col_${cnt}")
+                            var checkValues:String? = null
+                            var isFirst = true
+
                             colCheckMap!!.forEach {
                                 if(it.value!!.isChecked){
+                                    if( !isFirst ) {
+                                        checkValues += ","
+                                    }
+
                                     Log.d("cccc","${it.value!!.text}")
                                     val aaa = it.value!!.text.toString()
+
+                                    checkValues += it.value!!.text.toString()
+                                    isFirst = false
                                 }
                             }
+                            params[field_col]   = checkValues
+
                         }
+                        FieldType.KENPIN_RENDOU_QR,
+                        FieldType.SIG_FOX,
+                        FieldType.QR_CODE,
+                        FieldType.TEKKILYO_RENDOU_QR->
+                        {
+                            // TODO:まだ
+                            params[field_col] = ""
+
+                        }
+
                     }
                     cnt += 1
                 }
 
+                Log.d("ItemCreateFragment","ループを出た")
+
+                var payload = mutableMapOf<String,String?>()
+                payload["token"] = token
+                payload["project_id"] = projectId
+
+                Log.d("ItemCreateFragment setOnClickListener()","paramas:" + params)
+
+                for( (col,value) in params ) {
+                    payload["fld" + col] = value
+                }
+
+                BlasRestItem("create",payload,::getButtonSuccess,::getFail).execute()
+
+                Log.d("ItemCreateFragment","end")
+
             }
         }
+    }
+
+
+
+    private fun getButtonSuccess( json:JSONObject ) {
+        Log.d("getButtonSuccess","start")
+
+        val intent = Intent(activity, ItemActivity::class.java)
+        intent.putExtra("token", token)
+        intent.putExtra("project_id", projectId)
+        startActivity(intent)
+
     }
 
     /**

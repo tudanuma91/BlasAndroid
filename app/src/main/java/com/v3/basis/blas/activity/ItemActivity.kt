@@ -23,6 +23,7 @@ class ItemActivity : AppCompatActivity() {
 
     data class formType(var type: String?,
                         var title: String?,
+                        var field_col: String?,
                         var choiceValue: List<String?>?,
                         var require:String?,
                         var unique:String?)
@@ -108,9 +109,10 @@ class ItemActivity : AppCompatActivity() {
         var rtnTitle :String?= null
         var nullable:String? = null
         var unique:String? = null
-        var formInfo =  formType(rtnType,rtnTitle, choiceValue, nullable,unique)
+        var formInfo =  formType(rtnType,rtnTitle,null ,choiceValue, nullable,unique)
         if(list!=null){
             formInfo.title = list.get("name")
+            formInfo.field_col = list.get("field_col").toString()
             formInfo.require = list.get("essential").toString()
             formInfo.unique = list.get("unique_chk").toString()
 
