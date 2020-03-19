@@ -58,9 +58,6 @@ open class BlasRestItem(val crud:String = "search",
 
             response = super.getResponseData(payload,method, blasUrl)
 
-            //TODO テスト用にキューの呼出し追加
-            //   super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
-
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)
@@ -79,6 +76,8 @@ open class BlasRestItem(val crud:String = "search",
                     //キャッシュファイルがないため、エラーにする
                     funcError(BlasRestErrCode.NETWORK_ERROR)
                 }
+            }else if ((method == "POST") or (method == "PUT")){
+                super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
             }
 
         }

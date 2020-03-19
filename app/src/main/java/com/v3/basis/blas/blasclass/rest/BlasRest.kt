@@ -33,7 +33,7 @@ data class RestfulRtn(
 
 data class FuncList(
     var id: Int = 0,
-    var successFun: (MutableList<MutableMap<String, String?>>?)->Unit,
+    var successFun: (JSONObject)->Unit,
     var errorFun: (Int)->Unit,
     var tableName:String
 )
@@ -205,7 +205,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
      *
      * [戻り値]
      */
-    open fun reqDataSave(payload:Map<String, String?>,method:String,targetUrl:String,funSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,funError:(Int)->Unit,tableName:String) {
+    open fun reqDataSave(payload:Map<String, String?>,method:String,targetUrl:String,funSuccess:(JSONObject)->Unit,funError:(Int)->Unit,tableName:String) {
 
         Log.d("【reqDataSave】", "開始")
 
