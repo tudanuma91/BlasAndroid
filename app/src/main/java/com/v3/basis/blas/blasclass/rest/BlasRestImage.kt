@@ -68,6 +68,11 @@ open class BlasRestImage(val crud:String = "download",
                     //キャッシュファイルがないため、エラーにする
                     funcError(BlasRestErrCode.NETWORK_ERROR)
                 }
+            }else if (method == "POST"){
+
+                // 失敗した場合、キュー処理を呼び出す
+                super.reqDataSave(payload,"GET",blasUrl,funcSuccess,funcError,"Images")
+
             }
         }
         return response

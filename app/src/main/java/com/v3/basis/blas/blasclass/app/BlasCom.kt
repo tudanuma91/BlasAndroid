@@ -84,3 +84,31 @@ class BlasCom {
         }
         return RestfulRtn(errorCode, message, recordList)
     }
+
+    /**
+     * 検索を行う関数
+     * @param cond 検索条件のmap(key:項目名 value:検索ワード)
+     * @param search 検索する対象
+     * @return result 検索結果
+     */
+    public fun searchAndroid(cond:MutableMap<String, String?>, search:MutableList<MutableMap<String, String?>>): MutableList<MutableMap<String, String?>> {
+
+        val result = search.toMutableList()
+
+        for ((condKey, condValue) in cond) {
+            for (idx in 0..result.size){
+                for ((resKey, resValue) in result[idx]) {
+                    if(condKey == resKey  && condValue != null){
+                        val search = Regex(condValue)
+                        if(!search.containsMatchIn(resValue.toString())){
+                                result.removeAt(idx)
+                        }
+                    }
+                }
+            }
+        }
+
+        return result
+
+    }
+

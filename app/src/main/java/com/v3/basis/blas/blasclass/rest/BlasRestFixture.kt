@@ -66,8 +66,8 @@ open class BlasRestFixture(val crud:String = "search",
         }
 
         try {
-            Log.d("konishi", method)
-            Log.d("konishi", blasUrl)
+            Log.d("method:", method)
+            Log.d("url:", blasUrl)
             response = super.getResponseData(payload,method, blasUrl)
 
         }
