@@ -34,27 +34,35 @@ class RestHelper {
      * 項目名や項目の順番を取得
      */
     fun createFieldList(result:JSONObject): List<MutableMap<String, String?>> {
-            Log.d("fun_createFieldList","start")
-            val rtnMap :MutableMap<String,MutableMap<String, String?>> = mutableMapOf()
-            val fieldList = result.getJSONArray("records")
+        Log.d("fun_createFieldList","start")
+        val rtnMap :MutableMap<String,MutableMap<String, String?>> = mutableMapOf()
+        val fieldList = result.getJSONArray("records")
 
-            for (i in 0 until fieldList.length()){
-                val valueMap : MutableMap<String,String?> = mutableMapOf()
-                //JSoNオブジェクトを行ごとに取得。
-                val jsonField = JSONObject(fieldList[i].toString())
-                val field = jsonField.getJSONObject("Field")
-                //値の取得と格納
-                valueMap.set(key = "field_col" ,value = field["col"].toString())
-                valueMap.set(key = "field_name",value = field["name"].toString())
-                rtnMap.set(key = i.toString() ,value = valueMap)
-                Log.d("aaaa","${jsonField}")
-            }
-            rtnMap.forEach{
-                Log.d("aaaa","${it}")
-            }
+        Log.d("createFieldList","fieldList.length():" + fieldList.length())
 
-            val rtnMapSort = rtnMap.values.sortedBy { it["field_col"] !!.toInt()}
-            return rtnMapSort
+        for (i in 0 until fieldList.length()){
+            Log.d("createFieldList","i:" + i)
+
+            val valueMap : MutableMap<String,String?> = mutableMapOf()
+            //JSoNオブジェクトを行ごとに取得。
+            val jsonStr = fieldList[i].toString()
+            val jsonField = JSONObject(jsonStr)
+            val field = jsonField.getJSONObject("Field")
+            //値の取得と格納
+            valueMap.set(key = "field_col" ,value = field["col"].toString())
+            valueMap.set(key = "field_name",value = field["name"].toString())
+            rtnMap.set(key = i.toString() ,value = valueMap)
+
+            Log.d("aaaa","${jsonField}")
+        }
+        rtnMap.forEach{
+            Log.d("aaaa","${it}")
+        }
+
+        val rtnMapSort = rtnMap.values.sortedBy { it["field_col"] !!.toInt()}
+        Log.d("fun_createFieldList","end")
+
+        return rtnMapSort
     }
 
     /**
@@ -64,25 +72,31 @@ class RestHelper {
      */
     //TODO:この処理何とかすること！！
     fun createItemList(result:JSONObject): MutableList<MutableMap<String, String?>> {
-        Log.d("fun_createFieldList","start")
+        Log.d("fun_createItemList","start")
         val rtnMap :MutableList<MutableMap<String, String?>> = mutableListOf()
         val itemList = result.getJSONArray("records")
+
+        Log.d("createItemList","${itemList.length()}")
 
         for (i in 0 until itemList.length()){
             //JSoNオブジェクトを行ごとに取得。
             val valueMap : MutableMap<String,String?> = mutableMapOf()
             val jsonField = JSONObject(itemList[i].toString())
             val item = jsonField.getJSONObject("Item")
-            Log.d("ssss","${item}")
-            Log.d("ssss","${itemList.length()}")
+            Log.d("createItemList","itemList[ ${i} ] = ${item}")
+
             valueMap.set(key = "item_id",value = item["item_id"].toString() )
+
             for(j in 1 ..150 ){
-                if (item.has("fld${j}")) {
-                    valueMap.set(key = "fld${j}", value = item["fld${j}"].toString())
+               if (item.has("fld${j}")) {
+                    valueMap.set(key = "fld${j}",value = item["fld${j}"].toString())
                 }
             }
             rtnMap.add(i,valueMap)
         }
+
+        Log.d("fun_createItemList","end rtnMap: ${rtnMap}")
+
         return rtnMap
     }
 
@@ -94,7 +108,7 @@ class RestHelper {
             //JSoNオブジェクトを行ごとに取得。
             val valueMap : MutableMap<String,String?> = mutableMapOf()
             val jsonFormField = JSONObject(formFieldList[i].toString())
-            val formField = jsonFormField.getJSONObject("Fields")
+            val formField = jsonFormField.getJSONObject("Field")
             //値を格納
             valueMap.set(key = "name" ,value = formField["name"].toString())
             valueMap.set(key = "type",value = formField["type"].toString())

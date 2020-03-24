@@ -32,6 +32,9 @@ open class BlasRestItem(val crud:String = "search",
      * @param in params 指定なし
      */
     override fun doInBackground(vararg params: String?): String? {
+        Log.d("BlasRestItem","doInBackground() start")
+
+
         var response:String? = null
 
         var blasUrl = BlasRest.URL + "items/search/"
