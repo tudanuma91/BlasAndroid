@@ -42,7 +42,7 @@ class RestHelper {
                 val valueMap : MutableMap<String,String?> = mutableMapOf()
                 //JSoNオブジェクトを行ごとに取得。
                 val jsonField = JSONObject(fieldList[i].toString())
-                val field = jsonField.getJSONObject("Fields")
+                val field = jsonField.getJSONObject("Field")
                 //値の取得と格納
                 valueMap.set(key = "field_col" ,value = field["col"].toString())
                 valueMap.set(key = "field_name",value = field["name"].toString())
@@ -77,7 +77,9 @@ class RestHelper {
             Log.d("ssss","${itemList.length()}")
             valueMap.set(key = "item_id",value = item["item_id"].toString() )
             for(j in 1 ..150 ){
-                valueMap.set(key = "fld${j}",value = item["fld${j}"].toString())
+                if (item.has("fld${j}")) {
+                    valueMap.set(key = "fld${j}", value = item["fld${j}"].toString())
+                }
             }
             rtnMap.add(i,valueMap)
         }

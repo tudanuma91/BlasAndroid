@@ -73,10 +73,12 @@ open class BlasRestProject(val payload:Map<String, String?>,
         //BLASから取得したデータをjson形式に変換する
         var json:JSONObject? = null
         var errorCode:Int
+
         try {
             json = JSONObject(result)
             //エラーコード取得
             errorCode = json.getInt("error_code")
+
 
         } catch (e: JSONException){
             //JSONの展開に失敗
@@ -88,13 +90,11 @@ open class BlasRestProject(val payload:Map<String, String?>,
         if(errorCode == 0 && result != null) {
             //正常のときだけキャッシュにjsonファイルを保存する
             try {
-                if(result != null) {
-                    saveJson(cacheFileName, result)
-                    if(json != null) {
+                saveJson(cacheFileName, result)
+                if(json != null) {
                         // val projectMap = convProjectData(json)
                         //コールバック
-                        projectSearchSuccess(json)
-                    }
+                    projectSearchSuccess(json)
                 }
             }
             catch(e: Exception) {
