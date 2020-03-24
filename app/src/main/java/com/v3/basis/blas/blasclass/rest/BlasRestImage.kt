@@ -3,6 +3,7 @@ import android.util.Base64
 import android.util.Log
 import android.widget.Toast
 import com.v3.basis.blas.blasclass.app.cakeToAndroid
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
@@ -23,6 +24,7 @@ open class BlasRestImage(val crud:String = "download",
     init{
         cacheFileName = context.filesDir.toString() +  "/image_" + payload["item_id"] + ".json"
     }
+    var method = "GET"
 
     /**
      * プロジェクトに設定されているフィールドの情報取得要求を行う
@@ -30,7 +32,7 @@ open class BlasRestImage(val crud:String = "download",
      */
     override fun doInBackground(vararg params: String?): String? {
         var response:String? = null
-        var method = "GET"
+
         var blasUrl = BlasRest.URL + "images/download/"
 
         when(crud) {
@@ -97,10 +99,13 @@ open class BlasRestImage(val crud:String = "download",
         //BLASから取得したデータをjson形式に変換する
         var json:JSONObject? = null
         var errorCode:Int
+        var records: JSONArray? = null
+
         try {
             json = JSONObject(result)
             //エラーコード取得
             errorCode = json.getInt("error_code")
+            records = json.getJSONArray("records")
 
         } catch (e: JSONException){
             //JSONの展開に失敗
@@ -108,10 +113,17 @@ open class BlasRestImage(val crud:String = "download",
             return
         }
 
+        if(method == "GET" && errorCode == 0) {
+            if(records != null){
+                saveJson(cacheFileName, result)
+            }
+        }
+
         if(json == null) {
             funcError(BlasRestErrCode.JSON_PARSE_ERROR)
         }
         else if(errorCode == 0) {
+
             funcSuccess(json)
         }
         else {

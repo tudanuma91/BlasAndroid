@@ -3,6 +3,7 @@ package com.v3.basis.blas.blasclass.rest
 import android.util.Log
 import android.widget.Toast
 import com.v3.basis.blas.blasclass.app.cakeToAndroid
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
@@ -73,10 +74,13 @@ open class BlasRestImageField(val payload:Map<String, String?>,
         //BLASから取得したデータをjson形式に変換する
         var json:JSONObject? = null
         var errorCode:Int
+        var records: JSONArray? = null
+
         try {
             json = JSONObject(result)
             //エラーコード取得
             errorCode = json.getInt("error_code")
+            records = json.getJSONArray("records")
 
         } catch (e: JSONException){
             //JSONの展開に失敗
@@ -88,6 +92,10 @@ open class BlasRestImageField(val payload:Map<String, String?>,
             funcError(BlasRestErrCode.JSON_PARSE_ERROR)
         }
         else if(errorCode == 0) {
+            if(records != null) {
+                saveJson(cacheFileName, result)
+            }
+
             funcSuccess(json)
         }
         else {

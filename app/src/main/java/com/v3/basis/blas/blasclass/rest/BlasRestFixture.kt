@@ -24,6 +24,7 @@ open class BlasRestFixture(val crud:String = "search",
     init{
         cacheFileName = context.filesDir.toString() + "/fixture_" + payload["project_id"] + ".json"
     }
+    var method = "GET"
 
     /**
      * プロジェクトに設定されているフィールドの情報取得要求を行う
@@ -31,7 +32,7 @@ open class BlasRestFixture(val crud:String = "search",
      */
     override fun doInBackground(vararg params: String?): String? {
         var response:String? = null
-        var method = "GET"
+
         var blasUrl = BlasRest.URL + "fixtures/search/"
 
         when(crud) {
@@ -111,7 +112,13 @@ open class BlasRestFixture(val crud:String = "search",
         val json = JSONObject(result)
         // val rtn:RestfulRtn = cakeToAndroid(result, TABLE_NAME)
         val errorCode = json.getInt("error_code")
-        //val records = json.getJSONArray("records")
+        val records = json.getJSONArray("records")
+
+        if(method == "GET" && errorCode == 0) {
+            if(records != null){
+                saveJson(cacheFileName, result)
+            }
+        }
         if(errorCode == 0) {
             funcSuccess(json)
         }
