@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import com.v3.basis.blas.R
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
@@ -63,6 +64,8 @@ open class BlasRestProject(val payload:Map<String, String?>,
      */
     override fun onPostExecute(result: String?) {
 
+        var records: JSONArray? = null
+
         if(result == null) {
             projectSearchError(BlasRestErrCode.NETWORK_ERROR)
             return
@@ -73,10 +76,13 @@ open class BlasRestProject(val payload:Map<String, String?>,
         //BLASから取得したデータをjson形式に変換する
         var json:JSONObject? = null
         var errorCode:Int
+
         try {
             json = JSONObject(result)
             //エラーコード取得
             errorCode = json.getInt("error_code")
+            records = json.getJSONArray("records")
+
 
         } catch (e: JSONException){
             //JSONの展開に失敗
@@ -85,16 +91,15 @@ open class BlasRestProject(val payload:Map<String, String?>,
         }
 
         //正常時だけキャッシュに保存する
-        if(errorCode == 0 && result != null) {
+        if(errorCode == 0 && json != null) {
             //正常のときだけキャッシュにjsonファイルを保存する
             try {
-                if(result != null) {
+                if(records != null) {
                     saveJson(cacheFileName, result)
-                    if(json != null) {
-                        // val projectMap = convProjectData(json)
-                        //コールバック
-                        projectSearchSuccess(json)
-                    }
+                }
+
+                if(json != null) {
+                    projectSearchSuccess(json)
                 }
             }
             catch(e: Exception) {

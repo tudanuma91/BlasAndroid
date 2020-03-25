@@ -14,6 +14,7 @@ import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
 import com.v3.basis.blas.blasclass.rest.*
 import com.v3.basis.blas.blasclass.rest.BlasRest.Companion.context
 import com.v3.basis.blas.blasclass.rest.BlasRest.Companion.queuefuncList
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileNotFoundException
@@ -231,7 +232,7 @@ object QueueController {
             queueFunc.errorFun(BlasRestErrCode.JSON_PARSE_ERROR)
         }
         else if(rtn.errorCode == 0) {
-            queueFunc.successFun(rtn.records)
+            queueFunc.successFun(JSONObject(response))
         }
         else {
             queueFunc.errorFun(rtn.errorCode)
