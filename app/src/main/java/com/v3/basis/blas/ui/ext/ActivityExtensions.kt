@@ -1,7 +1,12 @@
 package com.v3.basis.blas.ui.ext
 
 import android.Manifest
+import android.content.ContentResolver
+import android.content.Context
 import android.content.pm.PackageManager
+import android.database.Cursor
+import android.net.Uri
+import android.provider.MediaStore
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -38,7 +43,6 @@ fun FragmentActivity.checkPermissions() {//許可取り
         ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.CAMERA), 999)
     }
 }
-
 
 /**
  * パーミッションのチェック

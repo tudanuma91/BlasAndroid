@@ -9,15 +9,12 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.gson.Gson
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemImageActivity
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestField
-import com.v3.basis.blas.blasclass.rest.BlasRestImageField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.ext.getStringExtra
-import com.v3.basis.blas.ui.item.item_view.model.ImageFieldModel
 import kotlinx.android.synthetic.main.fragment_item_view.*
 import org.json.JSONObject
 
@@ -32,8 +29,6 @@ class ItemViewFragment : Fragment() {
     private val fieldMap: MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
     private val itemList: MutableList<MutableMap<String, String?>> = mutableListOf()
     private val dataList = mutableListOf<RowModel>()
-
-    private lateinit var imageField: ImageFieldModel
 
 
     private val adapter:ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
@@ -81,16 +76,6 @@ class ItemViewFragment : Fragment() {
         val payload2 = mapOf("token" to token, "project_id" to projectId)
         BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
         BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
-        BlasRestImageField(payload2, ::imageFieldCallback, ::itemRecvError).execute()
-    }
-
-    private fun imageFieldCallback(json: JSONObject) {
-
-        Log.d("image field","${json}")
-        json.toString().also {
-            val gson = Gson()
-            imageField = gson.fromJson(it, ImageFieldModel::class.java)
-        }
     }
 
     private fun createDataList(): List<RowModel> {

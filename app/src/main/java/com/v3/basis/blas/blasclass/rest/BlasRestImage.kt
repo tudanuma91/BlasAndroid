@@ -2,7 +2,6 @@ package com.v3.basis.blas.blasclass.rest
 import android.util.Base64
 import android.util.Log
 import android.widget.Toast
-import com.v3.basis.blas.blasclass.app.cakeToAndroid
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
@@ -40,7 +39,7 @@ open class BlasRestImage(val crud:String = "download",
             }
             "upload"->{
                 method = "POST"
-                blasUrl = BlasRest.URL + "images/create/"
+                blasUrl = BlasRest.URL + "images/upload/"
             }
             "delete"->{
                 method = "DELETE"

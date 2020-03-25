@@ -28,14 +28,14 @@ class ItemImageActivity : AppCompatActivity() {
         }
     }
 
-    private val token:String?
-        get() = intent.extras?.getString(TOKEN)
+    private val token:String
+        get() = intent.extras?.getString(TOKEN) ?: ""
 
-    private val projectId: String?
-        get() = intent.extras?.getString(PROJECT_ID)
+    private val projectId: String
+        get() = intent.extras?.getString(PROJECT_ID) ?: ""
 
-    private val itemId: String?
-        get() = intent.extras?.getString(ITEM_ID)
+    private val itemId: String
+        get() = intent.extras?.getString(ITEM_ID) ?: ""
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,7 +44,7 @@ class ItemImageActivity : AppCompatActivity() {
 
         if (savedInstanceState == null) {
             val transaction: FragmentTransaction = supportFragmentManager.beginTransaction()
-            val fragment = ItemImageFragment.newInstance(token, itemId)
+            val fragment = ItemImageFragment.newInstance(token, projectId, itemId)
             transaction.replace(R.id.container, fragment)
             transaction.commit()
         }

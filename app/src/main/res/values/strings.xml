@@ -79,6 +79,7 @@
     <string name="cell_item_image_right_rotate">右回転</string>
     <string name="cell_item_image_left_rotate">左回転</string>
     <string name="cell_item_image_upload">画像ファイル選択</string>
+    <string name="cell_item_image_loading">画像ファイル読込中。。。</string>
 
 
 </resources>

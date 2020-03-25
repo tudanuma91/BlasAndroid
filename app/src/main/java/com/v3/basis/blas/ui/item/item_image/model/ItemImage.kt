@@ -1,10 +1,9 @@
 package com.v3.basis.blas.ui.item.item_image.model
 
+import android.graphics.Bitmap
 import android.util.Base64
-import androidx.databinding.ObservableField
-import com.v3.basis.blas.blasclass.rest.BlasRestImage
 import com.v3.basis.blas.ui.ext.translateToBitmap
-import com.v3.basis.blas.ui.item.item_image.ItemImageCellItem
+import java.util.*
 
 data class ItemImage(
     val create_date: String,
@@ -18,12 +17,5 @@ data class ItemImage(
     val project_id: String,
     val project_image_id: String
 ) {
-    fun mapToItemImageCellItem() : ItemImageCellItem {
-        return ItemImageCellItem(
-            id = item_id,
-            title = filename,
-            image = Base64.decode(image, Base64.DEFAULT).translateToBitmap(),
-            empty = ObservableField(false)
-        )
-    }
+    var bitmap: Bitmap? = null
 }

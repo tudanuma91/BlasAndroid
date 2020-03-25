@@ -6,6 +6,9 @@ import androidx.databinding.ObservableField
 data class ItemImageCellItem(
     val id: String,
     val title: String,
-    var image: Bitmap,
-    var empty: ObservableField<Boolean>
-)
+    var image: ObservableField<Bitmap>,
+    var empty: ObservableField<Boolean>,
+    var loading: ObservableField<Boolean>
+) {
+    lateinit var imageId: String
+}
