@@ -44,7 +44,7 @@
                         android:layout_height="0dp"
                         android:layout_weight="0.3"
                         tools:text="詳細ですよ詳細ですよ詳細ですよ詳細ですよ詳細ですよ" />
-                    
+
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
         </LinearLayout>

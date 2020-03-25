@@ -32,6 +32,7 @@ class ItemViewFragment : Fragment() {
     var projectId:String? = null
     private val fieldMap: MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
     private val itemList: MutableList<MutableMap<String, String?>> = mutableListOf()
+    private val jsonItemList:MutableMap<String,JSONObject> = mutableMapOf()
     private val dataList = mutableListOf<RowModel>()
 
 
@@ -39,14 +40,7 @@ class ItemViewFragment : Fragment() {
     private val adapter:ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
         override fun onClickRow(tappedView: View, rowModel: RowModel) {
             //カードタップ時の処理
-            Toast.makeText(activity, rowModel.title, Toast.LENGTH_LONG).show()
-            Log.d(
-                "DataManagement",
-                "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
-            )
         }
-
-        //override fun
     })
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -78,58 +72,40 @@ class ItemViewFragment : Fragment() {
     }
 
     private fun createDataList(): List<RowModel> {
-
-        var cnt = 1
-        var old_item_id = "0"
+        var colMax = fieldMap.size
+        Log.d("gafeaqwaf","${colMax}")
+        val itemInfo = RestHelper().createItemList(jsonItemList, colMax )
+        itemList.addAll(itemInfo)
         itemList.forEach {
-            cnt += 1
-        }
-
-        //データ管理のループ
-        itemList.forEach {
-            val itemRecord = it
-            val colMax = fieldMap.size
-            val item_id = itemRecord["item_id"].toString()
+            val item_id = it["item_id"].toString()
             var text: String? = "String"
             var loopcnt = 1
-            Log.d("freaga","${it}")
-
-            if (item_id?.toInt() !== old_item_id.toInt()) {
-                //Log.d("【old_item_id】", "${old_item_id}")
-                //Log.d("【item_id】", "${item_id}")
-                //カラムの定義取得
-                for (col in 1..colMax) {
-                    val fldName = "fld${col}"
-                    //レコードの定義取得
-                    if (loopcnt == 1) {
-                        // val text = itemRecord[fldName]
-                        //カラムの型取得 nullableうぜえええええ
-                        //var type:String? = fieldMap[col]!!["type"]
-                        //カラム名取得
-                        //val colName = fieldMap[col]!!["name"]
-                        //カラム名の取得
-                        text = "${fieldMap[col]!!["field_name"]}"
-                        text += "\n${itemRecord[fldName]}"
-                    } else {
-                        text += "\n${fieldMap[col]!!["field_name"]}"
-                        text += "\n${itemRecord[fldName]}"
-                    }
-                    loopcnt += 1
+            Log.d("freaga", "${it}")
+            //カラムの定義取得
+            for (col in 1..colMax) {
+                val fldName = "fld${col}"
+                //レコードの定義取得
+                if (loopcnt == 1) {
+                    text = "${fieldMap[col]!!["field_name"]}"
+                    text += "\n${it[fldName]}"
+                } else {
+                    text += "\n${fieldMap[col]!!["field_name"]}"
+                    text += "\n${it[fldName]}"
                 }
-                val rowModel = RowModel().also {
-                    if (item_id != null) {
-                        it.title = item_id
-                    }
-                    if (text != null) {
-                        it.detail = text
-                    }
-                    it.projectId = projectId
-                    it.token = token
-                    it.itemList = itemList
-                }
-                dataList.add(rowModel)
-                old_item_id = item_id!!
+                loopcnt += 1
             }
+            val rowModel = RowModel().also {
+                if (item_id != null) {
+                    it.title = item_id
+                }
+                if (text != null) {
+                    it.detail = text
+                }
+                it.projectId = projectId
+                it.token = token
+                it.itemList = itemList
+            }
+            dataList.add(rowModel)
         }
         return dataList
     }
@@ -148,11 +124,12 @@ class ItemViewFragment : Fragment() {
      */
     private fun itemRecv(result: JSONObject) {
         itemList.clear()
+        jsonItemList.clear()
         Log.d("aaaaaaa","${result}")
-        val itemMap = RestHelper().createItemList(result)
-
-        itemMap?.also { itemList.addAll(0, itemMap) }
-        if (itemList.isNotEmpty() && fieldMap.isNotEmpty()) {
+        //val itemMap = RestHelper().createItemList(result)
+        //itemMap?.also { itemList.addAll(0, itemMap) }
+        jsonItemList.set("1",result)
+        if (jsonItemList.isNotEmpty() && fieldMap.isNotEmpty()) {
             setAdapter()
         }
     }
@@ -171,7 +148,7 @@ class ItemViewFragment : Fragment() {
             cnt +=1
         }
 
-        if(itemList.isNotEmpty() && fieldMap.isNotEmpty()) {
+        if(jsonItemList.isNotEmpty() && fieldMap.isNotEmpty()) {
             setAdapter()
         }
     }

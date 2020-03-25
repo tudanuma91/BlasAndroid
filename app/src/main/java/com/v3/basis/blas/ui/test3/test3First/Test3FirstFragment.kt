@@ -1,5 +1,4 @@
-package com.v3.basis.blas.ui.test3.Test3First
-
+package com.v3.basis.blas.ui.test3.test3First
 
 import android.os.Bundle
 import android.util.Log
@@ -36,7 +35,7 @@ class Test3FirstFragment : Fragment() {
     }
 
     private fun chkProgress(flg:Boolean,view:View){
-        val progressbar = view.findViewById<ProgressBar>(R.id.progressBar)
+        val progressbar = view.findViewById<ProgressBar>(R.id.progressBars)
         if (flg) {
             progressbar.visibility = android.widget.ProgressBar.VISIBLE
 
@@ -80,7 +79,7 @@ class Test3FirstFragment : Fragment() {
                 Log.d("データの総数","${DATA_SIZE}")
                 Log.d("表示している全件数","${totalItemCount}")
                 Log.d("画面に表示している件数","${childCount}")
-                Log.d("画面一番上にいるデータの種類","${firstPosition}")
+                Log.d("画面一番上にいるデータの番号","${firstPosition}")
 
                 if (totalItemCount!!-1 < childCount + firstPosition) {
                     val value_size = DATA_SIZE - totalItemCount

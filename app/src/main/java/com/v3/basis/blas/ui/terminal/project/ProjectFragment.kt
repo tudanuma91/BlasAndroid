@@ -38,26 +38,6 @@ class ProjectFragment : Fragment() {
         homeViewModel = ViewModelProviders.of(this).get(ProjectViewModel::class.java)
         token = getStringExtra("token") //トークンの値を取得
 
-        /*
-        var payload2 = mapOf("token" to token, "project_id" to 13.toString())
-        BlasRestFixture("search", payload2, ::fieldS, ::fieldE).execute()
-
-        var payload3 = mapOf("token" to token, "project_id" to 1.toString(), "fld1" to "hello from android")
-        BlasRestItem("create", payload3, ::itemCreateSuccess, ::itemCreateError).execute()
-
-        var payload4 = mapOf("token" to token, "item_id" to 406.toString())
-        BlasRestItem("delete", payload4, ::itemDeleteSuccess, ::itemDeleteError).execute()
-
-        var payload5 = mapOf("token" to token,  "project_id" to 1.toString(), "item_id" to 404.toString(),  "fld2" to "hello from konishi")
-        BlasRestItem("update", payload5, ::itemUpdateSuccess, ::itemUpdateError).execute()
-        */
-
-        //   var payload2 = mapOf("token" to token, "project_id" to 13.toString(), "status" to 0.toString(), "serial_number" to "aiueo")
-        //   BlasRestFixture("create", payload2, ::fieldS, ::fieldE).execute()
-
-        // var payload2 = mapOf("token" to token, "project_id" to 1.toString(), "item_id" to 401.toString())
-        // BlasRestImage("donwload", payload2, ::fieldS, ::fieldE).execute()
-
         return inflater.inflate(R.layout.fragment_project, container, false)
 
     }

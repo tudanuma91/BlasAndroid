@@ -2,6 +2,7 @@ package com.v3.basis.blas.ui.item.item_search
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.icu.text.MessagePattern
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -12,12 +13,10 @@ import android.widget.*
 
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemActivity
-import com.v3.basis.blas.activity.Test3Activity
 import com.v3.basis.blas.blasclass.config.FieldType
+import com.v3.basis.blas.blasclass.formaction.FormActionDataSearch
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestField
-import com.v3.basis.blas.ui.item.item_result.ItemResultFragment
-import com.v3.basis.blas.ui.test3.Test3Second.Test3Second2Fragment
 import org.json.JSONObject
 import java.util.*
 
@@ -36,8 +35,6 @@ class ItemSearchFragment : Fragment() {
     private var rootView: LinearLayout? = null
     private var formInfoMap:MutableMap<String, MutableMap<String, String?>> = mutableMapOf()
     private var editMap:MutableMap<String, EditText?>? = mutableMapOf()
-    private var radioGroupMap:MutableMap<String, RadioGroup?>? = mutableMapOf()
-    private var radioValue :MutableMap<String, RadioButton?>? = mutableMapOf()
     private var checkMap:MutableMap<String,MutableMap<String?, CheckBox?>>? = mutableMapOf()
     private var layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
     private var layoutParamsSpace = LinearLayout.LayoutParams( LinearLayout.LayoutParams.MATCH_PARENT,50)
@@ -47,6 +44,7 @@ class ItemSearchFragment : Fragment() {
     private val day = calender.get(Calendar.DAY_OF_MONTH)
     private val hour = calender.get(Calendar.YEAR)
     private val minute = calender.get(Calendar.MONTH)
+    private var formAction:FormActionDataSearch? = null
 
 
     override fun onCreateView(
@@ -62,6 +60,7 @@ class ItemSearchFragment : Fragment() {
         if (extras?.getString("project_id") != null) {
             projectId = extras?.getString("project_id")
         }
+        formAction = FormActionDataSearch(token!!,activity!!)
         val root= inflater.inflate(R.layout.fragment_item_search, container, false)
         return root
     }
@@ -84,9 +83,8 @@ class ItemSearchFragment : Fragment() {
         if (result != null) {
             //colによる並び替えが発生しているため、ソートを行う
             val sortFormFieldList = RestHelper().createFormField(result)
-            sortFormFieldList.forEach  {
-                Log.d("aaaaaaa","${it}")
-
+            val test = sortFormFieldList.values.sortedBy { it["field_col"] !!.toInt()}
+            test.forEach  {
                 /**
                  * formInfoには以下の情報が入っている。
                  * ・title => 項目のタイトル
@@ -95,72 +93,41 @@ class ItemSearchFragment : Fragment() {
                  * ・nullable => 項目がnullが許容するかの定義
                  * ・unique => 項目が重複を許可するかの定義
                  */
-                val formInfo= ItemActivity().typeCheck(it)
+                val formInfo= formAction!!.typeCheck(it)
                 //先に項目のタイトルをセットする
-                val formSectionTitle = ItemActivity().createFormSectionTitleSearch(layoutParams,activity,formInfo)
-                //formSectionTitle.setError("入力必須です")
+                val formSectionTitle = formAction!!.createFormSectionTitle(layoutParams,formInfo)
                 rootView!!.addView(formSectionTitle)
 
                 //フォームの項目の情報をメンバ変数に格納
-                val typeMap :MutableMap<String,String?> = mutableMapOf()
-                typeMap.set(key = "type",value = "${formInfo.type}")
-                typeMap.set(key = "require",value = "${formInfo.require}")
-                typeMap.set(key = "unique",value = "${formInfo.unique}")
+                val typeMap = formAction!!.createFormInfoMap(formInfo)
                 formInfoMap.set(key = "${cnt}",value =typeMap )
 
-                when(formInfo.type){
-                    FieldType.TEXT_FIELD->{
-                        //自由入力(1行)
-                        //editTextを作成
-                        val formPart = ItemActivity().createTextField(layoutParams,activity,cnt)
-                        rootView!!.addView(formPart)
-                        //配列にeditTextの情報を格納。
-                        editMap!!.set(key="col_${cnt}",value = formPart)
-                    }
 
-                    FieldType.TEXT_AREA->{
-                        //自由入力(複数行)
-                        //editTextを作成
-                        val formPart = ItemActivity().createTextAlea(layoutParams,activity,cnt)
+                when(formInfo.type){
+                    FieldType.TEXT_FIELD, FieldType.TEXT_AREA->{
+                        //自由入力(1行)または自由入力(複数行)
+                        val formPart =formAction!!.createTextField(layoutParams,cnt,formInfo)
                         rootView!!.addView(formPart)
-                        //配列にeditTextの情報を格納
+
+                        //配列にeditTextの情報を格納。
                         editMap!!.set(key="col_${cnt}",value = formPart)
                     }
 
                     FieldType.DATE_TIME->{
                         //日付入力
-                        //editTextを作成
-                        val formPart = ItemActivity().createDateTime(layoutParams,activity,cnt)
+                        var formPart = formAction!!.createDateTime(layoutParams,cnt,formInfo)
+                        formPart =  setClickDateTime(formPart)
                         rootView!!.addView(formPart)
 
-                        //editTextタップ時の処理
-                        formPart.setOnClickListener{
-                            val dtp = DatePickerDialog(getContext()!!, DatePickerDialog.OnDateSetListener{ view, y, m, d ->
-                                Toast.makeText(activity, "日付を選択しました${y}/${m+1}/${d}", Toast.LENGTH_LONG).show()
-                                //フォーマットを作成
-                                formPart.setText(String.format("%d/%02d/%02d",y,m+1,d))
-                            }, year,month,day)
-                            dtp.show()
-                        }
                         //配列にeditTextを格納
                         editMap!!.set(key="col_${cnt}",value = formPart)
                     }
 
                     FieldType.TIME->{
                         //時間入力
-                        //editText作成
-                        val formPart = ItemActivity().createDateTime(layoutParams,activity,cnt)
+                        var formPart = formAction!!.createDateTime(layoutParams,cnt,formInfo)
+                        formPart = setClickTime(formPart)
                         rootView!!.addView(formPart)
-
-                        //editTextタップ時の処理
-                        formPart.setOnClickListener{
-                            val tp = TimePickerDialog(getContext()!!,
-                                TimePickerDialog.OnTimeSetListener{ view, hour, minute->
-                                    Toast.makeText(activity, "時間を選択しました${hour}:${minute}", Toast.LENGTH_LONG).show()
-                                    formPart.setText(String.format("%02d:%02d",hour,minute))
-                                },hour,minute,true)
-                            tp.show()
-                        }
 
                         //配列にeditTextを格納
                         editMap!!.set(key="col_${cnt}",value = formPart)
@@ -170,11 +137,9 @@ class ItemSearchFragment : Fragment() {
                         //チェックボックスの時
                         var colCheckMap : MutableMap<String?,CheckBox?> = mutableMapOf()
                         formInfo.choiceValue!!.forEach {
-                            val formPart = ItemActivity().createMutipleSelection(layoutParams,activity,it,checkCount)
-                            Log.d("testtestest","${formPart.id}")
+                            val formPart = formAction!!.createMutipleSelection(layoutParams,it,checkCount)
                             rootView!!.addView(formPart)
                             colCheckMap!!.set(key = "col_${cnt}_${checkCount}",value = formPart)
-                            // checkMap!!.set(key = "col_${cnt}_${checkCount}",value = formPart)
                             checkCount += 1
 
                         }
@@ -199,29 +164,28 @@ class ItemSearchFragment : Fragment() {
             button.setOnClickListener{
                 var cnt = 1
                 formInfoMap.forEach{
+                    var value = ""
                     when(it.value["type"]){
                         FieldType.TEXT_FIELD,
                         FieldType.TEXT_AREA,
                         FieldType.DATE_TIME,
                         FieldType.TIME->{
                             //自由入力(1行)・自由入力(複数行)・日付入力・時間入力
-                            val editText = editMap!!.get("col_${cnt}")
-                            Log.d("aaa","${editText!!.text}")
+                            value = formAction!!.pickUpValue(editMap,cnt)
+                            Log.d("aaa","${value}")
                         }
 
                         FieldType.MULTIPLE_SELECTION , FieldType.SINGLE_SELECTION->{
-                            //チェックボックス・ラジオボタン
+                            //チェックボックス
                             val colCheckMap = checkMap!!.get("col_${cnt}")
-                            colCheckMap!!.forEach {
-                                if(it.value!!.isChecked){
-                                    Log.d("cccc","${it.value!!.text}")
-                                    val aaa = it.value!!.text.toString()
-                                }
-                            }
+                            value = formAction!!.getCheckedValues(colCheckMap)
+                            Log.d("bbb","${value}")
                         }
                     }
+                    Log.d("testtest","${value}")
                     cnt += 1
                 }
+                //ここから検索処理入れる
 
             }
         }
@@ -234,6 +198,37 @@ class ItemSearchFragment : Fragment() {
         Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
         //エラーのため、データを初期化する
         //fieldMap = mutableMapOf<Int, MutableMap<String, String?>>()
+    }
+
+    /**
+     * 日付フィールドタップ時の処理
+     */
+    private fun setClickDateTime(formPart: EditText): EditText {
+        formPart.setOnClickListener{
+            val dtp = DatePickerDialog(getContext()!!, DatePickerDialog.OnDateSetListener{ view, y, m, d ->
+                Toast.makeText(activity, "日付を選択しました${y}/${m+1}/${d}", Toast.LENGTH_LONG).show()
+                //フォーマットを作成
+                formPart.setText(String.format("%d/%02d/%02d",y,m+1,d))
+            }, year,month,day)
+            dtp.show()
+        }
+        return formPart
+    }
+
+    /**
+     * 時間フィールドタップ時の処理
+     */
+    private fun setClickTime(formPart: EditText): EditText {
+        //editTextタップ時の処理
+        formPart.setOnClickListener{
+            val tp = TimePickerDialog(getContext()!!,
+                TimePickerDialog.OnTimeSetListener{ view, hour, minute->
+                    Toast.makeText(activity, "時間を選択しました${hour}:${minute}", Toast.LENGTH_LONG).show()
+                    formPart.setText(String.format("%02d:%02d",hour,minute))
+                },hour,minute,true)
+            tp.show()
+        }
+        return formPart
     }
 
 
