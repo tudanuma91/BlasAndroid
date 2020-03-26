@@ -1,25 +1,21 @@
 package com.v3.basis.blas.ui.item.item_view
 
 
-import android.content.Intent
 import android.os.Bundle
-import android.util.JsonToken
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
-import com.v3.basis.blas.activity.ItemActivity
+import com.v3.basis.blas.activity.ItemImageActivity
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.ext.getStringExtra
 import kotlinx.android.synthetic.main.fragment_item_view.*
-import kotlinx.android.synthetic.main.list_item.*
 import org.json.JSONObject
 
 
@@ -35,8 +31,8 @@ class ItemViewFragment : Fragment() {
     private val dataList = mutableListOf<RowModel>()
 
 
-
     private val adapter:ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
+
         override fun onClickRow(tappedView: View, rowModel: RowModel) {
             //カードタップ時の処理
             Toast.makeText(activity, rowModel.title, Toast.LENGTH_LONG).show()
@@ -46,7 +42,13 @@ class ItemViewFragment : Fragment() {
             )
         }
 
-        //override fun
+        override fun onClickImage(itemId: String?) {
+
+            Log.d("test","$itemId")
+            val context = requireContext()
+            val intent = ItemImageActivity.createIntent(context, token, projectId, itemId)
+            context.startActivity(intent)
+        }
     })
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -74,7 +76,6 @@ class ItemViewFragment : Fragment() {
         val payload2 = mapOf("token" to token, "project_id" to projectId)
         BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
         BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
-
     }
 
     private fun createDataList(): List<RowModel> {
@@ -119,6 +120,7 @@ class ItemViewFragment : Fragment() {
                 val rowModel = RowModel().also {
                     if (item_id != null) {
                         it.title = item_id
+                        it.itemId = item_id
                     }
                     if (text != null) {
                         it.detail = text

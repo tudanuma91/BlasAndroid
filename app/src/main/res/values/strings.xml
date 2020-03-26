@@ -74,5 +74,12 @@
     <string name="col_return_date">返却した日：</string>
     <string name="col_item_date">設置した日：</string>
 
+    <!-- 登録データ画像 -->
+    <string name="cell_item_image_delete">削除</string>
+    <string name="cell_item_image_right_rotate">右回転</string>
+    <string name="cell_item_image_left_rotate">左回転</string>
+    <string name="cell_item_image_upload">画像ファイル選択</string>
+    <string name="cell_item_image_loading">画像ファイル読込中。。。</string>
+
 
 </resources>

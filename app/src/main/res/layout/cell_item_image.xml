@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="item"
+            type="com.v3.basis.blas.ui.item.item_image.ItemImageCellItem" />
+        <variable
+            name="vm"
+            type="com.v3.basis.blas.ui.item.item_image.ItemImageViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/title"
+            android:textSize="20dp"
+            android:text="@{item.title}"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+        <ImageView
+            android:id="@+id/image"
+            android:layout_width="match_parent"
+            android:layout_height="140dp"
+            android:visibility="@{item.empty ? View.INVISIBLE : View.VISIBLE}"
+            app:image="@{item.image}"
+            app:layout_constraintTop_toBottomOf="@id/title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:src="@drawable/ic_build_black_24dp"
+            />
+
+        <Button
+            android:id="@+id/delete"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:onClick="@{v -> vm.deleteClick(item)}"
+            android:text="@string/cell_item_image_delete"
+            android:visibility="@{item.empty ? View.INVISIBLE : View.VISIBLE}"
+            app:layout_constraintTop_toBottomOf="@id/image"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/rightRotate"
+            />
+
+        <Button
+            android:id="@+id/rightRotate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:onClick="@{v -> vm.rightRotate(item)}"
+            android:text="@string/cell_item_image_right_rotate"
+            android:visibility="@{item.empty ? View.INVISIBLE : View.VISIBLE}"
+            app:layout_constraintTop_toBottomOf="@id/image"
+            app:layout_constraintStart_toEndOf="@id/delete"
+            app:layout_constraintEnd_toStartOf="@id/leftRotate"
+            />
+
+        <Button
+            android:id="@+id/leftRotate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:onClick="@{v -> vm.leftRotate(item)}"
+            android:text="@string/cell_item_image_left_rotate"
+            android:visibility="@{item.empty ? View.INVISIBLE : View.VISIBLE}"
+            app:layout_constraintTop_toBottomOf="@id/image"
+            app:layout_constraintStart_toEndOf="@id/rightRotate"
+            app:layout_constraintEnd_toEndOf="parent"
+            />
+
+        <TextView
+            android:id="@+id/blank"
+            android:textSize="20dp"
+            android:text="@string/cell_item_image_upload"
+            android:gravity="center"
+            android:onClick="@{v -> vm.selectFile(item.id)}"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:visibility="@{item.empty? View.VISIBLE : View.INVISIBLE}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
+
+        <ProgressBar
+            android:id="@+id/progressbar"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_margin="30dp"
+            android:visibility="@{item.loading ? View.VISIBLE : View.INVISIBLE}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            style="@android:style/Widget.ProgressBar.Large" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
