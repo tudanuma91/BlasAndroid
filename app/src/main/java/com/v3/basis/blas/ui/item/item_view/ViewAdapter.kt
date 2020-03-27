@@ -17,14 +17,15 @@ class ViewAdapter(private val list: List<RowModel>, private val listener: ListLi
 
     override fun onBindViewHolder(holder:ViewHolders , position: Int) {
         Log.d("Adapter", "onBindViewHolder")
-        holder.titleView.text = list[position].title
-        holder.detailView.text = list[position].detail
-        holder.token = list[position].token
-        holder.projectId = list[position].projectId
-        holder.itemList = list[position].itemList
-        holder.itemView.setOnClickListener {
-            listener.onClickRow(it, list[position])
-        }
+
+        val model = list[position]
+        holder.titleView.text = model.title
+        holder.detailView.text = model.detail
+        holder.token = model.token
+        holder.projectId = model.projectId
+        holder.itemList = model.itemList
+        holder.itemView.setOnClickListener { listener.onClickRow(it, model) }
+        holder.image.setOnClickListener { listener.onClickImage(model.itemId) }
     }
 
     override fun getItemCount(): Int {
@@ -34,5 +35,6 @@ class ViewAdapter(private val list: List<RowModel>, private val listener: ListLi
 
     interface ListListener {
         fun onClickRow(tappedView: View, rowModel: RowModel)
+        fun onClickImage(itemId: String?)
     }
 }

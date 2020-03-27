@@ -47,7 +47,7 @@ class RestHelper {
             //JSoNオブジェクトを行ごとに取得。
             val jsonStr = fieldList[i].toString()
             val jsonField = JSONObject(jsonStr)
-            val field = jsonField.getJSONObject("Field")
+            val field = jsonField.getJSONObject("Fields")
             //値の取得と格納
             valueMap.set(key = "field_col" ,value = field["col"].toString())
             valueMap.set(key = "field_name",value = field["name"].toString())

@@ -31,15 +31,15 @@ class ViewHolders(itemView: View) : RecyclerView.ViewHolder(itemView){
        // token = getStringExtra("token")
         //projectId = getStringExtra("project_id")
 
-        //編集アイコンタップ時の処理
-        image.setOnClickListener{
-            Log.d("test","${titleView.text}")
-            val context = itemView.context
-            val intent = Intent(context, ItemImageActivity::class.java)
-            context.startActivity(intent)
-        }
-
         //画像アイコンタップ時の処理
+//        image.setOnClickListener{
+////            Log.d("test","${titleView.text}")
+////            val context = itemView.context
+////            val intent = Intent(context, ItemImageActivity::class.java)
+////            context.startActivity(intent)
+//        }
+
+        //編集アイコンタップ時の処理
         val valueList :ArrayList<String?> = arrayListOf()
         var check =false
         image2.setOnClickListener{
