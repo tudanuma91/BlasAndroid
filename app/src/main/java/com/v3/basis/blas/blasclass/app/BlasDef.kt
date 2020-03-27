@@ -5,7 +5,24 @@ class BlasDef {
         const val PARAM_FILE_DIR = "app/data/params/"
         const val BLAS_URL = "http://192.168.1.8/api/v1/"
         const val REQUEST_TABLE = "RequestTable"
+        const val NOTICE_TABLE = "NoticeTable"
         const val READ_TIME_OUT_POST = 100000
         const val STS_RETRY_MAX = 9
+
+        const val APL_OK = 0
+        const val APL_QUEUE_SAVE = 1
+        const val APL_RETRY_MAX_ERR = 901
+        const val APL_SERVER_ERROR = 902
+
+        const val FUNC_NAME_FIXTURE = "機器管理"
+        const val FUNC_NAME_ITEM = "データ管理"
+        const val OPE_NAME_UPDATE = "更新"
+        const val OPE_NAME_ADD = "追加"
+        const val OPE_NAME_UPLOAD = "画像アップロード"
+        const val OPE_NAME_KENPIN = "検品"
+        const val OPE_NAME_TAKEOUT = "持出"
+        const val OPE_NAME_RTN = "返却"
+
+
     }
 }

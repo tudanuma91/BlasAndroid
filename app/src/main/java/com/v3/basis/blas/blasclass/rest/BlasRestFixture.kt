@@ -112,9 +112,11 @@ open class BlasRestFixture(val crud:String = "search",
         val json = JSONObject(result)
         // val rtn:RestfulRtn = cakeToAndroid(result, TABLE_NAME)
         val errorCode = json.getInt("error_code")
-        val records = json.getJSONArray("records")
+
 
         if(method == "GET" && errorCode == 0) {
+
+            val records = json.getJSONArray("records")
             if(records != null){
                 saveJson(cacheFileName, result)
             }

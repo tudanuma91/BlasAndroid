@@ -1,8 +1,21 @@
 package com.v3.basis.blas.blasclass.controller
 import android.content.ContentValues
+import android.icu.text.DateFormat
+import android.icu.text.SimpleDateFormat
 import android.net.Uri
 import android.util.Log
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_RETRY_MAX_ERR
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_SERVER_ERROR
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.FUNC_NAME_FIXTURE
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.FUNC_NAME_ITEM
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.OPE_NAME_ADD
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.OPE_NAME_KENPIN
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.OPE_NAME_RTN
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.OPE_NAME_TAKEOUT
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.OPE_NAME_UPDATE
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.OPE_NAME_UPLOAD
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.READ_TIME_OUT_POST
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.REQUEST_TABLE
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.STS_RETRY_MAX
@@ -20,6 +33,11 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.lang.Exception
 import java.net.HttpURLConnection
+import java.net.URI
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.*
 import kotlin.concurrent.thread
 
 
@@ -44,6 +62,7 @@ object QueueController {
     private var stop_flg:Boolean = false                                  //スレッド停止フラグ
     private var reqList:MutableList<RestRequestData> = mutableListOf()     // キューリスト
     val lock = java.util.concurrent.locks.ReentrantLock()                   //排他制御
+    var param:String = ""
 
     /**
      * スレッドを開始する
@@ -80,10 +99,12 @@ object QueueController {
                 for (i in reqList.indices) {
                     var result  = doConnect(reqList[i])
 
-                    // 正常の場合
+                    // 通信が正常の場合
                     if(result.first < 300){
                         queueSuccess(reqList[i],result.second)
-                    }else{
+                    }
+                    // 通信エラー
+                    else{
                         queueError(reqList[i],result.second)
                     }
 
@@ -142,7 +163,7 @@ object QueueController {
      */
 
     private fun doConnect(reqArray:RestRequestData) :  Pair <Int,String> {
-        var param:String = ""
+
         val fileDir = BlasApp.applicationContext().getFilesDir().getPath()
         val filePath: String = fileDir + "/" + reqArray.param_file
         val response:String
@@ -232,9 +253,12 @@ object QueueController {
             queueFunc.errorFun(BlasRestErrCode.JSON_PARSE_ERROR)
         }
         else if(rtn.errorCode == 0) {
+            noticeAdd(reqArray,APL_OK)
             queueFunc.successFun(JSONObject(response))
         }
         else {
+            Log.e("【queue/error】", "errorCode:${rtn.errorCode}")
+            noticeAdd(reqArray,rtn.errorCode)
             queueFunc.errorFun(rtn.errorCode)
         }
 
@@ -255,6 +279,7 @@ object QueueController {
 
         if(retry_count >= 100) {
             values.put("status", STS_RETRY_MAX)
+            noticeAdd(reqArray,APL_RETRY_MAX_ERR)
         }
 
         values.put("retry_count", retry_count)
@@ -265,6 +290,69 @@ object QueueController {
             database.update(REQUEST_TABLE, values, whereClauses, whereArgs)
         }catch(exception: Exception) {
             Log.e("updateData " + reqArray.request_id, exception.toString())
+        }
+
+    }
+
+    private fun noticeAdd(reqArray:RestRequestData,aplCode :Int) {
+
+        val values = ContentValues()
+
+        // 現在日時取得
+        val datetime = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        val cur_date = datetime.format(LocalDateTime.now(ZoneId.of("Asia/Tokyo")))
+
+        var funcName:String = ""
+        var operation:String = ""
+        var dataKey:String?  = ""
+
+        // データのキー設定
+        var uriStr = reqArray.uri.toString() + "?" + param
+        val validUri = Uri.parse(uriStr)
+
+        var projectId:String? = validUri.getQueryParameter("project_id")
+
+        if(reqArray.uri.contains("items")){
+            funcName = FUNC_NAME_ITEM
+            if(reqArray.method == "POST"){
+                operation = OPE_NAME_ADD
+            }else if(reqArray.method == "PUT"){
+                operation = OPE_NAME_UPDATE
+            }
+            dataKey = validUri.getQueryParameter("item_id")
+
+        }else if (reqArray.uri.contains("fixture")){
+            funcName = FUNC_NAME_FIXTURE
+            if(reqArray.uri.contains("update")){
+                operation = OPE_NAME_UPDATE
+            }else if (reqArray.uri.contains("kenpin")){
+                operation = OPE_NAME_KENPIN
+            }else if (reqArray.uri.contains("takeout")){
+                operation = OPE_NAME_TAKEOUT
+            }else if (reqArray.uri.contains("rtn")){
+                operation = OPE_NAME_RTN
+            }
+            dataKey = validUri.getQueryParameter("fixture_id")
+
+        }else if (reqArray.uri.contains("images")){
+            funcName = FUNC_NAME_ITEM
+            operation = OPE_NAME_UPLOAD
+            dataKey = validUri.getQueryParameter("item_id")
+        }
+
+        values.put("apl_code", aplCode)
+        values.put("read_status", 0)
+        values.put("func_name", funcName)
+        values.put("operation", operation)
+        values.put("project_id", projectId)
+        values.put("data_key", dataKey)
+
+        values.put("update_date", cur_date)
+
+        try {
+            database.insertOrThrow("NoticeTable", null, values)
+        }catch(exception: Exception) {
+            Log.e("NoticeTable insertError", exception.toString())
         }
 
     }
