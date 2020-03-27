@@ -1,8 +1,11 @@
+
 apply plugin: 'com.android.application'
 
 apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-android-extensions'
+
+apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 29
@@ -41,6 +44,10 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
+    dataBinding {
+        enabled = true
+    }
 }
 
 dependencies {
@@ -71,4 +78,18 @@ dependencies {
     implementation "androidx.work:work-rxjava2:$work_version"
     implementation "androidx.work:work-gcm:$work_version"
     androidTestImplementation "androidx.work:work-testing:$work_version"
+
+    def groupie_ver = "2.7.0"
+    implementation "com.xwray:groupie:$groupie_ver"
+    implementation "com.xwray:groupie-databinding:$groupie_ver"
+    implementation "com.xwray:groupie-kotlin-android-extensions:$groupie_ver"
+    implementation 'com.google.code.gson:gson:2.8.6'
+
+    def glide = "4.11.0"
+    implementation "com.github.bumptech.glide:glide:$glide"
+    annotationProcessor "com.github.bumptech.glide:compiler:$glide"
+
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+    implementation 'io.reactivex.rxjava2:rxkotlin:2.4.0'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.19'
 }
