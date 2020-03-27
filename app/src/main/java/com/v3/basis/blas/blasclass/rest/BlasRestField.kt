@@ -3,6 +3,7 @@ package com.v3.basis.blas.blasclass.rest
 import android.util.Log
 import android.widget.Toast
 import com.v3.basis.blas.blasclass.app.cakeToAndroid
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import kotlin.reflect.KFunction1
@@ -19,6 +20,10 @@ open class BlasRestField(
 
     companion object {
         val FIELD_SEARCH_URL = BlasRest.URL + "project_fields/search/"
+    }
+
+    init{
+        cacheFileName = context.filesDir.toString() +  "/field_" + payload["project_id"] + ".json"
     }
 
     /**
@@ -61,10 +66,13 @@ open class BlasRestField(
         //BLASから取得したデータをjson形式に変換する
         var json: JSONObject? = null
         var errorCode:Int
+        var records: JSONArray? = null
+
         try {
             json = JSONObject(result)
             //エラーコード取得
             errorCode = json.getInt("error_code")
+            records = json.getJSONArray("records")
 
         } catch (e: JSONException){
             //JSONの展開に失敗
@@ -73,6 +81,11 @@ open class BlasRestField(
         }
 
         if(errorCode == 0) {
+
+            if(records != null){
+                saveJson(cacheFileName, result)
+            }
+
             fieldSearchSuccess(json)
         }
         else {

@@ -51,5 +51,8 @@ class BlasRestErrCode() {
         //パース
         const val JSON_PARSE_ERROR = 2001
 
+        //ファイル
+        const val FILE_READ_ERROR = 3001
+
     }
 }

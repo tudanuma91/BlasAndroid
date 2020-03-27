@@ -3,8 +3,10 @@ package com.v3.basis.blas.blasclass.rest
 import android.util.Log
 import android.widget.Toast
 import com.v3.basis.blas.blasclass.app.cakeToAndroid
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.File
 
 
 /**
@@ -13,6 +15,10 @@ import org.json.JSONObject
 open class BlasRestOrgs(val payload:Map<String, String?>,
                         val orgsSearchSuccess:(JSONObject)->Unit,
                         val orgsSearchError:(Int)->Unit) : BlasRest() {
+
+    init{
+        cacheFileName = context.filesDir.toString() + "/org.json"
+    }
 
     companion object {
         val ORGS_SEARCH_URL = BlasRest.URL + "orgs/search/"
@@ -29,6 +35,20 @@ open class BlasRestOrgs(val payload:Map<String, String?>,
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)
+
+            //通信エラーが発生したため、キャッシュを読み込む
+            if(File(cacheFileName).exists()) {
+                try {
+                    response = loadJson(cacheFileName)
+                } catch(e: Exception) {
+                    //キャッシュの読み込み失敗
+                    orgsSearchError(BlasRestErrCode.FILE_READ_ERROR)
+                }
+            } else {
+                //キャッシュファイルがないため、エラーにする
+                orgsSearchError(BlasRestErrCode.NETWORK_ERROR)
+            }
+
         }
         return response
     }
@@ -53,10 +73,12 @@ open class BlasRestOrgs(val payload:Map<String, String?>,
         //BLASから取得したデータをjson形式に変換する
         var json:JSONObject? = null
         var errorCode:Int
+        var records: JSONArray? = null
         try {
             json = JSONObject(result)
             //エラーコード取得
             errorCode = json.getInt("error_code")
+            records = json.getJSONArray("records")
 
         } catch (e: JSONException){
             //JSONの展開に失敗
@@ -65,6 +87,10 @@ open class BlasRestOrgs(val payload:Map<String, String?>,
         }
 
         if(errorCode == 0) {
+            if(records != null) {
+                saveJson(cacheFileName, result)
+            }
+
             orgsSearchSuccess(json)
         }
         else {

@@ -328,4 +328,9 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
         return errorCnt
     }
 
+    open fun createSpace(layoutParamsSpace:LinearLayout.LayoutParams): Space {
+        val space = Space(baseActivity)
+        space.setLayoutParams(layoutParamsSpace)
+        return space
+    }
 }

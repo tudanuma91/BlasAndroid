@@ -34,27 +34,27 @@ class RestHelper {
      * 項目名や項目の順番を取得
      */
     fun createFieldList(result:JSONObject): List<MutableMap<String, String?>> {
-            Log.d("fun_createFieldList","start")
-            val rtnMap :MutableMap<String,MutableMap<String, String?>> = mutableMapOf()
-            val fieldList = result.getJSONArray("records")
+        Log.d("fun_createFieldList","start")
+        val rtnMap :MutableMap<String,MutableMap<String, String?>> = mutableMapOf()
+        val fieldList = result.getJSONArray("records")
 
-            for (i in 0 until fieldList.length()){
-                val valueMap : MutableMap<String,String?> = mutableMapOf()
-                //JSoNオブジェクトを行ごとに取得。
-                val jsonField = JSONObject(fieldList[i].toString())
-                val field = jsonField.getJSONObject("Fields")
-                //値の取得と格納
-                valueMap.set(key = "field_col" ,value = field["col"].toString())
-                valueMap.set(key = "field_name",value = field["name"].toString())
-                rtnMap.set(key = i.toString() ,value = valueMap)
-                Log.d("aaaa","${jsonField}")
-            }
-            rtnMap.forEach{
-                Log.d("aaaa","${it}")
-            }
 
-            val rtnMapSort = rtnMap.values.sortedBy { it["field_col"] !!.toInt()}
-            return rtnMapSort
+        for (i in 0 until fieldList.length()){
+
+            val valueMap : MutableMap<String,String?> = mutableMapOf()
+            //JSoNオブジェクトを行ごとに取得。
+            val jsonStr = fieldList[i].toString()
+            val jsonField = JSONObject(jsonStr)
+            val field = jsonField.getJSONObject("Fields")
+            //値の取得と格納
+            valueMap.set(key = "field_col" ,value = field["col"].toString())
+            valueMap.set(key = "field_name",value = field["name"].toString())
+            rtnMap.set(key = i.toString() ,value = valueMap)
+
+        }
+        val rtnMapSort = rtnMap.values.sortedBy { it["field_col"] !!.toInt()}
+
+        return rtnMapSort
     }
 
     /**
@@ -63,11 +63,13 @@ class RestHelper {
      * この処理すごいもったいないからあとで何とかしましょう！！
      */
     //TODO:この処理何とかすること！！
+
     fun createItemList(resultMap:MutableMap<String,JSONObject>,colMax:Int): MutableList<MutableMap<String, String?>> {
         Log.d("fun_createFieldList","start")
         val result = resultMap["1"]
         val rtnMap :MutableList<MutableMap<String, String?>> = mutableListOf()
         val itemList = result!!.getJSONArray("records")
+
 
         for (i in 0 until itemList.length()){
             //JSoNオブジェクトを行ごとに取得。
@@ -80,7 +82,6 @@ class RestHelper {
             }
             rtnMap.add(i,valueMap)
         }
-
         return rtnMap
     }
 
@@ -146,7 +147,6 @@ class RestHelper {
             val valueMap : MutableMap<String,String?> = mutableMapOf()
             val jsonInfo = JSONObject(infoList[i].toString())
             val information = jsonInfo.getJSONObject("Information")
-            Log.d("g4rw","${information}")
             valueMap.set(key = "information_id" ,value = information["information_id"].toString())
             valueMap.set(key = "body" ,value = information["body"].toString())
             valueMap.set(key = "file1" ,value = information["file1"].toString())

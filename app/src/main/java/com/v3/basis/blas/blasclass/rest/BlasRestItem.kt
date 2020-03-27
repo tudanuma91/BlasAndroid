@@ -3,8 +3,10 @@ package com.v3.basis.blas.blasclass.rest
 import android.util.Log
 import android.widget.Toast
 import com.v3.basis.blas.blasclass.app.cakeToAndroid
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.File
 
 
 /**
@@ -19,13 +21,22 @@ open class BlasRestItem(val crud:String = "search",
         val TABLE_NAME = "Item"
     }
 
+    init{
+        cacheFileName = context.filesDir.toString() + "/item_" + payload["project_id"] + ".json"
+    //    uniqueCheckFile = context.filesDir.toString() + "/uniqueCheck_" + payload["project_id"] + ".json"
+    }
+    var method = "GET"
+
     /**
      * プロジェクトに設定されているフィールドの情報取得要求を行う
      * @param in params 指定なし
      */
     override fun doInBackground(vararg params: String?): String? {
+        Log.d("BlasRestItem","doInBackground() start")
+
+
         var response:String? = null
-        var method = "GET"
+
         var blasUrl = BlasRest.URL + "items/search/"
 
         when(crud) {
@@ -53,12 +64,32 @@ open class BlasRestItem(val crud:String = "search",
 
             response = super.getResponseData(payload,method, blasUrl)
 
-            //TODO テスト用にキューの呼出し追加
-            //   super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
-
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)
+
+            if (File(cacheFileName).exists()) {
+                try {
+                    response = loadJson(cacheFileName)
+                } catch (e: Exception) {
+                    //キャッシュの読み込み失敗
+                    funcError(BlasRestErrCode.FILE_READ_ERROR)
+                }
+            }else{
+                    if(method == "GET") {
+                        //キャッシュファイルがないため、エラーにする
+                        funcError(BlasRestErrCode.NETWORK_ERROR)
+                    }
+            }
+
+            if ((method == "POST") or (method == "PUT")){
+                // 重複エラーのチェック
+                val resultList = dupliCheck(payload,response)
+
+                if (resultList.size == 0){
+                    super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
+                }
+            }
         }
         return response
     }
@@ -82,15 +113,24 @@ open class BlasRestItem(val crud:String = "search",
         //BLASから取得したデータをjson形式に変換する
         var json:JSONObject? = null
         var errorCode:Int
+        var records:JSONArray? = null
+
         try {
             json = JSONObject(result)
             //エラーコード取得
             errorCode = json.getInt("error_code")
+            records = json.getJSONArray("records")
 
         } catch (e: JSONException){
             //JSONの展開に失敗
             Toast.makeText(context, "データ取得失敗", Toast.LENGTH_LONG).show()
             return
+        }
+
+        if(method == "GET" && errorCode == 0) {
+            if(records != null){
+                saveJson(cacheFileName, result)
+            }
         }
 
         if(json == null) {
@@ -103,4 +143,38 @@ open class BlasRestItem(val crud:String = "search",
             funcError(errorCode)
         }
     }
+
+    /**
+     * プロジェクトに設定されているフィールドの情報取得要求を行う
+     * @param in payload 画面からの入力
+     * @param in params キャッシュファイルから取得したデータ
+     */
+    fun dupliCheck(payload : Map<String, String?>, response : String?) : MutableList<String> {
+
+        var idex:Int
+        val responseJson = JSONObject(response)
+        val check = responseJson.getJSONArray("checkField")
+        val resultList: MutableList<String> = mutableListOf()
+
+        for (idex in 0 until check.length()){
+            val field = check.get(idex)
+            val fieldJson = JSONObject(field.toString())
+            val valLIst = fieldJson.getJSONArray(check[idex].toString())
+
+            for ((payKey, payValue) in payload) {
+                for (j in 0 until valLIst.length()) {
+                    if(payKey == field.toString()){
+                        if(payValue == valLIst[j].toString()){
+                            resultList.add(payKey)
+                            break
+                        }
+                    }
+                }
+            }
+        }
+
+        return resultList
+
+    }
+
 }

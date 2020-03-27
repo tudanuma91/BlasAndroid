@@ -27,6 +27,7 @@ class ItemActivity : AppCompatActivity() {
 
     data class formType(var type: String?,
                         var title: String?,
+                        var field_col: String?,
                         var choiceValue: List<String?>?,
                         var require:String?,
                         var unique:String?)
@@ -71,13 +72,6 @@ class ItemActivity : AppCompatActivity() {
         }
     }
 
-    fun replaceFragment(fragment: Fragment) {
-        val fragmentManager = supportFragmentManager
-        val fragmentTransaction = fragmentManager.beginTransaction()
-        fragmentTransaction.replace(R.id.frame_item, fragment)
-        fragmentTransaction.commit()
-        Log.d("title","呼ばれた")
-    }
 
     fun deleteFragment(fragment: Fragment){
         val fragmentManager = supportFragmentManager
@@ -85,19 +79,5 @@ class ItemActivity : AppCompatActivity() {
         fragmentTransaction.remove(fragment)
         fragmentTransaction.commit()
     }
-
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            REQUESTCODE_TEST -> if (Activity.RESULT_OK == resultCode) {
-                val name = data!!.getStringExtra("TestName")
-                Log.d("gresa","${name}")
-
-            }
-        }
-
-    }
-
 
 }

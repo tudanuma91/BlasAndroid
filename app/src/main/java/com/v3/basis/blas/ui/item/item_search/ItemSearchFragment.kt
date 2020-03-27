@@ -2,6 +2,7 @@ package com.v3.basis.blas.ui.item.item_search
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Intent
 import android.icu.text.MessagePattern
 import android.os.Bundle
 import android.util.Log
@@ -10,13 +11,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemActivity
+import com.v3.basis.blas.activity.ItemSearchResultActivity
+import com.v3.basis.blas.activity.TerminalActivity
+import com.v3.basis.blas.blasclass.app.BlasCom
+import com.v3.basis.blas.blasclass.app.searchAndroid
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.formaction.FormActionDataSearch
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestField
+import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import org.json.JSONObject
 import java.util.*
 
@@ -29,22 +34,30 @@ import java.util.*
  * create an instance of this fragment.
  */
 class ItemSearchFragment : Fragment() {
-
+    //文字型またはview型
     private var token: String? = null
     private var projectId: String? = null
     private var rootView: LinearLayout? = null
+    //コレクション各種
     private var formInfoMap:MutableMap<String, MutableMap<String, String?>> = mutableMapOf()
     private var editMap:MutableMap<String, EditText?>? = mutableMapOf()
     private var checkMap:MutableMap<String,MutableMap<String?, CheckBox?>>? = mutableMapOf()
+    private var searchValue:MutableMap<String,String?> = mutableMapOf()
+    //パラメータ
     private var layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
     private var layoutParamsSpace = LinearLayout.LayoutParams( LinearLayout.LayoutParams.MATCH_PARENT,50)
+    //データピッカー・タイムピッカー用
     private val calender = Calendar.getInstance()
     private val year = calender.get(Calendar.YEAR)
     private val month = calender.get(Calendar.MONTH)
     private val day = calender.get(Calendar.DAY_OF_MONTH)
     private val hour = calender.get(Calendar.YEAR)
     private val minute = calender.get(Calendar.MONTH)
+    //インスタンス作成
     private var formAction:FormActionDataSearch? = null
+    //この下は最終的に消す
+    private val jsonItemList:MutableMap<String,JSONObject> = mutableMapOf()
+    private val itemList: MutableList<MutableMap<String, String?>> = mutableListOf()
 
 
     override fun onCreateView(
@@ -68,9 +81,15 @@ class ItemSearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         rootView = view.findViewById<LinearLayout>(R.id.item_search_liner)
-        val space = Space(activity)
-        space.setLayoutParams(layoutParamsSpace)
+
+        val space = formAction!!.createSpace(layoutParamsSpace)
+        val title = formAction!!.createFreeWordSearchTitle(layoutParams)
+        val freeWordSearch = formAction!!.createFreeWordSearch(layoutParams)
+        editMap!!.set(key="col_${0}",value = freeWordSearch)
         rootView!!.addView(space)
+        rootView!!.addView(title)
+        rootView!!.addView(freeWordSearch)
+
         //レイアウトの設置位置の設定
         val payload = mapOf("token" to token, "project_id" to projectId)
         BlasRestField(payload, ::getSuccess, ::getFail).execute()
@@ -162,6 +181,10 @@ class ItemSearchFragment : Fragment() {
 
             //ボタン押下時の処理
             button.setOnClickListener{
+                val freeWordEdit = editMap!!.get("col_0")!!
+                val freeWordValue ="${freeWordEdit.text}"
+                Log.d("検索結果(フリーワード)","${freeWordValue}")
+                searchValue.set("freeWord",freeWordValue)
                 var cnt = 1
                 formInfoMap.forEach{
                     var value = ""
@@ -172,20 +195,27 @@ class ItemSearchFragment : Fragment() {
                         FieldType.TIME->{
                             //自由入力(1行)・自由入力(複数行)・日付入力・時間入力
                             value = formAction!!.pickUpValue(editMap,cnt)
-                            Log.d("aaa","${value}")
                         }
 
                         FieldType.MULTIPLE_SELECTION , FieldType.SINGLE_SELECTION->{
                             //チェックボックス
                             val colCheckMap = checkMap!!.get("col_${cnt}")
                             value = formAction!!.getCheckedValues(colCheckMap)
-                            Log.d("bbb","${value}")
                         }
                     }
                     Log.d("testtest","${value}")
+                    searchValue.set("fld${cnt}",value)
                     cnt += 1
                 }
                 //ここから検索処理入れる
+                //ここで新しいアクティビティ？フラグメントを起動
+                //新しくitemを取得。
+                searchValue.forEach{
+                    Log.d("testesttest","${it}")
+                }
+
+                val payload2 = mapOf("token" to token, "project_id" to projectId)
+                BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
 
             }
         }
@@ -229,6 +259,30 @@ class ItemSearchFragment : Fragment() {
             tp.show()
         }
         return formPart
+    }
+
+    private fun itemRecv(result: JSONObject){
+        jsonItemList.set("1",result)
+        var colMax = formInfoMap.size
+        Log.d("gafeaqwaf","${colMax}")
+        val itemInfo = RestHelper().createItemList(jsonItemList, colMax )
+        itemInfo.forEach{
+            Log.d("testtest","${it}")
+        }
+        searchValue.forEach{
+            Log.d("htsreafgrsdjf","${it}")
+        }
+        val test = searchAndroid(searchValue,itemInfo)
+
+        val intent = Intent(activity, ItemSearchResultActivity::class.java)
+        intent.putExtra("token",token)
+        intent.putExtra("project_id",projectId)
+        intent.putExtra("freeWord",searchValue["freeWord"])
+        startActivity(intent)
+    }
+
+    private fun itemRecvError(errorCode: Int){
+
     }
 
 

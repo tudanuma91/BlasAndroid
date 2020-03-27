@@ -33,7 +33,7 @@ data class RestfulRtn(
 
 data class FuncList(
     var id: Int = 0,
-    var successFun: (MutableList<MutableMap<String, String?>>?)->Unit,
+    var successFun: (JSONObject)->Unit,
     var errorFun: (Int)->Unit,
     var tableName:String
 )
@@ -45,8 +45,9 @@ data class FuncList(
 open class BlasRest() : AsyncTask<String, String, String>() {
 
     companion object {
-        //const val URL = BuildConfig.API_URL
-        const val URL = "http://192.168.0.104/blas7/api/v1/"
+
+        const val URL = BuildConfig.API_URL
+        //const val URL = "http://192.168.0.104/blas7/api/v1/"
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
         var queuefuncList = mutableListOf<FuncList>()
@@ -204,7 +205,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
      *
      * [戻り値]
      */
-    open fun reqDataSave(payload:Map<String, String?>,method:String,targetUrl:String,funSuccess:(MutableList<MutableMap<String, String?>>?)->Unit,funError:(Int)->Unit,tableName:String) {
+    open fun reqDataSave(payload:Map<String, String?>,method:String,targetUrl:String,funSuccess:(JSONObject)->Unit,funError:(Int)->Unit,tableName:String) {
 
         Log.d("【reqDataSave】", "開始")
 

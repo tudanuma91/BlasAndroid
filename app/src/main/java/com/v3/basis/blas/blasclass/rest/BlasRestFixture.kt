@@ -3,6 +3,7 @@ package com.v3.basis.blas.blasclass.rest
 import android.util.Log
 
 import org.json.JSONObject
+import java.io.File
 
 open class BlasRestFixture(val crud:String = "search",
                            val payload:Map<String, String?>,
@@ -20,7 +21,10 @@ open class BlasRestFixture(val crud:String = "search",
     val TOUROKU_FIXTURE_URL = BlasRest.URL +"fixtures/takeout"
     val RETURN_FIXTURE_URL = BlasRest.URL +"fixtures/trn"
 
-
+    init{
+        cacheFileName = context.filesDir.toString() + "/fixture_" + payload["project_id"] + ".json"
+    }
+    var method = "GET"
 
     /**
      * プロジェクトに設定されているフィールドの情報取得要求を行う
@@ -28,7 +32,7 @@ open class BlasRestFixture(val crud:String = "search",
      */
     override fun doInBackground(vararg params: String?): String? {
         var response:String? = null
-        var method = "GET"
+
         var blasUrl = BlasRest.URL + "fixtures/search/"
 
         when(crud) {
@@ -63,13 +67,29 @@ open class BlasRestFixture(val crud:String = "search",
         }
 
         try {
-            Log.d("konishi", method)
-            Log.d("konishi", blasUrl)
+            Log.d("method:", method)
+            Log.d("url:", blasUrl)
             response = super.getResponseData(payload,method, blasUrl)
 
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)
+
+            if (method == "GET") {
+
+                //通信エラーが発生したため、キャッシュを読み込む
+                if (File(cacheFileName).exists()) {
+                    try {
+                        response = loadJson(cacheFileName)
+                    } catch (e: Exception) {
+                        //キャッシュの読み込み失敗
+                        funcError(BlasRestErrCode.FILE_READ_ERROR)
+                    }
+                } else {
+                    //キャッシュファイルがないため、エラーにする
+                    funcError(BlasRestErrCode.NETWORK_ERROR)
+                }
+            }
         }
         return response
     }
@@ -92,7 +112,13 @@ open class BlasRestFixture(val crud:String = "search",
         val json = JSONObject(result)
         // val rtn:RestfulRtn = cakeToAndroid(result, TABLE_NAME)
         val errorCode = json.getInt("error_code")
-        //val records = json.getJSONArray("records")
+        val records = json.getJSONArray("records")
+
+        if(method == "GET" && errorCode == 0) {
+            if(records != null){
+                saveJson(cacheFileName, result)
+            }
+        }
         if(errorCode == 0) {
             funcSuccess(json)
         }

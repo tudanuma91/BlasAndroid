@@ -1,7 +1,9 @@
 package com.v3.basis.blas.blasclass.formaction
 
+import android.graphics.Color
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import com.v3.basis.blas.blasclass.config.FieldType
 
@@ -31,6 +33,26 @@ class FormActionDataSearch(setToken: String, setActivity: FragmentActivity) : Fo
 
     override fun createDateTime(params: LinearLayout.LayoutParams?, cnt: Int, formInfo: formType): EditText {
         return super.createDateTime(params, cnt, formInfo)
+    }
+
+    fun createFreeWordSearch(params: LinearLayout.LayoutParams?): EditText {
+        val edit = EditText(baseActivity)
+        edit.setText("")
+        edit.inputType =1
+        edit.setLayoutParams(params)
+        edit.id = 0
+        return edit
+    }
+
+    fun createFreeWordSearchTitle(params: LinearLayout.LayoutParams?): TextView {
+        val view = TextView(baseActivity)
+        val title = "フリーワード検索"
+        var formTitle =
+        view.setText("${title}")
+        //文字の色変更したい。
+        view.setTextColor(Color.BLACK)
+        view.setLayoutParams(params)
+        return view
     }
 
 
