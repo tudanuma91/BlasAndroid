@@ -3,27 +3,26 @@ package com.v3.basis.blas.ui.item.item_image
 
 import android.Manifest.permission.*
 import android.app.Activity
-import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.database.Cursor
 import android.graphics.ImageDecoder
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.core.content.PermissionChecker.checkSelfPermission
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import com.v3.basis.blas.R
+import com.v3.basis.blas.ui.ext.rotateRight
 import com.v3.basis.blas.ui.item.item_image.adapter.AdapterCellItem
 import com.v3.basis.blas.ui.item.item_image.model.ImageFieldModel
 import com.v3.basis.blas.ui.item.item_image.model.ItemImage
@@ -34,7 +33,6 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.fragment_item_image.*
-import java.io.File
 
 
 /**
@@ -89,42 +87,14 @@ class ItemImageFragment : Fragment() {
         viewModel = ViewModelProviders.of(this).get(ItemImageViewModel::class.java)
         viewModel.setup(token, projectId, itemId)
 
-        viewModel.imageFieldUpdated
+        viewModel.receiveImageFields
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
                 createAdapter(it)
             }
             .addTo(disposables)
 
-        viewModel.fetchSuccess
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                updateCell(it)
-            }
-            .addTo(disposables)
-
-        viewModel.successUploaded
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                updateCell(it)
-            }
-            .addTo(disposables)
-
-        viewModel.fetchEmpty
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                setEmptyImage(it)
-            }
-            .addTo(disposables)
-
-        viewModel.fetchError
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                Toast.makeText(requireContext(), "API Error ($it)", Toast.LENGTH_LONG).show()
-            }
-            .addTo(disposables)
-
-        viewModel.fileSelect
+        viewModel.uploadAction
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
                 uploadId = it
@@ -133,50 +103,20 @@ class ItemImageFragment : Fragment() {
                 }
             }
             .addTo(disposables)
-    }
 
-//    private fun setImage(list: List<ItemImage>) {
-//
-//        if (list.size == 1) {
-//            val item = list.first()
-//            updateCell(item)
-//        } else {
-//            list.forEach {
-//                updateCell(it)
-//            }
-//        }
-//    }
-
-
-    private fun updateCell(item: ItemImage) {
-
-        val cell = adapterCellItems.first { it.item.id == item.project_image_id }
-        cell.item.image.set(item.bitmap)
-        cell.item.imageId = item.image_id
-        cell.item.empty.set(false)
-        cell.item.loading.set(false)
-    }
-
-    private fun updateCell(id: String) {
-
-        val cell = adapterCellItems.first { it.item.id == id }
-        cell.item.empty.set(false)
-        cell.item.loading.set(false)
-    }
-
-    private fun setEmptyImage(id: String) {
-
-        val cell = adapterCellItems.first { it.item.id ==  id }
-        cell.item.empty.set(true)
-        cell.item.loading.set(false)
+        viewModel.errorAPI
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                Toast.makeText(requireContext(), "API Error ($it)", Toast.LENGTH_LONG).show()
+            }
+            .addTo(disposables)
     }
 
     private fun createAdapter(field: ImageFieldModel) {
 
         val list = field.records.map { records -> records.ProjectImages }.map {
             AdapterCellItem(viewModel, it.mapToItemImageCellItem()).apply {
-//                item.loading.set(true)
-                viewModel.fetchImage(it.project_image_id)
+                viewModel.fetchImage(this.item)
             }
         }
         adapterCellItems.clear()
@@ -225,9 +165,8 @@ class ItemImageFragment : Fragment() {
             intentGallery.addCategory(Intent.CATEGORY_OPENABLE)
             intentGallery.type = "*/*"
             intentGallery.putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/jpeg", "image/png"))
-//            intentGallery.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
         }
-        val intent = Intent.createChooser(intentCamera, "hoge")
+        val intent = Intent.createChooser(intentCamera, "画像選択")
         intent.putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(intentGallery))
         startActivityForResult(intent, REQUEST_CHOOSER)
     }
@@ -263,12 +202,18 @@ class ItemImageFragment : Fragment() {
                 }
 
                 val mime = resolver.getType(it) ?: ""
-                viewModel.upload(bmp, mime, uploadId)
-
-                adapterCellItems.first { it.item.id == uploadId }.item.apply {
-                    image.set(bmp)
-                    loading.set(true)
+                val item = adapterCellItems.first { it.item.id == uploadId }.item
+                item.image.set(bmp)
+                item.loading.set(true)
+                item.empty.set(false)
+                item.ext = mime
+                val error: (errorCode: Int) -> Unit = {
+                    item.loading.set(false)
+                    item.image.set(null)
+                    item.empty.set(true)
+                    Log.d("upload", "upload error")
                 }
+                viewModel.upload(bmp, mime, item, error)
             }
         }
     }
