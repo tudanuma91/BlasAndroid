@@ -104,7 +104,6 @@ open class BlasRestImage(val crud:String = "download",
             json = JSONObject(result)
             //エラーコード取得
             errorCode = json.getInt("error_code")
-            records = json.getJSONArray("records")
 
         } catch (e: JSONException){
             //JSONの展開に失敗
@@ -114,6 +113,8 @@ open class BlasRestImage(val crud:String = "download",
         }
 
         if(method == "GET" && errorCode == 0) {
+
+            records = json.getJSONArray("records")
             if(records != null){
                 saveJson(cacheFileName, result)
             }

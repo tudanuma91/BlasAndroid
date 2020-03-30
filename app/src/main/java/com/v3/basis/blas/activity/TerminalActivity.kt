@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.controller.QueueController
 import com.v3.basis.blas.ui.terminal.TerminalFragment
 
 
@@ -21,6 +22,8 @@ class TerminalActivity : AppCompatActivity() {
             val fragment = TerminalFragment()
             transaction.replace(R.id.container, fragment)
             transaction.commit()
+            val thr = QueueController
+            thr.start()
         }
     }
 
