@@ -13,6 +13,8 @@ import android.widget.Toast
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
+import io.reactivex.Completable
+import io.reactivex.schedulers.Schedulers
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.*
@@ -316,9 +318,16 @@ open class BlasRest() : AsyncTask<String, String, String>() {
      * @param jsonText json形式のテキスト
      */
     fun saveJson(fileName:String, jsonText:String) {
-        File(fileName).writer().use {
-            it.write(jsonText)
-        }
+
+        Completable
+            .fromAction {
+                File(fileName).writer().use {
+                    it.write(jsonText)
+                }
+            }
+            .subscribeOn(Schedulers.newThread())
+            .subscribe()
+            .dispose()
     }
 
     /**
