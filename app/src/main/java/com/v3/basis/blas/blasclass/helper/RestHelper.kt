@@ -38,29 +38,21 @@ class RestHelper {
         val rtnMap :MutableMap<String,MutableMap<String, String?>> = mutableMapOf()
         val fieldList = result.getJSONArray("records")
 
-        Log.d("createFieldList","fieldList.length():" + fieldList.length())
 
         for (i in 0 until fieldList.length()){
-            Log.d("createFieldList","i:" + i)
 
             val valueMap : MutableMap<String,String?> = mutableMapOf()
             //JSoNオブジェクトを行ごとに取得。
             val jsonStr = fieldList[i].toString()
             val jsonField = JSONObject(jsonStr)
-            val field = jsonField.getJSONObject("Field")
+            val field = jsonField.getJSONObject("Fields")
             //値の取得と格納
             valueMap.set(key = "field_col" ,value = field["col"].toString())
             valueMap.set(key = "field_name",value = field["name"].toString())
             rtnMap.set(key = i.toString() ,value = valueMap)
 
-            Log.d("aaaa","${jsonField}")
         }
-        rtnMap.forEach{
-            Log.d("aaaa","${it}")
-        }
-
         val rtnMapSort = rtnMap.values.sortedBy { it["field_col"] !!.toInt()}
-        Log.d("fun_createFieldList","end")
 
         return rtnMapSort
     }
@@ -71,36 +63,32 @@ class RestHelper {
      * この処理すごいもったいないからあとで何とかしましょう！！
      */
     //TODO:この処理何とかすること！！
-    fun createItemList(result:JSONObject): MutableList<MutableMap<String, String?>> {
-        Log.d("fun_createItemList","start")
-        val rtnMap :MutableList<MutableMap<String, String?>> = mutableListOf()
-        val itemList = result.getJSONArray("records")
 
-        Log.d("createItemList","${itemList.length()}")
+    fun createItemList(resultMap:MutableMap<String,JSONObject>,colMax:Int): MutableList<MutableMap<String, String?>> {
+        Log.d("fun_createFieldList","start")
+        val result = resultMap["1"]
+        val rtnMap :MutableList<MutableMap<String, String?>> = mutableListOf()
+        val itemList = result!!.getJSONArray("records")
+
 
         for (i in 0 until itemList.length()){
             //JSoNオブジェクトを行ごとに取得。
             val valueMap : MutableMap<String,String?> = mutableMapOf()
             val jsonField = JSONObject(itemList[i].toString())
             val item = jsonField.getJSONObject("Item")
-            Log.d("createItemList","itemList[ ${i} ] = ${item}")
-
             valueMap.set(key = "item_id",value = item["item_id"].toString() )
-
-            for(j in 1 ..150 ){
-               if (item.has("fld${j}")) {
-                    valueMap.set(key = "fld${j}",value = item["fld${j}"].toString())
-                }
+            for(j in 1 ..colMax ){
+                valueMap.set(key = "fld${j}",value = item["fld${j}"].toString())
             }
             rtnMap.add(i,valueMap)
         }
-
-        Log.d("fun_createItemList","end rtnMap: ${rtnMap}")
-
         return rtnMap
     }
 
-    fun createFormField(result:JSONObject): List<MutableMap<String, String?>> {
+    /**
+     * fieldの設定を取得する処理
+     */
+    fun createFormField(result:JSONObject): MutableMap<String, MutableMap<String, String?>> {
         val rtnMap :MutableMap<String,MutableMap<String, String?>> = mutableMapOf()
         val formFieldList = result.getJSONArray("records")
 
@@ -108,19 +96,68 @@ class RestHelper {
             //JSoNオブジェクトを行ごとに取得。
             val valueMap : MutableMap<String,String?> = mutableMapOf()
             val jsonFormField = JSONObject(formFieldList[i].toString())
-            val formField = jsonFormField.getJSONObject("Field")
+            val formField = jsonFormField.getJSONObject("Fields")
             //値を格納
             valueMap.set(key = "name" ,value = formField["name"].toString())
             valueMap.set(key = "type",value = formField["type"].toString())
             valueMap.set(key = "unique_chk" ,value = formField["unique_chk"].toString())
             valueMap.set(key = "essential",value = formField["essential"].toString())
-            valueMap.set(key = "choice" ,value = formField["name"].toString())
+            valueMap.set(key = "choice" ,value = formField["choice"].toString())
             valueMap.set(key = "field_col" ,value = formField["col"].toString())
             //配列に格納
             rtnMap.set(key=i.toString(),value = valueMap)
 
         }
-        val rtnMapSort = rtnMap.values.sortedBy { it["field_col"] !!.toInt()}
-        return rtnMapSort
+       // val rtnMapSort = rtnMap.values.sortedBy { it["field_col"] !!.toInt()}
+        return rtnMap
     }
+
+    /**
+     * 初期値を設定する処理
+     */
+    fun createDefaultValueList(resultMap:MutableMap<String,JSONObject>,colMax:Int,item_id:String?): MutableList<MutableMap<String, String?>> {
+        val result = resultMap["1"]
+        val rtnMap :MutableList<MutableMap<String, String?>> = mutableListOf()
+        val itemList = result!!.getJSONArray("records")
+
+        for (i in 0 until itemList.length()){
+            //JSoNオブジェクトを行ごとに取得。
+            val valueMap : MutableMap<String,String?> = mutableMapOf()
+            val jsonField = JSONObject(itemList[i].toString())
+            val item = jsonField.getJSONObject("Item")
+            if(item["item_id"] == item_id.toString()){
+                valueMap.set(key = "item_id",value = item["item_id"].toString() )
+                for(j in 1 ..colMax ){
+                    valueMap.set(key = "fld${j}",value = item["fld${j}"].toString())
+                }
+                rtnMap.add(0,valueMap)
+                break
+            }
+        }
+
+        return rtnMap
+    }
+
+
+    fun createInformationList(result: JSONObject): MutableMap<String, MutableMap<String, String?>> {
+
+        val rtnMap :MutableMap<String,MutableMap<String, String?>> = mutableMapOf()
+        val infoList = result.getJSONArray("records")
+
+        for (i in 0 until infoList.length()){
+            val valueMap : MutableMap<String,String?> = mutableMapOf()
+            val jsonInfo = JSONObject(infoList[i].toString())
+            val information = jsonInfo.getJSONObject("Information")
+            valueMap.set(key = "information_id" ,value = information["information_id"].toString())
+            valueMap.set(key = "body" ,value = information["body"].toString())
+            valueMap.set(key = "file1" ,value = information["file1"].toString())
+            valueMap.set(key = "file2" ,value = information["file2"].toString())
+            valueMap.set(key = "file3" ,value = information["file3"].toString())
+            rtnMap.set("${i}",valueMap)
+        }
+
+        return rtnMap
+    }
+
 }
+

@@ -7,9 +7,7 @@ import android.util.Log
 import android.widget.Button
 import androidx.fragment.app.Fragment
 import com.v3.basis.blas.R
-import com.v3.basis.blas.ui.test3.Test3First.Test3FirstFragment
-import com.v3.basis.blas.ui.test3.Test3Second.Test3Second2Fragment
-import com.v3.basis.blas.ui.test3.Test3Second.Test3SecondFragment
+import com.v3.basis.blas.ui.test3.test3First.Test3FirstFragment
 
 class Test3Activity : AppCompatActivity() {
 
@@ -19,21 +17,20 @@ class Test3Activity : AppCompatActivity() {
 
         /* val layout = LinearLayout(this)
         setContentView(layout)
-
         val button = Button(this)
         button.text = "send"
         layout.addView(button)*/
 
 
     }
-     //R.id.containerに引数で渡されたフラグメントを入れる。
+    //R.id.containerに引数で渡されたフラグメントを入れる。
     fun replaceFragment(fragment: Fragment) {
-         val fragmentManager = supportFragmentManager
-         val fragmentTransaction = fragmentManager.beginTransaction()
-         fragmentTransaction.replace(R.id.container, fragment)
-         fragmentTransaction.commit()
-         Log.d("title","呼ばれた")
-     }
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.container, fragment)
+        fragmentTransaction.commit()
+        Log.d("title","呼ばれた")
+    }
 
     fun displayManager(number : Int){
         when(number){
@@ -45,13 +42,9 @@ class Test3Activity : AppCompatActivity() {
 
                 //FirstFragmentActivityクラスをインスタンス化その下も同様。
                 val firstFragment = Test3FirstFragment()
-                val secondFragment = Test3SecondFragment()
                 //buttonをクリックしたときにreplaceFragmentメソッドを実行
                 firstbutton.setOnClickListener {
                     replaceFragment(firstFragment)
-                }
-                secondButton.setOnClickListener {
-                    replaceFragment(secondFragment)
                 }
 
             }
@@ -61,5 +54,6 @@ class Test3Activity : AppCompatActivity() {
             }
         }
     }
+
 
 }

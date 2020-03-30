@@ -1,13 +1,21 @@
 package com.v3.basis.blas.activity
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.controller.QueueController
 import com.v3.basis.blas.ui.terminal.TerminalFragment
+import java.io.File
+import java.io.FileOutputStream
 
 
 //ログイン後の画面を表示する処理
@@ -34,4 +42,9 @@ class TerminalActivity : AppCompatActivity() {
         fragmentTransaction.commit()
         Log.d("title","呼ばれた")
     }
+
+    fun resorce(){
+
+    }
+
 }

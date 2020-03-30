@@ -46,6 +46,10 @@
     <string name="success_qr">QRコード読を読み取りました</string>
     <string name="error_create_qr">すでに登録済のQRコードです</string>
     <string name="error_session_qr">通信エラーのため、機器情報を登録できません</string>
+    <string name="success_data_create">新規作成に成功しました</string>
+    <string name="error_data_create">新規作成に失敗しました</string>
+    <string name="success_data_update">更新に成功しました</string>
+    <string name="error_data_update">更新に失敗しました</string>
 
 
     <!-- 選択肢 -->
@@ -58,6 +62,7 @@
     </string-array>
 
     <!-- 画面の項目等 -->
+    <string name="col_free_word">フリーワード：</string>
     <string name="col_serialnumber">シリアルナンバー：</string>
     <string name="col_data_id">データID：</string>
     <string name="col_status">ステータス：</string>

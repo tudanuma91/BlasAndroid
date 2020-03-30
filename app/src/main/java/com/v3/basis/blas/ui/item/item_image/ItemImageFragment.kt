@@ -21,6 +21,7 @@ import androidx.core.content.PermissionChecker.checkSelfPermission
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.R
 import com.v3.basis.blas.ui.ext.rotateRight
 import com.v3.basis.blas.ui.item.item_image.adapter.AdapterCellItem
@@ -82,7 +83,7 @@ class ItemImageFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        recyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
+        recyclerView.layoutManager = GridLayoutManager(requireContext(), 2) as RecyclerView.LayoutManager?
 
         viewModel = ViewModelProviders.of(this).get(ItemImageViewModel::class.java)
         viewModel.setup(token, projectId, itemId)
@@ -114,7 +115,7 @@ class ItemImageFragment : Fragment() {
 
     private fun createAdapter(field: ImageFieldModel) {
 
-        val list = field.records.map { records -> records.ProjectImages }.map {
+        val list = field.records.map { records -> records.ProjectImage }.map {
             AdapterCellItem(viewModel, it.mapToItemImageCellItem()).apply {
                 viewModel.fetchImage(this.item)
             }

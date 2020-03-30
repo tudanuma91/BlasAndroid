@@ -19,14 +19,14 @@ class Test3Fragment : Fragment() {
     private var token:String? = null
     private var fragmentName = "Test3"
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_test3,container,false)
-       //トークン取得
+        val view = inflater.inflate(R.layout.fragment_test3, container, false)
+        //トークン取得
         val extras = activity?.intent?.extras
-        if(extras?.getString("token") != null) {
+        if (extras?.getString("token") != null) {
             token = extras?.getString("token")
         }
         //取得したトークンをログに出す
-        Log.d("${fragmentName}","${token}")
+        Log.d("${fragmentName}", "${token}")
         //変更を加えたviewを返す
         return view
     }

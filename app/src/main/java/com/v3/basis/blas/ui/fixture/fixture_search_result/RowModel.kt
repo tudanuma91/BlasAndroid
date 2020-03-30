@@ -1,4 +1,4 @@
-package com.v3.basis.blas.ui.test3.Test3First
+package com.v3.basis.blas.ui.fixture.fixture_search_result
 
 class RowModel {
     var title: String = ""

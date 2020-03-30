@@ -1,4 +1,4 @@
-package com.v3.basis.blas.ui.test3.Test3First
+package com.v3.basis.blas.ui.test3.test3First
 
 import android.view.View
 import android.widget.TextView
