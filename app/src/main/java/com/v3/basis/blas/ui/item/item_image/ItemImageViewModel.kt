@@ -154,16 +154,18 @@ class ItemImageViewModel : ViewModel() {
     private fun encode(bitmap: Bitmap, ext: FileExtensions) : String {
 
         val byteArrayOutputStream = ByteArrayOutputStream()
-        bitmap.compress(ext.compressFormat, 90, byteArrayOutputStream)
+        bitmap.compress(ext.compressFormat, 100, byteArrayOutputStream)
         val byteArray: ByteArray = byteArrayOutputStream.toByteArray()
-        return Base64.encodeToString(byteArray, Base64.DEFAULT)
+        val flag = Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING
+        return Base64.encodeToString(byteArray, flag)
     }
 
     private fun decode(json: JSONObject) : ItemImage {
         images = Gson().fromJson(json.toString(), ItemImageModel::class.java)
         val item = images.records?.map { it.Image }?.first()?.let {
             it.apply {
-                bitmap = Base64.decode(image, Base64.DEFAULT).translateToBitmap()
+                val flag = Base64.DEFAULT
+                bitmap = Base64.decode(image, flag).translateToBitmap()
                 Log.d("fetch image", "file = ${it.filename}")
             }
         }

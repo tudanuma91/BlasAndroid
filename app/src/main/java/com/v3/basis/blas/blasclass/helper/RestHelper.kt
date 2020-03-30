@@ -138,6 +138,7 @@ class RestHelper {
         return rtnMap
     }
 
+
     fun createInformationList(result: JSONObject): MutableMap<String, MutableMap<String, String?>> {
 
         val rtnMap :MutableMap<String,MutableMap<String, String?>> = mutableMapOf()
@@ -159,3 +160,4 @@ class RestHelper {
     }
 
 }
+

@@ -2,6 +2,7 @@ package com.v3.basis.blas.blasclass.rest
 
 import android.util.Log
 import android.widget.Toast
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_QUEUE_SAVE
 import com.v3.basis.blas.blasclass.app.cakeToAndroid
 import org.json.JSONArray
 import org.json.JSONException
@@ -88,6 +89,9 @@ open class BlasRestItem(val crud:String = "search",
 
                 if (resultList.size == 0){
                     super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
+                    val json = JSONObject(response)
+                    json.put("aplCode",APL_QUEUE_SAVE)
+                    response = json.toString()
                 }
             }
         }
@@ -119,7 +123,7 @@ open class BlasRestItem(val crud:String = "search",
             json = JSONObject(result)
             //エラーコード取得
             errorCode = json.getInt("error_code")
-            records = json.getJSONArray("records")
+
 
         } catch (e: JSONException){
             //JSONの展開に失敗
@@ -128,6 +132,8 @@ open class BlasRestItem(val crud:String = "search",
         }
 
         if(method == "GET" && errorCode == 0) {
+            records = json.getJSONArray("records")
+
             if(records != null){
                 saveJson(cacheFileName, result)
             }

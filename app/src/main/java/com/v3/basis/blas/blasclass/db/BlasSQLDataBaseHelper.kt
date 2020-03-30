@@ -12,11 +12,12 @@ class BlasSQLDataBaseHelper(context: Context?, databaseName:String, factory: SQL
 
     companion object {
         const val CRT_QUE_TABLE = "create table if not exists RequestTable (queue_id integer primary key autoincrement,uri text, method text, param_file text, retry_count integer, error_code integer, status integer)"
+        const val CRT_NOTICE_TABLE = "create table if not exists NoticeTable (id integer primary key autoincrement,apl_code integer, read_status integer, func_name text, operation text, project_id integer,data_key text, update_date text)"
     }
-
 
     override fun onCreate(database: SQLiteDatabase?) {
         database?.execSQL(CRT_QUE_TABLE);
+        database?.execSQL(CRT_NOTICE_TABLE);
     }
 
     /* ひとまず処理なし */
