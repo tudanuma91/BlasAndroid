@@ -10,8 +10,8 @@ enum class FileExtensions(val compressFormat: Bitmap.CompressFormat, val restIma
         fun matchExtension(ext: String) : FileExtensions {
 
             return when (ext) {
-                "image/jpeg" -> { JPEG }
-                "image/png" -> { PNG }
+                "image/jpeg", "jpeg", "jpg" -> { JPEG }
+                "image/png", "png" -> { PNG }
                 else -> { JPEG }
             }
         }
