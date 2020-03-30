@@ -37,8 +37,6 @@ class ItemViewFragment : Fragment() {
         override fun onClickRow(tappedView: View, rowModel: RowModel) {
             //カードタップ時の処理
         }
-<<<<<<< HEAD
-=======
 
         override fun onClickImage(itemId: String?) {
 
@@ -47,7 +45,6 @@ class ItemViewFragment : Fragment() {
             val intent = ItemImageActivity.createIntent(context, token, projectId, itemId)
             context.startActivity(intent)
         }
->>>>>>> d7b7520430702dee8020eef22f14840d7b67c91f
     })
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -100,31 +97,21 @@ class ItemViewFragment : Fragment() {
                 }
                 loopcnt += 1
             }
+
             val rowModel = RowModel().also {
                 if (item_id != null) {
                     it.title = item_id
+                    it.itemId = item_id
+                   // it.detail = text!!
                 }
-<<<<<<< HEAD
                 if (text != null) {
                     it.detail = text
-=======
-                val rowModel = RowModel().also {
-                    if (item_id != null) {
-                        it.title = item_id
-                        it.itemId = item_id
-                    }
-                    if (text != null) {
-                        it.detail = text
-                    }
-                    it.projectId = projectId
-                    it.token = token
-                    it.itemList = itemList
->>>>>>> d7b7520430702dee8020eef22f14840d7b67c91f
                 }
                 it.projectId = projectId
                 it.token = token
                 it.itemList = itemList
             }
+
             dataList.add(rowModel)
         }
         return dataList

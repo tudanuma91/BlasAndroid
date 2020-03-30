@@ -21,7 +21,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".activity.ItemSearchResultActivity"></activity>
+        <activity android:name=".activity.FixtureSearchResultActivity"></activity>
+        <activity android:name=".activity.ItemSearchResultActivity" />
         <activity android:name=".activity.QRActivity" />
         <activity android:name=".activity.Test3Activity" />
         <activity android:name=".activity.Test2Activity" />

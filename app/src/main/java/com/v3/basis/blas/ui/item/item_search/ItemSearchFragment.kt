@@ -273,6 +273,7 @@ class ItemSearchFragment : Fragment() {
             Log.d("htsreafgrsdjf","${it}")
         }
         val test = searchAndroid(searchValue,itemInfo)
+        Log.d("ログ取得中","==================================================================")
 
         val intent = Intent(activity, ItemSearchResultActivity::class.java)
         intent.putExtra("token",token)
