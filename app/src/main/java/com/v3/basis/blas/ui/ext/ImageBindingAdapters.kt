@@ -17,5 +17,5 @@ fun ImageView.setEncodedImage(encodedImage: String?) {
 @BindingAdapter("image")
 fun ImageView.setImage(image: Bitmap?) {
 
-    image?.also { setImageBitmap(it) }
+    image?.also { setImageBitmap(it) } ?: setImageDrawable(null)
 }
