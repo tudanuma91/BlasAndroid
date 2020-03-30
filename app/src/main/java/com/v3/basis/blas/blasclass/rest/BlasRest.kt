@@ -147,7 +147,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
     open fun getResponseData(payload:Map<String, String?>,method:String,targetUrl:String): String {
         var response = ""
 
-        if( (method == "GET") or (method == "DELETE") ) {
+        if( (method == "GET") ) {
             response = methodGet(payload, targetUrl)
         } else {
 
