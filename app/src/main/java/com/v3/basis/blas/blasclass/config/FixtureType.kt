@@ -13,6 +13,7 @@ class FixtureType {
         val statusTakeOut = "持出中"
         val statusFinishInstall = "設置済"
         val statusNotTakeOut = "持出不可"
+        val statusAll = "すべて"
 
         //restのステータス
         val kenpin : String = "0"

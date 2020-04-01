@@ -138,6 +138,20 @@ class ItemSearchFragment : Fragment() {
                         formPart =  setClickDateTime(formPart)
                         rootView!!.addView(formPart)
 
+                        for(i in 0 ..2) {
+                            rootView!!.setHorizontalGravity(LinearLayout.HORIZONTAL)
+                            var testParams = LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.WRAP_CONTENT,
+                                LinearLayout.LayoutParams.WRAP_CONTENT
+                            )
+                            var flo = 1 + i
+                            testParams.weight = flo.toFloat()
+                            //testParams.
+                            var test = formAction!!.createNewDateTime(testParams, cnt)
+                            test = setClickDateTime(test)
+                            rootView!!.addView(test)
+                        }
+
                         //配列にeditTextを格納
                         editMap!!.set(key="col_${cnt}",value = formPart)
                     }
@@ -190,10 +204,14 @@ class ItemSearchFragment : Fragment() {
                     var value = ""
                     when(it.value["type"]){
                         FieldType.TEXT_FIELD,
-                        FieldType.TEXT_AREA,
+                        FieldType.TEXT_AREA->{
+                            //自由入力(1行)・自由入力(複数行)
+                            value = formAction!!.pickUpValue(editMap,cnt)
+                        }
+
                         FieldType.DATE_TIME,
                         FieldType.TIME->{
-                            //自由入力(1行)・自由入力(複数行)・日付入力・時間入力
+                            //日付入力・時間入力
                             value = formAction!!.pickUpValue(editMap,cnt)
                         }
 
@@ -272,13 +290,18 @@ class ItemSearchFragment : Fragment() {
         searchValue.forEach{
             Log.d("htsreafgrsdjf","${it}")
         }
-        val test = searchAndroid(searchValue,itemInfo)
         Log.d("ログ取得中","==================================================================")
 
         val intent = Intent(activity, ItemSearchResultActivity::class.java)
+        var fldSize = searchValue.size-1
         intent.putExtra("token",token)
         intent.putExtra("project_id",projectId)
         intent.putExtra("freeWord",searchValue["freeWord"])
+        intent.putExtra("fldSize",fldSize.toString())
+
+        for(idx in 1 .. searchValue.size-1){
+            intent.putExtra("fld${idx}",searchValue["fld${idx}"])
+        }
         startActivity(intent)
     }
 

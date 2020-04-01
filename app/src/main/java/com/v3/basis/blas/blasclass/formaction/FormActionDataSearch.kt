@@ -1,9 +1,11 @@
 package com.v3.basis.blas.blasclass.formaction
 
 import android.graphics.Color
+import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.databinding.DataBindingUtil.setContentView
 import androidx.fragment.app.FragmentActivity
 import com.v3.basis.blas.blasclass.config.FieldType
 
@@ -53,6 +55,20 @@ class FormActionDataSearch(setToken: String, setActivity: FragmentActivity) : Fo
         view.setTextColor(Color.BLACK)
         view.setLayoutParams(params)
         return view
+    }
+
+    fun createNewDateTime(params: LinearLayout.LayoutParams?, cnt: Int): EditText{
+        val edit = EditText(baseActivity)
+        edit.setText("")
+        edit.inputType = 1
+        edit.setLayoutParams(params)
+        edit.maxEms = 10
+        edit.id = cnt
+        //これがミソ！！！これなしだとタップ2回での起動になる
+        edit.isFocusableInTouchMode = false
+
+
+        return edit
     }
 
 

@@ -72,6 +72,27 @@ class FixtureSearchResultFragment : Fragment() {
             searchValueMap.set("freeWord",freeWord)
         }
 
+        searchValueMap.set("serialNumber",getStringExtra("serialNumber"))
+        searchValueMap.set("dataId",getStringExtra("dataId"))
+        searchValueMap.set("kenpinOrg",getStringExtra("kenpinOrg"))
+        searchValueMap.set("kenpinUser",getStringExtra("kenpinUser"))
+        searchValueMap.set("kenpinDayMin",getStringExtra("kenpinDayMin"))
+        searchValueMap.set("kenpinDayMax",getStringExtra("kenpinDayMax"))
+        searchValueMap.set("takeOutOrg",getStringExtra("takeOutOrg"))
+        searchValueMap.set("takeOUtUser",getStringExtra("takeOutUser"))
+        searchValueMap.set("takeOutDayMin",getStringExtra("takeOutDayMin"))
+        searchValueMap.set("takeOutDayMax",getStringExtra("takeOutDayMax"))
+        searchValueMap.set("returnOrg",getStringExtra("returnOrg"))
+        searchValueMap.set("returnUser",getStringExtra("returnUser"))
+        searchValueMap.set("returnDayMin",getStringExtra("returnDayMin"))
+        searchValueMap.set("returnDayMax",getStringExtra("returnDayMax"))
+        searchValueMap.set("itemOrg",getStringExtra("itemOrg"))
+        searchValueMap.set("itemUser",getStringExtra("itemUser"))
+        searchValueMap.set("itemDayMin",getStringExtra("itemDayMin"))
+        searchValueMap.set("itemDayMax",getStringExtra("itemDayMax"))
+        searchValueMap.set("status",getStringExtra("status"))
+
+
         Log.d("freewordの値","freeWordの値=>${freeWord}")
 
         return inflater.inflate(R.layout.fragment_fixture_search_result, container, false)
@@ -160,7 +181,6 @@ class FixtureSearchResultFragment : Fragment() {
             baseValueMap.set("RtnOrg",fields.getJSONObject("RtnOrg").getString("name"))
             baseValueMap.set("ItemOrg",fields.getJSONObject("ItemOrg").getString("name"))
 
-            Log.d("testtetttest","${fields.getJSONObject("FixOrg").getString("name")}")
 
             baseDataList.add(baseValueMap)
 
@@ -201,7 +221,7 @@ class FixtureSearchResultFragment : Fragment() {
         var value:String? =null
         value = "【${getString(R.string.col_serialnumber)}】"
         value += "\n  ${list["serial_number"]}"
-        value += "\n\n${getString(R.string.col_serialnumber)}"
+        value += "\n\n${getString(R.string.col_status)}"
         value += when(list["status"]){//config.FixtureTypeにて定義している。
             canTakeOut -> {"${statusCanTakeOut}"}
             takeOut -> {"${statusTakeOut}"}
@@ -210,9 +230,6 @@ class FixtureSearchResultFragment : Fragment() {
             else -> { }
         }
         value += "\n\n\n${getString(R.string.col_kenpin_org)}"
-        list.forEach{
-            Log.d("リスト","${it}")
-        }
         value += setValue(list["FixOrg"]!!)
         value += "\n${getString(R.string.col_kenpin_user)}"
         value += setValue(list["FixUser"]!!)

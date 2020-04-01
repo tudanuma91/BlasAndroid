@@ -15,6 +15,7 @@ import android.widget.*
 
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemActivity
+import com.v3.basis.blas.activity.QRActivity
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.formaction.FormActionDataCreate
 import com.v3.basis.blas.blasclass.helper.RestHelper
@@ -183,8 +184,9 @@ class ItemCreateFragment : Fragment() {
                         }
                         checkMap!!.set(key = "col_${cnt}", value = colCheckMap)
                     }
-                    /*FieldType.QR_CODE,FieldType.KENPIN_RENDOU_QR->{
+                    FieldType.QR_CODE,FieldType.KENPIN_RENDOU_QR->{
                     //QRの処理
+                        Log.d("テ周防","ちゃんとここ来てる")
                         val edit = EditText(activity)
                         edit.setText("")
                         edit.inputType =1
@@ -200,11 +202,12 @@ class ItemCreateFragment : Fragment() {
                         buttonQ.setOnClickListener{
                             val intent = Intent(activity, QRActivity::class.java)
                             intent.putExtra("colNumber","${cnt}")
-                            //startActivity(intent)
-                            startActivityForResult(intent, requestCode);
+                            startActivity(intent)
                         }
-                    }*/
+                    }
                 }
+                Log.d("atait","タイプは=>${formInfo.type}")
+
                 //フォームセクションごとにスペース入れる処理。試しに入れてみた。
                 val space = Space(activity)
                 space.setLayoutParams(layoutParamsSpace)

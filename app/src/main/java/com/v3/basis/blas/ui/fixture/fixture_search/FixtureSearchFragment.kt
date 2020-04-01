@@ -75,6 +75,10 @@ class FixtureSearchFragment : Fragment() {
         formMap.set("returnUser",root!!.findViewById<EditText>(R.id.fixReturnUserSelect))
         formMap.set("returnDayMin",root!!.findViewById<EditText>(R.id.fixReturnDayMin))
         formMap.set("returnDayMax",root!!.findViewById<EditText>(R.id.fixReturnDayMax))
+        formMap.set("itemOrg",root!!.findViewById<EditText>(R.id.fixItemOrgSelect))
+        formMap.set("itemUser",root!!.findViewById<EditText>(R.id.fixItemUserSelect))
+        formMap.set("itemDayMin",root!!.findViewById<EditText>(R.id.fixItemDayMin))
+        formMap.set("itemDayMax",root!!.findViewById<EditText>(R.id.fixItemDayMax))
 
 
         //検品日付最小値タップ処理
@@ -113,6 +117,17 @@ class FixtureSearchFragment : Fragment() {
             setDateTimeAction(returnDayMax)
         }
 
+        val ItemDayMin = formMap["itemDayMin"]!!
+        ItemDayMin.setOnClickListener{
+            setDateTimeAction(ItemDayMin)
+        }
+
+        //返却最大値タップ処理
+        val ItemDayMax = formMap["itemDayMax"]!!
+        ItemDayMax.setOnClickListener{
+            setDateTimeAction(ItemDayMax)
+        }
+
 
         //検索ボタンタップ処理
         val btnSearch = root!!.findViewById<Button>(R.id.fixSerchBtn)
@@ -128,50 +143,6 @@ class FixtureSearchFragment : Fragment() {
 
 
     private fun fixtureGetSuccess(result: JSONObject) {
-        val searchValue:MutableMap<String,String?> = mutableMapOf()
-        val baseValueList:MutableList<MutableMap<String,String?>> = mutableListOf()
-
-        val records = result.getJSONArray("records")
-        //登録されているレコードの処理。
-        for(i in 0 until records.length()) {
-            val baseValueMap:MutableMap<String,String?> = mutableMapOf()
-            val fields = JSONObject(records[i].toString())
-            val fixture = fields.getJSONObject("Fixture")
-            baseValueMap.set("fixture_id",fixture.get("fixture_id").toString())
-            baseValueMap.set("project_id",fixture.get("project_id").toString())
-            baseValueMap.set("serial_number",fixture.get("serial_number").toString())
-            baseValueMap.set("fix_date",fixture.get("fix_date").toString())
-            baseValueMap.set("rtn_date",fixture.get("rtn_date").toString())
-            baseValueMap.set("item_date",fixture.get("item_date").toString())
-            baseValueMap.set("status",fixture.get("status").toString())
-            baseValueMap.set("create_date",fixture.get("create_date").toString())
-            baseValueMap.set("update_date",fixture.get("update_date").toString())
-            baseValueList.add(i,baseValueMap)
-           /* val fields = JSONObject(records[i].toString())
-            val fixture = fields.getJSONObject("Fixture")
-            val fixId = fixture.get("fixture_id").toString()
-            val proId = fixture.get("project_id").toString()
-            val serial_number = fixture.get("serial_number").toString()
-            val fix_date = fixture.get("fix_date").toString()
-            val rtn_date = fixture.get("rtn_date").toString()
-            val item_date = fixture.get("item_date").toString()
-            val status = fixture.get("status").toString()
-            val create_date = fixture.get("create_date").toString()
-            val update_date = fixture.get("update_date").toString()
-            baseValueMap.set("fixture_id",fixId)
-            baseValueMap.set("project_id",proId)
-            baseValueMap.set("serial_number",serial_number)
-            baseValueMap.set("fix_date",fix_date)
-            baseValueMap.set("rtn_date",rtn_date)
-            baseValueMap.set("item_date",item_date)
-            baseValueMap.set("status",status)
-            baseValueMap.set("create_date",create_date)
-            baseValueMap.set("update_date",update_date)
-            baseValueList.add(i,baseValueMap)*/
-
-            Log.d("機器管理検索画面","${fixture}")
-        }
-
         //検索フィールドの値処理
         val searchValueMap:MutableMap<String,String?> = mutableMapOf()
 
@@ -183,16 +154,9 @@ class FixtureSearchFragment : Fragment() {
         }
         //edittext以外のフォームはここで個別で格納。（増えてきたらなんか策考えます。）
         val statusSpinner = root!!.findViewById<Spinner>(R.id.fixSelectStatus)
-        searchValue.set("status",statusSpinner.selectedItem.toString())
+        searchValueMap.set("status",statusSpinner.selectedItem.toString())
         Log.d("機器管理検索画面","value = ${statusSpinner.selectedItem.toString()}")
 
-        //ここでバリデーション処理。例えば最小日:20019/03/11 最大日2018/03/17　の時エラー表示など。
-        //ただ、これは後回しでいい。
-
-        val aaa = searchAndroid(searchValueMap,baseValueList)
-        aaa.forEach{
-            Log.d("機器管理検索画面・検索結果","${it}")
-        }
 
         val intent = Intent(activity, FixtureSearchResultActivity::class.java)
         intent.putExtra("token",token)
@@ -201,6 +165,26 @@ class FixtureSearchFragment : Fragment() {
             Log.d("検索画面のループ","${it}")
         }
         intent.putExtra("freeWord",searchValueMap["freeWord"].toString())
+        intent.putExtra("serialNumber",searchValueMap["serialNumber"].toString())
+        intent.putExtra("dataId",searchValueMap["dataId"].toString())
+        intent.putExtra("kenpinOrg",searchValueMap["kenpinOrg"].toString())
+        intent.putExtra("kenpinUser",searchValueMap["kenpinUser"].toString())
+        intent.putExtra("kenpinDayMin",searchValueMap["kenpinDayMin"].toString())
+        intent.putExtra("kenpinDayMax",searchValueMap["kenpinDayMax"].toString())
+        intent.putExtra("takeOutOrg",searchValueMap["takeOutOrg"].toString())
+        intent.putExtra("takeOutUser",searchValueMap["takeOutUser"].toString())
+        intent.putExtra("takeOutDayMin",searchValueMap["takeOutDayMin"].toString())
+        intent.putExtra("takeOutDayMax",searchValueMap["takeOutDayMax"].toString())
+        intent.putExtra("returnOrg",searchValueMap["returnOrg"].toString())
+        intent.putExtra("returnUser",searchValueMap["returnUser"].toString())
+        intent.putExtra("returnDayMin",searchValueMap["returnDayMin"].toString())
+        intent.putExtra("returnDayMax",searchValueMap["returnDayMax"].toString())
+        intent.putExtra("itemOrg",searchValueMap["itemOrg"].toString())
+        intent.putExtra("itemUser",searchValueMap["itemUser"].toString())
+        intent.putExtra("itemDayMin",searchValueMap["itemDayMin"].toString())
+        intent.putExtra("itemDayMax",searchValueMap["itemDayMax"].toString())
+        intent.putExtra("status",searchValueMap["status"].toString())
+
         //とりあえずfreewordのみ渡す
         startActivity(intent)
 
