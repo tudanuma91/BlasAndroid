@@ -273,6 +273,17 @@ class ItemEditFragment : Fragment() {
                     }
                     checkMap!!.set(key = "col_${cnt}", value = colCheckMap)
                 }
+                FieldType.KENPIN_RENDOU_QR,
+                FieldType.QR_CODE,
+                FieldType.TEKKILYO_RENDOU_QR -> {
+                    // TODO:まだ
+                    val view = TextView(activity)
+                    view.setTextColor(Color.BLACK)
+                    view.text = "ここの実装お願いします"
+                    view.setLayoutParams(layoutParams)
+                    rootView!!.addView(view)
+
+                }
             }
             //フォームセクションごとにスペース入れる処理。試しに入れてみた。
             val space = Space(activity)

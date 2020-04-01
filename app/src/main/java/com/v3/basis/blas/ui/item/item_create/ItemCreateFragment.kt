@@ -184,7 +184,9 @@ class ItemCreateFragment : Fragment() {
                         }
                         checkMap!!.set(key = "col_${cnt}", value = colCheckMap)
                     }
-                    FieldType.QR_CODE,FieldType.KENPIN_RENDOU_QR->{
+                    FieldType.QR_CODE,
+                    FieldType.KENPIN_RENDOU_QR,
+                    FieldType.TEKKILYO_RENDOU_QR->{
                     //QRの処理
                         Log.d("テ周防","ちゃんとここ来てる")
                         val edit = EditText(activity)
@@ -269,12 +271,9 @@ class ItemCreateFragment : Fragment() {
 
                             }
                             FieldType.KENPIN_RENDOU_QR,
-                            FieldType.SIG_FOX,
                             FieldType.QR_CODE,
                             FieldType.TEKKILYO_RENDOU_QR -> {
                                 // TODO:まだ
-                                params[field_col] = ""
-
                             }
 
                         }
