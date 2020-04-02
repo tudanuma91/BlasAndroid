@@ -188,7 +188,7 @@ class ItemCreateFragment : Fragment() {
                     FieldType.KENPIN_RENDOU_QR,
                     FieldType.TEKKILYO_RENDOU_QR->{
                     //QRの処理
-                        Log.d("テ周防","ちゃんとここ来てる")
+                        // TODO:ここの実装お願いします！！
                         val edit = EditText(activity)
                         edit.setText("")
                         edit.inputType =1

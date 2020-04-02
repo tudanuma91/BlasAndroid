@@ -276,7 +276,7 @@ class ItemEditFragment : Fragment() {
                 FieldType.KENPIN_RENDOU_QR,
                 FieldType.QR_CODE,
                 FieldType.TEKKILYO_RENDOU_QR -> {
-                    // TODO:まだ
+                    // TODO:ここの実装お願いします！！
                     val view = TextView(activity)
                     view.setTextColor(Color.BLACK)
                     view.text = "ここの実装お願いします"

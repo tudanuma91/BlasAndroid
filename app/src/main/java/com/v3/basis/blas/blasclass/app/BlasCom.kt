@@ -89,6 +89,7 @@ class BlasCom {
         return RestfulRtn(errorCode, message, recordList)
     }
 
+
     /**
      * 検索を行う関数
      * @param cond 検索条件のmap(key:項目名 value:検索ワード)
@@ -96,13 +97,20 @@ class BlasCom {
      * @return result 検索結果
      */
     public fun searchAndroid(cond:MutableMap<String, String?>, search:MutableList<MutableMap<String, String?>>): MutableList<MutableMap<String, String?>> {
-        //TODO:検索の条件をしっかり把握すること(例：大文字・小文字・半角・全角)
-        //大文字小文字は別文字として判別している。
-        //フリーワード検索は、データ管理・機器管理ともに同じ処理を行う。
+        //TODO:検索窓に記号が入力されたときの処理が必要？
+        //java.util.regex.PatternSyntaxException: Incorrectly nested parentheses in regexp pattern near index 1
+        //多分だけど、"("は判定できないのかな？ちょっとテストする必要あり
+        //エラー記号リスト
+        //[(,),?,\,[,{,},*,+,.,]
+        //別件だけど$,^,|,:,でなぜか全件ヒットする...
 
         val result = search.toMutableList()
         val chkList :MutableList<Int> = mutableListOf()
         val removeIdList:MutableList<MutableList<Int>> = mutableListOf()
+
+        cond.forEach{
+            Log.d("機器管理の検索項目","${it}")
+        }
 
         for ((condKey, condValue) in cond) {
             //検索条件がフリーワードかつ文字が入力されているとき
@@ -153,7 +161,7 @@ class BlasCom {
          * 削除リスト1[3,4,5]
          * 削除リスト2[3,4,5,6,7,8]
          * 削除リスト3[4,5,6,7,10]
-         * とする。表示するレコードは1,2のみ
+         * とする。表示するレコードは1,2,9のみ
          * 全ての配列で一つも出てこないということは全条件に合致する
          *
          */
@@ -165,7 +173,7 @@ class BlasCom {
         }
 
         removeIdList.forEach{
-            //削除処理
+            //削除処理を実行するために、配列に入れる。
             it.forEach{
                 var value = countRemoveIdList[it]!!.toInt()
                 value += 1
@@ -174,14 +182,12 @@ class BlasCom {
         }
 
         countRemoveIdList.forEach{
-            Log.d("答えの配列","${it}")
+            //削除処理
             if(it.value > 0){
+                //削除条件に1件以上合致する時削除処理を実施
                 result.removeAt(it.key)
             }
         }
-
-
-
         return result
     }
 
@@ -227,206 +233,216 @@ class BlasCom {
      */
     public fun fixSearch(condKey:String,condValue:String?, search:MutableList<MutableMap<String, String?>>): MutableList<Int> {
 
-        var result: MutableList<Int> = mutableListOf()
-        val value =  Regex(condValue.toString())
-        val key = Regex(condKey.toString())
+        val result: MutableList<Int> = mutableListOf()
         val dayMin = Regex("DayMin")
         val dayMax = Regex("DayMax")
-        search.forEach{
-            Log.d("機器管理の検索","${it}")
-        }
+
+        Log.d("condKey","${condKey}")
+        Log.d("condValue","${condValue}")
 
         if(condKey == "status") {
             //ステータス検索
-            when (condValue) {
-                //ステータス:すべて
-                // 特に処理を行わない
-                FixtureType.statusTakeOut -> {
-                    //ステータス:持ち出し中
-                    result = statusSearch(search,"takeOut")
-                }
+            result.addAll(statusSearch(search,condValue))
 
-                FixtureType.statusCanTakeOut -> {
-                    //ステータス：持ち出し可
-                    result = statusSearch(search,"canTakeOut")
-                }
-
-                FixtureType.statusNotTakeOut -> {
-                    //ステータス：持ち出し不可
-                    result = statusSearch(search,"notTakeOut")
-                }
-
-                FixtureType.statusFinishInstall -> {
-                    //ステータス：設置済の時
-                    result = statusSearch(search,"finishInstall")
-                }
-            }
         }else if(dayMin.containsMatchIn(condKey)){
-            //日付検索
-            when(condKey){
-                "kenpinDayMin"->{
-                    //検品日の最小を求める
-                    for (idx in 0 until search.size) {
-                        val chk = chkDateMin(condValue,search[idx]["fix_date"])
-                        if(chk == true){
-                            result.add(idx)
-                        }
-                    }
-                }
-                "takeOutDayMin"->{
-                    for (idx in 0 until search.size) {
-                        val chk = chkDateMin(condValue,search[idx]["takeout_date"])
-                        if(chk == true){
-                            result.add(idx)
-                        }
-                    }
-
-                }
-                "returnDayMin"->{
-                    for (idx in 0 until search.size) {
-                        val chk = chkDateMin(condValue,search[idx]["rtn_date"])
-                        if(chk == true){
-                            result.add(idx)
-                        }
-                    }
-                }
-                "itemDayMin"->{
-                    for (idx in 0 until search.size) {
-                        val chk = chkDateMin(condValue,search[idx]["item_date"])
-                        if(chk == true){
-                            result.add(idx)
-                        }
-                    }
-
-                }
-            }
-
+            //日付検索（最低値）
+            result.addAll(dayMinSearch(search,condValue,condKey))
 
         }else if(dayMax.containsMatchIn(condKey)){
-            //日付検索
-            when(condKey){
-                "kenpinDayMax"->{
-                    //検品日のMaxを求める
-                    for (idx in 0 until search.size) {
-                        val chk = chkDateMax(condValue,search[idx]["fix_date"])
-                        if(chk == true){
-                            result.add(idx)
-                        }
-                    }
-                }
-                "takeOutDayMax"->{
-                    for (idx in 0 until search.size) {
-                        val chk = chkDateMax(condValue,search[idx]["takeout_date"])
-                        if(chk == true){
-                            result.add(idx)
-                        }
-                    }
-
-                }
-                "returnDayMax"->{
-                    for (idx in 0 until search.size) {
-                        val chk = chkDateMax(condValue,search[idx]["rtn_date"])
-                        if(chk == true){
-                            result.add(idx)
-                        }
-                    }
-                }
-                "itemDayMax"->{
-                    for (idx in 0 until search.size) {
-                        val chk = chkDateMax(condValue,search[idx]["item_date"])
-                        if(chk == true){
-                            result.add(idx)
-                        }
-                    }
-
-                }
-            }
-
+            //日付検索（最大値）
+            result.addAll(dayMaxSearch(search,condValue,condKey))
 
         }else {
             //ID検索など。
-            /**
-             * (検索側) = (ベース側)
-             * serialNumber = serial_number
-             * dataId = project_id
-             * kenpinOrg = FixOrg
-             * kenpinUser = FixUser
-             * takeOutOrg = TakeOutOrg
-             * takeOutUser = TakeOutUser
-             * returnOrg = RtnOrg
-             * returnUser = RtnUser
-             * itemOrg = ItemOrg
-             * itemUser = ItemUser
-             */
-           //when(condKey){
-
-            //}
-
-
+            result.addAll(otherSearch(search,condValue,condKey))
         }
 
         return result
     }
 
-    public fun statusSearch(search:MutableList<MutableMap<String, String?>>,type:String): MutableList<Int> {
+    /**
+     * @param search => 検索のベースになる配列。
+     * @param condValue => 検索ワードのこと。
+     * @return result 検索ワードと合致しないインデックスを格納して返却する
+     *
+     * この関数はステータス検索を行う関数です。
+     *
+     */
+    public fun statusSearch(search:MutableList<MutableMap<String, String?>>,condValue: String?): MutableList<Int> {
         val result: MutableList<Int> = mutableListOf()
-        when(type) {
-            "takeOut"-> {
+        //ステータス:すべての時は何も処理を行わず、配列の未返却する
+
+        when(condValue){
+
+            FixtureType.statusTakeOut -> {
+                //ステータス:持ち出し中
                 for (idx in 0 until search.size) {
                     if (search[idx]["status"] != FixtureType.takeOut) {
                         result.add(idx)
                     }
                 }
             }
-            "canTakeOut"-> {
+
+            FixtureType.statusCanTakeOut -> {
+                //ステータス：持ち出し可
                 for (idx in 0 until search.size) {
                     if (search[idx]["status"] != FixtureType.canTakeOut) {
                         result.add(idx)
                     }
                 }
             }
-            "notTakeOut"-> {
+
+            FixtureType.statusNotTakeOut -> {
+                //ステータス：持ち出し不可
                 for (idx in 0 until search.size) {
                     if (search[idx]["status"] != FixtureType.notTakeOut) {
                         result.add(idx)
                     }
                 }
             }
-            "finishInstall"-> {
+
+            FixtureType.statusFinishInstall -> {
+                //ステータス：設置済の時
                 for (idx in 0 until search.size) {
                     if (search[idx]["status"] != FixtureType.finishInstall) {
                         result.add(idx)
                     }
                 }
             }
+        }
+        return result
+    }
+
+    /**
+     * @param search 検索されるベースの配列。
+     * @param condKey 検索対象の項目
+     * @param condValue 検索ワード
+     * @return result 検索条件と不一致の配列を返却する
+     *
+     * この関数は日付検索の最低値を求める関数です。
+     * ○○/××～　の正誤を求める
+     *
+     */
+    public fun dayMinSearch(search:MutableList<MutableMap<String, String?>>,condValue: String?,condKey:String): MutableList<Int> {
+        val result:MutableList<Int> = mutableListOf()
+
+        when(condKey) {
+            "kenpinDayMin" -> {
+                //検品日の最小を求める
+                for (idx in 0 until search.size) {
+                    val chk = chkDateMin(condValue, search[idx]["fix_date"])
+                    if (chk == true) {
+                        result.add(idx)
+                    }
+                }
+            }
+
+            "takeOutDayMin" -> {
+                //持ち出し日の最小を求める
+                for (idx in 0 until search.size) {
+                    val chk = chkDateMin(condValue, search[idx]["takeout_date"])
+                    if (chk == true) {
+                        result.add(idx)
+                    }
+                }
+
+            }
+
+            "returnDayMin" -> {
+                //返却日の最小を求める
+                for (idx in 0 until search.size) {
+                    val chk = chkDateMin(condValue, search[idx]["rtn_date"])
+                    if (chk == true) {
+                        result.add(idx)
+                    }
+                }
+            }
+
+            "itemDayMin" -> {
+                //設置日の最小を求める
+                for (idx in 0 until search.size) {
+                    val chk = chkDateMin(condValue, search[idx]["item_date"])
+                    if (chk == true) {
+                        result.add(idx)
+                    }
+                }
+
+            }
 
         }
         return result
     }
 
-
-    public fun searchWordCreate(string:String?): LocalDate? {
-        if(string != null) {
-            when (string) {
-                "null"->{
-                    //値がnullの時
-                    return null
-                }
-                ""->{
-                    //値が空白の時
-                    return null
-                }
-                else->{
-                    var time = string.replace("/", "-")
-                    val result = LocalDate.parse(time)
-                    return result
+    /**
+     * @param search 検索される側の値の配列
+     * @param condValue 検索ワード
+     * @param condKey 検索対象の項目
+     *
+     */
+    public fun dayMaxSearch(search:MutableList<MutableMap<String, String?>>,condValue: String?,condKey:String): MutableList<Int> {
+        val result:MutableList<Int> = mutableListOf()
+        when(condKey){
+            "kenpinDayMax"->{
+                //検品日のMaxを求める
+                for (idx in 0 until search.size) {
+                    val chk = chkDateMax(condValue,search[idx]["fix_date"])
+                    if(chk == true){
+                        result.add(idx)
+                    }
                 }
             }
-        }else{
-            return null
+            "takeOutDayMax"->{
+                for (idx in 0 until search.size) {
+                    val chk = chkDateMax(condValue,search[idx]["takeout_date"])
+                    if(chk == true){
+                        result.add(idx)
+                    }
+                }
+
+            }
+            "returnDayMax"->{
+                for (idx in 0 until search.size) {
+                    val chk = chkDateMax(condValue,search[idx]["rtn_date"])
+                    if(chk == true){
+                        result.add(idx)
+                    }
+                }
+            }
+            "itemDayMax"->{
+                for (idx in 0 until search.size) {
+                    val chk = chkDateMax(condValue,search[idx]["item_date"])
+                    if(chk == true){
+                        result.add(idx)
+                    }
+                }
+
+            }
         }
+        return result
     }
 
+
+    /**
+     *  @param string 検索ワード
+     *  @return result フォーマットを整えた検索ワード or null
+     *
+     * ※ここちょっと簡略化できるかもしれない
+     *  この関数は検索ワードのフォーマットを整える関数です
+     */
+    public fun searchWordCreate(string:String?): LocalDate? {
+        val time = string!!.replace("/", "-")
+        val result = LocalDate.parse(time)
+        return result
+    }
+
+
+    /**
+     * @param string  検索されるベースの値
+     * @return result or null 検索ベースの値のフォーマットを整えて返却するかnullで返す
+     *
+     * この関数は検索ベースのフォーマットを整える関数です
+     *
+     * */
     public fun baseWordCreate(string:String?): LocalDate? {
         if(string != null) {
             when(string){
@@ -440,8 +456,8 @@ class BlasCom {
                 }
                 else->{
                     //値が入力されてるとき
-                    var number = string.indexOf(" ")
-                    var result = LocalDate.parse(string.substring(0, number))
+                    val number = string.indexOf(" ")
+                    val result = LocalDate.parse(string.substring(0, number))
                     return result
                 }
             }
@@ -451,7 +467,17 @@ class BlasCom {
         }
     }
 
-    //日付検索(最小値)
+
+    /**
+     * @param condValue 検索ワード
+     * @param baseValue 検索される方のワード
+     * @return Bool
+     *
+     * この関数は日付検索の結果をtrueかfalseで返します
+     * Minなので値が+1以上だとfalseを返す。
+     * ※trueが削除対象
+     *
+     */
     public fun chkDateMin(condValue: String?,baseValue:String?): Boolean {
         val searchValue = searchWordCreate(condValue)
         val baseValue = baseWordCreate(baseValue)
@@ -466,7 +492,16 @@ class BlasCom {
     }
 
 
-    //日付検索（最大値）
+    /**
+     * @param condValue 検索ワード
+     * @param baseValue 検索される方のワード
+     * @return Bool
+     *
+     * この関数は日付検索の結果をtrueかfalseで返します
+     * Maxなので値が-1以下だとfalseを返す。
+     * ※trueが削除対象
+     *
+     */
     public fun chkDateMax(condValue: String?,baseValue:String?): Boolean {
         val searchValue = searchWordCreate(condValue)
         val baseValue = baseWordCreate(baseValue)
@@ -478,6 +513,22 @@ class BlasCom {
             //日付が空白またはnullの場合は条件に合わないので、removeIdに追加するflgをtrueにする
             return true
         }
+    }
+
+
+    public fun otherSearch(search: MutableList<MutableMap<String, String?>>, condValue: String?, condKey: String): MutableList<Int> {
+        val result:MutableList<Int> = mutableListOf()
+
+        val value = Regex(condValue.toString())
+
+        for (idx in 0 until search.size){
+            if(!value.containsMatchIn(search[idx][condKey].toString())){
+                result.add(idx)
+                Log.d("検索結果","君削除ね")
+            }
+        }
+
+        return result
     }
 
 

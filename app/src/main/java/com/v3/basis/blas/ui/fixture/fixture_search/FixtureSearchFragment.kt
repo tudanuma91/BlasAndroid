@@ -161,9 +161,6 @@ class FixtureSearchFragment : Fragment() {
         val intent = Intent(activity, FixtureSearchResultActivity::class.java)
         intent.putExtra("token",token)
         intent.putExtra("project_id",projectId)
-        searchValueMap.forEach{
-            Log.d("検索画面のループ","${it}")
-        }
         intent.putExtra("freeWord",searchValueMap["freeWord"].toString())
         intent.putExtra("serialNumber",searchValueMap["serialNumber"].toString())
         intent.putExtra("dataId",searchValueMap["dataId"].toString())
