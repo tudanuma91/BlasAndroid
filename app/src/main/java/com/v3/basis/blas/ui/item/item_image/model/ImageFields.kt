@@ -18,8 +18,8 @@ data class ImageFields(
             id = project_image_id,
             title = name,
             image = ObservableField(),
-            empty = ObservableField(true),
-            loading = ObservableField(false)
+            empty = ObservableField(false),
+            loading = ObservableField(true)
         )
     }
 }

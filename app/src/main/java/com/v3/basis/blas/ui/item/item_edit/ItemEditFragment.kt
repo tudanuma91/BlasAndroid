@@ -178,10 +178,20 @@ class ItemEditFragment : Fragment() {
 
             //フォームの作成処理。項目の数だけ行う。
             when (formInfo.type) {
-                FieldType.TEXT_FIELD, FieldType.TEXT_AREA -> {
+                FieldType.TEXT_FIELD-> {
                     //自由入力(1行)と自由入力(複数行)
                     //editTextを作成
                     var formPart = formAction!!.createTextField(layoutParams, cnt, formInfo)
+                    formPart = formAction!!.setDefaultValueEdit(
+                        formDefaultValueList[0].get("fld${cnt}"),
+                        formPart
+                    )
+                    rootView!!.addView(formPart)
+                    //配列にeditTextの情報を格納。
+                    editMap!!.set(key = "col_${cnt}", value = formPart)
+                }
+                FieldType.TEXT_AREA ->{
+                    var formPart = formAction!!.createTextAlea(layoutParams, cnt, formInfo)
                     formPart = formAction!!.setDefaultValueEdit(
                         formDefaultValueList[0].get("fld${cnt}"),
                         formPart
@@ -262,6 +272,17 @@ class ItemEditFragment : Fragment() {
 
                     }
                     checkMap!!.set(key = "col_${cnt}", value = colCheckMap)
+                }
+                FieldType.KENPIN_RENDOU_QR,
+                FieldType.QR_CODE,
+                FieldType.TEKKILYO_RENDOU_QR -> {
+                    // TODO:ここの実装お願いします！！
+                    val view = TextView(activity)
+                    view.setTextColor(Color.BLACK)
+                    view.text = "ここの実装お願いします"
+                    view.setLayoutParams(layoutParams)
+                    rootView!!.addView(view)
+
                 }
             }
             //フォームセクションごとにスペース入れる処理。試しに入れてみた。

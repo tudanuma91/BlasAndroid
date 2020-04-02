@@ -108,6 +108,7 @@ open class BlasRestImage(val crud:String = "download",
         } catch (e: JSONException){
             //JSONの展開に失敗
             Toast.makeText(context, "データ取得失敗", Toast.LENGTH_LONG).show()
+            funcError(BlasRestErrCode.JSON_PARSE_ERROR)
             return
         }
 

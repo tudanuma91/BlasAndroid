@@ -13,6 +13,8 @@ import android.widget.Toast
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
+import io.reactivex.Completable
+import io.reactivex.schedulers.Schedulers
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.*
@@ -46,8 +48,8 @@ open class BlasRest() : AsyncTask<String, String, String>() {
 
     companion object {
 
-        const val URL = BuildConfig.API_URL
-       // const val URL = "http://192.168.0.104/blas7/api/v1/"
+        //const val URL = BuildConfig.API_URL
+        const val URL = "http://192.168.0.104/blas7/api/v1/"
         const val CONTEXT_TIME_OUT = 1000
         const val READ_TIME_OUT = 1000
         var queuefuncList = mutableListOf<FuncList>()
@@ -145,7 +147,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
     open fun getResponseData(payload:Map<String, String?>,method:String,targetUrl:String): String {
         var response = ""
 
-        if( (method == "GET") or (method == "DELETE") ) {
+        if( (method == "GET") ) {
             response = methodGet(payload, targetUrl)
         } else {
 
@@ -315,9 +317,16 @@ open class BlasRest() : AsyncTask<String, String, String>() {
      * @param jsonText json形式のテキスト
      */
     fun saveJson(fileName:String, jsonText:String) {
-        File(fileName).writer().use {
-            it.write(jsonText)
-        }
+
+        Completable
+            .fromAction {
+                File(fileName).writer().use {
+                    it.write(jsonText)
+                }
+            }
+            .subscribeOn(Schedulers.newThread())
+            .subscribe()
+            .dispose()
     }
 
     /**

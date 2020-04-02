@@ -11,4 +11,5 @@ data class ItemImageCellItem(
     var loading: ObservableField<Boolean>
 ) {
     lateinit var imageId: String
+    lateinit var ext: String
 }

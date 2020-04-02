@@ -100,8 +100,15 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
                     formInfo.type = FieldType.KENPIN_RENDOU_QR
                 }
                 FieldType.QR_CODE->{
-                    //チェックボックス選択
                     formInfo.type = FieldType.QR_CODE
+
+                }
+                FieldType.KENPIN_RENDOU_QR->{
+                    formInfo.type = FieldType.KENPIN_RENDOU_QR
+
+                }
+                FieldType.TEKKILYO_RENDOU_QR->{
+                    formInfo.type = FieldType.TEKKILYO_RENDOU_QR
 
                 }
             }

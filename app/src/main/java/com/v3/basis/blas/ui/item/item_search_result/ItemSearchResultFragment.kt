@@ -29,6 +29,7 @@ class ItemSearchResultFragment : Fragment() {
     var token:String? = null
     var projectId:String? = null
     var freeWord :String? = ""
+    var fldSize : String? = null
     private val findValueMap:MutableMap<String,String?> = mutableMapOf()
     private val fieldMap: MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
     private val itemList: MutableList<MutableMap<String, String?>> = mutableListOf()
@@ -53,12 +54,19 @@ class ItemSearchResultFragment : Fragment() {
         if(getStringExtra("project_id") != null){
             projectId = getStringExtra("project_id")
         }
+        if(getStringExtra("fldSize")!= null){
+            fldSize = getStringExtra("fldSize")
+        }
         if(getStringExtra("freeWord")!=null){
             freeWord = getStringExtra("freeWord")
             findValueMap.set("freeWord",freeWord)
         }
+        for (idx in 1 .. fldSize!!.toInt()){
+            findValueMap.set("fld${idx}",getStringExtra("fld${idx}"))
+        }
 
         Log.d("検索結果","freeword = ${freeWord}")
+        Log.d("検索結果","fldSize = ${fldSize}")
         return inflater.inflate(R.layout.fragment_item_search_result, container, false)
     }
 
