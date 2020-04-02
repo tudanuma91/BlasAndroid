@@ -20,6 +20,11 @@ import android.R.id.message
 import java.util.Base64.getEncoder
 import java.util.Base64
 import android.util.Base64.NO_WRAP
+import androidx.core.content.FileProvider
+import androidx.core.content.FileProvider.getUriForFile
+import androidx.core.net.toUri
+import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.rest.BlasRest
 import java.io.*
 import java.lang.Exception
 
@@ -66,40 +71,34 @@ class HomeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     }
 
     fun getFileSuccess(result: JSONObject) {
-        Log.d("取得成功", "取得成功")
-        Log.d("取得成功", "${result}")
-        //dataのみ抜き取り完了
-        val test = result.getJSONObject("records").getJSONObject("Information")
-        val test2 = test["data"].toString()
-        Log.d("testtest","${test2}")
-        Log.d("testtest","aaaaaaaaaa")
 
-        //base64のデコードとエンコード
-        val s: String = "abcdefg"
-        val b64Encode: String = getEncoder().encodeToString(s.toByteArray())
-        val b64Decode = Base64.getDecoder().decode(b64Encode.toByteArray()).toString(Charsets.UTF_8)
-        val b64Decode_data = Base64.getDecoder().decode(test2.toByteArray()).toString(Charsets.UTF_8)
-        Log.d("testtest","${s}")
-        Log.d("testtest","${b64Encode}")
-        Log.d("testtest","${b64Decode}")
-        Log.d("testtest","${b64Decode_data}")
+        val info = result.getJSONObject("records").getJSONObject("Information")
+        val file_data = info["data"].toString()
 
-        //C:\Users\PC697\AndroidStudioProjects\Blas_Android\app\src\main\java\com\v3\basis\blas\ui\terminal\dashboards\dashbord_list_view\HomeViewHolder.kt
-       // val fos = FileOutputStream("com.v3.basis.blas.R.raw.newtest3.testpdf")
-        //fos.write(b64Decode_data.toByteArray())
-       // fos.flush()
-        //fos.close()
-        //com.v3.basis.blas.R.raw.test.pdf
+        var decFile = Base64.getDecoder().decode(file_data.toByteArray())
 
-       //val  uri = "android.resource://${getPackageName()}/${R.raw.test}/"
+        // ファイル出力
+        val filePath = context.filesDir.toString() + "/" + info["filename"].toString()
+
+        val fp = File(filePath)
+        var fos = FileOutputStream(fp)
+        var bos = BufferedOutputStream(fos)
+        // 出力ストリームへの書き込み（ファイルへの書き込み）
+        bos.write(decFile)
+        bos.flush()
+        bos.close()
+
+        val intent:Intent
+
+        // ファイルプロバイダー
+        val uri = FileProvider.getUriForFile(context,"com.v3.basis.blas",File(filePath));
+        intent = Intent(Intent.ACTION_VIEW)
+        intent.setDataAndType(uri, "*/*");
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+        context.startActivity(intent)
+
         TerminalActivity().resorce()
-
-
-
-
-
-
-
 
     }
     fun getFileError(errorCode:Int){

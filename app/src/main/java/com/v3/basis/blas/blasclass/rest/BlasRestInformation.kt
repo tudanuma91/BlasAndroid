@@ -91,7 +91,7 @@ open class BlasRestInformation(val crud:String = "search",
             json = JSONObject(result)
             //エラーコード取得
             errorCode = json.getInt("error_code")
-            records = json.getJSONArray("records")
+         //   records = json.getJSONArray("records")
 
         } catch (e: JSONException){
             //JSONの展開に失敗
@@ -103,9 +103,9 @@ open class BlasRestInformation(val crud:String = "search",
         if(errorCode == 0 && result != null) {
             //正常のときだけキャッシュにjsonファイルを保存する
             try {
-                if(records != null) {
-                    saveJson(cacheFileName, result)
-                }
+            //    if(records != null) {
+            //        saveJson(cacheFileName, result)
+            //    }
 
                 if(json != null) {
                     //コールバック
