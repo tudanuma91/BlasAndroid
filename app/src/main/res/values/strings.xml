@@ -15,6 +15,10 @@
     <string name="password_too_long">パスワードが長すぎます</string>
     <string name="account_error">ユーザ名，またはパスワードに誤りがあります</string>
 
+    <!-- エラー系 -->
+    <string name="download_error">ファイルダウンロードでエラーが起きました</string>
+    <string name="uri_error">ファイルが見つかりません。</string>
+
     <!-- 通信系 -->
     <string name="network_error">サーバと通信できません</string>
     <string name="server_error">サーバ内でエラーが発生しました。管理者に連絡してください。要因コード(%1$d)</string>
