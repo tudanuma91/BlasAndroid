@@ -187,6 +187,10 @@ class QrFragment : Fragment() {
                         //ひとつ前のQRコードをこのQRコードにする。連続読み取りを避けるため。
                         oldResult = result.toString()
 
+                        requireActivity().setResult(
+                            Activity.RESULT_OK,
+                            Intent().apply { putExtra("qr_code", oldResult) })
+
 
                         var payload2 = mapOf(
                             "token" to token,
@@ -199,6 +203,7 @@ class QrFragment : Fragment() {
                         QrFragment().callOnPouse()
 
                         Log.d("OK", "終了")
+                        requireActivity().finish()
                         //この時、エラーが帰ってきたら逃がす処理を追加する。
                     }
 
