@@ -61,6 +61,8 @@ class ItemEditFragment : Fragment() {
 
     private var formAction: FormActionDataEdit? = null
 
+    private lateinit var qrCodeView: EditText
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -281,8 +283,12 @@ class ItemEditFragment : Fragment() {
                 FieldType.QR_CODE,
                 FieldType.TEKKILYO_RENDOU_QR -> {
 
-                    val layout = requireActivity().layoutInflater.inflate(R.layout.cell_qr_item, rootView)
-                    layout.findViewById<Button>(R.id.button)?.setOnClickListener{
+                    //  QR code 読み取り
+                    val layout = requireActivity().layoutInflater.inflate(R.layout.cell_qr_item, null)
+                    rootView!!.addView(layout)
+                    layout.findViewById<Button>(R.id.button)?.setOnClickListener {
+
+                        qrCodeView = layout.findViewById(R.id.editText)
                         val intent = Intent(activity, QRActivity::class.java)
                         intent.putExtra("colNumber","${cnt}")
                         startActivityForResult(intent, QRActivity.QR_CODE)
@@ -416,7 +422,7 @@ class ItemEditFragment : Fragment() {
         if (resultCode == Activity.RESULT_OK && requestCode == QRActivity.QR_CODE) {
 
             val qr = data?.getStringExtra("qr_code")
-            rootView!!.findViewById<EditText>(R.id.editText).setText(qr)
+            qrCodeView.setText(qr)
         }
     }
 }
