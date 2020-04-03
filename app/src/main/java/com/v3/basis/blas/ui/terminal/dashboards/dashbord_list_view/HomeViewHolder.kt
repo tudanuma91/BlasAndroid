@@ -17,6 +17,7 @@ import android.content.Intent
 import android.net.Uri
 import com.v3.basis.blas.activity.TerminalActivity
 import android.R.id.message
+import android.app.PendingIntent.getActivity
 import java.util.Base64.getEncoder
 import java.util.Base64
 import android.util.Base64.NO_WRAP
@@ -74,26 +75,36 @@ class HomeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         val info = result.getJSONObject("records").getJSONObject("Information")
         val file_data = info["data"].toString()
-
+        val intent = Intent(Intent.ACTION_VIEW)
         var decFile = Base64.getDecoder().decode(file_data.toByteArray())
 
-        // ファイル出力
+        // ファイルパス
         val filePath = context.filesDir.toString() + "/" + info["filename"].toString()
 
-        val fp = File(filePath)
-        var fos = FileOutputStream(fp)
-        var bos = BufferedOutputStream(fos)
-        // 出力ストリームへの書き込み（ファイルへの書き込み）
-        bos.write(decFile)
-        bos.flush()
-        bos.close()
+        try {
+            val fp = File(filePath)
+            var fos = FileOutputStream(fp)
+            var bos = BufferedOutputStream(fos)
+            // 出力ストリームへの書き込み（ファイルへの書き込み）
+            bos.write(decFile)
+            bos.flush()
+            bos.close()
 
-        val intent:Intent
+        }catch (exception: Exception){
+            Toast.makeText(context, R.string.download_error, Toast.LENGTH_LONG).show()
+            Log.e("dashBoardFileError", exception.toString())
+        }
 
-        // ファイルプロバイダー
-        val uri = FileProvider.getUriForFile(context,"com.v3.basis.blas",File(filePath));
-        intent = Intent(Intent.ACTION_VIEW)
-        intent.setDataAndType(uri, "*/*");
+        // ファイルプロバイダーの為のURIを取得。content形式のURIを取得
+        try {
+            val uri = FileProvider.getUriForFile(context,"com.v3.basis.blas",File(filePath));
+            intent.setDataAndType(uri, "*/*");
+        }catch (exception: Exception){
+            Toast.makeText(context, R.string.uri_error, Toast.LENGTH_LONG).show()
+            Log.e("FileProviderUriGetError", exception.toString())
+        }
+
+        // パーミッションの追加　updateで必要となった　ハマりポイント
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
         context.startActivity(intent)
