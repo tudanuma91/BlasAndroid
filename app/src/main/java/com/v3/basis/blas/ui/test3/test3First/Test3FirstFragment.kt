@@ -21,7 +21,7 @@ class Test3FirstFragment : Fragment() {
     private var ENTER_DATA_LIST : MutableMap<String, String> = mutableMapOf()
     private var DATA_LIST : MutableList<RowModel> = mutableListOf()
     //private var PROGRESS_FLG = false
-    private val DATA_SIZE = 105
+    private val DATA_SIZE = 10500
     private val PAGE_NUMBER = 20
 
     override fun onCreateView(
@@ -48,7 +48,6 @@ class Test3FirstFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         ENTER_DATA_LIST = createEnterdataList(DATA_SIZE)
-        DATA_LIST = createDataList(ENTER_DATA_LIST,0,PAGE_NUMBER)
         val recyclerview = recyclerView
         val adapter =ViewAdapter(DATA_LIST,
             object : ViewAdapter.ListListener{
@@ -146,21 +145,9 @@ class Test3FirstFragment : Fragment() {
 
     }
 
-    private fun createDataList(List:MutableMap<String, String>,start:Int,finish:Int): MutableList<RowModel> {
-        val outputDataList = mutableListOf<RowModel>()
-        for (i in start..finish){
-            val data : RowModel =
-                RowModel().also {
-                    val value1: String = List["id${i}"]!!
-                    val value2:String = List["title${i}"]!!
-                    it.title = value1
-                    it.detail = value2
-                }
-            outputDataList.add(data)
-        }
-        return outputDataList
-    }
 
+
+    //これは無視してOK
     fun createEnterdataList(cnt : Int): MutableMap<String, String> {
         val dataList = mutableMapOf<String,String>()
         for(i in 0..cnt){
