@@ -1,6 +1,7 @@
 package com.v3.basis.blas.ui.item.item_create
 
 
+import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Intent
@@ -187,24 +188,12 @@ class ItemCreateFragment : Fragment() {
                     FieldType.QR_CODE,
                     FieldType.KENPIN_RENDOU_QR,
                     FieldType.TEKKILYO_RENDOU_QR->{
-                    //QRの処理
-                        // TODO:ここの実装お願いします！！
-                        val edit = EditText(activity)
-                        edit.setText("")
-                        edit.inputType =1
-                        edit.setLayoutParams(layoutParams)
-                        edit.id = cnt
-                        rootView!!.addView(edit)
 
-                        val buttonQ = Button(activity)
-                        buttonQ.text = "QRコード読み取り"
-                        buttonQ.setLayoutParams(layoutParams)
-                        rootView!!.addView(buttonQ)
-
-                        buttonQ.setOnClickListener{
+                        val layout = requireActivity().layoutInflater.inflate(R.layout.cell_qr_item, rootView)
+                        layout.findViewById<Button>(R.id.button)?.setOnClickListener{
                             val intent = Intent(activity, QRActivity::class.java)
                             intent.putExtra("colNumber","${cnt}")
-                            startActivity(intent)
+                            startActivityForResult(intent, QRActivity.QR_CODE)
                         }
                     }
                 }
@@ -367,6 +356,15 @@ class ItemCreateFragment : Fragment() {
             tp.show()
         }
         return formPart
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+
+        if (resultCode == Activity.RESULT_OK && requestCode == QRActivity.QR_CODE) {
+
+            val qr = data?.getStringExtra("qr_code")
+            rootView!!.findViewById<EditText>(R.id.editText).setText(qr)
+        }
     }
 }
 

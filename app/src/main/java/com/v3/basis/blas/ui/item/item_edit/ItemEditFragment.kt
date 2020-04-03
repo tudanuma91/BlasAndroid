@@ -1,7 +1,9 @@
 package com.v3.basis.blas.ui.item.item_edit
 
+import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -13,11 +15,13 @@ import android.widget.*
 
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemActivity
+import com.v3.basis.blas.activity.QRActivity
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.formaction.FormActionDataEdit
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
+import com.v3.basis.blas.ui.item.item_create.ItemCreateFragment
 import org.json.JSONObject
 import java.util.*
 
@@ -276,13 +280,13 @@ class ItemEditFragment : Fragment() {
                 FieldType.KENPIN_RENDOU_QR,
                 FieldType.QR_CODE,
                 FieldType.TEKKILYO_RENDOU_QR -> {
-                    // TODO:ここの実装お願いします！！
-                    val view = TextView(activity)
-                    view.setTextColor(Color.BLACK)
-                    view.text = "ここの実装お願いします"
-                    view.setLayoutParams(layoutParams)
-                    rootView!!.addView(view)
 
+                    val layout = requireActivity().layoutInflater.inflate(R.layout.cell_qr_item, rootView)
+                    layout.findViewById<Button>(R.id.button)?.setOnClickListener{
+                        val intent = Intent(activity, QRActivity::class.java)
+                        intent.putExtra("colNumber","${cnt}")
+                        startActivityForResult(intent, QRActivity.QR_CODE)
+                    }
                 }
             }
             //フォームセクションごとにスペース入れる処理。試しに入れてみた。
@@ -407,6 +411,12 @@ class ItemEditFragment : Fragment() {
         return formPart
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 
+        if (resultCode == Activity.RESULT_OK && requestCode == QRActivity.QR_CODE) {
 
+            val qr = data?.getStringExtra("qr_code")
+            rootView!!.findViewById<EditText>(R.id.editText).setText(qr)
+        }
+    }
 }
