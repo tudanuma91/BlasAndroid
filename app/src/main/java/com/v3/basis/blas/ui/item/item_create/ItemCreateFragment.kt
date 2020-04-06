@@ -193,13 +193,15 @@ class ItemCreateFragment : Fragment() {
 
                         val layout = requireActivity().layoutInflater.inflate(R.layout.cell_qr_item, null)
                         rootView!!.addView(layout)
+                        qrCodeView = layout.findViewById(R.id.editText)
                         layout.findViewById<Button>(R.id.button)?.setOnClickListener{
 
-                            qrCodeView = layout.findViewById(R.id.editText)
                             val intent = Intent(activity, QRActivity::class.java)
                             intent.putExtra("colNumber","${cnt}")
                             startActivityForResult(intent, QRActivity.QR_CODE)
                         }
+                        //配列に値を格納//
+                        editMap!!.set(key = "col_${cnt}", value = qrCodeView)
                     }
                 }
                 Log.d("atait","タイプは=>${formInfo.type}")
@@ -267,7 +269,13 @@ class ItemCreateFragment : Fragment() {
                             FieldType.KENPIN_RENDOU_QR,
                             FieldType.QR_CODE,
                             FieldType.TEKKILYO_RENDOU_QR -> {
-                                // TODO:まだ
+                                //配列に格納した値を取得
+
+                                val colCheckMap = editMap!!.get("col_${cnt}")
+                                Log.d("testytesttt","${colCheckMap!!.text}")
+                                value = colCheckMap!!.text.toString()
+                                payload.set("fld${cnt}", "${value}")
+
                             }
 
                         }
@@ -277,10 +285,10 @@ class ItemCreateFragment : Fragment() {
                         cnt += 1
                     }
 
-                    errorCnt = formAction!!.countNullError(nullChk, textViewMap)
-                    if (errorCnt == 0) {
-                        BlasRestItem("create", payload, ::createSuccess, ::createError).execute()
-                    }
+                }
+                errorCnt = formAction!!.countNullError(nullChk, textViewMap)
+                if (errorCnt == 0) {
+                    BlasRestItem("create", payload, ::createSuccess, ::createError).execute()
                 }
             }
         }
