@@ -1,6 +1,7 @@
 package com.v3.basis.blas.ui.item.item_create
 
 
+import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Intent
@@ -55,6 +56,8 @@ class ItemCreateFragment : Fragment() {
 
     private var Item = ItemActivity()
     private var formAction: FormActionDataCreate? = null
+
+    private lateinit var qrCodeView: EditText
 
 
     override fun onCreateView(
@@ -187,25 +190,18 @@ class ItemCreateFragment : Fragment() {
                     FieldType.QR_CODE,
                     FieldType.KENPIN_RENDOU_QR,
                     FieldType.TEKKILYO_RENDOU_QR->{
-                    //QRの処理
-                        // TODO:ここの実装お願いします！！
-                        val edit = EditText(activity)
-                        edit.setText("")
-                        edit.inputType =1
-                        edit.setLayoutParams(layoutParams)
-                        edit.id = cnt
-                        rootView!!.addView(edit)
 
-                        val buttonQ = Button(activity)
-                        buttonQ.text = "QRコード読み取り"
-                        buttonQ.setLayoutParams(layoutParams)
-                        rootView!!.addView(buttonQ)
+                        val layout = requireActivity().layoutInflater.inflate(R.layout.cell_qr_item, null)
+                        rootView!!.addView(layout)
+                        qrCodeView = layout.findViewById(R.id.editText)
+                        layout.findViewById<Button>(R.id.button)?.setOnClickListener{
 
-                        buttonQ.setOnClickListener{
                             val intent = Intent(activity, QRActivity::class.java)
                             intent.putExtra("colNumber","${cnt}")
-                            startActivity(intent)
+                            startActivityForResult(intent, QRActivity.QR_CODE)
                         }
+                        //配列に値を格納//
+                        editMap!!.set(key = "col_${cnt}", value = qrCodeView)
                     }
                 }
                 Log.d("atait","タイプは=>${formInfo.type}")
@@ -273,7 +269,13 @@ class ItemCreateFragment : Fragment() {
                             FieldType.KENPIN_RENDOU_QR,
                             FieldType.QR_CODE,
                             FieldType.TEKKILYO_RENDOU_QR -> {
-                                // TODO:まだ
+                                //配列に格納した値を取得
+
+                                val colCheckMap = editMap!!.get("col_${cnt}")
+                                Log.d("testytesttt","${colCheckMap!!.text}")
+                                value = colCheckMap!!.text.toString()
+                                payload.set("fld${cnt}", "${value}")
+
                             }
 
                         }
@@ -283,10 +285,10 @@ class ItemCreateFragment : Fragment() {
                         cnt += 1
                     }
 
-                    errorCnt = formAction!!.countNullError(nullChk, textViewMap)
-                    if (errorCnt == 0) {
-                        BlasRestItem("create", payload, ::createSuccess, ::createError).execute()
-                    }
+                }
+                errorCnt = formAction!!.countNullError(nullChk, textViewMap)
+                if (errorCnt == 0) {
+                    BlasRestItem("create", payload, ::createSuccess, ::createError).execute()
                 }
             }
         }
@@ -367,6 +369,15 @@ class ItemCreateFragment : Fragment() {
             tp.show()
         }
         return formPart
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+
+        if (resultCode == Activity.RESULT_OK && requestCode == QRActivity.QR_CODE) {
+
+            val qr = data?.getStringExtra("qr_code")
+            qrCodeView.setText(qr)
+        }
     }
 }
 

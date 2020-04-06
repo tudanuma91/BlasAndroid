@@ -1,7 +1,9 @@
 package com.v3.basis.blas.ui.item.item_edit
 
+import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -13,11 +15,13 @@ import android.widget.*
 
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemActivity
+import com.v3.basis.blas.activity.QRActivity
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.formaction.FormActionDataEdit
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
+import com.v3.basis.blas.ui.item.item_create.ItemCreateFragment
 import org.json.JSONObject
 import java.util.*
 
@@ -56,6 +60,8 @@ class ItemEditFragment : Fragment() {
     private val minute = calender.get(Calendar.MONTH)
 
     private var formAction: FormActionDataEdit? = null
+
+    private lateinit var qrCodeView: EditText
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -276,13 +282,23 @@ class ItemEditFragment : Fragment() {
                 FieldType.KENPIN_RENDOU_QR,
                 FieldType.QR_CODE,
                 FieldType.TEKKILYO_RENDOU_QR -> {
-                    // TODO:ここの実装お願いします！！
-                    val view = TextView(activity)
-                    view.setTextColor(Color.BLACK)
-                    view.text = "ここの実装お願いします"
-                    view.setLayoutParams(layoutParams)
-                    rootView!!.addView(view)
 
+                    //  QR code 読み取り
+                    val layout = requireActivity().layoutInflater.inflate(R.layout.cell_qr_item, null)
+                    rootView!!.addView(layout)
+                    val value = "aaaa"
+                    qrCodeView = layout.findViewById(R.id.editText)
+                    layout.findViewById<Button>(R.id.button)?.setOnClickListener {
+                        //190エラー
+                        //qrCodeView = layout.findViewById(R.id.editText)
+                        val intent = Intent(activity, QRActivity::class.java)
+                        intent.putExtra("colNumber","${cnt}")
+                        startActivityForResult(intent, QRActivity.QR_CODE)
+                    }
+                    //初期値を設定。配列に格納
+                    val qrEdit = qrCodeView
+                    qrEdit.setText(formDefaultValueList[0].get("fld${cnt}").toString())
+                    editMap!!.set(key = "col_${cnt}", value = qrEdit)
                 }
             }
             //フォームセクションごとにスペース入れる処理。試しに入れてみた。
@@ -333,6 +349,17 @@ class ItemEditFragment : Fragment() {
                         val colCheckMap = checkMap!!.get("col_${cnt}")
                         value = formAction!!.getCheckedValues(colCheckMap)
                         payload.set("fld${cnt}", "${value}")
+                    }
+                    FieldType.KENPIN_RENDOU_QR,
+                    FieldType.QR_CODE,
+                    FieldType.TEKKILYO_RENDOU_QR->{
+                        //格納した値から取得
+
+                        val colCheckMap = editMap!!.get("col_${cnt}")
+                        Log.d("testytesttt","${colCheckMap!!.text}")
+                        value = colCheckMap!!.text.toString()
+                        payload.set("fld${cnt}", "${value}")
+
                     }
 
                 }
@@ -407,6 +434,15 @@ class ItemEditFragment : Fragment() {
         return formPart
     }
 
+    /**
+     * この処理がアクティビティから値を受け取って閉じる処理かな
+     */
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        //返り値を持つactivityを作成。resultがOKかつcodeがQRコードの時
+        if (resultCode == Activity.RESULT_OK && requestCode == QRActivity.QR_CODE) {
 
-
+            val qr = data?.getStringExtra("qr_code")
+            qrCodeView.setText(qr)
+        }
+    }
 }
