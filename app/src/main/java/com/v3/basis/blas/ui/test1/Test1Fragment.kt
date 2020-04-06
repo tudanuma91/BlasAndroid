@@ -56,7 +56,7 @@ class Test1Fragment : Fragment() {
         Log.d("konishi", result.toString())
     }
 
-    private fun projectError(error_code: Int) {
+    private fun projectError(error_code: Int, aplCode:Int) {
         var message: String? = null
         Log.d("konishi", error_code.toString())
         when (error_code) {

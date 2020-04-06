@@ -242,7 +242,7 @@ class ItemSearchFragment : Fragment() {
     /**
      * フィールド取得失敗時
      */
-    private fun getFail(errorCode: Int) {
+    private fun getFail(errorCode: Int, aplCode:Int) {
         Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
         //エラーのため、データを初期化する
         //fieldMap = mutableMapOf<Int, MutableMap<String, String?>>()
@@ -305,7 +305,7 @@ class ItemSearchFragment : Fragment() {
         startActivity(intent)
     }
 
-    private fun itemRecvError(errorCode: Int){
+    private fun itemRecvError(errorCode: Int , aplCode:Int){
 
     }
 

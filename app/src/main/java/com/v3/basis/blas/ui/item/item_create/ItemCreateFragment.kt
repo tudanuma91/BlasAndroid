@@ -304,7 +304,7 @@ class ItemCreateFragment : Fragment() {
     /**
      * フィールド取得失敗時
      */
-    fun getFail(errorCode: Int) {
+    fun getFail(errorCode: Int ,aplCode :Int) {
         Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
         //エラーのため、データを初期化する
         //fieldMap = mutableMapOf<Int, MutableMap<String, String?>>()
@@ -313,7 +313,7 @@ class ItemCreateFragment : Fragment() {
     /**
      * データの作成失敗時の処理
      */
-    fun createError(errorCode: Int) {
+    fun createError(errorCode: Int, aplCode:Int) {
         Log.d("sippai ", "失敗")
         Toast.makeText(activity, getText(R.string.error_data_create), Toast.LENGTH_LONG).show()
     }

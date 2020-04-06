@@ -187,7 +187,7 @@ class FixtureSearchFragment : Fragment() {
 
     }
 
-    private fun fixtureGetError(errorCode: Int) {
+    private fun fixtureGetError(errorCode: Int, aplCode:Int) {
 
     }
 

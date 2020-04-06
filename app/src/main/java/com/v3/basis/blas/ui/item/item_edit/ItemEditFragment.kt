@@ -113,7 +113,7 @@ class ItemEditFragment : Fragment() {
     /**
      * フィールド取得失敗時
      */
-    private fun getFail(errorCode: Int) {
+    private fun getFail(errorCode: Int, aplCode:Int) {
         Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
         //エラーのため、データを初期化する
         //fieldMap = mutableMapOf<Int, MutableMap<String, String?>>()
@@ -133,7 +133,7 @@ class ItemEditFragment : Fragment() {
 
     }
 
-    private fun itemRecvError(errorCode: Int) {
+    private fun itemRecvError(errorCode: Int, aplCode:Int) {
         Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
         //エラーのため、データを初期化する
         //fieldMap = mutableMapOf<Int, MutableMap<String, String?>>()
@@ -363,7 +363,7 @@ class ItemEditFragment : Fragment() {
     /**
      * 更新失敗時の処理
      */
-    fun updateError(errorCode: Int){
+    fun updateError(errorCode: Int, aplCode:Int){
         //更新失敗を通知
         Toast.makeText(activity, getText(R.string.error_data_update), Toast.LENGTH_LONG).show()
     }

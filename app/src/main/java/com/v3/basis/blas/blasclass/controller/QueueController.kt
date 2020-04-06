@@ -6,6 +6,7 @@ import android.net.Uri
 import android.util.Log
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_QUEUE_ERR
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_RETRY_MAX_ERR
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_SERVER_ERROR
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.FUNC_NAME_FIXTURE
@@ -250,7 +251,7 @@ object QueueController {
 
         val rtn: RestfulRtn = cakeToAndroid(response, tableName)
         if(rtn == null) {
-            queueFunc.errorFun(BlasRestErrCode.JSON_PARSE_ERROR)
+            queueFunc.errorFun(BlasRestErrCode.JSON_PARSE_ERROR,APL_QUEUE_ERR)
         }
         else if(rtn.errorCode == 0) {
             noticeAdd(reqArray,APL_OK)
@@ -259,7 +260,7 @@ object QueueController {
         else {
             Log.e("【queue/error】", "errorCode:${rtn.errorCode}")
             noticeAdd(reqArray,rtn.errorCode)
-            queueFunc.errorFun(rtn.errorCode)
+            queueFunc.errorFun(rtn.errorCode,APL_QUEUE_ERR)
         }
 
         //DBからデータを削除する

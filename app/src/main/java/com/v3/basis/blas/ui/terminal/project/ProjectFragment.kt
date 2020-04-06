@@ -115,7 +115,7 @@ class ProjectFragment : Fragment() {
      * プロジェクト取得失敗時
      * @param  error_code 失敗した要因コード
      */
-    private fun projectSearchError(error_code: Int) {
+    private fun projectSearchError(error_code: Int , aplCode:Int) {
         var message: String? = null
 
         when (error_code) {

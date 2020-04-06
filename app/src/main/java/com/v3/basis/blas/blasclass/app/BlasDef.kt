@@ -9,8 +9,9 @@ class BlasDef {
         const val READ_TIME_OUT_POST = 100000
         const val STS_RETRY_MAX = 9
 
-        const val APL_OK = 0
-        const val APL_QUEUE_SAVE = 1
+        const val APL_OK = 0          // queue処理正常終了
+        const val APL_QUEUE_SAVE = 1 // queueへの登録を表す
+        const val APL_QUEUE_ERR = 900
         const val APL_RETRY_MAX_ERR = 901
         const val APL_SERVER_ERROR = 902
 

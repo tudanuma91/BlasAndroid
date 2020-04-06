@@ -206,7 +206,7 @@ class FixtureSearchResultFragment : Fragment() {
     /**
      * フィールド取得失敗時
      */
-    private fun fixtureGetError(errorCode: Int) {
+    private fun fixtureGetError(errorCode: Int, aplCode:Int) {
         Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
         //エラーのため、データを初期化する
         baseDataList.clear()

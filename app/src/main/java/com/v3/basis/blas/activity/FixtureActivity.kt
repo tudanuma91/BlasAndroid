@@ -177,7 +177,7 @@ class FixtureActivity : AppCompatActivity() {
     /**
      * rest失敗時の処理
      */
-    fun error(errorCode: Int){
+    fun error(errorCode: Int, aplCode :Int){
         vibrationEffect = VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
         vibrator!!.vibrate(vibrationEffect)
         tone.startTone(ToneGenerator.TONE_CDMA_ONE_MIN_BEEP,200)

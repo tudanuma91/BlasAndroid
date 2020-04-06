@@ -2,6 +2,7 @@ package com.v3.basis.blas.blasclass.rest
 
 import android.util.Log
 import android.widget.Toast
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_QUEUE_SAVE
 import com.v3.basis.blas.blasclass.app.cakeToAndroid
 import org.json.JSONArray
@@ -16,7 +17,7 @@ import java.io.File
 open class BlasRestItem(val crud:String = "search",
                         val payload:Map<String, String?>,
                         val funcSuccess:(JSONObject)->Unit,
-                        val funcError:(Int)->Unit) : BlasRest() {
+                        val funcError:(Int,Int)->Unit) : BlasRest() {
 
     companion object {
         val TABLE_NAME = "Item"
@@ -74,12 +75,12 @@ open class BlasRestItem(val crud:String = "search",
                     response = loadJson(cacheFileName)
                 } catch (e: Exception) {
                     //キャッシュの読み込み失敗
-                    funcError(BlasRestErrCode.FILE_READ_ERROR)
+                    funcError(BlasRestErrCode.FILE_READ_ERROR,APL_OK)
                 }
             }else{
                     if(method == "GET") {
                         //キャッシュファイルがないため、エラーにする
-                        funcError(BlasRestErrCode.NETWORK_ERROR)
+                        funcError(BlasRestErrCode.NETWORK_ERROR,APL_OK)
                     }
             }
 
@@ -108,7 +109,7 @@ open class BlasRestItem(val crud:String = "search",
      */
     override fun onPostExecute(result: String?) {
         if(result == null) {
-            funcError(BlasRestErrCode.NETWORK_ERROR)
+            funcError(BlasRestErrCode.NETWORK_ERROR,APL_OK)
             return
         }
 
@@ -118,11 +119,15 @@ open class BlasRestItem(val crud:String = "search",
         var json:JSONObject? = null
         var errorCode:Int
         var records:JSONArray? = null
+        var aplCode:Int = 0
 
         try {
             json = JSONObject(result)
             //エラーコード取得
             errorCode = json.getInt("error_code")
+            if (json.has("aplCode")){
+                aplCode = json.getInt("aplCode")
+            }
 
 
         } catch (e: JSONException){
@@ -140,13 +145,13 @@ open class BlasRestItem(val crud:String = "search",
         }
 
         if(json == null) {
-            funcError(BlasRestErrCode.JSON_PARSE_ERROR)
+            funcError(BlasRestErrCode.JSON_PARSE_ERROR,aplCode)
         }
         else if(errorCode == 0) {
             funcSuccess(json)
         }
         else {
-            funcError(errorCode)
+            funcError(errorCode,aplCode)
         }
     }
 

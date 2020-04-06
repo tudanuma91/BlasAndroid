@@ -1,6 +1,8 @@
 package com.v3.basis.blas.blasclass.rest
 
 import android.util.Log
+import com.v3.basis.blas.blasclass.app.BlasDef
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
 
 import org.json.JSONObject
 import java.io.File
@@ -8,7 +10,7 @@ import java.io.File
 open class BlasRestFixture(val crud:String = "search",
                            val payload:Map<String, String?>,
                            val funcSuccess:(JSONObject)->Unit,
-                           val funcError:(Int)->Unit) : BlasRest(){
+                           val funcError:(Int,Int)->Unit) : BlasRest(){
 
     companion object {
         val TABLE_NAME = "Fixture"
@@ -75,21 +77,27 @@ open class BlasRestFixture(val crud:String = "search",
         catch(e: Exception) {
             Log.d("blas-log", e.message)
 
-            if (method == "GET") {
 
-                //通信エラーが発生したため、キャッシュを読み込む
-                if (File(cacheFileName).exists()) {
-                    try {
-                        response = loadJson(cacheFileName)
-                    } catch (e: Exception) {
-                        //キャッシュの読み込み失敗
-                        funcError(BlasRestErrCode.FILE_READ_ERROR)
-                    }
-                } else {
-                    //キャッシュファイルがないため、エラーにする
-                    funcError(BlasRestErrCode.NETWORK_ERROR)
+             //通信エラーが発生したため、キャッシュを読み込む
+            if (File(cacheFileName).exists()) {
+                try {
+                    response = loadJson(cacheFileName)
+                } catch (e: Exception) {
+                    //キャッシュの読み込み失敗
+                    funcError(BlasRestErrCode.FILE_READ_ERROR, APL_OK)
                 }
+            } else {
+                //キャッシュファイルがないため、エラーにする
+                funcError(BlasRestErrCode.NETWORK_ERROR, APL_OK)
             }
+
+            if ((method == "POST") or (method == "PUT")){
+                super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
+                val json = JSONObject(response)
+                json.put("aplCode", BlasDef.APL_QUEUE_SAVE)
+                response = json.toString()
+            }
+
         }
         return response
     }
@@ -104,7 +112,7 @@ open class BlasRestFixture(val crud:String = "search",
      */
     override fun onPostExecute(result: String?) {
         if(result == null) {
-            funcError(BlasRestErrCode.NETWORK_ERROR)
+            funcError(BlasRestErrCode.NETWORK_ERROR, APL_OK)
             return
         }
 
@@ -112,7 +120,11 @@ open class BlasRestFixture(val crud:String = "search",
         val json = JSONObject(result)
         // val rtn:RestfulRtn = cakeToAndroid(result, TABLE_NAME)
         val errorCode = json.getInt("error_code")
+        var aplCode:Int = 0
 
+        if (json.has("aplCode")){
+            aplCode = json.getInt("aplCode")
+        }
 
         if(method == "GET" && errorCode == 0) {
 
@@ -125,7 +137,7 @@ open class BlasRestFixture(val crud:String = "search",
             funcSuccess(json)
         }
         else {
-            funcError(errorCode)
+            funcError(errorCode, aplCode)
         }
     }
 }
