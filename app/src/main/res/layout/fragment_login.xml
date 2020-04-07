@@ -55,7 +55,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginEnd="48dp"
             android:layout_marginBottom="64dp"
-            android:text="login"
+            android:text="ログイン"
             app:layout_constraintVertical_bias="0.2" />
 
 

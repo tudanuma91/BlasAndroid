@@ -17,6 +17,7 @@ import android.widget.*
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.QRActivity
+import com.v3.basis.blas.blasclass.app.BlasDef
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.formaction.FormActionDataCreate
 import com.v3.basis.blas.blasclass.helper.RestHelper
@@ -214,7 +215,7 @@ class ItemCreateFragment : Fragment() {
             }
             //ボタンの作成処理
             val button = Button(activity)
-            button.text = "send"
+            button.text = BlasDef.BTN_SAVE
             button.setLayoutParams(layoutParams)
             rootView!!.addView(button)
 

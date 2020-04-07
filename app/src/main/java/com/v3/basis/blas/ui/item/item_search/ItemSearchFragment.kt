@@ -16,6 +16,7 @@ import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.ItemSearchResultActivity
 import com.v3.basis.blas.activity.TerminalActivity
 import com.v3.basis.blas.blasclass.app.BlasCom
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.BTN_FIND
 import com.v3.basis.blas.blasclass.app.searchAndroid
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.formaction.FormActionDataSearch
@@ -189,7 +190,7 @@ class ItemSearchFragment : Fragment() {
 
             //ボタンの作成処理
             val button = Button(activity)
-            button.text = "find"
+            button.text = BTN_FIND
             button.setLayoutParams(layoutParams)
             rootView!!.addView(button)
 
