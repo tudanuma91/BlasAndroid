@@ -29,9 +29,9 @@
 
     <!--ナビバータイトル-->
     <!--ターミナル画面-->
-    <string name="navi_title_terminal_dashboard">掲示板機能</string>
-    <string name="navi_title_terminal_item">データ管理機能</string>
-    <string name="navi_title_terminal_fixture">機器管理機能</string>
+    <string name="navi_title_terminal_dashboard">掲示板</string>
+    <string name="navi_title_terminal_item">データ管理</string>
+    <string name="navi_title_terminal_fixture">機器管理</string>
     <string name="navi_title_terminal_logout">ログアウト</string>
     <!--データ管理画面-->
     <string name="navi_title_item_search">データ検索</string>

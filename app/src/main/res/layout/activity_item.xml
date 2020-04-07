@@ -16,7 +16,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:background="?android:attr/windowBackground"
-        app:menu="@menu/bottom_navigation_menu_item"/>
+        app:menu="@menu/bottom_navigation_menu_item"
+        app:labelVisibilityMode="labeled"/>
 
 
     <fragment
