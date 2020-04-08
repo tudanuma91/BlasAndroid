@@ -193,15 +193,16 @@ class ItemCreateFragment : Fragment() {
 
                         val layout = requireActivity().layoutInflater.inflate(R.layout.cell_qr_item, null)
                         rootView!!.addView(layout)
-                        qrCodeView = layout.findViewById(R.id.editText)
+                        val ed = layout.findViewById<EditText>(R.id.editText)
                         layout.findViewById<Button>(R.id.button)?.setOnClickListener{
 
+                            qrCodeView = layout.findViewById(R.id.editText)
                             val intent = Intent(activity, QRActivity::class.java)
                             intent.putExtra("colNumber","${cnt}")
                             startActivityForResult(intent, QRActivity.QR_CODE)
                         }
                         //配列に値を格納//
-                        editMap!!.set(key = "col_${cnt}", value = qrCodeView)
+                        editMap!!.set(key = "col_${cnt}", value = ed)
                     }
                 }
                 Log.d("atait","タイプは=>${formInfo.type}")
