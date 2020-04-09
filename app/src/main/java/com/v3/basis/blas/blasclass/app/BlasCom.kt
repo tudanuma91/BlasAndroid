@@ -14,6 +14,7 @@ import java.time.temporal.ChronoUnit
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 import android.R.attr.key
+import java.security.MessageDigest
 import java.util.*
 
 
@@ -554,5 +555,23 @@ class BlasCom {
         val newData = Base64.getDecoder().decode(data.toByteArray(charset("UTF-8")))
         val dec_data = cip.doFinal(newData)
         return dec_data.toString(charset("UTF-8"))
+
+    }
+
+    /**
+     * 引数からhash値を返す関数
+     * @param source hash変換する文字列
+     * @return hash値を返却する
+     */
+    fun getHash(source:String) : String{
+
+        source.toByteArray()
+        val hashStr = MessageDigest.getInstance("SHA-256")
+            .digest(source.toByteArray())
+            .joinToString(separator = "") {
+                "%02x".format(it)
+            }
+
+        return hashStr
 
     }

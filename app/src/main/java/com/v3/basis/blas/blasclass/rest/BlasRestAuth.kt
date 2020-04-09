@@ -29,6 +29,7 @@ open class BlasRestAuth(val payload:Map<String, String?>, val loginSuccess:(Stri
         //レスポンスデータをJSON文字列にする
         var response:String? = null
         try {
+
             response = super.getResponseData(payload,"POST",LOGIN_URL)
         }
         catch(e: Exception) {
@@ -60,6 +61,10 @@ open class BlasRestAuth(val payload:Map<String, String?>, val loginSuccess:(Stri
         if(error_code == 0) {
             val records_json = json.getJSONObject("records")
             val token = records_json.getString("token")
+
+            userNameRest = payload["name"]
+            passwordRest = payload["password"]
+
             loginSuccess(token)
         }
         else {
