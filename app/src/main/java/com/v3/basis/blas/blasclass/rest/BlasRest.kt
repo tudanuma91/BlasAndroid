@@ -12,6 +12,8 @@ import android.util.Log
 import android.widget.Toast
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.app.decrypt
+import com.v3.basis.blas.blasclass.app.encrypt
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
 import io.reactivex.Completable
 import io.reactivex.schedulers.Schedulers
@@ -22,6 +24,9 @@ import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.util.*
+import javax.crypto.Cipher
+import javax.crypto.CipherOutputStream
+import javax.crypto.spec.SecretKeySpec
 
 
 /**
@@ -36,7 +41,7 @@ data class RestfulRtn(
 data class FuncList(
     var id: Int = 0,
     var successFun: (JSONObject)->Unit,
-    var errorFun: (Int)->Unit,
+    var errorFun: (Int,Int)->Unit,
     var tableName:String
 )
 
@@ -207,7 +212,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
      *
      * [戻り値]
      */
-    open fun reqDataSave(payload:Map<String, String?>,method:String,targetUrl:String,funSuccess:(JSONObject)->Unit,funError:(Int)->Unit,tableName:String) {
+    open fun reqDataSave(payload:Map<String, String?>,method:String,targetUrl:String,funSuccess:(JSONObject)->Unit,funError:(Int,Int)->Unit,tableName:String) {
 
         Log.d("【reqDataSave】", "開始")
 
@@ -318,16 +323,20 @@ open class BlasRest() : AsyncTask<String, String, String>() {
      */
     fun saveJson(fileName:String, jsonText:String) {
 
+        val encJsonText = encrypt(jsonText,"Uz7BG2T4ap6qGTj8")
+
         Completable
             .fromAction {
                 File(fileName).writer().use {
-                    it.write(jsonText)
+
+                    it.write(encJsonText)
                 }
             }
             .subscribeOn(Schedulers.newThread())
             .subscribe()
             .dispose()
     }
+
 
     /**
      * json形式のテキストファイルを読み込み，jsonObjectとして返却する
@@ -340,7 +349,8 @@ open class BlasRest() : AsyncTask<String, String, String>() {
             jsonText = it.readText()
 
         }
+        val decJsonText = decrypt(jsonText,"Uz7BG2T4ap6qGTj8")
         // return JSONObject(jsonText)
-        return jsonText
+        return decJsonText
     }
 }

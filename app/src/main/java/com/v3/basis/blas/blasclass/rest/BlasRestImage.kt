@@ -2,6 +2,8 @@ package com.v3.basis.blas.blasclass.rest
 import android.util.Base64
 import android.util.Log
 import android.widget.Toast
+import com.v3.basis.blas.blasclass.app.BlasDef
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -14,7 +16,7 @@ import java.io.File
 open class BlasRestImage(val crud:String = "download",
                          val payload:Map<String, String?>,
                          val funcSuccess:(JSONObject)->Unit,
-                         val funcError:(Int)->Unit) : BlasRest() {
+                         val funcError:(Int,Int)->Unit) : BlasRest() {
 
     companion object {
         val TABLE_NAME = "Image"
@@ -63,17 +65,19 @@ open class BlasRestImage(val crud:String = "download",
                         response = loadJson(cacheFileName)
                     } catch (e: Exception) {
                         //キャッシュの読み込み失敗
-                        funcError(BlasRestErrCode.FILE_READ_ERROR)
+                        funcError(BlasRestErrCode.FILE_READ_ERROR, APL_OK)
                     }
                 } else {
                     //キャッシュファイルがないため、エラーにする
-                    funcError(BlasRestErrCode.NETWORK_ERROR)
+                    funcError(BlasRestErrCode.NETWORK_ERROR , APL_OK)
                 }
             }else if (method == "POST"){
 
                 // 失敗した場合、キュー処理を呼び出す
                 super.reqDataSave(payload,"GET",blasUrl,funcSuccess,funcError,"Images")
-
+                val json = JSONObject(response)
+                json.put("aplCode", BlasDef.APL_QUEUE_SAVE)
+                response = json.toString()
             }
         }
         return response
@@ -89,7 +93,7 @@ open class BlasRestImage(val crud:String = "download",
      */
     override fun onPostExecute(result: String?) {
         if(result == null) {
-            funcError(BlasRestErrCode.NETWORK_ERROR)
+            funcError(BlasRestErrCode.NETWORK_ERROR, APL_OK)
             return
         }
 
@@ -99,16 +103,20 @@ open class BlasRestImage(val crud:String = "download",
         var json:JSONObject? = null
         var errorCode:Int
         var records: JSONArray? = null
+        var aplCode:Int = 0
 
         try {
             json = JSONObject(result)
             //エラーコード取得
             errorCode = json.getInt("error_code")
+            if (json.has("aplCode")){
+                aplCode = json.getInt("aplCode")
+            }
 
         } catch (e: JSONException){
             //JSONの展開に失敗
             Toast.makeText(context, "データ取得失敗", Toast.LENGTH_LONG).show()
-            funcError(BlasRestErrCode.JSON_PARSE_ERROR)
+            funcError(BlasRestErrCode.JSON_PARSE_ERROR, APL_OK)
             return
         }
 
@@ -121,14 +129,14 @@ open class BlasRestImage(val crud:String = "download",
         }
 
         if(json == null) {
-            funcError(BlasRestErrCode.JSON_PARSE_ERROR)
+            funcError(BlasRestErrCode.JSON_PARSE_ERROR, APL_OK)
         }
         else if(errorCode == 0) {
 
             funcSuccess(json)
         }
         else {
-            funcError(errorCode)
+            funcError(errorCode , aplCode)
         }
     }
 

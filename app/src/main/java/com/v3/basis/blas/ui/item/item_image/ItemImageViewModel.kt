@@ -52,7 +52,7 @@ class ItemImageViewModel : ViewModel() {
             }
         }
 
-        fun error(errorCode: Int) {
+        fun error(errorCode: Int ,aplCode:Int) {
             errorAPI.onNext(errorCode)
         }
 
@@ -81,7 +81,7 @@ class ItemImageViewModel : ViewModel() {
                 .addTo(disposable)
         }
 
-        fun error(errorCode: Int) {
+        fun error(errorCode: Int, aplCode:Int) {
             item.loading.set(false)
             item.empty.set(true)
             if (errorCode == 200) { Log.d("fetch error", "no column") }
@@ -99,7 +99,7 @@ class ItemImageViewModel : ViewModel() {
             item.empty.set(true)
         }
 
-        fun error(errorCode: Int) {
+        fun error(errorCode: Int, aplCode:Int) {
             item.loading.set(false)
             item.empty.set(false)
         }
@@ -110,7 +110,7 @@ class ItemImageViewModel : ViewModel() {
 
     fun rightRotate(item: ItemImageCellItem) {
 
-        val error: (errorCode: Int) -> Unit = {
+        val error: (errorCode: Int, aplCode:Int) -> Unit = { i: Int, i1: Int ->
             item.loading.set(false)
             item.image.get()?.rotateLeft()
         }
@@ -119,14 +119,14 @@ class ItemImageViewModel : ViewModel() {
 
     fun leftRotate(item: ItemImageCellItem) {
 
-        val error: (errorCode: Int) -> Unit = {
+        val error: (errorCode: Int, aplCode:Int) -> Unit = { i: Int, i1: Int ->
             item.loading.set(false)
             item.image.get()?.rotateRight()
         }
         item.image.get()?.rotateLeft()?.apply { updateCellItem(item, this, error) }
     }
 
-    private fun updateCellItem(item: ItemImageCellItem, bitmap: Bitmap, error: (errorCode: Int) -> Unit) {
+    private fun updateCellItem(item: ItemImageCellItem, bitmap: Bitmap, error: (errorCode: Int,aplCode:Int) -> Unit) {
         item.image.set(bitmap)
         upload(bitmap, item.ext, item, error)
         item.loading.set(true)
@@ -136,7 +136,7 @@ class ItemImageViewModel : ViewModel() {
         uploadAction.onNext(id)
     }
 
-    fun upload(bitmap: Bitmap, mime: String, item: ItemImageCellItem, error: (errorCode: Int) -> Unit) {
+    fun upload(bitmap: Bitmap, mime: String, item: ItemImageCellItem, error: (errorCode: Int, aplCode:Int) -> Unit) {
 
         val format = FileExtensions.matchExtension(mime)
 

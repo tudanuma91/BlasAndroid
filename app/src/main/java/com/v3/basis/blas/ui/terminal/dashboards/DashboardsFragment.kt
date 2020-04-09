@@ -94,7 +94,7 @@ class DashboardsFragment : Fragment() {
         return dataList
     }
 
-    private fun getInformationError(error_code: Int) {
+    private fun getInformationError(error_code: Int, aplCode:Int) {
 
     }
 

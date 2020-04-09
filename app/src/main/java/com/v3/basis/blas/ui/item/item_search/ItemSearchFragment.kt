@@ -16,6 +16,7 @@ import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.ItemSearchResultActivity
 import com.v3.basis.blas.activity.TerminalActivity
 import com.v3.basis.blas.blasclass.app.BlasCom
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.BTN_FIND
 import com.v3.basis.blas.blasclass.app.searchAndroid
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.formaction.FormActionDataSearch
@@ -189,7 +190,7 @@ class ItemSearchFragment : Fragment() {
 
             //ボタンの作成処理
             val button = Button(activity)
-            button.text = "find"
+            button.text = BTN_FIND
             button.setLayoutParams(layoutParams)
             rootView!!.addView(button)
 
@@ -242,7 +243,7 @@ class ItemSearchFragment : Fragment() {
     /**
      * フィールド取得失敗時
      */
-    private fun getFail(errorCode: Int) {
+    private fun getFail(errorCode: Int, aplCode:Int) {
         Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
         //エラーのため、データを初期化する
         //fieldMap = mutableMapOf<Int, MutableMap<String, String?>>()
@@ -305,7 +306,7 @@ class ItemSearchFragment : Fragment() {
         startActivity(intent)
     }
 
-    private fun itemRecvError(errorCode: Int){
+    private fun itemRecvError(errorCode: Int , aplCode:Int){
 
     }
 

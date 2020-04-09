@@ -17,6 +17,7 @@ import android.widget.*
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.QRActivity
+import com.v3.basis.blas.blasclass.app.BlasDef
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.formaction.FormActionDataCreate
 import com.v3.basis.blas.blasclass.helper.RestHelper
@@ -215,7 +216,7 @@ class ItemCreateFragment : Fragment() {
             }
             //ボタンの作成処理
             val button = Button(activity)
-            button.text = "send"
+            button.text = BlasDef.BTN_SAVE
             button.setLayoutParams(layoutParams)
             rootView!!.addView(button)
 
@@ -307,7 +308,7 @@ class ItemCreateFragment : Fragment() {
     /**
      * フィールド取得失敗時
      */
-    fun getFail(errorCode: Int) {
+    fun getFail(errorCode: Int ,aplCode :Int) {
         Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
         //エラーのため、データを初期化する
         //fieldMap = mutableMapOf<Int, MutableMap<String, String?>>()
@@ -316,7 +317,7 @@ class ItemCreateFragment : Fragment() {
     /**
      * データの作成失敗時の処理
      */
-    fun createError(errorCode: Int) {
+    fun createError(errorCode: Int, aplCode:Int) {
         Log.d("sippai ", "失敗")
         Toast.makeText(activity, getText(R.string.error_data_create), Toast.LENGTH_LONG).show()
     }

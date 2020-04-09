@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -17,7 +18,7 @@ import java.io.File
  */
 open class BlasRestProject(val payload:Map<String, String?>,
                            val projectSearchSuccess:(JSONObject)->Unit,
-                           val projectSearchError:(Int)->Unit) : BlasRest() {
+                           val projectSearchError:(Int,Int)->Unit) : BlasRest() {
 
     private val SEARCH_PGOJECT_URL = BlasRest.URL + "projects/search/"
     init{
@@ -45,11 +46,11 @@ open class BlasRestProject(val payload:Map<String, String?>,
                     response = loadJson(cacheFileName)
                 } catch(e: Exception) {
                     //キャッシュの読み込み失敗
-                    projectSearchError(BlasRestErrCode.FILE_READ_ERROR)
+                    projectSearchError(BlasRestErrCode.FILE_READ_ERROR,APL_OK)
                 }
             } else {
                 //キャッシュファイルがないため、エラーにする
-                projectSearchError(BlasRestErrCode.NETWORK_ERROR)
+                projectSearchError(BlasRestErrCode.NETWORK_ERROR,APL_OK)
             }
         }
 
@@ -67,7 +68,7 @@ open class BlasRestProject(val payload:Map<String, String?>,
         var records: JSONArray? = null
 
         if(result == null) {
-            projectSearchError(BlasRestErrCode.NETWORK_ERROR)
+            projectSearchError(BlasRestErrCode.NETWORK_ERROR,APL_OK)
             return
         }
 
@@ -106,7 +107,7 @@ open class BlasRestProject(val payload:Map<String, String?>,
                 Toast.makeText(context, e.message, Toast.LENGTH_LONG).show()
             }
         } else {
-            projectSearchError(errorCode)
+            projectSearchError(errorCode,APL_OK)
         }
 
     }

@@ -11,6 +11,11 @@ import java.io.InputStream
 import java.io.InputStreamReader
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import javax.crypto.Cipher
+import javax.crypto.spec.SecretKeySpec
+import android.R.attr.key
+import java.util.*
+
 
 class BlasCom {
 
@@ -531,5 +536,23 @@ class BlasCom {
         return result
     }
 
+    fun encrypt(data:String, encKey:String) :String{
 
+        val cip = Cipher.getInstance("AES")
+        cip.init(Cipher.ENCRYPT_MODE, SecretKeySpec(encKey.toByteArray(charset("UTF-8")), "AES"))
+        val enc_byte = cip.doFinal(data.toByteArray(charset("UTF-8")))
+        val enc_data64 = Base64.getEncoder().encodeToString(enc_byte);
 
+        return enc_data64
+
+    }
+
+    fun decrypt(data:String, decKey:String) :String{
+
+        val cip = Cipher.getInstance("AES")
+        cip.init(Cipher.DECRYPT_MODE, SecretKeySpec(decKey.toByteArray(charset("UTF-8")), "AES"))
+        val newData = Base64.getDecoder().decode(data.toByteArray(charset("UTF-8")))
+        val dec_data = cip.doFinal(newData)
+        return dec_data.toString(charset("UTF-8"))
+
+    }

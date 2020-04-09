@@ -2,6 +2,7 @@ package com.v3.basis.blas.blasclass.rest
 
 import android.util.Log
 import android.widget.Toast
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
 import com.v3.basis.blas.blasclass.app.cakeToAndroid
 import org.json.JSONArray
 import org.json.JSONException
@@ -14,7 +15,7 @@ import java.io.File
  */
 open class BlasRestOrgs(val payload:Map<String, String?>,
                         val orgsSearchSuccess:(JSONObject)->Unit,
-                        val orgsSearchError:(Int)->Unit) : BlasRest() {
+                        val orgsSearchError:(Int,Int)->Unit) : BlasRest() {
 
     init{
         cacheFileName = context.filesDir.toString() + "/org.json"
@@ -42,11 +43,11 @@ open class BlasRestOrgs(val payload:Map<String, String?>,
                     response = loadJson(cacheFileName)
                 } catch(e: Exception) {
                     //キャッシュの読み込み失敗
-                    orgsSearchError(BlasRestErrCode.FILE_READ_ERROR)
+                    orgsSearchError(BlasRestErrCode.FILE_READ_ERROR, APL_OK)
                 }
             } else {
                 //キャッシュファイルがないため、エラーにする
-                orgsSearchError(BlasRestErrCode.NETWORK_ERROR)
+                orgsSearchError(BlasRestErrCode.NETWORK_ERROR ,APL_OK)
             }
 
         }
@@ -63,7 +64,7 @@ open class BlasRestOrgs(val payload:Map<String, String?>,
      */
     override fun onPostExecute(result: String?) {
         if(result == null) {
-            orgsSearchError(BlasRestErrCode.NETWORK_ERROR)
+            orgsSearchError(BlasRestErrCode.NETWORK_ERROR, APL_OK)
             return
         }
 
@@ -94,7 +95,7 @@ open class BlasRestOrgs(val payload:Map<String, String?>,
             orgsSearchSuccess(json)
         }
         else {
-            orgsSearchError(errorCode)
+            orgsSearchError(errorCode ,APL_OK)
         }
     }
 }

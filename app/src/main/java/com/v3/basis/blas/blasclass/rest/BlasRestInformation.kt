@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -19,7 +20,7 @@ import java.io.File
 open class BlasRestInformation(val crud:String = "search",
                                val payload:Map<String, String?>,
                                val funcSuccess:(JSONObject)->Unit,
-                               val funcError:(Int)->Unit) : BlasRest() {
+                               val funcError:(Int,Int)->Unit) : BlasRest() {
 
     init{
         cacheFileName = context.filesDir.toString() + "/information.json"
@@ -59,12 +60,12 @@ open class BlasRestInformation(val crud:String = "search",
                     response = loadJson(cacheFileName)
                 } catch(e: Exception) {
                     //キャッシュの読み込み失敗
-                    funcError(BlasRestErrCode.NETWORK_ERROR)
+                    funcError(BlasRestErrCode.NETWORK_ERROR, APL_OK)
                     return response
                 }
             } else {
                 //キャッシュファイルがないため、エラーにする
-                funcError(BlasRestErrCode.NETWORK_ERROR)
+                funcError(BlasRestErrCode.NETWORK_ERROR, APL_OK)
                 return response
             }
         }
@@ -116,7 +117,7 @@ open class BlasRestInformation(val crud:String = "search",
                 Toast.makeText(context, e.message, Toast.LENGTH_LONG).show()
             }
         } else {
-            funcError(errorCode)
+            funcError(errorCode, APL_OK)
         }
 
     }

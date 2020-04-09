@@ -190,7 +190,7 @@ class ItemViewFragment : Fragment() {
     /**
      * フィールド取得失敗時
      */
-    private fun fieldRecvError(errorCode: Int) {
+    private fun fieldRecvError(errorCode: Int , aplCode:Int) {
         Log.d("aaaaaaa", "失敗")
         Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
         itemList.clear()
@@ -200,7 +200,7 @@ class ItemViewFragment : Fragment() {
     /**
      * データ取得失敗時
      */
-    private fun itemRecvError(errorCode: Int) {
+    private fun itemRecvError(errorCode: Int , aplCode:Int) {
         Log.d("aaaaaaa", "失敗")
         Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
         //エラーのため、データを初期化する

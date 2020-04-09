@@ -2,6 +2,7 @@ package com.v3.basis.blas.blasclass.rest
 
 import android.util.Log
 import android.widget.Toast
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
 import com.v3.basis.blas.blasclass.app.cakeToAndroid
 import org.json.JSONArray
 import org.json.JSONException
@@ -15,7 +16,7 @@ import kotlin.reflect.KFunction1
 open class BlasRestField(
     val payload:Map<String, String?>,
     val fieldSearchSuccess:(JSONObject)->Unit,
-    val fieldSearchError:(Int)->Unit
+    val fieldSearchError:(Int,Int)->Unit
 ) : BlasRest() {
 
     companion object {
@@ -55,7 +56,7 @@ open class BlasRestField(
      */
     override fun onPostExecute(result: String?) {
         if(result == null) {
-            fieldSearchError(BlasRestErrCode.NETWORK_ERROR)
+            fieldSearchError(BlasRestErrCode.NETWORK_ERROR, APL_OK)
             return
         }
 
@@ -89,7 +90,7 @@ open class BlasRestField(
             fieldSearchSuccess(json)
         }
         else {
-            fieldSearchError(errorCode)
+            fieldSearchError(errorCode , APL_OK)
         }
     }
 }

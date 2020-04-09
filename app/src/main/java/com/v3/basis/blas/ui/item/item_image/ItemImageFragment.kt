@@ -208,7 +208,7 @@ class ItemImageFragment : Fragment() {
                 item.loading.set(true)
                 item.empty.set(false)
                 item.ext = mime
-                val error: (errorCode: Int) -> Unit = {
+                val error: (errorCode: Int, aplCode:Int) -> Unit = { i: Int, i1: Int ->
                     item.loading.set(false)
                     item.image.set(null)
                     item.empty.set(true)
