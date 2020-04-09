@@ -288,18 +288,17 @@ class ItemEditFragment : Fragment() {
                     val layout = requireActivity().layoutInflater.inflate(R.layout.cell_qr_item, null)
                     rootView!!.addView(layout)
                     val value = "aaaa"
-                    qrCodeView = layout.findViewById(R.id.editText)
+                    val ed = layout.findViewById<EditText>(R.id.editText)
                     layout.findViewById<Button>(R.id.button)?.setOnClickListener {
                         //190エラー
-                        //qrCodeView = layout.findViewById(R.id.editText)
+                        qrCodeView = layout.findViewById(R.id.editText)
                         val intent = Intent(activity, QRActivity::class.java)
                         intent.putExtra("colNumber","${cnt}")
                         startActivityForResult(intent, QRActivity.QR_CODE)
                     }
                     //初期値を設定。配列に格納
-                    val qrEdit = qrCodeView
-                    qrEdit.setText(formDefaultValueList[0].get("fld${cnt}").toString())
-                    editMap!!.set(key = "col_${cnt}", value = qrEdit)
+                    ed.setText(formDefaultValueList[0].get("fld${cnt}").toString())
+                    editMap!!.set(key = "col_${cnt}", value = ed)
                 }
             }
             //フォームセクションごとにスペース入れる処理。試しに入れてみた。

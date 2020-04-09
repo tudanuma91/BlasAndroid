@@ -29,10 +29,15 @@ class ItemViewFragment : Fragment() {
     var token:String? = null
     var projectId:String? = null
     private val fieldMap: MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
-    private val itemList: MutableList<MutableMap<String, String?>> = mutableListOf()
+    private val itemListAll: MutableList<MutableMap<String, String?>> = mutableListOf()
     private val jsonItemList:MutableMap<String,JSONObject> = mutableMapOf()
     private val dataList = mutableListOf<RowModel>()
     private var rootView:View? = null
+
+    private var currentIndex: Int = 0
+    companion object {
+        const val CREATE_UNIT = 20
+    }
 
 
     private val adapter:ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
@@ -84,20 +89,45 @@ class ItemViewFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(activity)
         recyclerView.adapter = adapter
 
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                if (itemListAll.isNotEmpty()) {
+                    val notOverSize = currentIndex + CREATE_UNIT <= itemListAll.size
+                    if (!recyclerView.canScrollVertically(1) && notOverSize) {
+                        chkProgress(true, rootView!!)
+                        setAdapter()
+                    }
+                }
+            }
+        })
+
         //呼ぶタイミングを確定させる！！
         chkProgress(true,rootView!!)
         val payload2 = mapOf("token" to token, "project_id" to projectId)
         Log.d("aaaaaaa", "処理開始")
         BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
-        BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
     }
 
-    private fun createDataList(): List<RowModel> {
+    private fun createDataList() {
         var colMax = fieldMap.size
         Log.d("gafeaqwaf","${colMax}")
         val itemInfo = RestHelper().createItemList(jsonItemList, colMax )
-        itemList.addAll(itemInfo)
-        itemList.forEach {
+        itemListAll.addAll(itemInfo)
+        makeDataList()
+    }
+
+    private fun makeDataList() {
+
+        val colMax = fieldMap.size
+        val list = mutableListOf<MutableMap<String, String?>>()
+
+        list.addAll(itemListAll.filterIndexed { index, mutableMap ->
+            (index >= currentIndex) && (index <= currentIndex + CREATE_UNIT)
+        }.toMutableList())
+
+        list.forEach {
             val item_id = it["item_id"].toString()
             var text: String? = "String"
             var loopcnt = 1
@@ -127,12 +157,16 @@ class ItemViewFragment : Fragment() {
                 }
                 it.projectId = projectId
                 it.token = token
-                it.itemList = itemList
+                it.itemList = itemListAll
             }
 
             dataList.add(rowModel)
         }
-        return dataList
+
+        // update
+        if (list.isNotEmpty()) {
+            currentIndex += CREATE_UNIT
+        }
     }
 
     /**
@@ -150,7 +184,7 @@ class ItemViewFragment : Fragment() {
      */
     private fun itemRecv(result: JSONObject) {
         Log.d("aaaaaaa", "成功")
-        itemList.clear()
+        itemListAll.clear()
         jsonItemList.clear()
         Log.d("aaaaaaa", "${result}")
         //val itemMap = RestHelper().createItemList(result)
@@ -180,10 +214,9 @@ class ItemViewFragment : Fragment() {
         }
         if(fieldMap.isEmpty()){
             Log.d("fteay","fieldMapはnull")
-        }
-
-        if(jsonItemList.isNotEmpty() && fieldMap.isNotEmpty()) {
-            setAdapter()
+        } else {
+            val payload2 = mapOf("token" to token, "project_id" to projectId)
+            BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
         }
     }
 
@@ -193,7 +226,7 @@ class ItemViewFragment : Fragment() {
     private fun fieldRecvError(errorCode: Int , aplCode:Int) {
         Log.d("aaaaaaa", "失敗")
         Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
-        itemList.clear()
+        itemListAll.clear()
         fieldMap.clear()
     }
 
@@ -204,7 +237,7 @@ class ItemViewFragment : Fragment() {
         Log.d("aaaaaaa", "失敗")
         Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
         //エラーのため、データを初期化する
-        itemList.clear()
+        itemListAll.clear()
         fieldMap.clear()
     }
 }

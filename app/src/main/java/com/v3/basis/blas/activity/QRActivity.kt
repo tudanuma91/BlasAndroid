@@ -40,7 +40,6 @@ class QRActivity : AppCompatActivity() {
     private var vibrationEffect = VibrationEffect.createOneShot(300,
         VibrationEffect.DEFAULT_AMPLITUDE
     )
-    private var tone: ToneGenerator = ToneGenerator(AudioManager.STREAM_SYSTEM, ToneGenerator.MAX_VOLUME)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
