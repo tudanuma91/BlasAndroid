@@ -134,12 +134,14 @@ object LocationController {
             val locationCallback = object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult?) {
                     val location = locationResult?.lastLocation ?: return
+                    Log.d("mainLoopError", "緯度:${location.latitude}, 経度:${location.longitude}")
 
                     Toast.makeText(applicationContext(),
                         "緯度:${location.latitude}, 経度:${location.longitude}", Toast.LENGTH_LONG).show()
                 }
             }
 
+            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
 
      //       Log.d("位置", location.toString())
         } catch(e:Exception){
