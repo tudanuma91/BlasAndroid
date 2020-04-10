@@ -193,6 +193,7 @@ class FixtureViewFragment : Fragment() {
                 }
                 dataListAll.add(rowModel)
             }
+            dataListAll.reverse()
             setAdapter()
         }
     }
