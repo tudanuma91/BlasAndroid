@@ -13,6 +13,7 @@ import android.widget.Button
 import android.widget.TextView
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.controller.LocationController.getLocation
 import com.v3.basis.blas.blasclass.controller.QueueController
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBaseHelper
@@ -101,6 +102,7 @@ class Test2Fragment : Fragment() {
 
         var threadBtn = view.findViewById<Button>(R.id.thread)
         threadBtn.setOnClickListener{
+            /*
             Log.d("【thread】", "開始")
 
             try {
@@ -109,6 +111,9 @@ class Test2Fragment : Fragment() {
             }catch(exception: Exception) {
                 Log.e("【thread】", "エラー")
             }
+
+             */
+            getLocation()
         }
 
 

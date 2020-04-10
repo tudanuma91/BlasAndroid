@@ -22,6 +22,7 @@ import com.v3.basis.blas.blasclass.app.BlasDef.Companion.REQUEST_TABLE
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.STS_RETRY_MAX
 import com.v3.basis.blas.blasclass.app.Is2String
 import com.v3.basis.blas.blasclass.app.cakeToAndroid
+import com.v3.basis.blas.blasclass.controller.LocationController.getLocation
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
@@ -93,28 +94,27 @@ object QueueController {
 
         /* 通信のバックグラウンド処理 */
         while(!stop_flg) {
-            try {
+
 
                 reqList = loadQueueFromDB()
 
                 for (i in reqList.indices) {
                     var result  = doConnect(reqList[i])
 
-                    // 通信が正常の場合
-                    if(result.first < 300){
-                        queueSuccess(reqList[i],result.second)
+                    try {
+                        // 通信が正常の場合
+                        if (result.first < 300) {
+                            queueSuccess(reqList[i], result.second)
+                        }
+                        // 通信エラー
+                        else {
+                            queueError(reqList[i], result.second)
+                        }
+                    }catch(e:Exception) {
+                        Log.e("mainLoopError", e.toString())
                     }
-                    // 通信エラー
-                    else{
-                        queueError(reqList[i],result.second)
-                    }
-
                 }
 
-            }
-            catch(e:Exception) {
-                Log.e("mainLoopError", e.toString())
-            }
             /* キューデータを通信エラーになるまでループする */
 
             Thread.sleep(10* 1000)
@@ -201,7 +201,7 @@ object QueueController {
         outStream.flush()
         //エラーコードなど飛んでくるのでログに出力する
         resCorde = con.responseCode
-        Log.d("【rest/BlasRestAuth】", "Http_status:${resCorde}")
+        Log.d("【Queue】", "Http_status:${resCorde}")
 
         //リクエスト処理処理終了
         outStream.close()
