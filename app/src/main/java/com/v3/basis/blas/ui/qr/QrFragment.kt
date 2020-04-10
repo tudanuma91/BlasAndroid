@@ -2,16 +2,13 @@ package com.v3.basis.blas.ui.qr
 
 
 import android.Manifest
-import android.Manifest.permission.*
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.hardware.camera2.CameraManager
 import android.media.AudioManager
 import android.media.ToneGenerator
-import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -20,9 +17,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.core.content.PermissionChecker.checkSelfPermission
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import com.google.zxing.ResultPoint
@@ -30,17 +24,12 @@ import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.CompoundBarcodeView
 import com.v3.basis.blas.R
-import com.v3.basis.blas.activity.FixtureActivity
 import com.v3.basis.blas.activity.QRActivity
 import com.v3.basis.blas.ui.ext.checkPermissions
 import com.v3.basis.blas.ui.ext.permissionChk
 import com.v3.basis.blas.ui.fixture.fixture_kenpin.FixtureKenpinFragment
-import com.v3.basis.blas.ui.item.item_create.ItemCreateFragment
-import kotlinx.android.synthetic.main.fragment_fixture_kenpin.*
 import kotlinx.android.synthetic.main.fragment_qr.*
-import kotlinx.android.synthetic.main.fragment_qr.qr_view
 import org.json.JSONObject
-import java.lang.Exception
 
 /**
  * A simple [Fragment] subclass.
@@ -61,8 +50,8 @@ class QrFragment : Fragment() {
     private var vibrationEffect = VibrationEffect.createOneShot(300,
         VibrationEffect.DEFAULT_AMPLITUDE
     )
-    private var tone: ToneGenerator = ToneGenerator(AudioManager.STREAM_SYSTEM, ToneGenerator.MAX_VOLUME)
 
+//    private var tone: ToneGenerator = ToneGenerator(AudioManager.STREAM_SYSTEM, ToneGenerator.MAX_VOLUME)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_qr, container, false)
@@ -106,7 +95,6 @@ class QrFragment : Fragment() {
                 e.printStackTrace();
             }
         }
-
         initQRCamera()
     }
 
@@ -200,7 +188,7 @@ class QrFragment : Fragment() {
                         //val intent = Intent(activity, QRActivity::class.java)
 
 
-                        QrFragment().callOnPouse()
+                        qr_view.pause()
 
                         Log.d("OK", "終了")
                         requireActivity().finish()
@@ -220,7 +208,7 @@ class QrFragment : Fragment() {
     fun success(result: JSONObject){
         vibrationEffect = VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
         vibrator!!.vibrate(vibrationEffect)
-        tone.startTone(ToneGenerator.TONE_DTMF_S,200)
+//        tone.startTone(ToneGenerator.TONE_DTMF_S,200)
         Log.d("OK","作成完了")
         messageText!!.setTextColor(Color.GREEN)
         messageText!!.text = "QRコードを読み取りました"
@@ -232,7 +220,7 @@ class QrFragment : Fragment() {
     fun error(errorCode: Int){
         vibrationEffect = VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
         vibrator!!.vibrate(vibrationEffect)
-        tone.startTone(ToneGenerator.TONE_CDMA_ONE_MIN_BEEP,200)
+//        tone.startTone(ToneGenerator.TONE_CDMA_ONE_MIN_BEEP,200)
         Log.d("NG","作成失敗")
         Log.d("errorCorde","${errorCode}")
         messageText!!.setTextColor(Color.RED)

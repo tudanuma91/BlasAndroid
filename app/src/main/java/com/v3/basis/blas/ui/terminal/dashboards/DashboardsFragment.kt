@@ -14,10 +14,12 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestInformation
 import com.v3.basis.blas.ui.ext.getStringExtra
+import com.v3.basis.blas.ui.item.item_view.ItemViewFragment
 import com.v3.basis.blas.ui.item.item_view.ViewAdapter
 import com.v3.basis.blas.ui.terminal.dashboards.dashbord_list_view.RowModel
 import com.v3.basis.blas.ui.terminal.dashboards.dashbord_list_view.ViewAdapterAdapter
@@ -30,12 +32,18 @@ class DashboardsFragment : Fragment() {
     private lateinit var dashboardsViewModel: DashboardsViewModel
     private var token:String? =null
     private val dataList = mutableListOf<RowModel>()
+    private val dataListAll = mutableListOf<RowModel>()
 
     private val adapter:ViewAdapterAdapter = ViewAdapterAdapter(dataList,object  : ViewAdapterAdapter.ListListener{
         override fun onClickRow(tappedView: View, rowModel: RowModel) {
         }
 
     })
+
+    private var currentIndex: Int = 0
+    companion object {
+        const val CREATE_UNIT = 20
+    }
 
     /*private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
         override fun onClickRow(tappedView: View, rowModel: RowModel) {
@@ -60,6 +68,19 @@ class DashboardsFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(activity)
         recyclerView.adapter = adapter
 
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                if (dataListAll.isNotEmpty()) {
+                    val notOverSize = currentIndex + CREATE_UNIT <= dataListAll.size
+                    if (!recyclerView.canScrollVertically(1) && notOverSize) {
+                        setAdapter()
+                    }
+                }
+            }
+        })
+
         var payload = mapOf("token" to token)
         BlasRestInformation("search",payload, ::getInformationSuccess, ::getInformationError).execute()
     }
@@ -67,9 +88,21 @@ class DashboardsFragment : Fragment() {
 
     private fun getInformationSuccess(result: JSONObject) {
         val informationList = RestHelper().createInformationList(result)
-        dataList.addAll(createProjectList(informationList))
-        adapter.notifyItemInserted(0)
+        dataListAll.addAll(createProjectList(informationList))
+        setAdapter()
+    }
 
+    private fun setAdapter() {
+
+        dataList.addAll(dataListAll.filterIndexed { index, mutableMap ->
+            (index >= currentIndex) && (index <= currentIndex + ItemViewFragment.CREATE_UNIT)
+        }.toMutableList())
+
+        // update
+        if (dataList.isNotEmpty()) {
+            adapter.notifyItemInserted(0)
+            currentIndex += ItemViewFragment.CREATE_UNIT
+        }
     }
 
 

@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.blasclass.rest.BlasRestOrgs
@@ -22,6 +23,7 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusNotTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
 import com.v3.basis.blas.ui.ext.getStringExtra
+import com.v3.basis.blas.ui.item.item_view.ItemViewFragment
 import org.json.JSONObject
 
 
@@ -32,9 +34,15 @@ class FixtureViewFragment : Fragment() {
 
     private var token:String? = null
     private var project_id:String? = null
+    private var dataListAll = mutableListOf<RowModel>()
     private var dataList = mutableListOf<RowModel>()
     private val valueMap : MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
     private var valueSize :Int = 0
+
+    private var currentIndex: Int = 0
+    companion object {
+        const val CREATE_UNIT = 20
+    }
 
     private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
         override fun onClickRow(tappedView: View, rowModel: com.v3.basis.blas.ui.fixture.fixture_view.RowModel) {
@@ -69,6 +77,19 @@ class FixtureViewFragment : Fragment() {
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(activity)
         recyclerView.adapter = adapter
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                if (valueMap.isNotEmpty()) {
+                    val notOverSize = currentIndex + CREATE_UNIT <= dataListAll.size
+                    if (!recyclerView.canScrollVertically(1) && notOverSize) {
+                        progressBarItemView.visibility = View.VISIBLE
+                        setAdapter()
+                    }
+                }
+            }
+        })
 
         //呼ぶタイミングを確定させる！！
         val payload2 = mapOf("token" to token, "project_id" to project_id)
@@ -76,40 +97,19 @@ class FixtureViewFragment : Fragment() {
         BlasRestFixture("search",payload2, ::fixtureGetSuccess, ::fixtureGetError).execute()
     }
 
-    private fun createDataList(): List<RowModel> {
+    private fun createDataList() {
         val cnt = 1
         Log.d("aaaa","${cnt}")
 
         //データ管理のループ
-        valueMap.forEach {
-            /*val itemRecord = it
-            val colMax = valueMap.size
-            val item_id = it["item_id"]
-            var text: String? = "String"
-            var loopcnt = 1*/
-            Log.d("aaa","ここまで来たぞー！！")
-            var id = "1"
-            var text= "test"
-            //カラムの定義取得
-            val fixture_id = it.key
-            val fixture_value  = it.value
-            Log.d("aaa","${it}")
-            Log.d("aaa","${fixture_id}")
-            Log.d("aaa","${ fixture_value.get("fixture_id")}")
-            val value = createValue(fixture_value)
+        dataList.addAll(dataListAll.filterIndexed { index, mutableMap ->
+            (index >= currentIndex) && (index <= currentIndex + CREATE_UNIT)
+        }.toMutableList())
 
-            val rowModel = RowModel().also {
-                if (fixture_id != null) {
-                    it.title = fixture_id.toString()
-                }
-                if (value != null) {
-                    //値を何とかしなくちゃね
-                    it.detail = value
-                }
-            }
-            dataList.add(rowModel)
+        // update
+        if (dataList.isNotEmpty()) {
+            currentIndex += CREATE_UNIT
         }
-        return dataList
     }
 
     /**
@@ -119,6 +119,7 @@ class FixtureViewFragment : Fragment() {
         Log.d("konishi", "setAdapter")
         createDataList()
         adapter.notifyItemInserted(0)
+        progressBarItemView.visibility = View.INVISIBLE
     }
 
     /**
@@ -164,6 +165,35 @@ class FixtureViewFragment : Fragment() {
         valueSize = valueMap.size
 */
         if(valueMap.isNotEmpty()) {
+            valueMap.forEach {
+                /*val itemRecord = it
+                val colMax = valueMap.size
+                val item_id = it["item_id"]
+                var text: String? = "String"
+                var loopcnt = 1*/
+                Log.d("aaa","ここまで来たぞー！！")
+                var id = "1"
+                var text= "test"
+                //カラムの定義取得
+                val fixture_id = it.key
+                val fixture_value  = it.value
+                Log.d("aaa","${it}")
+                Log.d("aaa","${fixture_id}")
+                Log.d("aaa","${ fixture_value.get("fixture_id")}")
+                val value = createValue(fixture_value)
+
+                val rowModel = RowModel().also {
+                    if (fixture_id != null) {
+                        it.title = fixture_id.toString()
+                    }
+                    if (value != null) {
+                        //値を何とかしなくちゃね
+                        it.detail = value
+                    }
+                }
+                dataListAll.add(rowModel)
+            }
+            dataListAll.reverse()
             setAdapter()
         }
     }
@@ -177,6 +207,7 @@ class FixtureViewFragment : Fragment() {
         valueMap.clear()
         Log.d("取得失敗","取得失敗")
         Log.d("取得失敗","${errorCode}")
+        progressBarItemView.visibility = View.INVISIBLE
     }
 
     /**
