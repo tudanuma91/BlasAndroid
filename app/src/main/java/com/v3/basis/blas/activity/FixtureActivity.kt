@@ -79,14 +79,18 @@ class FixtureActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val navController = findNavController(R.id.nav_host_fragment_fixture)
         when (item.itemId) {
             android.R.id.home -> {
-                //Write your logic here
-                this.finish()
-                return true
+
+                if (!navController.popBackStack()) {
+                    this.finish()
+                    return true
+                }
             }
             else -> return super.onOptionsItemSelected(item)
         }
+        return false
     }
 
     /**
