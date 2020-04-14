@@ -57,19 +57,110 @@ class FormActionDataSearch(setToken: String, setActivity: FragmentActivity) : Fo
         return view
     }
 
-    fun createNewDateTime(params: LinearLayout.LayoutParams?, cnt: Int): EditText{
-        val edit = EditText(baseActivity)
-        edit.setText("")
-        edit.inputType = 1
-        edit.setLayoutParams(params)
-        edit.maxEms = 10
-        edit.id = cnt
-        //これがミソ！！！これなしだとタップ2回での起動になる
-        edit.isFocusableInTouchMode = false
+    fun pickUpDateTime(dateTime:MutableMap<String,EditText>,cnt:Int,mode:String): String {
+        var value = ""
+        val word = "_from_"
+        when(mode){
+            "Day"->{
+                //日付検索の値作成
+                val minDay = dateTime["col_${cnt}_minDay"]!!.text.toString()
+                val maxDay = dateTime["col_${cnt}_maxDay"]!!.text.toString()
+                when{
+                    //valueが最小値・最大値ともに入力されている場合
+                    minDay != "" && maxDay != ""->{
+                        value += minDay
+                        value += word
+                        value += maxDay
+                    }
 
+                    //valueが最大値のみ入力されている場合
+                    minDay == "" && maxDay != ""->{
+                        value += "Null"
+                        value += word
+                        value += maxDay
+                    }
 
-        return edit
+                    //valueが最小値のみ入力されている場合
+                    minDay != "" && maxDay == ""->{
+                        value += minDay
+                        value += word
+                        value += "Null"
+                    }
+                }
+            }
+            "Time"->{
+                //時間検索の作成
+                val minTime = dateTime["col_${cnt}_minTime"]!!.text.toString()
+                val maxTime = dateTime["col_${cnt}_maxTime"]!!.text.toString()
+                when{
+                    //valueが最小値・最大値ともに入力されている場合
+                    minTime != "" && maxTime != ""->{
+                        value += minTime
+                        value += word
+                        value += maxTime
+                    }
+
+                    //valueが最大値のみ入力されている場合
+                    minTime == "" && maxTime != ""->{
+                        value += "Null"
+                        value += word
+                        value += maxTime
+                    }
+
+                    //valueが最小値のみ入力されている場合
+                    minTime != "" && maxTime == ""->{
+                        value += minTime
+                        value += word
+                        value += "Null"
+                    }
+                }
+
+            }
+        }
+        return value
     }
+
+    /*fun pickUpDateTime(dateTime:MutableMap<String,EditText>,cnt:Int,mode:String,select:String): String {
+        var value = ""
+        if (select == "Min") {
+            when (mode) {
+                "Day" -> {
+                    //日付検索の値作成
+                    val minDay = dateTime["col_${cnt}_minDay"]!!.text.toString()
+                    if (minDay != "") {
+                        value += minDay
+                    }
+                }
+                "Time" -> {
+                    //時間検索の作成
+                    val minTime = dateTime["col_${cnt}_minTime"]!!.text.toString()
+                    if (minTime != "") {
+                        value += minTime
+                    }
+
+                }
+            }
+        }else{
+            when (mode) {
+                "Day" -> {
+                    //日付検索の値作成
+                    val maxDay = dateTime["col_${cnt}_maxDay"]!!.text.toString()
+                    if (maxDay != "") {
+                        value += maxDay
+                    }
+                }
+                "Time" -> {
+                    //時間検索の作成
+                    val maxTime = dateTime["col_${cnt}_maxTime"]!!.text.toString()
+                    if (maxTime != "") {
+                        value += maxTime
+                    }
+
+                }
+            }
+        }
+        return value
+    }*/
 
 
 }

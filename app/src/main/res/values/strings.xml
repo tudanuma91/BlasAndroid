@@ -33,6 +33,7 @@
     <string name="navi_title_terminal_item">データ管理</string>
     <string name="navi_title_terminal_fixture">機器管理</string>
     <string name="navi_title_terminal_logout">ログアウト</string>
+    <string name="navi_title_terminal_status">ステータス</string>
     <!--データ管理画面-->
     <string name="navi_title_item_search">データ検索</string>
     <string name="navi_title_item_view">データ一覧</string>
@@ -65,7 +66,7 @@
         <item>持出不可</item>
     </string-array>
 
-    <!-- 画面の項目等 -->
+    <!-- 検索画面の項目等 -->
     <string name="col_free_word">フリーワード：</string>
     <string name="col_serialnumber">シリアルナンバー：</string>
     <string name="col_data_id">データID：</string>
@@ -82,6 +83,9 @@
     <string name="col_takeout_date">持出した日：</string>
     <string name="col_return_date">返却した日：</string>
     <string name="col_item_date">設置した日：</string>
+    <string name="col_datetime">時間</string>
+    <string name="col_day">日付</string>
+
 
     <!-- 登録データ画像 -->
     <string name="cell_item_image_delete">削除</string>
@@ -89,6 +93,7 @@
     <string name="cell_item_image_left_rotate">左回転</string>
     <string name="cell_item_image_upload">画像ファイル選択</string>
     <string name="cell_item_image_loading">画像ファイル読込中。。。</string>
+
 
 
 </resources>

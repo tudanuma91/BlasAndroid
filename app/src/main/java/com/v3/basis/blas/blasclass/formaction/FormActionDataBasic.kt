@@ -88,12 +88,18 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
                 FieldType.SINGLE_SELECTION->{
                     //単一選択
                     formInfo.type = FieldType.SINGLE_SELECTION
-                    formInfo.choiceValue =list["choice"]!!.split(",")
+                    val singleCheckValue = list["choice"]
+                    if(singleCheckValue != null){
+                        formInfo.choiceValue =singleCheckValue.split(",")
+                    }
                 }
                 FieldType.MULTIPLE_SELECTION->{
                     //チェックボックス選択
                     formInfo.type = FieldType.MULTIPLE_SELECTION
-                    formInfo.choiceValue = list["choice"]!!.split(",")
+                    val multipCheckValue = list["choice"]
+                    if(multipCheckValue != null){
+                        formInfo.choiceValue = multipCheckValue.split(",")
+                    }
                 }
                 FieldType.KENPIN_RENDOU_QR->{
                     //チェックボックス選択
@@ -255,22 +261,27 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
     }
 
 
-    open fun pickUpValue(editMap:MutableMap<String,EditText?>?,cnt:Int): String {
-        val editText = editMap!!.get("col_${cnt}")
-        Log.d("edit","${editText!!.text}")
-        val value = "${editText!!.text}"
+    open fun pickUpValue(editMap:MutableMap<String,EditText?>,cnt:Int): String {
+        val editText = editMap.get("col_${cnt}")
+        var value = ""
+        if(editText != null){
+            value = "${editText.text}"
+        }
         return value
     }
 
-    open fun getCheckedRadioId(radioGroupMap:MutableMap<String,RadioGroup?>?,cnt: Int): String {
-        val radioGroup = radioGroupMap!!.get("col_${cnt}")
-        val checkedRadioId = radioGroup!!.checkedRadioButtonId.toString()
-        Log.d("radio","${checkedRadioId}")
+    open fun getCheckedRadioId(radioGroupMap:MutableMap<String,RadioGroup?>,cnt: Int): String {
+        val radioGroup = radioGroupMap.get("col_${cnt}")
+        var checkedRadioId = ""
+        if (radioGroup != null) {
+            checkedRadioId = radioGroup.checkedRadioButtonId.toString()
+            Log.d("radio", "${checkedRadioId}")
+        }
         return checkedRadioId
     }
 
-    open fun getCheckedValue(radioValue:MutableMap<String,RadioButton?>?,checkedRadioId:String): String {
-        val checkValue = radioValue!!.get(checkedRadioId)
+    open fun getCheckedValue(radioValue:MutableMap<String,RadioButton?>,checkedRadioId:String): String {
+        val checkValue = radioValue.get(checkedRadioId)
         var value = ""
         if(checkValue != null) {
             Log.d("radio", "${checkValue.text}")
@@ -282,14 +293,17 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
     open fun getCheckedValues(colCheckMap:MutableMap<String?,CheckBox?>?): String {
         var value = ""
         var v_cnt = 1
-        colCheckMap!!.forEach {
-            if(it.value!!.isChecked){
-                Log.d("check","${it.value!!.text}")
-                if(v_cnt == 1){
-                    value = "${it.value!!.text}"
-                    v_cnt += 1
-                }else{
-                    value += ",${it.value!!.text}"
+        colCheckMap?.forEach {
+            val msg = it.value
+            if(msg != null) {
+                if (msg.isChecked) {
+                    Log.d("check", "${msg.text}")
+                    if (v_cnt == 1) {
+                        value = "${msg.text}"
+                        v_cnt += 1
+                    } else {
+                        value += ",${msg.text}"
+                    }
                 }
             }
         }
@@ -322,14 +336,17 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
         var errorCnt = 0
         for(i in 1 until nullChk.size+1){
             val value =  nullChk[i]
-            if(value!!["nullChk"] == "error"){
-                textViewMap["${i}"]!!.setTextColor(Color.parseColor("#FF0000"))
-                val title = textViewMap["${i}"]!!.text
-                //複数回、入力必須項目ですを出力しない
-                if (!title.contains("(入力必須項目です。)")){
-                    textViewMap["${i}"]!!.text = "${title}(入力必須項目です。)"
+            val values = textViewMap["${i}"]
+            if(value != null && values!=null) {
+                if (value["nullChk"] == "error") {
+                    values.setTextColor(Color.parseColor("#FF0000"))
+                    val title = values.text
+                    //複数回、入力必須項目ですを出力しない
+                    if (!title.contains("(入力必須項目です。)")) {
+                        values.text = "${title}(入力必須項目です。)"
+                    }
+                    errorCnt += 1
                 }
-                errorCnt += 1
             }
         }
         return errorCnt

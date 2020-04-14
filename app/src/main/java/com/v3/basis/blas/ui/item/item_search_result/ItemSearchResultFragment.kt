@@ -30,6 +30,7 @@ class ItemSearchResultFragment : Fragment() {
     var projectId:String? = null
     var freeWord :String? = ""
     var fldSize : String? = null
+    var dateTimeCol:String = ""
     private val findValueMap:MutableMap<String,String?> = mutableMapOf()
     private val fieldMap: MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
     private val itemList: MutableList<MutableMap<String, String?>> = mutableListOf()
@@ -48,6 +49,7 @@ class ItemSearchResultFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        //初期値の取得
         if(getStringExtra("token") != null){
             token = getStringExtra("token")
         }
@@ -61,6 +63,10 @@ class ItemSearchResultFragment : Fragment() {
             freeWord = getStringExtra("freeWord")
             findValueMap.set("freeWord",freeWord)
         }
+        if(getStringExtra("dateTimeCol")!= null){
+            dateTimeCol = getStringExtra("dateTimeCol").toString()
+            Log.d("デバック用のログ","日付・時間検索はcol${dateTimeCol}")
+        }
         for (idx in 1 .. fldSize!!.toInt()){
             findValueMap.set("fld${idx}",getStringExtra("fld${idx}"))
         }
@@ -69,6 +75,7 @@ class ItemSearchResultFragment : Fragment() {
         Log.d("検索結果","fldSize = ${fldSize}")
         return inflater.inflate(R.layout.fragment_item_search_result, container, false)
     }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -90,7 +97,7 @@ class ItemSearchResultFragment : Fragment() {
     private fun createDataList(): MutableList<RowModel> {
         var colMax = fieldMap.size
         var itemInfo = RestHelper().createItemList(jsonItemList, colMax )
-        itemInfo = searchAndroid(findValueMap,itemInfo)
+        itemInfo = searchAndroid(findValueMap,itemInfo,dateTimeCol)
         itemList.addAll(itemInfo)
         itemList.forEach {
             val item_id = it["item_id"].toString()

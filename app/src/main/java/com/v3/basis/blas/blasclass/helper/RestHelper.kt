@@ -108,7 +108,6 @@ class RestHelper {
             rtnMap.set(key=i.toString(),value = valueMap)
 
         }
-       // val rtnMapSort = rtnMap.values.sortedBy { it["field_col"] !!.toInt()}
         return rtnMap
     }
 

@@ -1,17 +1,14 @@
 package com.v3.basis.blas.ui.logout
 
 import android.app.AlertDialog
-import android.content.Context
 import android.os.Bundle
-import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.v3.basis.blas.R
+import kotlinx.android.synthetic.main.fragment_logout.*
 
 class LogoutFragment : Fragment() {
 
@@ -24,26 +21,26 @@ class LogoutFragment : Fragment() {
     ): View? {
         notificationsViewModel =
             ViewModelProviders.of(this).get(LogoutViewModel::class.java)
-        val root = inflater.inflate(R.layout.fragment_logout, container, false)
-        val textView: TextView = root.findViewById(R.id.logout)
-        notificationsViewModel.text.observe(this, Observer {
-            textView.text = it
-        })
 
-        return root
+        return inflater.inflate(R.layout.fragment_logout, container, false)
     }
 
-    override fun onResume() {
-        super.onResume()
-        AlertDialog.Builder(activity)
-            .setTitle("メッセージ")
-            .setMessage("ログアウトしますか？")
-            .setPositiveButton("YES",{dialog, which ->
-                //TODO YESを押したときの処理
-            })
-            .setNegativeButton("NO", { dialog, which ->
-                //TODO NOを押したときの処理
-            })
-            .show()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        btn_logout.setOnClickListener {
+
+            AlertDialog.Builder(activity)
+                .setTitle("メッセージ")
+                .setMessage("ログアウトしますか？")
+                .setPositiveButton("YES",{dialog, which ->
+                    //TODO YESを押したときの処理
+                    requireActivity().finish()
+                })
+                .setNegativeButton("NO", { dialog, which ->
+                    //TODO NOを押したときの処理
+                })
+                .show()
+        }
     }
 }

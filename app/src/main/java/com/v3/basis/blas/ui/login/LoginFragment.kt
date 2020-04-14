@@ -44,13 +44,6 @@ class LoginFragment : Fragment() {
         setListener(login_test2, ::testLoginSuccess2, ::loginError)
         setListener(login_test3, ::testLoginSuccess3, ::loginError)
 
-       /* val test = FormActionDataSearch("test",activity!!)
-        val token = test.token
-        val aaa = test.baseActivity
-
-        Log.d("fahagegrhtw","token = ${token}")
-        Log.d("fahagegrhtw","test = ${aaa}")*/
-
         btnQR.setOnClickListener {
             val intent = Intent(activity, QRActivity::class.java)
             startActivity(intent)
