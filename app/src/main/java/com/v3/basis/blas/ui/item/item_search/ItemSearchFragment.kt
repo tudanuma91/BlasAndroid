@@ -36,13 +36,14 @@ import java.util.*
  */
 class ItemSearchFragment : Fragment() {
     //文字型またはview型
-    private var token: String? = null
-    private var projectId: String? = null
-    private var rootView: LinearLayout? = null
+    private lateinit var token: String
+    private lateinit var projectId: String
+    private lateinit var rootView: LinearLayout
     //コレクション各種
     private var formInfoMap:MutableMap<String, MutableMap<String, String?>> = mutableMapOf()
-    private var editMap:MutableMap<String, EditText?>? = mutableMapOf()
-    private var checkMap:MutableMap<String,MutableMap<String?, CheckBox?>>? = mutableMapOf()
+    private var editMap:MutableMap<String, EditText?> = mutableMapOf()
+    private var dateTime:MutableMap<String,EditText> = mutableMapOf()
+    private var checkMap:MutableMap<String,MutableMap<String?, CheckBox?>> = mutableMapOf()
     private var searchValue:MutableMap<String,String?> = mutableMapOf()
     //パラメータ
     private var layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
@@ -55,7 +56,7 @@ class ItemSearchFragment : Fragment() {
     private val hour = calender.get(Calendar.YEAR)
     private val minute = calender.get(Calendar.MONTH)
     //インスタンス作成
-    private var formAction:FormActionDataSearch? = null
+    private lateinit var formAction:FormActionDataSearch
     //この下は最終的に消す
     private val jsonItemList:MutableMap<String,JSONObject> = mutableMapOf()
     private val itemList: MutableList<MutableMap<String, String?>> = mutableListOf()
@@ -68,13 +69,13 @@ class ItemSearchFragment : Fragment() {
         super.onCreateView(inflater, container, savedInstanceState)
         val extras = activity?.intent?.extras
         if (extras?.getString("token") != null) {
-            token = extras?.getString("token")
+            token = extras.getString("token").toString()
             Log.d("token_item", "${token}")
         }
         if (extras?.getString("project_id") != null) {
-            projectId = extras?.getString("project_id")
+            projectId = extras.getString("project_id").toString()
         }
-        formAction = FormActionDataSearch(token!!,activity!!)
+        formAction = FormActionDataSearch(token,activity!!)
         val root= inflater.inflate(R.layout.fragment_item_search, container, false)
         return root
     }
@@ -83,13 +84,13 @@ class ItemSearchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         rootView = view.findViewById<LinearLayout>(R.id.item_search_liner)
 
-        val space = formAction!!.createSpace(layoutParamsSpace)
-        val title = formAction!!.createFreeWordSearchTitle(layoutParams)
-        val freeWordSearch = formAction!!.createFreeWordSearch(layoutParams)
-        editMap!!.set(key="col_${0}",value = freeWordSearch)
-        rootView!!.addView(space)
-        rootView!!.addView(title)
-        rootView!!.addView(freeWordSearch)
+        val space = formAction.createSpace(layoutParamsSpace)
+        val title = formAction.createFreeWordSearchTitle(layoutParams)
+        val freeWordSearch = formAction.createFreeWordSearch(layoutParams)
+        editMap.set(key="col_${0}",value = freeWordSearch)
+        rootView.addView(space)
+        rootView.addView(title)
+        rootView.addView(freeWordSearch)
 
         //レイアウトの設置位置の設定
         val payload = mapOf("token" to token, "project_id" to projectId)
@@ -113,77 +114,77 @@ class ItemSearchFragment : Fragment() {
                  * ・nullable => 項目がnullが許容するかの定義
                  * ・unique => 項目が重複を許可するかの定義
                  */
-                val formInfo= formAction!!.typeCheck(it)
+                val formInfo= formAction.typeCheck(it)
                 //先に項目のタイトルをセットする
-                val formSectionTitle = formAction!!.createFormSectionTitle(layoutParams,formInfo)
-                rootView!!.addView(formSectionTitle)
+                val formSectionTitle = formAction.createFormSectionTitle(layoutParams,formInfo)
+                rootView.addView(formSectionTitle)
 
                 //フォームの項目の情報をメンバ変数に格納
-                val typeMap = formAction!!.createFormInfoMap(formInfo)
+                val typeMap = formAction.createFormInfoMap(formInfo)
                 formInfoMap.set(key = "${cnt}",value =typeMap )
 
 
                 when(formInfo.type){
-                    FieldType.TEXT_FIELD, FieldType.TEXT_AREA->{
+                    FieldType.TEXT_FIELD,
+                    FieldType.TEXT_AREA,
+                    FieldType.QR_CODE,
+                    FieldType.TEKKILYO_RENDOU_QR,
+                    FieldType.KENPIN_RENDOU_QR->{
                         //自由入力(1行)または自由入力(複数行)
-                        val formPart =formAction!!.createTextField(layoutParams,cnt,formInfo)
-                        rootView!!.addView(formPart)
+                        val formPart =formAction.createTextField(layoutParams,cnt,formInfo)
+                        rootView.addView(formPart)
 
                         //配列にeditTextの情報を格納。
-                        editMap!!.set(key="col_${cnt}",value = formPart)
+                        editMap.set(key="col_${cnt}",value = formPart)
                     }
 
                     FieldType.DATE_TIME->{
                         //日付入力
-                        var formPart = formAction!!.createDateTime(layoutParams,cnt,formInfo)
-                        formPart =  setClickDateTime(formPart)
-                        rootView!!.addView(formPart)
-
-                        for(i in 0 ..2) {
-                            rootView!!.setHorizontalGravity(LinearLayout.HORIZONTAL)
-                            var testParams = LinearLayout.LayoutParams(
-                                LinearLayout.LayoutParams.WRAP_CONTENT,
-                                LinearLayout.LayoutParams.WRAP_CONTENT
-                            )
-                            var flo = 1 + i
-                            testParams.weight = flo.toFloat()
-                            //testParams.
-                            var test = formAction!!.createNewDateTime(testParams, cnt)
-                            test = setClickDateTime(test)
-                            rootView!!.addView(test)
-                        }
-
-                        //配列にeditTextを格納
-                        editMap!!.set(key="col_${cnt}",value = formPart)
+                        val layout = requireActivity().layoutInflater.inflate(R.layout.cell_search_day, null)
+                        val minDay = layout.findViewById<EditText>(R.id.MinDay)
+                        val maxDay = layout.findViewById<EditText>(R.id.MaxDay)
+                        setClickDateTime(minDay)
+                        setClickDateTime(maxDay)
+                        rootView.addView(layout)
+                        dateTime.set(key = "col_${cnt}_minDay",value =minDay )
+                        dateTime.set(key = "col_${cnt}_maxDay",value =maxDay )
                     }
 
                     FieldType.TIME->{
                         //時間入力
-                        var formPart = formAction!!.createDateTime(layoutParams,cnt,formInfo)
-                        formPart = setClickTime(formPart)
-                        rootView!!.addView(formPart)
+                        val layout = requireActivity().layoutInflater.inflate(R.layout.cell_search_datetime, null)
+                        val minTime = layout.findViewById<EditText>(R.id.MinTime)
+                        val maxTime = layout.findViewById<EditText>(R.id.MaxTime)
+                        setClickTime(minTime)
+                        setClickTime(maxTime)
+                        rootView.addView(layout)
+                        dateTime.set(key = "col_${cnt}_minTime",value = minTime )
+                        dateTime.set(key = "col_${cnt}_maxTime",value = maxTime )
 
-                        //配列にeditTextを格納
-                        editMap!!.set(key="col_${cnt}",value = formPart)
                     }
 
                     FieldType.MULTIPLE_SELECTION , FieldType.SINGLE_SELECTION->{
                         //チェックボックスの時
                         var colCheckMap : MutableMap<String?,CheckBox?> = mutableMapOf()
-                        formInfo.choiceValue!!.forEach {
-                            val formPart = formAction!!.createMutipleSelection(layoutParams,it,checkCount)
-                            rootView!!.addView(formPart)
-                            colCheckMap!!.set(key = "col_${cnt}_${checkCount}",value = formPart)
-                            checkCount += 1
+                        val colCheckBoxValues = formInfo.choiceValue
+                        if(colCheckBoxValues != null) {
+                            colCheckBoxValues.forEach {
+                                val formPart =
+                                    formAction.createMutipleSelection(layoutParams, it, checkCount)
+                                rootView.addView(formPart)
+                                colCheckMap.set(key = "col_${cnt}_${checkCount}", value = formPart)
+                                checkCount += 1
 
+                            }
+                            checkMap.set(key = "col_${cnt}", value = colCheckMap)
                         }
-                        checkMap!!.set(key = "col_${cnt}",value = colCheckMap)
                     }
+
                 }
                 //フォームセクションごとにスペース入れる処理。試しに入れてみた。
                 val space = Space(activity)
                 space.setLayoutParams(layoutParamsSpace)
-                rootView!!.addView(space)
+                rootView.addView(space)
                 cnt += 1
             }
 
@@ -192,49 +193,89 @@ class ItemSearchFragment : Fragment() {
             val button = Button(activity)
             button.text = BTN_FIND
             button.setLayoutParams(layoutParams)
-            rootView!!.addView(button)
+            rootView.addView(button)
 
             //ボタン押下時の処理
             button.setOnClickListener{
-                val freeWordEdit = editMap!!.get("col_0")!!
+                val freeWordEdit = editMap.get("col_0")!!
                 val freeWordValue ="${freeWordEdit.text}"
                 Log.d("検索結果(フリーワード)","${freeWordValue}")
                 searchValue.set("freeWord",freeWordValue)
                 var cnt = 1
+                var dateTimeCol = ""
                 formInfoMap.forEach{
                     var value = ""
                     when(it.value["type"]){
                         FieldType.TEXT_FIELD,
-                        FieldType.TEXT_AREA->{
+                        FieldType.TEXT_AREA,
+                        FieldType.QR_CODE,
+                        FieldType.TEKKILYO_RENDOU_QR,
+                        FieldType.KENPIN_RENDOU_QR->{
                             //自由入力(1行)・自由入力(複数行)
-                            value = formAction!!.pickUpValue(editMap,cnt)
+                            value = formAction.pickUpValue(editMap,cnt)
+                            searchValue.set("fld${cnt}",value)
                         }
 
-                        FieldType.DATE_TIME,
+                        FieldType.DATE_TIME->{
+                            //日付入力
+                           /* value = formAction.pickUpDateTime(dateTime,cnt,"Day","Min")
+                            searchValue.set("fld${cnt}_Min",value)
+                            value = formAction.pickUpDateTime(dateTime,cnt,"Day","Max")
+                            searchValue.set("fld${cnt}_Max",value)*/
+                            value = formAction.pickUpDateTime(dateTime,cnt,"Day")
+                            searchValue.set("fld${cnt}",value)
+                            dateTimeCol += "${cnt},"
+                        }
                         FieldType.TIME->{
-                            //日付入力・時間入力
-                            value = formAction!!.pickUpValue(editMap,cnt)
+                            //時間入力
+                            /*value = formAction.pickUpDateTime(dateTime,cnt,"Time","Min")
+                            searchValue.set("fld${cnt}_Min",value)
+                            value = formAction.pickUpDateTime(dateTime,cnt,"Time","Max")
+                            searchValue.set("fld${cnt}_Max",value)*/
+                            value = formAction.pickUpDateTime(dateTime,cnt,"Time")
+                            searchValue.set("fld${cnt}",value)
+                            dateTimeCol += "${cnt},"
                         }
 
                         FieldType.MULTIPLE_SELECTION , FieldType.SINGLE_SELECTION->{
-                            //チェックボックス
-                            val colCheckMap = checkMap!!.get("col_${cnt}")
-                            value = formAction!!.getCheckedValues(colCheckMap)
+                            //チェックボックスとラジオボタン
+                            val colCheckMap = checkMap.get("col_${cnt}")
+                            value = formAction.getCheckedValues(colCheckMap)
+                            searchValue.set("fld${cnt}",value)
+                        }
+
+                        else->{
+                            searchValue.set("fld${cnt}",value)
                         }
                     }
-                    Log.d("testtest","${value}")
-                    searchValue.set("fld${cnt}",value)
                     cnt += 1
                 }
                 //ここから検索処理入れる
                 //ここで新しいアクティビティ？フラグメントを起動
-                //新しくitemを取得。
                 searchValue.forEach{
                     Log.d("testesttest","${it}")
                 }
+                Log.d("ログ取得中","==================================================================")
 
-                val payload2 = mapOf("token" to token, "project_id" to projectId)
-                BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
+                //検索結果画面を開くための処理
+                val intent = Intent(activity, ItemSearchResultActivity::class.java)
+                val fldSize = searchValue.size-1
+                intent.putExtra("token",token)
+                intent.putExtra("project_id",projectId)
+                intent.putExtra("freeWord",searchValue["freeWord"])
+                intent.putExtra("fldSize",fldSize.toString())
+
+                //dateTimeColに値が入っていた場合のみ処理を行う
+                if(dateTimeCol != "" ){
+                    val newDateTimeCol = dateTimeCol.dropLast(1)
+                    intent.putExtra("dateTimeCol",newDateTimeCol)
+                }
+
+                //検索する値を検索画面に送信する
+                for(idx in 1 .. searchValue.size-1){
+                    intent.putExtra("fld${idx}",searchValue["fld${idx}"])
+                }
+                startActivity(intent)
 
             }
         }
@@ -270,7 +311,7 @@ class ItemSearchFragment : Fragment() {
     private fun setClickTime(formPart: EditText): EditText {
         //editTextタップ時の処理
         formPart.setOnClickListener{
-            val tp = TimePickerDialog(getContext()!!,
+            val tp = TimePickerDialog(context,
                 TimePickerDialog.OnTimeSetListener{ view, hour, minute->
                     Toast.makeText(activity, "時間を選択しました${hour}:${minute}", Toast.LENGTH_LONG).show()
                     formPart.setText(String.format("%02d:%02d",hour,minute))
@@ -279,36 +320,5 @@ class ItemSearchFragment : Fragment() {
         }
         return formPart
     }
-
-    private fun itemRecv(result: JSONObject){
-        jsonItemList.set("1",result)
-        var colMax = formInfoMap.size
-        Log.d("gafeaqwaf","${colMax}")
-        val itemInfo = RestHelper().createItemList(jsonItemList, colMax )
-        itemInfo.forEach{
-            Log.d("testtest","${it}")
-        }
-        searchValue.forEach{
-            Log.d("htsreafgrsdjf","${it}")
-        }
-        Log.d("ログ取得中","==================================================================")
-
-        val intent = Intent(activity, ItemSearchResultActivity::class.java)
-        var fldSize = searchValue.size-1
-        intent.putExtra("token",token)
-        intent.putExtra("project_id",projectId)
-        intent.putExtra("freeWord",searchValue["freeWord"])
-        intent.putExtra("fldSize",fldSize.toString())
-
-        for(idx in 1 .. searchValue.size-1){
-            intent.putExtra("fld${idx}",searchValue["fld${idx}"])
-        }
-        startActivity(intent)
-    }
-
-    private fun itemRecvError(errorCode: Int , aplCode:Int){
-
-    }
-
 
 }

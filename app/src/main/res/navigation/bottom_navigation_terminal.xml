@@ -27,4 +27,10 @@
         android:name="com.v3.basis.blas.ui.logout.LogoutFragment"
         android:label="@string/navi_title_terminal_logout"
         tools:layout="@layout/fragment_equipment_management"/>
+
+    <fragment
+        android:id="@+id/navigation_status"
+        android:name="com.v3.basis.blas.ui.terminal.status.StatusFragment"
+        android:label="@string/navi_title_terminal_status"
+        tools:layout="@layout/fragment_equipment_management"/>
 </navigation>

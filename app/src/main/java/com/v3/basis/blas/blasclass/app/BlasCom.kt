@@ -14,12 +14,18 @@ import java.time.temporal.ChronoUnit
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 import android.R.attr.key
+import android.R.attr.tabStripRight
+import android.icu.text.SimpleDateFormat
+import java.lang.Exception
+import java.sql.Time
+import java.time.LocalTime
 import java.util.*
 
 
 class BlasCom {
 
 }
+private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
 
     /**
      * オブジェクトをJSON文字列に変換するメソッド
@@ -99,9 +105,10 @@ class BlasCom {
      * 検索を行う関数
      * @param cond 検索条件のmap(key:項目名 value:検索ワード)
      * @param search 検索する対象
+     * @param dateTimeCol 日付・時間検索のカラム
      * @return result 検索結果
      */
-    public fun searchAndroid(cond:MutableMap<String, String?>, search:MutableList<MutableMap<String, String?>>): MutableList<MutableMap<String, String?>> {
+    public fun searchAndroid(cond:MutableMap<String, String?>, search:MutableList<MutableMap<String, String?>>,dateTimeCol:String): MutableList<MutableMap<String, String?>> {
         //TODO:検索窓に記号が入力されたときの処理が必要？
         //java.util.regex.PatternSyntaxException: Incorrectly nested parentheses in regexp pattern near index 1
         //多分だけど、"("は判定できないのかな？ちょっとテストする必要あり
@@ -109,9 +116,14 @@ class BlasCom {
         //[(,),?,\,[,{,},*,+,.,]
         //別件だけど$,^,|,:,でなぜか全件ヒットする...
 
+        val dateTimeColList :MutableList<String> = mutableListOf()
         val result = search.toMutableList()
         val chkList :MutableList<Int> = mutableListOf()
         val removeIdList:MutableList<MutableList<Int>> = mutableListOf()
+        if(dateTimeCol != "") {
+            dateTimeColList.addAll(dateTimeCol.split(","))
+            Log.d("デバック用ログ","配列になるのかコレ${dateTimeColList}")
+        }
 
         cond.forEach{
             Log.d("機器管理の検索項目","${it}")
@@ -119,14 +131,12 @@ class BlasCom {
 
         for ((condKey, condValue) in cond) {
             //検索条件がフリーワードかつ文字が入力されているとき
-           // val key = Regex(condKey)
             val fld = Regex("fld")
             if(condKey =="freeWord" && condValue!=""){
                 Log.d("検索処理","分岐完了")
                 for (idx in 0 until result.size) {
                     var hitFlg = false
-                    //ここエラー発生した。
-                    // 予想だけどfor文回しているときに配列操作するとsizeが違うってエラーあり。
+                    // 予想だけどfor文回しているときに配列操作するとsizeが違うってエラーあり。なので対策した
                     for ((resKey, resValue) in result[idx]) {
                         //item_idは検索に含まない
                         if(resKey != "item_id"){
@@ -146,11 +156,32 @@ class BlasCom {
             }
 
             if(fld.containsMatchIn(condKey) && condValue != ""){
-
                 //keyがfld○○の場合の関数を作る => データ管理画面から検索をした時の処理
-                Log.d("データ管理の検索","取得完了。項目名${condKey}:検索ワード${condValue}")
-                val dataRemoveIdList = itemSearch(condKey,condValue,result)
-                removeIdList.add(dataRemoveIdList)
+                if(dateTimeColList.size != 0) {
+                    //検索項目の中に日付・時間検索が含まれているとき
+                    val target = condKey.drop(3)
+                    var dateFlg = false
+                    dateTimeCol.forEach {
+                        if (target == it.toString()) {
+                            dateFlg = true
+                        }
+                    }
+                    if (dateFlg) {
+                        Log.d("データ管理の検索/日付・時間", "取得完了。項目名${condKey}:検索ワード${condValue}")
+                        val dataRemoveIdList = itemSearchDateTimeManager(condKey,condValue,result)
+                        removeIdList.add(dataRemoveIdList)
+
+                    } else {
+                        Log.d("データ管理の検索", "取得完了。項目名${condKey}:検索ワード${condValue}")
+                        val dataRemoveIdList = itemSearch(condKey, condValue, result)
+                        removeIdList.add(dataRemoveIdList)
+                    }
+
+                }else{
+                    Log.d("データ管理の検索", "取得完了。項目名${condKey}:検索ワード${condValue}")
+                    val dataRemoveIdList = itemSearch(condKey, condValue, result)
+                    removeIdList.add(dataRemoveIdList)
+                }
             }
 
             if(!fld.containsMatchIn(condKey) && condKey !="freeWord" && condValue != ""){
@@ -193,6 +224,9 @@ class BlasCom {
                 result.removeAt(it.key)
             }
         }
+        result.forEach{
+            Log.d("検索結果","${it}")
+        }
         return result
     }
 
@@ -220,6 +254,224 @@ class BlasCom {
             }
         }
 
+        return result
+    }
+
+
+    /**
+    * データ管理の検索を行う関数
+    * @param condKey 検索対象の項目
+    * @param condValue 検索ワード
+    * @param search 検索する対象
+    * @return result 検索結果
+    *
+    * やりたいこととしては、fld○○の検索を行う。
+    * 検索条件と不一致IDを返す。
+    * 検索条件が空白の時は上の検索条件ではじく[if value != ""]で実行
+    * */
+    fun itemSearchDateTimeManager(condKey:String,condValue:String?, search:MutableList<MutableMap<String, String?>>): MutableList<Int> {
+        val result : MutableList<Int> = mutableListOf()
+        val valueList = condValue.toString().split("_from_")
+        val min = valueList[0]
+        val max = valueList[1]
+        val minLength = min.length
+        val maxLength = max.length
+        Log.d("デバック用のログ","最小値の値=>${min},${min.length}")
+        Log.d("デバック用のログ","最大値の値=>${max},${max.length}")
+        if(minLength == 5 || maxLength == 5){
+            //Time
+            var searchValueMin:Date? =  null
+            var searchValueMax:Date? =  null
+            if(min != "Null"){
+                searchValueMin = searchWordCreateTime(min)
+                Log.d("デバック用のログ","${searchValueMin}")
+                result.addAll(itemSearchTime(searchValueMin,condKey,condValue,search,"Min"))
+            }
+            if(max != "Null"){
+                searchValueMax = searchWordCreateTime(max)
+                Log.d("デバック用のログ","${searchValueMax}")
+                result.addAll(itemSearchTime(searchValueMax,condKey,condValue,search,"Max"))
+            }
+            Log.d("デバック用のログ","最小値の値=>${searchValueMin}")
+            Log.d("デバック用のログ","最大値の値=>${searchValueMax}")
+        }else{
+            //Day
+            var searchValueMin:LocalDate? =  null
+            var searchValueMax:LocalDate? =  null
+            if(min != "Null"){
+                searchValueMin = searchWordCreate(min)
+                result.addAll(itemSearchDate(searchValueMin,condKey,search,"Min"))
+                //検索処理
+                //result.addAll(検索処理の値)
+            }
+            if(max != "Null"){
+                searchValueMax = searchWordCreate(max)
+                result.addAll(itemSearchDate(searchValueMax,condKey,search,"Max"))
+                //検索処理
+                //result.addAll()
+            }
+            Log.d("デバック用のログ","最小値の値=>${searchValueMin}")
+            Log.d("デバック用のログ","最大値の値=>${searchValueMax}")
+        }
+        return result
+    }
+
+    /**
+    *  @param string 検索ワード
+    *  @return result フォーマットを整えた検索ワード or null
+    *
+    * ※ここちょっと簡略化できるかもしれない
+    *  この関数は検索ワードのフォーマットを整える関数です
+    */
+    public fun searchWordCreateTime(string:String): Date {
+        val stringSplit = string.split(":")
+        val result =timeFormat.parse("2000-01-01 ${stringSplit[0]}:${stringSplit[1]}:30")
+        return result
+    }
+
+
+    /**
+    *  @param string 検索ワード
+    *  @return result フォーマットを整えた検索ワード or null
+    *
+    * ※ここちょっと簡略化できるかもしれない
+    *  この関数は検索ワードのフォーマットを整える関数です
+    */
+    fun itemSearchTime(searchValue:Date,
+                       condKey: String,
+                       condValue: String?,
+                       search: MutableList<MutableMap<String, String?>>,
+                       type: String): MutableList<Int>{
+        val result : MutableList<Int> = mutableListOf()
+        when(type){
+            "Min"->{
+                for (idx in 0 until search.size) {
+                    try {
+                        Log.d("デバック用のログ","No${idx}")
+                        Log.d("デバック用のログ","検索する値=>${searchValue}")
+                        val date = search[idx][condKey]
+                        if(date != null){
+                            val baseDate = searchWordCreateTime(date)
+                            val resultValue = searchValue.after(baseDate)
+                            Log.d("デバック用のログ","登録されている値=>${search[idx][condKey]}")
+                            Log.d("デバック用のログ","結果=>${resultValue}")
+                            if(resultValue){
+                                result.add(idx)
+                            }
+
+                        }else{
+                            result.add(idx)
+                            Log.d("デバック用のログ","結果=>削除")
+                        }
+                    }catch (e:Exception){
+                        Log.d("デバック用のログ","結果=>削除")
+                        result.add(idx)
+                    }
+                }
+
+            }
+            "Max"->{
+                for (idx in 0 until search.size) {
+                    try {
+                        Log.d("デバック用のログ","No${idx}")
+                        Log.d("デバック用のログ","検索する値=>${searchValue}")
+                        val date = search[idx][condKey]
+                        if(date != null){
+                            val baseDate = searchWordCreateTime(date)
+                            val resultValue = baseDate.after(searchValue)
+                            Log.d("デバック用のログ","登録されている値=>${search[idx][condKey]}")
+                            Log.d("デバック用のログ","結果=>${resultValue}")
+                            if(resultValue){
+                                result.add(idx)
+                            }
+
+                        }else{
+                            result.add(idx)
+                            Log.d("デバック用のログ","結果=>削除")
+                        }
+                    }catch (e:Exception){
+                        Log.d("デバック用のログ","結果=>削除")
+                        result.add(idx)
+                    }
+                }
+
+            }
+        }
+
+
+        return result
+    }
+
+    /**
+    * データ管理の検索を行う関数
+    * @param condKey 検索対象の項目
+    * @param condValue 検索ワード
+    * @param search 検索する対象
+    * @return result 検索結果
+    *
+    * やりたいこととしては、fld○○の検索を行う。
+    * 検索条件と不一致IDを返す。
+    * 検索条件が空白の時は上の検索条件ではじく[if value != ""]で実行
+    * */
+    fun itemSearchDate(searchValue:LocalDate?,
+                       condKey: String,
+                       search: MutableList<MutableMap<String, String?>>,
+                       type: String): MutableList<Int> {
+        val result : MutableList<Int> = mutableListOf()
+        when(type){
+            "Min"->{
+                for (idx in 0 until search.size) {
+                    //Log.d("デバック用のログ", "配列の中身${search[idx][condKey]}")
+                    try {
+                        //検索用の値を取得
+                        val date = searchWordCreate(search[idx][condKey]).toString()
+                        if (date != "" && date != "null") {
+                            val baseValue = searchWordCreate(date)
+                            val resultValue = ChronoUnit.DAYS.between(searchValue, baseValue)
+                            Log.d("デバック用のログ","検索する値${searchValue}")
+                            Log.d("デバック用のログ","登録されている値${baseValue}")
+                            Log.d("デバック用のログ","検索結果${resultValue}")
+                            if(resultValue<0){
+                                result.add(idx)
+                            }
+                        } else {
+                            Log.d("デバック用のログ","空だから削除")
+                            result.add(idx)
+                        }
+                    } catch (e: Exception) {
+                        Log.d("デバック用のログ","空だから削除")
+                        result.add(idx)
+                    }
+                }
+
+            }
+            "Max" ->{
+                for (idx in 0 until search.size) {
+                    Log.d("デバック用のログ", "配列の中身${search[idx][condKey]}")
+                    try {
+                        Log.d("デバック用のログ","No${idx}")
+                        //検索用の値を取得
+                        val date = searchWordCreate(search[idx][condKey]).toString()
+                        if (date != "" && date != "null") {
+                            val baseValue = searchWordCreate(date)
+                            val resultValue = ChronoUnit.DAYS.between(searchValue, baseValue)
+                            Log.d("デバック用のログ","検索する値${searchValue}")
+                            Log.d("デバック用のログ","登録されている値${baseValue}")
+                            Log.d("デバック用のログ","検索結果${resultValue}")
+                            if(resultValue>0){
+                                result.add(idx)
+                            }
+                        } else {
+                            Log.d("デバック用のログ","空だから削除")
+                            result.add(idx)
+                        }
+                    } catch (e: Exception) {
+                        Log.d("デバック用のログ","空だから削除")
+                        result.add(idx)
+                    }
+                }
+            }
+        }
         return result
     }
 

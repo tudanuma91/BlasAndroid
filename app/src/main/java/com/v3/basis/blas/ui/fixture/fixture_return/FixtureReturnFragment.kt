@@ -83,12 +83,10 @@ class FixtureReturnFragment : Fragment() {
             try {
                 if(SW == false){
                     //SWがfalseならばトーチモードをtrueにしてLDEオン
-                    //McameraManager!!.setTorchMode(McameraID!!, true)
                     qr_view.setTorchOn()
                     SW=true
                 }else{
                     //SWがtrueならばトーチモードをfalseにしてLDEオフ
-                    //McameraManager!!.setTorchMode(McameraID!!, false)
                     qr_view.setTorchOff()
                     SW=false
                 }

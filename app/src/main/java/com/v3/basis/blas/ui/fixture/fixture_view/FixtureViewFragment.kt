@@ -226,29 +226,29 @@ class FixtureViewFragment : Fragment() {
             else -> { }
         }
         value += "\n\n\n${getString(R.string.col_kenpin_org)}"
-        value += setValue(list["fix_org"]!!)
+        value += setValue(list["fix_org"].toString())
         value += "\n${getString(R.string.col_kenpin_user)}"
-        value += setValue(list["fix_user"]!!)
+        value += setValue(list["fix_user"].toString())
         value += "\n${getString(R.string.col_kenpin_date)}"
-        value += setValue(list["fix_date"]!!)
+        value += setValue(list["fix_date"].toString())
         value += "\n\n${getString(R.string.col_takeout_org)}"
-        value += setValue(list["takeout_org"]!!)
+        value += setValue(list["takeout_org"].toString())
         value += "\n${getString(R.string.col_takeout_user)}"
-        value += setValue(list["takeout_user"]!!)
+        value += setValue(list["takeout_user"].toString())
         value += "\n${getString(R.string.col_takeout_date)}"
-        value += setValue(list["takeout_date"]!!)
+        value += setValue(list["takeout_date"].toString())
         value += "\n\n${getString(R.string.col_return_org)}"
-        value += setValue(list["rtn_org"]!!)
+        value += setValue(list["rtn_org"].toString())
         value += "\n${getString(R.string.col_return_user)}"
-        value += setValue(list["rtn_user"]!!)
+        value += setValue(list["rtn_user"].toString())
         value += "\n${getString(R.string.col_return_date)}"
-        value += setValue(list["rtn_date"]!!)
+        value += setValue(list["rtn_date"].toString())
         value += "\n\n${getString(R.string.col_item_org)}"
-        value += setValue(list["item_org"]!!)
+        value += setValue(list["item_org"].toString())
         value += "\n${getString(R.string.col_item_user)}"
-        value += setValue(list["item_user"]!!)
+        value += setValue(list["item_user"].toString())
         value += "\n${getString(R.string.col_item_date)}"
-        value += setValue(list["item_date"]!!)
+        value += setValue(list["item_date"].toString())
 
         return value
     }

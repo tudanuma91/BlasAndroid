@@ -31,15 +31,15 @@ import java.util.*
  * A simple [Fragment] subclass.
  */
 class ItemCreateFragment : Fragment() {
-    private var token: String? = null
-    private var projectId: String? = null
-    private var rootView: LinearLayout? = null
+    private lateinit var token: String
+    private lateinit var projectId: String
+    private lateinit var rootView: LinearLayout
 
     private var formInfoMap: MutableMap<String, MutableMap<String, String?>> = mutableMapOf()
-    private var editMap: MutableMap<String, EditText?>? = mutableMapOf()
-    private var radioGroupMap: MutableMap<String, RadioGroup?>? = mutableMapOf()
-    private var radioValue: MutableMap<String, RadioButton?>? = mutableMapOf()
-    private var checkMap: MutableMap<String, MutableMap<String?, CheckBox?>>? = mutableMapOf()
+    private var editMap: MutableMap<String, EditText?> = mutableMapOf()
+    private var radioGroupMap: MutableMap<String, RadioGroup?> = mutableMapOf()
+    private var radioValue: MutableMap<String, RadioButton?> = mutableMapOf()
+    private var checkMap: MutableMap<String, MutableMap<String?, CheckBox?>> = mutableMapOf()
     private var textViewMap: MutableMap<String, TextView> = mutableMapOf()
     private var layoutParams = LinearLayout.LayoutParams(
         LinearLayout.LayoutParams.MATCH_PARENT,
@@ -56,7 +56,7 @@ class ItemCreateFragment : Fragment() {
     private val minute = calender.get(Calendar.MONTH)
 
     private var Item = ItemActivity()
-    private var formAction: FormActionDataCreate? = null
+    private lateinit var formAction: FormActionDataCreate
 
     private lateinit var qrCodeView: EditText
 
@@ -70,14 +70,16 @@ class ItemCreateFragment : Fragment() {
         //初期値の取得
         val extras = activity?.intent?.extras
         if (extras?.getString("token") != null) {
-            token = extras?.getString("token")
+            token = extras.getString("token").toString()
             Log.d("token_item", "${token}")
         }
         if (extras?.getString("project_id") != null) {
-            projectId = extras?.getString("project_id")
+            projectId = extras.getString("project_id").toString()
         }
 
-        formAction = FormActionDataCreate(token!!, activity!!)
+        if(token != null && activity != null){
+            formAction = FormActionDataCreate(token, activity!!)
+        }
         return inflater.inflate(R.layout.fragment_item_create, container, false)
     }
 
@@ -88,7 +90,7 @@ class ItemCreateFragment : Fragment() {
         //フォームセクションごとにスペース入れる処理。試しに入れてみた。
         val space = Space(activity)
         space.setLayoutParams(layoutParamsSpace)
-        rootView!!.addView(space)
+        rootView.addView(space)
         //レイアウトの設置位置の設定
         val payload = mapOf("token" to token, "project_id" to projectId)
         BlasRestField(payload, ::getSuccess, ::getFail).execute()
@@ -102,7 +104,6 @@ class ItemCreateFragment : Fragment() {
         var checkCount = 1
         if (result != null) {
             //colによる並び替えが発生しているため、ソートを行う
-            // val resultSort = result!!.sortedBy { it["col"]!!.toInt() }
             val sortFormFieldList = RestHelper().createFormField(result)
             val test = sortFormFieldList.values.sortedBy { it["field_col"]!!.toInt() }
             test.forEach {
@@ -116,15 +117,15 @@ class ItemCreateFragment : Fragment() {
                  * ・require => 項目がnullが許容するかの定義
                  * ・unique => 項目が重複を許可するかの定義
                  */
-                val formInfo = formAction!!.typeCheck(it)
+                val formInfo = formAction.typeCheck(it)
                 //先に項目のタイトルをセットする
-                val formSectionTitle = formAction!!.createFormSectionTitle(layoutParams, formInfo)
+                val formSectionTitle = formAction.createFormSectionTitle(layoutParams, formInfo)
                 //formSectionTitle.setError("入力必須です")
                 textViewMap.set(cnt.toString(), formSectionTitle)
-                rootView!!.addView(formSectionTitle)
+                rootView.addView(formSectionTitle)
 
                 //フォームの項目の情報をメンバ変数に格納
-                val typeMap = formAction!!.createFormInfoMap(formInfo)
+                val typeMap = formAction.createFormInfoMap(formInfo)
 
                 formInfoMap.set(key = "${cnt}", value = typeMap)
 
@@ -132,68 +133,73 @@ class ItemCreateFragment : Fragment() {
                     FieldType.TEXT_FIELD, FieldType.TEXT_AREA -> {
                         //自由入力(1行)と自由入力(複数行)
                         //editTextを作成
-                        val formPart = formAction!!.createTextField(layoutParams, cnt, formInfo)
-                        rootView!!.addView(formPart)
+                        val formPart = formAction.createTextField(layoutParams, cnt, formInfo)
+                        rootView.addView(formPart)
                         //配列にeditTextの情報を格納。
-                        editMap!!.set(key = "col_${cnt}", value = formPart)
+                        editMap.set(key = "col_${cnt}", value = formPart)
                     }
 
                     FieldType.DATE_TIME -> {
                         //日付入力
                         //editTextを作成
-                        var formPart = formAction!!.createDateTime(layoutParams, cnt, formInfo)
+                        var formPart = formAction.createDateTime(layoutParams, cnt, formInfo)
                         formPart = setClickDateTime(formPart)
-                        rootView!!.addView(formPart)
+                        rootView.addView(formPart)
 
 
                         //配列にeditTextを格納
-                        editMap!!.set(key = "col_${cnt}", value = formPart)
+                        editMap.set(key = "col_${cnt}", value = formPart)
                     }
 
                     FieldType.TIME -> {
                         //時間入力
                         //editText作成
-                        var formPart = formAction!!.createDateTime(layoutParams, cnt, formInfo)
+                        var formPart = formAction.createDateTime(layoutParams, cnt, formInfo)
                         formPart = setClickTime(formPart)
-                        rootView!!.addView(formPart)
+                        rootView.addView(formPart)
 
                         //配列にeditTextを格納
-                        editMap!!.set(key = "col_${cnt}", value = formPart)
+                        editMap.set(key = "col_${cnt}", value = formPart)
                     }
 
                     FieldType.SINGLE_SELECTION -> {
                         //ラジオボタンの時
-                        val formGroup = formAction!!.createRadioGrop(layoutParams, cnt)
-                        formInfo.choiceValue!!.forEach {
-                            val formPart =
-                                formAction!!.createSingleSelection(layoutParams, it, radioCount)
-                            radioValue!!.set(key = "${radioCount}", value = formPart)
-                            radioCount += 1
-                            formGroup.addView(formPart)
+                        val formGroup = formAction.createRadioGrop(layoutParams, cnt)
+                        val chkValueMap = formInfo.choiceValue
+                        if(chkValueMap != null) {
+                            chkValueMap.forEach {
+                                val formPart =
+                                    formAction.createSingleSelection(layoutParams, it, radioCount)
+                                radioValue.set(key = "${radioCount}", value = formPart)
+                                radioCount += 1
+                                formGroup.addView(formPart)
+                            }
+                            rootView.addView(formGroup)
+                            radioGroupMap.set(key = "col_${cnt}", value = formGroup)
                         }
-                        rootView!!.addView(formGroup)
-                        radioGroupMap!!.set(key = "col_${cnt}", value = formGroup)
                     }
 
                     FieldType.MULTIPLE_SELECTION -> {
                         //チェックボックスの時
                         val colCheckMap: MutableMap<String?, CheckBox?> = mutableMapOf()
-                        formInfo.choiceValue!!.forEach {
-                            val formPart =
-                                formAction!!.createMutipleSelection(layoutParams, it, checkCount)
-                            rootView!!.addView(formPart)
-                            colCheckMap!!.set(key = "col_${cnt}_${checkCount}", value = formPart)
-                            checkCount += 1
+                        val choicevalues = formInfo.choiceValue
+                        if (choicevalues != null)
+                            choicevalues.forEach {
+                                val formPart =
+                                    formAction.createMutipleSelection(layoutParams, it, checkCount)
+                                rootView.addView(formPart)
+                                colCheckMap.set(key = "col_${cnt}_${checkCount}", value = formPart)
+                                checkCount += 1
 
-                        }
-                        checkMap!!.set(key = "col_${cnt}", value = colCheckMap)
+                            }
+                        checkMap.set(key = "col_${cnt}", value = colCheckMap)
                     }
                     FieldType.QR_CODE,
                     FieldType.KENPIN_RENDOU_QR,
                     FieldType.TEKKILYO_RENDOU_QR->{
 
                         val layout = requireActivity().layoutInflater.inflate(R.layout.cell_qr_item, null)
-                        rootView!!.addView(layout)
+                        rootView.addView(layout)
                         val ed = layout.findViewById<EditText>(R.id.editText)
                         layout.findViewById<Button>(R.id.button)?.setOnClickListener{
 
@@ -203,7 +209,7 @@ class ItemCreateFragment : Fragment() {
                             startActivityForResult(intent, QRActivity.QR_CODE)
                         }
                         //配列に値を格納//
-                        editMap!!.set(key = "col_${cnt}", value = ed)
+                        editMap.set(key = "col_${cnt}", value = ed)
                     }
                 }
                 Log.d("atait","タイプは=>${formInfo.type}")
@@ -211,23 +217,23 @@ class ItemCreateFragment : Fragment() {
                 //フォームセクションごとにスペース入れる処理。試しに入れてみた。
                 val space = Space(activity)
                 space.setLayoutParams(layoutParamsSpace)
-                rootView!!.addView(space)
+                rootView.addView(space)
                 cnt += 1
             }
             //ボタンの作成処理
             val button = Button(activity)
             button.text = BlasDef.BTN_SAVE
             button.setLayoutParams(layoutParams)
-            rootView!!.addView(button)
+            rootView.addView(button)
 
             //ボタン押下時の処理
             button.setOnClickListener {
 
-                var payload: MutableMap<String, String?> =
+                val payload: MutableMap<String, String?> =
                     mutableMapOf("token" to token, "project_id" to projectId)
                 var cnt = 1
                 var errorCnt = 0
-                var nullChk: MutableMap<Int, MutableMap<String, String>> = mutableMapOf()
+                val nullChk: MutableMap<Int, MutableMap<String, String>> = mutableMapOf()
                 formInfoMap.forEach {
                     var value = ""
                     Log.d("ItemCreateFragment", "「SEND」ボタンが押されました")
@@ -239,7 +245,6 @@ class ItemCreateFragment : Fragment() {
 
                         Log.d("send button", "it.value === " + it.value)
 
-                        //val field_col = Integer.parseInt(editMap!!.get("field_col").toString())
                         val field_col = it.value["field_col"].toString()
                         //val field_col = "0"
 
@@ -249,22 +254,22 @@ class ItemCreateFragment : Fragment() {
                             FieldType.DATE_TIME,
                             FieldType.TIME -> {
                                 //自由入力(1行)・自由入力(複数行)・日付入力・時間入力
-                                value = formAction!!.pickUpValue(editMap, cnt)
+                                value = formAction.pickUpValue(editMap, cnt)
                                 payload.set("fld${cnt}", value)
                             }
 
                             FieldType.SINGLE_SELECTION -> {
                                 //ラジオボタン
                                 val checkedRadioId =
-                                    formAction!!.getCheckedRadioId(radioGroupMap, cnt)
-                                value = formAction!!.getCheckedValue(radioValue, checkedRadioId)
+                                    formAction.getCheckedRadioId(radioGroupMap, cnt)
+                                value = formAction.getCheckedValue(radioValue, checkedRadioId)
                                 payload.set("fld${cnt}", "${value}")
                             }
 
                             FieldType.MULTIPLE_SELECTION -> {
                                 //チェックボックス
-                                val colCheckMap = checkMap!!.get("col_${cnt}")
-                                value = formAction!!.getCheckedValues(colCheckMap)
+                                val colCheckMap = checkMap.get("col_${cnt}")
+                                value = formAction.getCheckedValues(colCheckMap)
                                 payload.set("fld${cnt}", "${value}")
 
                             }
@@ -273,22 +278,22 @@ class ItemCreateFragment : Fragment() {
                             FieldType.TEKKILYO_RENDOU_QR -> {
                                 //配列に格納した値を取得
 
-                                val colCheckMap = editMap!!.get("col_${cnt}")
-                                Log.d("testytesttt","${colCheckMap!!.text}")
-                                value = colCheckMap!!.text.toString()
-                                payload.set("fld${cnt}", "${value}")
-
+                                val colCheckMap = editMap.get("col_${cnt}")
+                                if(colCheckMap != null) {
+                                    value = colCheckMap.text.toString()
+                                    payload.set("fld${cnt}", "${value}")
+                                }
                             }
 
                         }
                         val nullChkMap: MutableMap<String, String> =
-                            formAction!!.chkNull(it.value["require"], value)
+                            formAction.chkNull(it.value["require"], value)
                         nullChk.set(cnt, nullChkMap)
                         cnt += 1
                     }
 
                 }
-                errorCnt = formAction!!.countNullError(nullChk, textViewMap)
+                errorCnt = formAction.countNullError(nullChk, textViewMap)
                 if (errorCnt == 0) {
                     BlasRestItem("create", payload, ::createSuccess, ::createError).execute()
                 }
@@ -361,7 +366,7 @@ class ItemCreateFragment : Fragment() {
         //editTextタップ時の処理
         formPart.setOnClickListener {
             val tp = TimePickerDialog(
-                getContext()!!,
+                context,
                 TimePickerDialog.OnTimeSetListener { view, hour, minute ->
                     Toast.makeText(activity, "時間を選択しました${hour}:${minute}", Toast.LENGTH_LONG)
                         .show()

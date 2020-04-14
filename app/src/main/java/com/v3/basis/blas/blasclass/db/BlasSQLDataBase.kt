@@ -1,11 +1,14 @@
 package com.v3.basis.blas.blasclass.db
 
+import android.database.Cursor
 import com.v3.basis.blas.blasclass.app.BlasApp
 
 /**
  * データベース操作を行うクラス
  */
 class BlasSQLDataBase {
+
+
     companion object {
         //TODO:データベースのバージョン
         val DB_VERSION = 1
@@ -20,4 +23,20 @@ class BlasSQLDataBase {
     open fun close(){
         //ここにclose処理を書く。内容を共通化する。
     }
+
+    fun getRecordUnRead(): Cursor {
+        val db = dbHelper.writableDatabase
+        val sql = "SELECT * FROM NoticeTable WHERE read_status = '0'"
+        val value = db.rawQuery(sql,null)
+        return value
+    }
+
+    fun getRecordAlreadyRead(): Cursor {
+        val db = dbHelper.writableDatabase
+        val sql = "SELECT * FROM NoticeTable WHERE read_status = '1'"
+        val value = db.rawQuery(sql,null)
+        return value
+    }
+
+
 }

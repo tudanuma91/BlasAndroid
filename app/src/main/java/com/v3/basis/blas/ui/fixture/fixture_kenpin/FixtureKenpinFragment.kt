@@ -72,12 +72,10 @@ class FixtureKenpinFragment : Fragment() {
             try {
                 if(SW == false){
                     //SWがfalseならばトーチモードをtrueにしてLDEオン
-                    //McameraManager!!.setTorchMode(McameraID!!, true)
                     qr_view.setTorchOn()
                     SW=true
                 }else{
                     //SWがtrueならばトーチモードをfalseにしてLDEオフ
-                    //McameraManager!!.setTorchMode(McameraID!!, false)
                     qr_view.setTorchOff()
                     SW=false
                 }
@@ -120,7 +118,7 @@ class FixtureKenpinFragment : Fragment() {
                 if(result.toString() != oldResult) {
                     if (result != null) {
                         //読み取りを伝えるバイブレーション
-                        vibrator = activity!!.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+
 
                         //Thread.sleep(500)
                         Log.d("QRCode", "処理実行！！")

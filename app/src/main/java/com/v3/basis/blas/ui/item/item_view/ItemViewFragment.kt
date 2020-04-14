@@ -32,7 +32,7 @@ class ItemViewFragment : Fragment() {
     private val itemListAll: MutableList<MutableMap<String, String?>> = mutableListOf()
     private val jsonItemList:MutableMap<String,JSONObject> = mutableMapOf()
     private val dataList = mutableListOf<RowModel>()
-    private var rootView:View? = null
+    private lateinit var rootView:View
 
     private var currentIndex: Int = 0
     companion object {
@@ -104,7 +104,7 @@ class ItemViewFragment : Fragment() {
         })
 
         //呼ぶタイミングを確定させる！！
-        chkProgress(true,rootView!!)
+        chkProgress(true,rootView)
         val payload2 = mapOf("token" to token, "project_id" to projectId)
         Log.d("aaaaaaa", "処理開始")
         BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
@@ -150,7 +150,6 @@ class ItemViewFragment : Fragment() {
                 if (item_id != null) {
                     it.title = item_id
                     it.itemId = item_id
-                    // it.detail = text!!
                 }
                 if (text != null) {
                     it.detail = text
@@ -176,7 +175,7 @@ class ItemViewFragment : Fragment() {
         Log.d("konishi", "setAdapter")
         createDataList()
         adapter.notifyItemInserted(0)
-        chkProgress(false,rootView!!)
+        chkProgress(false,rootView)
     }
 
     /**

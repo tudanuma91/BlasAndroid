@@ -44,9 +44,9 @@ class QrFragment : Fragment() {
     private var SW: Boolean = false
     private var projectId:String? = null
     private var intent :Intent? = null
-    private var messageText: TextView? = null
+    private lateinit var messageText: TextView
     private var oldResult:String? =null
-    private var vibrator: Vibrator? = null
+    private lateinit var vibrator: Vibrator
     private var vibrationEffect = VibrationEffect.createOneShot(300,
         VibrationEffect.DEFAULT_AMPLITUDE
     )
@@ -80,12 +80,10 @@ class QrFragment : Fragment() {
             try {
                 if(SW == false){
                     //SWがfalseならばトーチモードをtrueにしてLDEオン
-                    //McameraManager!!.setTorchMode(McameraID!!, true)
                     qr_view.setTorchOn()
                     SW=true
                 }else{
                     //SWがtrueならばトーチモードをfalseにしてLDEオフ
-                    //McameraManager!!.setTorchMode(McameraID!!, false)
                     qr_view.setTorchOff()
                     SW=false
                 }
@@ -160,11 +158,12 @@ class QrFragment : Fragment() {
                 if(result.toString() != oldResult) {
                     if (result != null) {
                         //初期化と変数宣言
-                        messageText = null
                         messageText = message_text
 
                         //読み取りを伝えるバイブレーション
-                        vibrator = fragm!!.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                        if(fragm != null){
+                            vibrator = fragm.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                        }
 
                         //Thread.sleep(500)
                         Log.d("QRCode", "処理実行！！")
@@ -207,11 +206,11 @@ class QrFragment : Fragment() {
      */
     fun success(result: JSONObject){
         vibrationEffect = VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
-        vibrator!!.vibrate(vibrationEffect)
+        vibrator.vibrate(vibrationEffect)
 //        tone.startTone(ToneGenerator.TONE_DTMF_S,200)
         Log.d("OK","作成完了")
-        messageText!!.setTextColor(Color.GREEN)
-        messageText!!.text = "QRコードを読み取りました"
+        messageText.setTextColor(Color.GREEN)
+        messageText.text = "QRコードを読み取りました"
     }
 
     /**
@@ -219,12 +218,12 @@ class QrFragment : Fragment() {
      */
     fun error(errorCode: Int){
         vibrationEffect = VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
-        vibrator!!.vibrate(vibrationEffect)
+        vibrator.vibrate(vibrationEffect)
 //        tone.startTone(ToneGenerator.TONE_CDMA_ONE_MIN_BEEP,200)
         Log.d("NG","作成失敗")
         Log.d("errorCorde","${errorCode}")
-        messageText!!.setTextColor(Color.RED)
-        messageText!!.text = "すでに登録済のQRコードです"
+        messageText.setTextColor(Color.RED)
+        messageText.text = "すでに登録済のQRコードです"
 
     }
 
