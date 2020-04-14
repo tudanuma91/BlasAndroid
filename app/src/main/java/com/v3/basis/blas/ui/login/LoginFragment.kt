@@ -109,6 +109,8 @@ class LoginFragment : Fragment() {
      */
     private fun loginSuccess(token:String) {
         Log.d("BLAS", "Login成功")
+
+
         val intent = Intent(activity, TerminalActivity::class.java)
         intent.putExtra("token",token)
         startActivity(intent)
@@ -149,6 +151,7 @@ class LoginFragment : Fragment() {
      */
     private fun testLoginSuccess1(token:String) {
         Log.d("BLAS", "Test1成功")
+
         val intent = Intent(activity,Test1Activity::class.java)
         intent.putExtra("token",token)
         startActivity(intent)

@@ -62,14 +62,18 @@ class ItemActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val navController = findNavController(R.id.nav_host_fragment)
         when (item.itemId) {
             android.R.id.home -> {
-                //Write your logic here
-                this.finish()
-                return true
+
+                if (!navController.navigateUp()) {
+                    this.finish()
+                    return true
+                }
             }
             else -> return super.onOptionsItemSelected(item)
         }
+        return true
     }
 
 

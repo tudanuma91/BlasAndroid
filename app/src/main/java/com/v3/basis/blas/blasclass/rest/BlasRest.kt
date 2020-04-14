@@ -14,6 +14,7 @@ import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.app.decrypt
 import com.v3.basis.blas.blasclass.app.encrypt
+import com.v3.basis.blas.blasclass.app.getHash
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
 import io.reactivex.Completable
 import io.reactivex.schedulers.Schedulers
@@ -23,6 +24,7 @@ import java.io.*
 import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.NetworkInterface
+import java.security.MessageDigest
 import java.util.*
 import javax.crypto.Cipher
 import javax.crypto.CipherOutputStream
@@ -60,7 +62,11 @@ open class BlasRest() : AsyncTask<String, String, String>() {
         var queuefuncList = mutableListOf<FuncList>()
         val context = BlasApp.applicationContext()
         var cacheFileName = ""
+        var userNameRest:String? = null
+        var passwordRest:String? = null
+
     }
+
 
     override fun doInBackground(vararg params: String?): String? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -81,6 +87,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
         }
 
         //正常時だけキャッシュに保存する
+        /* キャッシュ処理は子クラスにて行う
         if(errorCode == 0) {
             //正常のときだけキャッシュにjsonファイルを保存する
             try {
@@ -92,6 +99,8 @@ open class BlasRest() : AsyncTask<String, String, String>() {
                 Toast.makeText(context, e.message, Toast.LENGTH_LONG).show()
             }
         }
+        */
+
     }
     /**
      * オブジェクトをJSON文字列に変換するメソッド
@@ -323,7 +332,17 @@ open class BlasRest() : AsyncTask<String, String, String>() {
      */
     fun saveJson(fileName:String, jsonText:String) {
 
-        val encJsonText = encrypt(jsonText,"Uz7BG2T4ap6qGTj8")
+        val hashSource = userNameRest + passwordRest
+        val hash = getHash(hashSource)
+        val shortHash = hash.substring(0,16)
+
+        lateinit var encJsonText:String
+
+        try{
+            encJsonText = encrypt(jsonText,shortHash)
+        } catch(e: Exception){
+            Log.d("Encryot Error", e.message)
+        }
 
         Completable
             .fromAction {
@@ -338,6 +357,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
     }
 
 
+
     /**
      * json形式のテキストファイルを読み込み，jsonObjectとして返却する
      * @param fileName 読み込むファイル名
@@ -345,12 +365,26 @@ open class BlasRest() : AsyncTask<String, String, String>() {
      */
     fun loadJson(fileName:String):String {
         var jsonText = ""
+        lateinit var decJsonText:String
+
         File(fileName).reader().use {
             jsonText = it.readText()
-
         }
-        val decJsonText = decrypt(jsonText,"Uz7BG2T4ap6qGTj8")
-        // return JSONObject(jsonText)
+
+        val hashSource = userNameRest + passwordRest
+        val hash = getHash(hashSource)
+        val shortHash = hash.substring(0,16)
+
+        try {
+            decJsonText = decrypt(jsonText, shortHash)
+        }catch (e:Exception){
+            Log.d("Decrypt Error", e.message)
+        }
+
         return decJsonText
     }
+
+
+
+
 }
