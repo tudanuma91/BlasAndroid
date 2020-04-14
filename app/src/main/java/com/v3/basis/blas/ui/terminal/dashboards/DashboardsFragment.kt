@@ -1,16 +1,10 @@
 package com.v3.basis.blas.ui.terminal.dashboards
 
-import android.content.ActivityNotFoundException
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,12 +14,10 @@ import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestInformation
 import com.v3.basis.blas.ui.ext.getStringExtra
 import com.v3.basis.blas.ui.item.item_view.ItemViewFragment
-import com.v3.basis.blas.ui.item.item_view.ViewAdapter
 import com.v3.basis.blas.ui.terminal.dashboards.dashbord_list_view.RowModel
 import com.v3.basis.blas.ui.terminal.dashboards.dashbord_list_view.ViewAdapterAdapter
 import kotlinx.android.synthetic.main.fragment_project.*
 import org.json.JSONObject
-import java.io.File
 
 class DashboardsFragment : Fragment() {
 

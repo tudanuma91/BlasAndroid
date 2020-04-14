@@ -1,6 +1,7 @@
 package com.v3.basis.blas.ui.terminal.status.UnRead
 
 
+import android.app.AlertDialog
 import android.database.Cursor
 import android.os.Bundle
 import android.util.Log
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase
+import com.v3.basis.blas.ui.terminal.status.StatusFragment
 import com.v3.basis.blas.ui.viewparts.CardRecycler.CardRecyclerStatusUnread
 import kotlinx.android.synthetic.main.list_status_unread.*
 
@@ -34,7 +36,24 @@ class StatusUnreadFragment : Fragment() {
 
         override fun onClickChangeAlready(id: String) {
             Log.d("Hello","say Hello${id}")
-            //db.updateStatus(id)
+            val flg = db.upDateStatus(id)
+            if(flg){
+                AlertDialog.Builder(activity)
+                    .setTitle("メッセージ")
+                    .setMessage("既読処理が完了しました。")
+                    .setPositiveButton("YES") { dialog, which ->
+                        //TODO YESを押したときの処理
+                    }
+                    .show()
+            }else{
+                AlertDialog.Builder(activity)
+                    .setTitle("メッセージ")
+                    .setMessage("既読処理に失敗しました。")
+                    .setPositiveButton("YES") { dialog, which ->
+                        //TODO YESを押したときの処理
+                    }
+                    .show()
+            }
         }
 
     })
@@ -56,6 +75,7 @@ class StatusUnreadFragment : Fragment() {
         //データの作成およびモデルへのデータ格納・反映
         dataList.addAll(partRecyclerUnread.createStatusList())
         adapterUnRead.notifyItemInserted(0)
+
 
         return root
     }
