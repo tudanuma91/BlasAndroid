@@ -23,7 +23,7 @@ open class BlasRestImage(val crud:String = "download",
     }
 
     init{
-        cacheFileName = context.filesDir.toString() +  "/image_" + payload["item_id"] + ".json"
+        cacheFileName = context.filesDir.toString() +  "/image_" + payload["item_id"] + "_" + payload["project_image_id"] +".json"
     }
     var method = "GET"
 
@@ -40,6 +40,7 @@ open class BlasRestImage(val crud:String = "download",
             "download"->{
                 method = "GET"
                 blasUrl = BlasRest.URL + "images/download/"
+                cacheFileName = context.filesDir.toString() +  "/image_" + payload["item_id"] + "_" + payload["project_image_id"] +".json"
             }
             "upload"->{
                 method = "POST"
@@ -58,6 +59,8 @@ open class BlasRestImage(val crud:String = "download",
             Log.d("blas-log", e.message)
 
             if(method == "GET") {
+
+
 
                 //通信エラーが発生したため、キャッシュを読み込む
                 if (File(cacheFileName).exists()) {
