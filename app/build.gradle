@@ -28,11 +28,13 @@ android {
     flavorDimensions "default"
     productFlavors {
         develop {
-            buildConfigField 'String', 'API_URL', '"http://192.168.0.101/blas7/api/v1/"'
+            buildConfigField 'String', 'API_URL', '"http://192.168.1.8/blas7/api/v1/"'
+          //  buildConfigField 'String', 'API_URL', '"https://www.basis-service.com/blas777/api/v1/"'
         }
         production {
             //TODO: Replace to web server url
-            buildConfigField 'String', 'API_URL', '"http://192.168.0.101/blas7/api/v1/"'
+             buildConfigField 'String', 'API_URL', '"http://192.168.1.8/blas7/api/v1/"'
+          //  buildConfigField 'String', 'API_URL', '"https://www.basis-service.com/blas777/api/v1/"'
         }
         //  TODO: Delete when product release
         fukuda {
@@ -91,4 +93,7 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
     implementation 'io.reactivex.rxjava2:rxkotlin:2.4.0'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.19'
+
+    implementation 'com.google.android.gms:play-services-location:15.0.1'
+    implementation 'com.google.android.material:material:1.1.0-beta02'
 }

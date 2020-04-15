@@ -43,6 +43,15 @@ class TerminalFragment : Fragment() {
             true
         }
 
+       /*
+       バッジを表示する処理。values/stylesの変更をしたらできる。
+       view.nav_view.menu.getItem(4).itemId.let {
+            view.nav_view.getOrCreateBadge(it).apply {
+                number = 10
+            }
+
+        }*/
+
         return view
     }
 
@@ -65,7 +74,8 @@ class TerminalFragment : Fragment() {
         DASH_BOARD(R.id.navigation_dashboard, R.string.navi_title_terminal_dashboard),
         DATA_MANAGE(R.id.navigation_data_management, R.string.navi_title_terminal_item),
         EQUIPMENT_MANAGE(R.id.navigation_equipment_management, R.string.navi_title_terminal_fixture),
-        LOGOUT(R.id.navigation_logout, R.string.navi_title_terminal_logout);
+        LOGOUT(R.id.navigation_logout, R.string.navi_title_terminal_logout),
+        STATUS(R.id.navigation_status,R.string.navi_title_terminal_status);
 
         companion object {
             fun find(position: Int): BottomNavButton {

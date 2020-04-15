@@ -120,7 +120,7 @@ class FixtureSearchResultFragment : Fragment() {
         Log.d("aaaa","${cnt}")
 
         //ここで検索処理をする
-        val searchResult = searchAndroid(searchValueMap,baseDataList)
+        val searchResult = searchAndroid(searchValueMap,baseDataList,"")
 
         //検索処理の結果を表示
         searchResult.forEach{
@@ -230,29 +230,29 @@ class FixtureSearchResultFragment : Fragment() {
             else -> { }
         }
         value += "\n\n\n${getString(R.string.col_kenpin_org)}"
-        value += setValue(list["FixOrg"]!!)
+        value += setValue(list["FixOrg"].toString())
         value += "\n${getString(R.string.col_kenpin_user)}"
-        value += setValue(list["FixUser"]!!)
+        value += setValue(list["FixUser"].toString())
         value += "\n${getString(R.string.col_kenpin_date)}"
-        value += setValue(list["fix_date"]!!)
+        value += setValue(list["fix_date"].toString())
         value += "\n\n${getString(R.string.col_takeout_org)}"
-        value += setValue(list["TakeOutOrg"]!!)
+        value += setValue(list["TakeOutOrg"].toString())
         value += "\n${getString(R.string.col_takeout_user)}"
-        value += setValue(list["TakeOutUser"]!!)
+        value += setValue(list["TakeOutUser"].toString())
         value += "\n${getString(R.string.col_takeout_date)}"
-        value += setValue(list["takeout_date"]!!)
+        value += setValue(list["takeout_date"].toString())
         value += "\n\n${getString(R.string.col_return_org)}"
-        value += setValue(list["RtnOrg"]!!)
+        value += setValue(list["RtnOrg"].toString())
         value += "\n${getString(R.string.col_return_user)}"
-        value += setValue(list["RtnUser"]!!)
+        value += setValue(list["RtnUser"].toString())
         value += "\n${getString(R.string.col_return_date)}"
-        value += setValue(list["rtn_date"]!!)
+        value += setValue(list["rtn_date"].toString())
         value += "\n\n${getString(R.string.col_item_org)}"
-        value += setValue(list["ItemOrg"]!!)
+        value += setValue(list["ItemOrg"].toString())
         value += "\n${getString(R.string.col_item_user)}"
-        value += setValue(list["ItemUser"]!!)
+        value += setValue(list["ItemUser"].toString())
         value += "\n${getString(R.string.col_item_date)}"
-        value += setValue(list["item_date"]!!)
+        value += setValue(list["item_date"].toString())
 
         return value
     }

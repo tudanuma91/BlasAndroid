@@ -86,9 +86,6 @@ class Test3FirstFragment : Fragment() {
                         value_size >= PAGE_NUMBER -> {//残りの表示データが20件以上の時
                             chkProgress(true,view)
                             Log.d("aaaaaaaaaaaaa","ここでリロードしたい！！")
-                            //var newDataList = createDataList(ENTER_DATA_LIST,0,totalItemCount+PAGE_NUMBER)
-                            //DATA_LIST.clear()
-                            //DATA_LIST.addAll(newDataList)
                             for(i in totalItemCount .. totalItemCount+PAGE_NUMBER){
                                 val data : RowModel =
                                     RowModel().also {

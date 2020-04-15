@@ -7,12 +7,13 @@ import com.v3.basis.blas.ui.logout.LogoutFragment
 import com.v3.basis.blas.ui.terminal.dashboards.DashboardsFragment
 import com.v3.basis.blas.ui.terminal.fixture.FixtureFragment
 import com.v3.basis.blas.ui.terminal.project.ProjectFragment
+import com.v3.basis.blas.ui.terminal.status.StatusFragment
 
 
 class TerminalPagerAdapter(childFragmentManager: FragmentManager) : FragmentPagerAdapter(childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
     override fun getCount(): Int {
-        return 4
+        return 5
     }
 
     override fun getPageTitle(position: Int): CharSequence? {
@@ -25,6 +26,7 @@ class TerminalPagerAdapter(childFragmentManager: FragmentManager) : FragmentPage
             1 -> { ProjectFragment() }
             2 -> { FixtureFragment() }
             3 -> { LogoutFragment() }
+            4 -> { StatusFragment() }
             else -> { DashboardsFragment() }
         }
     }

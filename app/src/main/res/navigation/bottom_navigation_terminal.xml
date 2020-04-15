@@ -79,4 +79,10 @@
             app:launchSingleTop="true"
             app:destination="@id/navigation_equipment_management" />
     </fragment>
+
+    <fragment
+        android:id="@+id/navigation_status"
+        android:name="com.v3.basis.blas.ui.terminal.status.StatusFragment"
+        android:label="@string/navi_title_terminal_status"
+        tools:layout="@layout/fragment_equipment_management"/>
 </navigation>

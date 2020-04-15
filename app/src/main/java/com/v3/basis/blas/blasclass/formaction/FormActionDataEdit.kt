@@ -77,8 +77,10 @@ class FormActionDataEdit(setToken: String, setActivity: FragmentActivity):FormAc
         var valueId = selectedValueId
         if(selectedValueId == -1){
             val checkValue = value?.split(",")
-            if(checkValue!!.contains(formPart.text)){
-                valueId = radioCount
+            if(checkValue != null) {
+                if (checkValue.contains(formPart.text)) {
+                    valueId = radioCount
+                }
             }
         }
         return valueId
@@ -95,8 +97,10 @@ class FormActionDataEdit(setToken: String, setActivity: FragmentActivity):FormAc
 
     fun setDefaultValueCheck(value: String?,formPart: CheckBox){
         val checkValue = value?.split(",")
-        if(checkValue!!.contains(formPart.text)){
-            formPart.setChecked(true)
+        if(checkValue != null) {
+            if (checkValue.contains(formPart.text)) {
+                formPart.setChecked(true)
+            }
         }
     }
 

@@ -44,6 +44,7 @@ open class BlasRestItem(val crud:String = "search",
             "search"->{
                 method = "GET"
                 blasUrl = BlasRest.URL + "items/search/"
+                cacheFileName = context.filesDir.toString() + "/item_" + payload["project_id"] + ".json"
             }
             "create"->{
                 method = "POST"
@@ -64,7 +65,7 @@ open class BlasRestItem(val crud:String = "search",
             Log.d("konishi", blasUrl)
 
             response = super.getResponseData(payload,method, blasUrl)
-
+            super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)

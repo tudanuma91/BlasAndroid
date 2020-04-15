@@ -38,9 +38,9 @@ import com.v3.basis.blas.ui.fixture.fixture_takeout.FixtureTakeOutFragment
 import org.json.JSONObject
 
 class FixtureActivity : AppCompatActivity() {
-    private var messageText:TextView? = null
+    private lateinit var messageText:TextView
     private var oldResult:String? =null
-    private var vibrator:Vibrator? = null
+    private lateinit var vibrator:Vibrator
     private var vibrationEffect = VibrationEffect.createOneShot(300,
         VibrationEffect.DEFAULT_AMPLITUDE
     )
@@ -127,11 +127,12 @@ class FixtureActivity : AppCompatActivity() {
                 if(result.toString() != oldResult) {
                     if (result != null) {
                         //初期化と変数宣言
-                        messageText = null
                         messageText = message_text
 
                         //読み取りを伝えるバイブレーション
-                        vibrator = fragm!!.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                        if(fragm != null){
+                            vibrator = fragm.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                        }
 
                         //Thread.sleep(500)
                         Log.d("QRCode", "処理実行！！")
@@ -179,11 +180,11 @@ class FixtureActivity : AppCompatActivity() {
      */
     fun success(result: JSONObject){
         vibrationEffect = VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
-        vibrator!!.vibrate(vibrationEffect)
+        vibrator.vibrate(vibrationEffect)
         tone.startTone(ToneGenerator.TONE_DTMF_S,200)
         Log.d("OK","作成完了")
-        messageText!!.setTextColor(Color.GREEN)
-        messageText!!.text = "QRコードを読み取りました"
+        messageText.setTextColor(Color.GREEN)
+        messageText.text = "QRコードを読み取りました"
     }
 
     /**
@@ -191,12 +192,12 @@ class FixtureActivity : AppCompatActivity() {
      */
     fun error(errorCode: Int, aplCode :Int){
         vibrationEffect = VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
-        vibrator!!.vibrate(vibrationEffect)
+        vibrator.vibrate(vibrationEffect)
         tone.startTone(ToneGenerator.TONE_CDMA_ONE_MIN_BEEP,200)
         Log.d("NG","作成失敗")
         Log.d("errorCorde","${errorCode}")
-        messageText!!.setTextColor(Color.RED)
-        messageText!!.text = "すでに登録済のQRコードです"
+        messageText.setTextColor(Color.RED)
+        messageText.text = "すでに登録済のQRコードです"
     }
 
 }
