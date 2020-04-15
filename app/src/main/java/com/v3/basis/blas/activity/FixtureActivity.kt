@@ -12,13 +12,16 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.util.Log
 import android.view.MenuItem
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
+import androidx.core.view.get
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.NavigationUI.setupWithNavController
 import com.v3.basis.blas.R
 import kotlinx.android.synthetic.main.activity_fixture.*
@@ -83,9 +86,14 @@ class FixtureActivity : AppCompatActivity() {
         when (item.itemId) {
             android.R.id.home -> {
 
-                if (!navController.popBackStack()) {
+                if (navController.currentDestination?.id == R.id.navi_fixture_view) {
                     this.finish()
                     return true
+                } else {
+                    //  ルート以外の画面なら、ルート画面に遷移させる！
+                    val menu = PopupMenu(this, null).menu
+                    menuInflater.inflate(R.menu.bottom_navigation_menu_fixture, menu)
+                    NavigationUI.onNavDestinationSelected(menu.get(0), navController)
                 }
             }
             else -> return super.onOptionsItemSelected(item)

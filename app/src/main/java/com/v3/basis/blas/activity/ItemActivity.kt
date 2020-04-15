@@ -1,25 +1,19 @@
 package com.v3.basis.blas.activity
 
-import android.app.Activity
-import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
-import android.widget.*
+import android.widget.PopupMenu
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.get
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.NavigationUI.setupWithNavController
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.v3.basis.blas.R
-import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.ui.ext.showBackKeyForActionBar
-
 import kotlinx.android.synthetic.main.activity_item.*
-import com.v3.basis.blas.blasclass.formaction.FormActionDataBasic
 
 
 class ItemActivity : AppCompatActivity() {
@@ -66,9 +60,14 @@ class ItemActivity : AppCompatActivity() {
         when (item.itemId) {
             android.R.id.home -> {
 
-                if (!navController.navigateUp()) {
+                if (navController.currentDestination?.id == R.id.navi_item_view) {
                     this.finish()
                     return true
+                } else {
+                    //  ルート以外の画面なら、ルート画面に遷移させる！
+                    val menu = PopupMenu(this, null).menu
+                    menuInflater.inflate(R.menu.bottom_navigation_menu_item, menu)
+                    NavigationUI.onNavDestinationSelected(menu.get(0), navController)
                 }
             }
             else -> return super.onOptionsItemSelected(item)
