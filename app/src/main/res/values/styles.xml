@@ -1,7 +1,9 @@
 <resources>
 
     <!-- Base application theme. -->
-   <style name="AppTheme" parent="Theme.AppCompat.Light">
+   <!--こちらのstyleはバッジ運用が楽。さらにいい感じのデザインになる。
+   <style name="AppTheme" parent="Theme.MaterialComponents.Light">-->
+    <style name="AppTheme" parent="Theme.AppCompat.Light">
        <item name="colorPrimary">@color/colorMain</item>
        <item name="colorPrimaryDark">@color/colorText</item>
        <item name="colorAccent">@color/colorAccent</item>[

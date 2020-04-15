@@ -43,6 +43,15 @@ class TerminalFragment : Fragment() {
             true
         }
 
+       /*
+       バッジを表示する処理。values/stylesの変更をしたらできる。
+       view.nav_view.menu.getItem(4).itemId.let {
+            view.nav_view.getOrCreateBadge(it).apply {
+                number = 10
+            }
+
+        }*/
+
         return view
     }
 

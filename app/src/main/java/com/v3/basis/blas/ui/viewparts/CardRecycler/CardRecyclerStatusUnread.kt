@@ -10,11 +10,13 @@ import com.v3.basis.blas.ui.terminal.status.UnRead.UnReadViewAdapter
 open class CardRecyclerStatusUnread(act:FragmentActivity?,
                                     reView:RecyclerView,
                                     adapter: UnReadViewAdapter,
-                                    cursor: Cursor):CardRecycler(act,reView) {
+                                    cursor: Cursor,
+                                    projectMap:MutableMap<String,String>):CardRecycler(act,reView) {
 
     private val adapter = adapter
     private val cursor:Cursor = cursor
     private val dataList = mutableListOf<UnReadRowModel>()
+    private val projectMap = projectMap
 
     override fun createRecyclerView(): RecyclerView {
         val recycle = super.createRecyclerView()
@@ -24,8 +26,9 @@ open class CardRecyclerStatusUnread(act:FragmentActivity?,
 
     open fun createStatusList(): MutableList<UnReadRowModel> {
         Log.d("デバック用","${cursor}")
-        while (cursor.moveToNext()){val idxNote = cursor.getColumnIndex("id")
-            val text = createText()
+        while (cursor.moveToNext()){
+            val idxNote = cursor.getColumnIndex("id")
+            val text = createStatusText(cursor,projectMap)
             val data: UnReadRowModel =
                 UnReadRowModel().also {
                     it.title =  cursor.getString(idxNote)
@@ -37,16 +40,5 @@ open class CardRecyclerStatusUnread(act:FragmentActivity?,
         return dataList
     }
 
-    private fun createText(): String {
-        val updateNote = cursor.getColumnIndex("update_date")
-        val funcNameNote = cursor.getColumnIndex("func_name")
-        var value = ""
-        value += "日時："
-        value += "${cursor.getString(updateNote)}\n"
-        value += "操作："
-        value += "${cursor.getString(funcNameNote)}\n"
 
-
-        return value
-    }
 }

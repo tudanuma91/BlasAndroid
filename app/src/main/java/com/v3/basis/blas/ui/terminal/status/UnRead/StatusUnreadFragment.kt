@@ -14,9 +14,13 @@ import androidx.recyclerview.widget.RecyclerView
 
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase
+import com.v3.basis.blas.blasclass.helper.RestHelper
+import com.v3.basis.blas.blasclass.rest.BlasRestProject
+import com.v3.basis.blas.ui.ext.getStringExtra
 import com.v3.basis.blas.ui.terminal.status.StatusFragment
 import com.v3.basis.blas.ui.viewparts.CardRecycler.CardRecyclerStatusUnread
 import kotlinx.android.synthetic.main.list_status_unread.*
+import org.json.JSONObject
 
 /**
  * A simple [Fragment] subclass.
@@ -24,6 +28,7 @@ import kotlinx.android.synthetic.main.list_status_unread.*
 class StatusUnreadFragment : Fragment() {
 
     private val db = BlasSQLDataBase()
+    private var token: String? = null
     private lateinit var root :View
     private val dataList = mutableListOf<UnReadRowModel>()
     private lateinit var  cursor :Cursor
@@ -64,24 +69,48 @@ class StatusUnreadFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         root = inflater.inflate(R.layout.fragment_status_unread, container, false)
-
         //DBから値を取得
         cursor = db.getRecordUnRead()
+        //トークンの値をセット
+        if(getStringExtra("token") != null){
+            token = getStringExtra("token")
+        }
+       /* while (cursor.moveToNext()) {
+            cursor.columnNames.forEach {
+                val idxNote = cursor.getColumnIndex(it)
+                Log.d("デバック用ログ", "カラム名=>${it}/値=>${cursor.getString(idxNote)}")
+            }
+        }*/
+        //プロジェクト取得
+        val payload = mapOf("token" to token)
+        BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
+        return root
+    }
+
+
+    private fun projectSearchSuccess(result: JSONObject){
+        //jsonからプロジェクト名を取得
+        val newMap = RestHelper().createProjectList(result)
+        val projectMap:MutableMap<String,String> = mutableMapOf()
+        newMap.forEach{
+            projectMap.set(key = it.value["project_id"].toString(),value = it.value["project_name"].toString())
+        }
 
         //cardの準備
         val protoRecyclerView = root.findViewById<RecyclerView>(R.id.unread_recyclerView)
-        partRecyclerUnread = CardRecyclerStatusUnread(activity, protoRecyclerView, adapterUnRead, cursor)
+        partRecyclerUnread = CardRecyclerStatusUnread(activity, protoRecyclerView, adapterUnRead, cursor,projectMap)
         recyclerView =partRecyclerUnread.createRecyclerView()
+
+
         //データの作成およびモデルへのデータ格納・反映
         dataList.addAll(partRecyclerUnread.createStatusList())
         adapterUnRead.notifyItemInserted(0)
 
-
-        return root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+
+    private fun projectSearchError(errorCord:Int,aplCode:Int){
+
     }
 
 }
