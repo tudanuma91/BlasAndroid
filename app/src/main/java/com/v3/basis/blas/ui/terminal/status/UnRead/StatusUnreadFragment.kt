@@ -9,18 +9,16 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestProject
 import com.v3.basis.blas.ui.ext.getStringExtra
-import com.v3.basis.blas.ui.terminal.status.StatusFragment
 import com.v3.basis.blas.ui.viewparts.CardRecycler.CardRecyclerStatusUnread
-import kotlinx.android.synthetic.main.list_status_unread.*
 import org.json.JSONObject
+
+
 
 /**
  * A simple [Fragment] subclass.
@@ -48,6 +46,8 @@ class StatusUnreadFragment : Fragment() {
                     .setMessage("既読処理が完了しました。")
                     .setPositiveButton("YES") { dialog, which ->
                         //TODO YESを押したときの処理
+                        recyclerUpdate()
+
                     }
                     .show()
             }else{
@@ -109,8 +109,22 @@ class StatusUnreadFragment : Fragment() {
     }
 
 
+    fun recyclerUpdate(){
+        dataList.clear()
+        cursor = db.getRecordUnRead()
+        val payload = mapOf("token" to token)
+        BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
+        adapterUnRead.notifyDataSetChanged()
+    }
+
+
     private fun projectSearchError(errorCord:Int,aplCode:Int){
 
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        Log.d("処理しなおし","ここ通ったよ")
     }
 
 }
