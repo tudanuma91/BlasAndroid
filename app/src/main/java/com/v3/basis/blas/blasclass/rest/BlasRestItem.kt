@@ -44,6 +44,7 @@ open class BlasRestItem(val crud:String = "search",
             "search"->{
                 method = "GET"
                 blasUrl = BlasRest.URL + "items/search/"
+                cacheFileName = context.filesDir.toString() + "/item_" + payload["project_id"] + ".json"
             }
             "create"->{
                 method = "POST"

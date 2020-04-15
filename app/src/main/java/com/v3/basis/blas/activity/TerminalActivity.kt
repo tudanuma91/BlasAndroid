@@ -39,9 +39,10 @@ class TerminalActivity : AppCompatActivity() {
             transaction.commit()
             val thr = QueueController
             thr.start()
+            // 位置情報のパーミッションを要求
+            checkPermission()
         }
-        // 位置情報のパーミッションを要求
-        checkPermission()
+
     }
 
     fun replaceFragment(fragment: Fragment) {
