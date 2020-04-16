@@ -8,26 +8,111 @@
     <fragment
         android:id="@+id/navi_fixture_view"
         android:name="com.v3.basis.blas.ui.fixture.fixture_view.FixtureViewFragment"
-        android:label="@string/navi_title_fixture_view"/>
+        android:label="@string/navi_title_fixture_view">
+        <action
+            android:id="@+id/action_navi_fixture_view_to_navi_fixture_kenpin"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_kenpin" />
+        <action
+            android:id="@+id/action_navi_fixture_view_to_navi_fixture_motidasi"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_motidasi" />
+        <action
+            android:id="@+id/action_navi_fixture_view_to_navi_fixture_return"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_return" />
+        <action
+            android:id="@+id/action_navi_fixture_view_to_navi_fixture_search"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_search" />
+    </fragment>
 
     <fragment
         android:id="@+id/navi_fixture_kenpin"
         android:name="com.v3.basis.blas.ui.fixture.fixture_kenpin.FixtureKenpinFragment"
-        android:label="@string/navi_title_fixture_kenpin"/>
+        android:label="@string/navi_title_fixture_kenpin">
+        <action
+            android:id="@+id/action_navi_fixture_kenpin_to_navi_fixture_view"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_view" />
+        <action
+            android:id="@+id/action_navi_fixture_kenpin_to_navi_fixture_motidasi"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_motidasi" />
+        <action
+            android:id="@+id/action_navi_fixture_kenpin_to_navi_fixture_return"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_return" />
+        <action
+            android:id="@+id/action_navi_fixture_kenpin_to_navi_fixture_search"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_search" />
+    </fragment>
 
     <fragment
         android:id="@+id/navi_fixture_motidasi"
         android:name="com.v3.basis.blas.ui.fixture.fixture_takeout.FixtureTakeOutFragment"
-        android:label="@string/navi_title_fixture_motidasi"/>
+        android:label="@string/navi_title_fixture_motidasi">
+        <action
+            android:id="@+id/action_navi_fixture_motidasi_to_navi_fixture_view"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_view" />
+        <action
+            android:id="@+id/action_navi_fixture_motidasi_to_navi_fixture_kenpin"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_kenpin" />
+        <action
+            android:id="@+id/action_navi_fixture_motidasi_to_navi_fixture_return"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_return" />
+        <action
+            android:id="@+id/action_navi_fixture_motidasi_to_navi_fixture_search"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_search" />
+    </fragment>
 
     <fragment
         android:id="@+id/navi_fixture_return"
         android:name="com.v3.basis.blas.ui.fixture.fixture_return.FixtureReturnFragment"
-        android:label="@string/navi_title_fixture_return"/>
+        android:label="@string/navi_title_fixture_return">
+        <action
+            android:id="@+id/action_navi_fixture_return_to_navi_fixture_view"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_view" />
+        <action
+            android:id="@+id/action_navi_fixture_return_to_navi_fixture_kenpin"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_kenpin" />
+        <action
+            android:id="@+id/action_navi_fixture_return_to_navi_fixture_motidasi"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_motidasi" />
+        <action
+            android:id="@+id/action_navi_fixture_return_to_navi_fixture_search"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_search" />
+    </fragment>
 
     <fragment
         android:id="@+id/navi_fixture_search"
         android:name="com.v3.basis.blas.ui.fixture.fixture_search.FixtureSearchFragment"
-        android:label="@string/navi_title_fixture_search"/>
+        android:label="@string/navi_title_fixture_search">
+        <action
+            android:id="@+id/action_navi_fixture_search_to_navi_fixture_view"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_view" />
+        <action
+            android:id="@+id/action_navi_fixture_search_to_navi_fixture_kenpin"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_kenpin" />
+        <action
+            android:id="@+id/action_navi_fixture_search_to_navi_fixture_motidasi"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_motidasi" />
+        <action
+            android:id="@+id/action_navi_fixture_search_to_navi_fixture_return"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_fixture_return" />
+    </fragment>
 
 </navigation>

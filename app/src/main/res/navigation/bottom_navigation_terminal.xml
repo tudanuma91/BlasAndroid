@@ -9,24 +9,76 @@
         android:id="@+id/navigation_dashboard"
         android:name="com.v3.basis.blas.ui.terminal.dashboards.DashboardsFragment"
         android:label="@string/navi_title_terminal_dashboard"
-        tools:layout="@layout/fragment_dashboards" />
+        tools:layout="@layout/fragment_dashboards" >
+        <action
+            android:id="@+id/action_navigation_dashboard_to_navigation_data_management"
+            app:launchSingleTop="true"
+            app:destination="@id/navigation_data_management" />
+        <action
+            android:id="@+id/action_navigation_dashboard_to_navigation_equipment_management"
+            app:launchSingleTop="true"
+            app:destination="@id/navigation_equipment_management" />
+        <action
+            android:id="@+id/action_navigation_dashboard_to_navigation_logout"
+            app:launchSingleTop="true"
+            app:destination="@id/navigation_logout" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_data_management"
         android:name="com.v3.basis.blas.ui.terminal.project.ProjectFragment"
         android:label="@string/navi_title_terminal_item"
-        tools:layout="@layout/navi_title_terminal_dashboard" />
+        tools:layout="@layout/navi_title_terminal_dashboard" >
+        <action
+            android:id="@+id/action_navigation_data_management_to_navigation_dashboard"
+            app:launchSingleTop="true"
+            app:destination="@id/navigation_dashboard" />
+        <action
+            android:id="@+id/action_navigation_data_management_to_navigation_equipment_management"
+            app:launchSingleTop="true"
+            app:destination="@id/navigation_equipment_management" />
+        <action
+            android:id="@+id/action_navigation_data_management_to_navigation_logout"
+            app:launchSingleTop="true"
+            app:destination="@id/navigation_logout" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_equipment_management"
         android:name="com.v3.basis.blas.ui.terminal.fixture.FixtureFragment"
         android:label="@string/navi_title_terminal_fixture"
-        tools:layout="@layout/fragment_equipment_management" />
+        tools:layout="@layout/fragment_equipment_management" >
+        <action
+            android:id="@+id/action_navigation_equipment_management_to_navigation_dashboard"
+            app:launchSingleTop="true"
+            app:destination="@id/navigation_dashboard" />
+        <action
+            android:id="@+id/action_navigation_equipment_management_to_navigation_data_management"
+            app:launchSingleTop="true"
+            app:destination="@id/navigation_data_management" />
+        <action
+            android:id="@+id/action_navigation_equipment_management_to_navigation_logout"
+            app:launchSingleTop="true"
+            app:destination="@id/navigation_logout" />
+    </fragment>
     <fragment
         android:id="@+id/navigation_logout"
         android:name="com.v3.basis.blas.ui.logout.LogoutFragment"
         android:label="@string/navi_title_terminal_logout"
-        tools:layout="@layout/fragment_equipment_management"/>
+        tools:layout="@layout/fragment_equipment_management">
+        <action
+            android:id="@+id/action_navigation_logout_to_navigation_dashboard"
+            app:launchSingleTop="true"
+            app:destination="@id/navigation_dashboard" />
+        <action
+            android:id="@+id/action_navigation_logout_to_navigation_data_management"
+            app:launchSingleTop="true"
+            app:destination="@id/navigation_data_management" />
+        <action
+            android:id="@+id/action_navigation_logout_to_navigation_equipment_management"
+            app:launchSingleTop="true"
+            app:destination="@id/navigation_equipment_management" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_status"

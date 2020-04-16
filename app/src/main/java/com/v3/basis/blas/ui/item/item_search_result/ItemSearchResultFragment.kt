@@ -3,12 +3,11 @@ package com.v3.basis.blas.ui.item.item_search_result
 
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
-import android.view.SearchEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.searchAndroid
@@ -16,8 +15,6 @@ import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.ext.getStringExtra
-import com.v3.basis.blas.ui.item.item_search_result.RowModel
-import com.v3.basis.blas.ui.item.item_search_result.ViewAdapter
 import kotlinx.android.synthetic.main.fragment_item_search_result.*
 import org.json.JSONObject
 
