@@ -17,7 +17,6 @@ import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.ext.getStringExtra
-import kotlinx.android.synthetic.main.fragment_item_view.*
 import kotlinx.android.synthetic.main.fragment_item_view.recyclerView
 import org.json.JSONObject
 
@@ -37,6 +36,10 @@ class ItemViewFragment : Fragment() {
     private var currentIndex: Int = 0
     companion object {
         const val CREATE_UNIT = 20
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
     }
 
 
@@ -86,7 +89,7 @@ class ItemViewFragment : Fragment() {
         //基本的にデータはまだ到着していないため、空のアクティビティとadapterだけ設定しておく
         val recyclerView = recyclerView
         recyclerView.setHasFixedSize(true)
-        recyclerView.layoutManager = LinearLayoutManager(activity)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
 
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {

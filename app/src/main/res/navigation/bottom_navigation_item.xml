@@ -9,17 +9,54 @@
         android:id="@+id/navi_item_view"
         android:name="com.v3.basis.blas.ui.item.item_view.ItemViewFragment"
         android:label="@string/navi_title_item_view">
+        <action
+            android:id="@+id/action_navi_item_view_to_terminal"
+            app:launchSingleTop="true"
+            app:destination="@id/terminal" />
+        <action
+            android:id="@+id/action_navi_item_view_to_navi_item_create"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_item_create" />
+        <action
+            android:id="@+id/action_navi_item_view_to_navi_item_seach"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_item_seach" />
     </fragment>
 
     <fragment
         android:id="@+id/navi_item_create"
         android:name="com.v3.basis.blas.ui.item.item_create.ItemCreateFragment"
-        android:label="@string/navi_title_item_create"/>
+        android:label="@string/navi_title_item_create">
+        <action
+            android:id="@+id/action_navi_item_create_to_navi_item_view"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_item_view" />
+        <action
+            android:id="@+id/action_navi_item_create_to_navi_item_seach"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_item_seach" />
+        <action
+            android:id="@+id/action_navi_item_create_to_terminal"
+            app:launchSingleTop="true"
+            app:destination="@id/terminal" />
+    </fragment>
 
     <fragment
         android:id="@+id/navi_item_seach"
         android:name="com.v3.basis.blas.ui.item.item_search.ItemSearchFragment"
         android:label="@string/navi_title_item_search">
+        <action
+            android:id="@+id/action_navi_item_seach_to_navi_item_view"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_item_view" />
+        <action
+            android:id="@+id/action_navi_item_seach_to_navi_item_create"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_item_create" />
+        <action
+            android:id="@+id/action_navi_item_seach_to_terminal"
+            app:launchSingleTop="true"
+            app:destination="@id/terminal" />
     </fragment>
 
     <!--<fragment
@@ -31,6 +68,19 @@
     <fragment
         android:id="@+id/terminal"
         android:name="com.v3.basis.blas.ui.terminal.dashboards.DashboardsFragment"
-        />
+        >
+        <action
+            android:id="@+id/action_terminal_to_navi_item_view"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_item_view" />
+        <action
+            android:id="@+id/action_terminal_to_navi_item_create"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_item_create" />
+        <action
+            android:id="@+id/action_terminal_to_navi_item_seach"
+            app:launchSingleTop="true"
+            app:destination="@id/navi_item_seach" />
+    </fragment>
 
 </navigation>
