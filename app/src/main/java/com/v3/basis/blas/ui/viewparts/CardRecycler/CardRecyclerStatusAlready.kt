@@ -10,10 +10,12 @@ import com.v3.basis.blas.ui.terminal.status.UnRead.AlreadyViewAdapter
 open class CardRecyclerStatusAlready(act: FragmentActivity?,
                                      reView: RecyclerView,
                                      adapter: AlreadyViewAdapter,
-                                     cursor: Cursor):CardRecycler(act,reView){
+                                     cursor: Cursor,
+                                     projectMap:MutableMap<String,String>):CardRecycler(act,reView){
     private val adapter = adapter
     private val cursor = cursor
     private val dataList = mutableListOf<AlreadyRowModel>()
+    private val projectMap = projectMap
 
     override fun createRecyclerView(): RecyclerView {
         val recycle = super.createRecyclerView()
@@ -24,7 +26,7 @@ open class CardRecyclerStatusAlready(act: FragmentActivity?,
     open fun createStatusList(): MutableList<AlreadyRowModel> {
         Log.d("デバック用","${cursor}")
         while (cursor.moveToNext()){val idxNote = cursor.getColumnIndex("id")
-            val text = createText()
+            val text = createStatusText(cursor,projectMap)
             val data: AlreadyRowModel =
                 AlreadyRowModel().also {
                     it.title =  cursor.getString(idxNote)
@@ -33,19 +35,6 @@ open class CardRecyclerStatusAlready(act: FragmentActivity?,
             dataList.add(data)
         }
         return dataList
-    }
-
-    private fun createText(): String {
-        val updateNote = cursor.getColumnIndex("update_date")
-        val funcNameNote = cursor.getColumnIndex("func_name")
-        var value = ""
-        value += "日時："
-        value += "${cursor.getString(updateNote)}\n"
-        value += "操作："
-        value += "${cursor.getString(funcNameNote)}\n"
-
-
-        return value
     }
 
 }

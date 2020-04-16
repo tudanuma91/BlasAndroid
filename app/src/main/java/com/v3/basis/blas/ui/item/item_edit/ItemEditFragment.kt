@@ -105,9 +105,10 @@ class ItemEditFragment : Fragment() {
 
         //レイアウトの設置位置の設定
         val payload = mapOf("token" to token, "project_id" to projectId)
-        //item_idでの取得ができない？
+        val payloadItem = mapOf("token" to token, "project_id" to projectId )
+        //item_idでの取得ができない!!
         BlasRestField(payload, ::getSuccess, ::getFail).execute()
-        BlasRestItem("search", payload, ::itemRecv, ::itemRecvError).execute()
+        BlasRestItem("search", payloadItem, ::itemRecv, ::itemRecvError).execute()
     }
 
     /**

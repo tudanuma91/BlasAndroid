@@ -14,11 +14,11 @@ open class CardRecyclerDashboard (act: FragmentActivity?,
     private val adapter = adapter
     private val dataList = mutableListOf<RowModel>()
 
-    override fun createRecyclerView(): RecyclerView {
-        val recycle = super.createRecyclerView()
-        recycle.adapter = adapter
-        return recycle
-    }
+    //override fun createRecyclerView(): RecyclerView {
+        //val recycle = super.createRecyclerView()
+        //recycle.adapter = adapter
+        //return recycle
+    //}
 
 
     fun createDataList(from: MutableMap<String,MutableMap<String, String?>>,token:String): MutableList<RowModel> {

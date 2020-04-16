@@ -2,12 +2,16 @@ package com.v3.basis.blas.blasclass.db
 
 import android.database.Cursor
 import com.v3.basis.blas.blasclass.app.BlasApp
+import android.content.ContentValues
+import java.lang.Exception
+
 
 /**
  * データベース操作を行うクラス
  */
 class BlasSQLDataBase {
 
+    val db = dbHelper.writableDatabase
 
     companion object {
         //TODO:データベースのバージョン
@@ -25,17 +29,26 @@ class BlasSQLDataBase {
     }
 
     fun getRecordUnRead(): Cursor {
-        val db = dbHelper.writableDatabase
         val sql = "SELECT * FROM NoticeTable WHERE read_status = '0'"
         val value = db.rawQuery(sql,null)
         return value
     }
 
     fun getRecordAlreadyRead(): Cursor {
-        val db = dbHelper.writableDatabase
         val sql = "SELECT * FROM NoticeTable WHERE read_status = '1'"
         val value = db.rawQuery(sql,null)
         return value
+    }
+
+    fun upDateStatus(dbId:String): Boolean {
+        try {
+            val values = ContentValues()
+            values.put("read_status", 1)
+            db.update("NoticeTable", values, "id = '${dbId}' ", null)
+            return true
+        }catch (e : Exception){
+            return false
+        }
     }
 
 
