@@ -27,6 +27,7 @@ open class BlasRestFixture(val crud:String = "search",
         cacheFileName = context.filesDir.toString() + "/fixture_" + payload["project_id"] + ".json"
     }
     var method = "GET"
+    var aplCode:Int = 0
 
     /**
      * プロジェクトに設定されているフィールドの情報取得要求を行う
@@ -93,9 +94,7 @@ open class BlasRestFixture(val crud:String = "search",
 
             if ((method == "POST") or (method == "PUT")){
                 super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
-                val json = JSONObject(response)
-                json.put("aplCode", BlasDef.APL_QUEUE_SAVE)
-                response = json.toString()
+                aplCode = BlasDef.APL_QUEUE_SAVE
             }
 
         }
@@ -112,7 +111,7 @@ open class BlasRestFixture(val crud:String = "search",
      */
     override fun onPostExecute(result: String?) {
         if(result == null) {
-            funcError(BlasRestErrCode.NETWORK_ERROR, APL_OK)
+            funcError(BlasRestErrCode.NETWORK_ERROR, aplCode)
             return
         }
 
@@ -120,11 +119,6 @@ open class BlasRestFixture(val crud:String = "search",
         val json = JSONObject(result)
         // val rtn:RestfulRtn = cakeToAndroid(result, TABLE_NAME)
         val errorCode = json.getInt("error_code")
-        var aplCode:Int = 0
-
-        if (json.has("aplCode")){
-            aplCode = json.getInt("aplCode")
-        }
 
         if(method == "GET" && errorCode == 0) {
 

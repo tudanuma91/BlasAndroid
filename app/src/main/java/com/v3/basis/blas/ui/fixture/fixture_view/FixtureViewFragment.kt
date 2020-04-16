@@ -22,6 +22,7 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusFinishInst
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusNotTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
+import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.ui.ext.getStringExtra
 import com.v3.basis.blas.ui.item.item_view.ItemViewFragment
 import org.json.JSONObject
@@ -202,10 +203,24 @@ class FixtureViewFragment : Fragment() {
      * フィールド取得失敗時
      */
     private fun fixtureGetError(errorCode: Int, aplCode:Int) {
-        Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
+
+        var message:String? = null
+        when(errorCode) {
+            BlasRestErrCode.NETWORK_ERROR -> {
+                //サーバと通信できません
+                message = getString(R.string.network_error)
+            }
+            else-> {
+                //サーバでエラーが発生しました(要因コード)
+                message = getString(R.string.server_error, errorCode)
+            }
+        }
+
+        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+
         //エラーのため、データを初期化する
         valueMap.clear()
-        Log.d("取得失敗","取得失敗")
+
         Log.d("取得失敗","${errorCode}")
         progressBarItemView.visibility = View.INVISIBLE
     }

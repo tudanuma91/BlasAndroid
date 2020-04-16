@@ -42,23 +42,13 @@ class ProjectFragment : Fragment() {
 
     }
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         /*プロジェクトの取得*/
         var payload = mapOf("token" to token)
         BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
 
-        /* テスト用 */
-        // var payload2 = mapOf("token" to token, "project_id" to 1.toString())
-        //BlasRestField(payload2, ::fieldS, ::fieldE).execute()
-
     }
-
-    private fun fieldE(errorCode: Int) {
-        Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
-    }
-
 
     /**
      * マップ形式からリスト形式に変換する
