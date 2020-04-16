@@ -77,8 +77,12 @@ class RestHelper {
             val jsonField = JSONObject(itemList[i].toString())
             val item = jsonField.getJSONObject("Item")
             valueMap.set(key = "item_id",value = item["item_id"].toString() )
-            for(j in 1 ..colMax ){
-                valueMap.set(key = "fld${j}",value = item["fld${j}"].toString())
+            for(j in 1 ..colMax ) {
+                val value = item["fld${j}"].toString()
+                //Nullの時true。それ以外でfalseが入る
+                val chk = item.isNull("fld${j}")
+                val inputValue = if(chk) "" else value
+                valueMap.set(key = "fld${j}", value = inputValue)
             }
             rtnMap.add(i,valueMap)
         }
@@ -116,7 +120,6 @@ class RestHelper {
      */
     fun createDefaultValueList(resultMap:MutableMap<String,JSONObject>,colMax:Int,item_id:String?): MutableList<MutableMap<String, String?>> {
         val result = resultMap["1"]
-        Log.d("確認用のログ","${result}")
         val rtnMap :MutableList<MutableMap<String, String?>> = mutableListOf()
         val itemList = result!!.getJSONArray("records")
 
@@ -125,11 +128,14 @@ class RestHelper {
             val valueMap : MutableMap<String,String?> = mutableMapOf()
             val jsonField = JSONObject(itemList[i].toString())
             val item = jsonField.getJSONObject("Item")
-            Log.d("確認用のログ","中身=>${item["item_id"]}")
             if(item["item_id"] == item_id.toString()){
                 valueMap.set(key = "item_id",value = item["item_id"].toString() )
                 for(j in 1 ..colMax ){
-                    valueMap.set(key = "fld${j}",value = item["fld${j}"].toString())
+                    val value = item["fld${j}"].toString()
+                    //Nullの時true。それ以外でfalseが入る
+                    val chk = item.isNull("fld${j}")
+                    val inputValue = if(chk) "" else value
+                    valueMap.set(key = "fld${j}", value = inputValue)
                 }
                 rtnMap.add(0,valueMap)
                 break

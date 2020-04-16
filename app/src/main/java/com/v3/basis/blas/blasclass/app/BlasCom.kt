@@ -105,7 +105,7 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
      * @return result 検索結果
      */
     public fun searchAndroid(cond:MutableMap<String, String?>, search:MutableList<MutableMap<String, String?>>,dateTimeCol:String): MutableList<MutableMap<String, String?>> {
-        //TODO:検索窓に記号が入力されたときの処理が必要？
+        //TODO:検索窓に記号が入力されたときの処理を実装する
         //java.util.regex.PatternSyntaxException: Incorrectly nested parentheses in regexp pattern near index 1
         //多分だけど、"("は判定できないのかな？ちょっとテストする必要あり
         //エラー記号リスト
@@ -118,18 +118,13 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
         val removeIdList:MutableList<MutableList<Int>> = mutableListOf()
         if(dateTimeCol != "") {
             dateTimeColList.addAll(dateTimeCol.split(","))
-            Log.d("デバック用ログ","配列になるのかコレ${dateTimeColList}")
         }
 
-        cond.forEach{
-            Log.d("機器管理の検索項目","${it}")
-        }
 
         for ((condKey, condValue) in cond) {
             //検索条件がフリーワードかつ文字が入力されているとき
             val fld = Regex("fld")
             if(condKey =="freeWord" && condValue!=""){
-                Log.d("検索処理","分岐完了")
                 for (idx in 0 until result.size) {
                     var hitFlg = false
                     // 予想だけどfor文回しているときに配列操作するとsizeが違うってエラーあり。なので対策した
@@ -163,18 +158,15 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
                         }
                     }
                     if (dateFlg) {
-                        Log.d("データ管理の検索/日付・時間", "取得完了。項目名${condKey}:検索ワード${condValue}")
                         val dataRemoveIdList = itemSearchDateTimeManager(condKey,condValue,result)
                         removeIdList.add(dataRemoveIdList)
 
                     } else {
-                        Log.d("データ管理の検索", "取得完了。項目名${condKey}:検索ワード${condValue}")
                         val dataRemoveIdList = itemSearch(condKey, condValue, result)
                         removeIdList.add(dataRemoveIdList)
                     }
 
                 }else{
-                    Log.d("データ管理の検索", "取得完了。項目名${condKey}:検索ワード${condValue}")
                     val dataRemoveIdList = itemSearch(condKey, condValue, result)
                     removeIdList.add(dataRemoveIdList)
                 }
@@ -220,9 +212,6 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
                 result.removeAt(it.key)
             }
         }
-        result.forEach{
-            Log.d("検索結果","${it}")
-        }
         return result
     }
 
@@ -246,7 +235,6 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
         for (idx in 0 until search.size){
             if(!value.containsMatchIn(search[idx][condKey].toString())){
                 result.add(idx)
-                Log.d("検索結果","君削除ね")
             }
         }
 
@@ -272,15 +260,12 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
         val max = valueList[1]
         val minLength = min.length
         val maxLength = max.length
-        Log.d("デバック用のログ","最小値の値=>${min},${min.length}")
-        Log.d("デバック用のログ","最大値の値=>${max},${max.length}")
         if(minLength == 5 || maxLength == 5){
             //Time
             var searchValueMin:Date? =  null
             var searchValueMax:Date? =  null
             if(min != "Null"){
                 searchValueMin = searchWordCreateTime(min)
-                Log.d("デバック用のログ","${searchValueMin}")
                 result.addAll(itemSearchTime(searchValueMin,condKey,condValue,search,"Min"))
             }
             if(max != "Null"){
@@ -288,8 +273,6 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
                 Log.d("デバック用のログ","${searchValueMax}")
                 result.addAll(itemSearchTime(searchValueMax,condKey,condValue,search,"Max"))
             }
-            Log.d("デバック用のログ","最小値の値=>${searchValueMin}")
-            Log.d("デバック用のログ","最大値の値=>${searchValueMax}")
         }else{
             //Day
             var searchValueMin:LocalDate? =  null
@@ -306,8 +289,6 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
                 //検索処理
                 //result.addAll()
             }
-            Log.d("デバック用のログ","最小値の値=>${searchValueMin}")
-            Log.d("デバック用のログ","最大値の値=>${searchValueMax}")
         }
         return result
     }
@@ -343,24 +324,18 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
             "Min"->{
                 for (idx in 0 until search.size) {
                     try {
-                        Log.d("デバック用のログ","No${idx}")
-                        Log.d("デバック用のログ","検索する値=>${searchValue}")
                         val date = search[idx][condKey]
                         if(date != null){
                             val baseDate = searchWordCreateTime(date)
                             val resultValue = searchValue.after(baseDate)
-                            Log.d("デバック用のログ","登録されている値=>${search[idx][condKey]}")
-                            Log.d("デバック用のログ","結果=>${resultValue}")
                             if(resultValue){
                                 result.add(idx)
                             }
 
                         }else{
                             result.add(idx)
-                            Log.d("デバック用のログ","結果=>削除")
                         }
                     }catch (e:Exception){
-                        Log.d("デバック用のログ","結果=>削除")
                         result.add(idx)
                     }
                 }
@@ -369,24 +344,18 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
             "Max"->{
                 for (idx in 0 until search.size) {
                     try {
-                        Log.d("デバック用のログ","No${idx}")
-                        Log.d("デバック用のログ","検索する値=>${searchValue}")
                         val date = search[idx][condKey]
                         if(date != null){
                             val baseDate = searchWordCreateTime(date)
                             val resultValue = baseDate.after(searchValue)
-                            Log.d("デバック用のログ","登録されている値=>${search[idx][condKey]}")
-                            Log.d("デバック用のログ","結果=>${resultValue}")
                             if(resultValue){
                                 result.add(idx)
                             }
 
                         }else{
                             result.add(idx)
-                            Log.d("デバック用のログ","結果=>削除")
                         }
                     }catch (e:Exception){
-                        Log.d("デバック用のログ","結果=>削除")
                         result.add(idx)
                     }
                 }
@@ -417,25 +386,19 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
         when(type){
             "Min"->{
                 for (idx in 0 until search.size) {
-                    //Log.d("デバック用のログ", "配列の中身${search[idx][condKey]}")
                     try {
                         //検索用の値を取得
                         val date = searchWordCreate(search[idx][condKey]).toString()
                         if (date != "" && date != "null") {
                             val baseValue = searchWordCreate(date)
                             val resultValue = ChronoUnit.DAYS.between(searchValue, baseValue)
-                            Log.d("デバック用のログ","検索する値${searchValue}")
-                            Log.d("デバック用のログ","登録されている値${baseValue}")
-                            Log.d("デバック用のログ","検索結果${resultValue}")
                             if(resultValue<0){
                                 result.add(idx)
                             }
                         } else {
-                            Log.d("デバック用のログ","空だから削除")
                             result.add(idx)
                         }
                     } catch (e: Exception) {
-                        Log.d("デバック用のログ","空だから削除")
                         result.add(idx)
                     }
                 }
@@ -443,26 +406,19 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
             }
             "Max" ->{
                 for (idx in 0 until search.size) {
-                    Log.d("デバック用のログ", "配列の中身${search[idx][condKey]}")
                     try {
-                        Log.d("デバック用のログ","No${idx}")
                         //検索用の値を取得
                         val date = searchWordCreate(search[idx][condKey]).toString()
                         if (date != "" && date != "null") {
                             val baseValue = searchWordCreate(date)
                             val resultValue = ChronoUnit.DAYS.between(searchValue, baseValue)
-                            Log.d("デバック用のログ","検索する値${searchValue}")
-                            Log.d("デバック用のログ","登録されている値${baseValue}")
-                            Log.d("デバック用のログ","検索結果${resultValue}")
                             if(resultValue>0){
                                 result.add(idx)
                             }
                         } else {
-                            Log.d("デバック用のログ","空だから削除")
                             result.add(idx)
                         }
                     } catch (e: Exception) {
-                        Log.d("デバック用のログ","空だから削除")
                         result.add(idx)
                     }
                 }
@@ -490,8 +446,6 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
         val dayMin = Regex("DayMin")
         val dayMax = Regex("DayMax")
 
-        Log.d("condKey","${condKey}")
-        Log.d("condValue","${condValue}")
 
         if(condKey == "status") {
             //ステータス検索

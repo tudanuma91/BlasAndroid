@@ -65,7 +65,7 @@ open class BlasRestItem(val crud:String = "search",
             Log.d("konishi", blasUrl)
 
             response = super.getResponseData(payload,method, blasUrl)
-            super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
+           // super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)

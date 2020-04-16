@@ -59,7 +59,6 @@ class StatusAlreadyFragment : Fragment() {
         /* while (cursor.moveToNext()) {
              cursor.columnNames.forEach {
                  val idxNote = cursor.getColumnIndex(it)
-                 Log.d("デバック用ログ", "カラム名=>${it}/値=>${cursor.getString(idxNote)}")
              }
          }*/
 

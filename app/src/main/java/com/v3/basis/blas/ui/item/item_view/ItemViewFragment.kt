@@ -96,7 +96,7 @@ class ItemViewFragment : Fragment() {
                 if (itemListAll.isNotEmpty()) {
                     val notOverSize = currentIndex + CREATE_UNIT <= itemListAll.size
                     if (!recyclerView.canScrollVertically(1) && notOverSize) {
-                        chkProgress(true, rootView!!)
+                        chkProgress(true, rootView)
                         setAdapter()
                     }
                 }
@@ -140,8 +140,10 @@ class ItemViewFragment : Fragment() {
                     text = "${fieldMap[col]!!["field_name"]}"
                     text += "\n${it[fldName]}"
                 } else {
+                    Log.d("フィールドの値：","値=>${it[fldName]}")
                     text += "\n${fieldMap[col]!!["field_name"]}"
                     text += "\n${it[fldName]}"
+
                 }
                 loopcnt += 1
             }
