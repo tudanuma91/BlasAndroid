@@ -60,8 +60,8 @@ open class BlasRest() : AsyncTask<String, String, String>() {
 
         const val URL = BuildConfig.API_URL
         //const val URL = "http://192.168.0.104/blas7/api/v1/"
-        const val CONTEXT_TIME_OUT = 1000
-        const val READ_TIME_OUT = 1000
+        const val CONTEXT_TIME_OUT = 100000
+        const val READ_TIME_OUT = 100000
         var queuefuncList = mutableListOf<FuncList>()
         val context = BlasApp.applicationContext()
         var cacheFileName = ""
@@ -76,35 +76,9 @@ open class BlasRest() : AsyncTask<String, String, String>() {
     }
 
     override fun onPostExecute(result: String?) {
-        var json:JSONObject? = null
-        var errorCode:Int = 0
-        try {
-            json = JSONObject(result)
-            //エラーコード取得
-            errorCode = json.getInt("error_code")
-        }
-        catch (e: JSONException){
-            //JSONの展開に失敗
-            Toast.makeText(context, "データ取得失敗", Toast.LENGTH_LONG).show()
-            return
-        }
-
-        //正常時だけキャッシュに保存する
-        /* キャッシュ処理は子クラスにて行う
-        if(errorCode == 0) {
-            //正常のときだけキャッシュにjsonファイルを保存する
-            try {
-                if(result != null) {
-                    saveJson(cacheFileName, result)
-                }
-            }
-            catch(e: Exception) {
-                Toast.makeText(context, e.message, Toast.LENGTH_LONG).show()
-            }
-        }
-        */
 
     }
+
     /**
      * オブジェクトをJSON文字列に変換するメソッド
      * [引数]

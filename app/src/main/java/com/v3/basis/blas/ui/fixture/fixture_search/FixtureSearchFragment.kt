@@ -211,7 +211,6 @@ class FixtureSearchFragment : Fragment() {
      * タップ時の処理
      */
     private fun setDateTimeAction(kenpinDay:EditText){
-       // Toast.makeText(activity, "タップした", Toast.LENGTH_LONG).show()
         val dtp = DatePickerDialog(getContext()!!, DatePickerDialog.OnDateSetListener{ view, y, m, d ->
             Toast.makeText(activity, "日付を選択しました${y}/${m+1}/${d}", Toast.LENGTH_LONG).show()
             //フォーマットを作成

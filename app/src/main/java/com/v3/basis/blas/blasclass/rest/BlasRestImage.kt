@@ -4,6 +4,7 @@ import android.util.Log
 import android.widget.Toast
 import com.v3.basis.blas.blasclass.app.BlasDef
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_QUEUE_SAVE
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -26,6 +27,7 @@ open class BlasRestImage(val crud:String = "download",
         cacheFileName = context.filesDir.toString() +  "/image_" + payload["item_id"] + "_" + payload["project_image_id"] +".json"
     }
     var method = "GET"
+    var aplCode:Int = 0
 
     /**
      * プロジェクトに設定されているフィールドの情報取得要求を行う
@@ -34,12 +36,12 @@ open class BlasRestImage(val crud:String = "download",
     override fun doInBackground(vararg params: String?): String? {
         var response:String? = null
 
-        var blasUrl = BlasRest.URL + "images/download/"
+        var blasUrl = BlasRest.URL + "images/download230/"
 
         when(crud) {
             "download"->{
                 method = "GET"
-                blasUrl = BlasRest.URL + "images/download/"
+                blasUrl = BlasRest.URL + "images/download230/"
                 cacheFileName = context.filesDir.toString() +  "/image_" + payload["item_id"] + "_" + payload["project_image_id"] +".json"
             }
             "upload"->{
@@ -78,9 +80,7 @@ open class BlasRestImage(val crud:String = "download",
 
                 // 失敗した場合、キュー処理を呼び出す
                 super.reqDataSave(payload,"GET",blasUrl,funcSuccess,funcError,"Images")
-                val json = JSONObject(response)
-                json.put("aplCode", BlasDef.APL_QUEUE_SAVE)
-                response = json.toString()
+                aplCode = APL_QUEUE_SAVE
             }
         }
         return response
@@ -96,7 +96,7 @@ open class BlasRestImage(val crud:String = "download",
      */
     override fun onPostExecute(result: String?) {
         if(result == null) {
-            funcError(BlasRestErrCode.NETWORK_ERROR, APL_OK)
+            funcError(BlasRestErrCode.NETWORK_ERROR, aplCode)
             return
         }
 
@@ -106,20 +106,17 @@ open class BlasRestImage(val crud:String = "download",
         var json:JSONObject? = null
         var errorCode:Int
         var records: JSONArray? = null
-        var aplCode:Int = 0
+
 
         try {
             json = JSONObject(result)
             //エラーコード取得
             errorCode = json.getInt("error_code")
-            if (json.has("aplCode")){
-                aplCode = json.getInt("aplCode")
-            }
 
         } catch (e: JSONException){
             //JSONの展開に失敗
             Toast.makeText(context, "データ取得失敗", Toast.LENGTH_LONG).show()
-            funcError(BlasRestErrCode.JSON_PARSE_ERROR, APL_OK)
+            funcError(BlasRestErrCode.JSON_PARSE_ERROR, aplCode)
             return
         }
 
@@ -132,7 +129,7 @@ open class BlasRestImage(val crud:String = "download",
         }
 
         if(json == null) {
-            funcError(BlasRestErrCode.JSON_PARSE_ERROR, APL_OK)
+            funcError(BlasRestErrCode.JSON_PARSE_ERROR, aplCode)
         }
         else if(errorCode == 0) {
 
