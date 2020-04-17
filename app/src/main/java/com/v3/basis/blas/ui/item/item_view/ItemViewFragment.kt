@@ -141,11 +141,11 @@ class ItemViewFragment : Fragment() {
                 //レコードの定義取得
                 if (loopcnt == 1) {
                     text = "${fieldMap[col]!!["field_name"]}"
-                    text += "\n${it[fldName]}"
+                    text += " ： ${it[fldName]}"
                 } else {
                     Log.d("フィールドの値：","値=>${it[fldName]}")
                     text += "\n${fieldMap[col]!!["field_name"]}"
-                    text += "\n${it[fldName]}"
+                    text += " ：${it[fldName]}"
 
                 }
                 loopcnt += 1
