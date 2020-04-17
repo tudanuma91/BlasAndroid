@@ -23,8 +23,9 @@ open class BlasRestInformation(val crud:String = "search",
                                val funcError:(Int,Int)->Unit) : BlasRest() {
 
     init{
-        cacheFileName = context.filesDir.toString() + "/information.json"
+        cacheFileName = context.cacheDir.toString() + "/information.json"
     }
+    var aplCode:Int = APL_OK
 
     /**
      * 掲示板取得要求をBLASに送信する
@@ -39,11 +40,11 @@ open class BlasRestInformation(val crud:String = "search",
         when(crud) {
             "search" -> {
                 blasUrl = BlasRest.URL + "informations/search/"
-                cacheFileName = context.filesDir.toString() + "/information.json"
+                cacheFileName = context.cacheDir.toString() + "/information.json"
             }
             "download" -> {
                 blasUrl = BlasRest.URL + "informations/download/"
-                cacheFileName = context.filesDir.toString() +  "/infoFile_" + payload["information_id"] + ".json"
+                cacheFileName = context.cacheDir.toString() +  "/infoFile_" + payload["information_id"] + ".json"
             }
         }
 
@@ -60,12 +61,12 @@ open class BlasRestInformation(val crud:String = "search",
                     response = loadJson(cacheFileName)
                 } catch(e: Exception) {
                     //キャッシュの読み込み失敗
-                    funcError(BlasRestErrCode.NETWORK_ERROR, APL_OK)
+                    funcError(BlasRestErrCode.NETWORK_ERROR, aplCode)
                     return response
                 }
             } else {
                 //キャッシュファイルがないため、エラーにする
-                funcError(BlasRestErrCode.NETWORK_ERROR, APL_OK)
+                funcError(BlasRestErrCode.NETWORK_ERROR, aplCode)
                 return response
             }
         }
@@ -81,12 +82,18 @@ open class BlasRestInformation(val crud:String = "search",
      */
     override fun onPostExecute(result: String?) {
 
+        if(result == null) {
+            funcError(BlasRestErrCode.NETWORK_ERROR, aplCode)
+            return
+        }
+
         super.onPostExecute(result)
 
         //BLASから取得したデータをjson形式に変換する
         var json:JSONObject? = null
         var errorCode:Int
         var records: JSONArray? = null
+        var recordsObj: JSONObject? = null
 
         try {
             json = JSONObject(result)
@@ -101,12 +108,18 @@ open class BlasRestInformation(val crud:String = "search",
         }
 
         //正常時だけキャッシュに保存する
-        if(errorCode == 0 && result != null) {
+        if(errorCode == 0) {
             //正常のときだけキャッシュにjsonファイルを保存する
+            if (crud == "search") {
+                records = json.getJSONArray("records")
+            }else{
+                recordsObj = json.getJSONObject("records")
+            }
+
             try {
-            //    if(records != null) {
-            //        saveJson(cacheFileName, result)
-            //    }
+                if((records != null) or (recordsObj != null)) {
+                    saveJson(cacheFileName, result)
+                }
 
                 if(json != null) {
                     //コールバック
@@ -117,7 +130,7 @@ open class BlasRestInformation(val crud:String = "search",
                 Toast.makeText(context, e.message, Toast.LENGTH_LONG).show()
             }
         } else {
-            funcError(errorCode, APL_OK)
+            funcError(errorCode, aplCode)
         }
 
     }

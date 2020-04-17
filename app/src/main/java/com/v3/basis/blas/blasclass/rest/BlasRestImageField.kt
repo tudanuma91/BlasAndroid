@@ -25,7 +25,7 @@ open class BlasRestImageField(val payload:Map<String, String?>,
     }
 
     init{
-        cacheFileName = context.filesDir.toString() + "/imageField_" + payload["project_id"] + ".json"
+        cacheFileName = context.cacheDir.toString() + "/imageField_" + payload["project_id"] + ".json"
     }
 
     /**

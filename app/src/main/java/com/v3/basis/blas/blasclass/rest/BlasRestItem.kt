@@ -23,7 +23,7 @@ open class BlasRestItem(val crud:String = "search",
     }
 
     init{
-        cacheFileName = context.filesDir.toString() + "/item_" + payload["project_id"] + ".json"
+        cacheFileName = context.cacheDir.toString() + "/item_" + payload["project_id"] + ".json"
     //    uniqueCheckFile = context.filesDir.toString() + "/uniqueCheck_" + payload["project_id"] + ".json"
     }
     var method = "GET"
@@ -45,7 +45,7 @@ open class BlasRestItem(val crud:String = "search",
             "search"->{
                 method = "GET"
                 blasUrl = BlasRest.URL + "items/search/"
-                cacheFileName = context.filesDir.toString() + "/item_" + payload["project_id"] + ".json"
+                cacheFileName = context.cacheDir.toString() + "/item_" + payload["project_id"] + ".json"
             }
             "create"->{
                 method = "POST"
