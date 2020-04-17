@@ -23,7 +23,7 @@ class TerminalFragment : Fragment() {
         vm = ViewModelProviders.of(this).get(TerminalViewModel::class.java)
         val view = inflater.inflate(R.layout.fragment_terminal, container, false)
         view.pager.adapter = TerminalPagerAdapter(requireFragmentManager()) // childFragmentManager?
-        view.pager.offscreenPageLimit = 0
+        view.pager.offscreenPageLimit = 5
         view.pager.setCurrentItem(0, false)
 
         view.pager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {

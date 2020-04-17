@@ -17,6 +17,9 @@ import com.v3.basis.blas.blasclass.app.encrypt
 import com.v3.basis.blas.blasclass.app.getHash
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
 import io.reactivex.Completable
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
+import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import org.json.JSONException
 import org.json.JSONObject
@@ -306,28 +309,28 @@ open class BlasRest() : AsyncTask<String, String, String>() {
      */
     fun saveJson(fileName:String, jsonText:String) {
 
-        val hashSource = userNameRest + passwordRest
-        val hash = getHash(hashSource)
-        val shortHash = hash.substring(0,16)
 
-        lateinit var encJsonText:String
-
-        try{
-            encJsonText = encrypt(jsonText,shortHash)
-        } catch(e: Exception){
-            Log.d("Encryot Error", e.message)
-        }
+        val disposable = CompositeDisposable()
 
         Completable
             .fromAction {
                 File(fileName).writer().use {
+                    val hashSource = userNameRest + passwordRest
+                    val hash = getHash(hashSource)
+                    val shortHash = hash.substring(0,16)
 
-                    it.write(encJsonText)
+                    try{
+                        val encJsonText = encrypt(jsonText,shortHash)
+                        it.write(encJsonText)
+                    } catch(e: Exception){
+                        Log.d("Encryot Error", e.message)
+                    }
                 }
             }
             .subscribeOn(Schedulers.newThread())
+            .doOnComplete { disposable.dispose() }
             .subscribe()
-            .dispose()
+            .addTo(disposable)
     }
 
 
