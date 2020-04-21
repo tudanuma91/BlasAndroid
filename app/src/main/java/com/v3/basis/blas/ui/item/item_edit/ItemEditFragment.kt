@@ -23,6 +23,7 @@ import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
+import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.item.item_create.ItemCreateFragment
 import org.json.JSONObject
 import java.util.*
@@ -65,6 +66,11 @@ class ItemEditFragment : Fragment() {
     private lateinit var formAction: FormActionDataEdit
 
     private lateinit var qrCodeView: EditText
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        addTitle("projectName")
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

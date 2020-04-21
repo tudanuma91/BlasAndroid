@@ -18,6 +18,7 @@ import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureActivity
+import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.checkPermissions
 import com.v3.basis.blas.ui.ext.permissionChk
 import com.v3.basis.blas.ui.fixture.fixture_kenpin.FixtureKenpinFragment
@@ -46,6 +47,11 @@ class FixtureTakeOutFragment : Fragment() {
     private var projectName:String? =null
     private var projectId:String? = null
     private var fragm : FragmentActivity? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        addTitle("project_name")
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

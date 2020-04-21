@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -21,6 +22,7 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
+import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
 import kotlinx.android.synthetic.main.fragment_item_view.*
 import org.json.JSONObject
@@ -41,6 +43,11 @@ class FixtureViewFragment : Fragment() {
     private var currentIndex: Int = 0
     companion object {
         const val CREATE_UNIT = 20
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        addTitle("project_name")
     }
 
     private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {

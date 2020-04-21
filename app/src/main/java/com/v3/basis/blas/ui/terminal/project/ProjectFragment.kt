@@ -91,6 +91,7 @@ class ProjectFragment : Fragment() {
                     val intent = Intent(activity, ItemActivity::class.java)
                     intent.putExtra("token", token)
                     intent.putExtra("project_id", rowModel.detail)
+                    intent.putExtra("projectName", rowModel.title)
                     startActivity(intent)
                 }
             })

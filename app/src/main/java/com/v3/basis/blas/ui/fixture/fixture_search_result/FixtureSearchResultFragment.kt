@@ -21,6 +21,7 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
+import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
 import kotlinx.android.synthetic.main.fragment_fixture_search_result.*
 import org.json.JSONObject
@@ -36,6 +37,10 @@ class FixtureSearchResultFragment : Fragment() {
     private val baseDataList:MutableList<MutableMap<String,String?>> = mutableListOf()
     private var searchValueMap:MutableMap<String,String?> = mutableMapOf()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        addTitle("project_name")
+    }
 
     private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
         override fun onClickRow(tappedView: View, rowModel: RowModel) {

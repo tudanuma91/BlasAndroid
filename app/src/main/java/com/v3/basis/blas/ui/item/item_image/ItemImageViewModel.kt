@@ -1,8 +1,10 @@
 package com.v3.basis.blas.ui.item.item_image
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.util.Base64
 import android.util.Log
+import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.v3.basis.blas.blasclass.rest.BlasRestImage
