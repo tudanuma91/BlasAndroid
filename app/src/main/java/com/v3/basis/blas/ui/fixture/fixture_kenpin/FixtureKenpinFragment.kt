@@ -15,6 +15,7 @@ import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureActivity
+import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.checkPermissions
 import com.v3.basis.blas.ui.ext.getStringExtra
 import com.v3.basis.blas.ui.ext.permissionChk
@@ -37,6 +38,11 @@ class FixtureKenpinFragment : Fragment() {
     private var oldResult:String? =null
     private var projectName:String? =null
     private var projectId:String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        addTitle("project_name")
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

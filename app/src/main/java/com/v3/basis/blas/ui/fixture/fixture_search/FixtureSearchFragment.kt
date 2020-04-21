@@ -18,6 +18,7 @@ import com.v3.basis.blas.activity.FixtureSearchResultActivity
 import com.v3.basis.blas.activity.ItemSearchResultActivity
 import com.v3.basis.blas.blasclass.app.searchAndroid
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
+import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
 import org.json.JSONObject
 import java.util.*
@@ -44,7 +45,7 @@ class FixtureSearchFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        addTitle("project_name")
     }
 
     override fun onCreateView(
