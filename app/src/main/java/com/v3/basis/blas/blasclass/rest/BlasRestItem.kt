@@ -27,6 +27,7 @@ open class BlasRestItem(val crud:String = "search",
     //    uniqueCheckFile = context.filesDir.toString() + "/uniqueCheck_" + payload["project_id"] + ".json"
     }
     var method = "GET"
+    var aplCode:Int = 0
 
     /**
      * プロジェクトに設定されているフィールドの情報取得要求を行う
@@ -90,9 +91,7 @@ open class BlasRestItem(val crud:String = "search",
 
                 if (resultList.size == 0){
                     super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
-                    val json = JSONObject(response)
-                    json.put("aplCode",APL_QUEUE_SAVE)
-                    response = json.toString()
+                    aplCode = APL_QUEUE_SAVE
                 }
             }
         }
@@ -109,7 +108,7 @@ open class BlasRestItem(val crud:String = "search",
      */
     override fun onPostExecute(result: String?) {
         if(result == null) {
-            funcError(BlasRestErrCode.NETWORK_ERROR,APL_OK)
+            funcError(BlasRestErrCode.NETWORK_ERROR,aplCode)
             return
         }
 
@@ -119,16 +118,11 @@ open class BlasRestItem(val crud:String = "search",
         var json:JSONObject? = null
         var errorCode:Int
         var records:JSONArray? = null
-        var aplCode:Int = 0
 
         try {
             json = JSONObject(result)
             //エラーコード取得
             errorCode = json.getInt("error_code")
-            if (json.has("aplCode")){
-                aplCode = json.getInt("aplCode")
-            }
-
 
         } catch (e: JSONException){
             //JSONの展開に失敗

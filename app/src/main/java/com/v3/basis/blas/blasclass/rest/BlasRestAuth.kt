@@ -59,6 +59,7 @@ open class BlasRestAuth(val payload:Map<String, String?>, val loginSuccess:(Stri
         val error_code = json.getInt("error_code")
 
         if(error_code == 0) {
+            Log.d("値のチェック","${json}")
             val records_json = json.getJSONObject("records")
             val token = records_json.getString("token")
 

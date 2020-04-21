@@ -20,6 +20,7 @@ import com.v3.basis.blas.blasclass.app.BlasDef.Companion.BTN_SAVE
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.formaction.FormActionDataEdit
 import com.v3.basis.blas.blasclass.helper.RestHelper
+import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.item.item_create.ItemCreateFragment
@@ -50,6 +51,11 @@ class ItemEditFragment : Fragment() {
     private val jsonItem:MutableMap<String,JSONObject> = mutableMapOf()
     private val formDefaultValueList: MutableList<MutableMap<String, String?>> = mutableListOf()
     private val textViewMap:MutableMap<String,TextView> = mutableMapOf()
+
+    private val idMap:MutableMap<String,String?> = mutableMapOf()
+    private val parentMap:MutableMap<String,MutableMap<String,String>> = mutableMapOf()
+    private val selectValueMap:MutableMap<String,MutableList<String>> = mutableMapOf()
+    private val valueIdColMap : MutableMap<String,String> = mutableMapOf()
 
     private var layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
     private var layoutParamsSpace = LinearLayout.LayoutParams( LinearLayout.LayoutParams.MATCH_PARENT,50)
@@ -126,7 +132,22 @@ class ItemEditFragment : Fragment() {
      * フィールド取得失敗時
      */
     private fun getFail(errorCode: Int, aplCode:Int) {
-        Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
+    
+        var message:String? = null
+        
+        when(errorCode) {
+            BlasRestErrCode.NETWORK_ERROR -> {
+                //サーバと通信できません
+                message = getString(R.string.network_error)
+            }
+            else-> {
+                //サーバでエラーが発生しました(要因コード)
+                message = getString(R.string.server_error, errorCode)
+            }
+        }
+
+        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+        
         //エラーのため、データを初期化する
         //fieldMap = mutableMapOf<Int, MutableMap<String, String?>>()
     }
@@ -146,7 +167,22 @@ class ItemEditFragment : Fragment() {
     }
 
     private fun itemRecvError(errorCode: Int, aplCode:Int) {
-        Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
+
+        var message:String? = null
+
+        when(errorCode) {
+            BlasRestErrCode.NETWORK_ERROR -> {
+                //サーバと通信できません
+                message = getString(R.string.network_error)
+            }
+            else-> {
+                //サーバでエラーが発生しました(要因コード)
+                message = getString(R.string.server_error, errorCode)
+            }
+        }
+
+        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+
         //エラーのため、データを初期化する
         //fieldMap = mutableMapOf<Int, MutableMap<String, String?>>()
     }
@@ -177,8 +213,11 @@ class ItemEditFragment : Fragment() {
              * ・choiceValue => 項目が持つ選択肢
              * ・nullable => 項目がnullが許容するかの定義
              * ・unique => 項目が重複を許可するかの定義
+             * ・parentFieldId =>親フィールドID
+             * ・fieldId => フィールドID
              */
             val formInfo = formAction.typeCheck(it)
+            idMap.set(cnt.toString(),formInfo.fieldId.toString() )
             //先に項目のタイトルをセットする。入力必須を表示
             val formSectionTitle = formAction.createFormSectionTitle(layoutParams, formInfo)
             textViewMap.set(cnt.toString(), formSectionTitle)
@@ -247,30 +286,107 @@ class ItemEditFragment : Fragment() {
                     var selectedValueId: Int = -1
                     //ラジオグループの作成
                     val formGroup = formAction.createRadioGrop(layoutParams, cnt)
-                    val radioButtonValues = formInfo.choiceValue
-                    if(radioButtonValues != null) {
-                        radioButtonValues.forEach {
-                            //ラジオボタン作成
+                    if(formInfo.parentFieldId == "0") {
+                        val radioButtonValues = formInfo.choiceValue
+                        val colTargetPart:MutableList<String> = mutableListOf()
+                        if (radioButtonValues != null) {
+                            radioButtonValues.forEach {
+                                //ラジオボタン作成
+                                val formPart =
+                                    formAction.createSingleSelection(layoutParams, it, radioCount)
+                                //初期値の検索
+                                selectedValueId = formAction.setDefaultValueRadio(
+                                    formDefaultValueList[0].get("fld${cnt}"),
+                                    formPart,
+                                    radioCount,
+                                    selectedValueId
+                                )
+                                formPart.setOnClickListener {
+                                    Log.d("デバック用ログ", "選択された値=>${formPart.text}")
+                                    var colNum:String? = null
+                                    valueIdColMap.forEach{
+                                        val protoNum = it.key
+                                        colNum = formAction.getColNum(protoNum)
+                                        val colId = idMap[colNum.toString()]
+                                        /*Log.d("デバック用ログ","protoNum =>　${protoNum}")
+                                          Log.d("デバック用ログ","colNum =>　${colNum}")
+                                          Log.d("デバック用ログ","colId =>　${colId}")*/
+                                        var flg = false
+                                        parentMap.forEach{
+                                            //親IDが同じかつkeyWordが一致した時の処理
+                                            if(it.value["parentId"] == colId && it.value["keyWord"] == formPart.text) {
+                                                val list = selectValueMap[it.key]!!
+                                                list.forEach {
+                                                    //ラジオボタンを編集可能にする
+                                                    radioValue[it]!!.isEnabled = true
+                                                    Log.d("デバック用ログ", "${it}")
+                                                }
+                                                   flg = true
+                                            }
+                                        }
+                                        if(!flg){
+                                            //親IDまたはkeyWordが不一致の処理
+                                            parentMap.forEach{
+                                                if(it.value["parentId"] == colId.toString()){
+                                                    val list = selectValueMap[it.key]!!
+                                                    list.forEach {
+                                                        //チェックをはずす。編集不可状態にする
+                                                        radioValue[it]!!.isChecked = false
+                                                        radioValue[it]!!.isEnabled = false
+                                                        Log.d("デバック用ログ", "${it}")
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                //値のセット
+                                radioValue.set(key = "${radioCount}", value = formPart)
+                                valueIdColMap.set(key = "${cnt}_${radioCount}",value = "${formPart.text}")
+                                formGroup.addView(formPart)
+                                colTargetPart.add(radioCount.toString())
+                                radioCount += 1
+
+
+                            }
+                        }
+                        //初期値が登録されている場合、初期値をセットする
+                        selectValueMap.set(cnt.toString(),colTargetPart)
+                        formAction.setDefaultValueRadioGroup(formGroup,selectedValueId)
+                        rootView.addView(formGroup)
+                        radioGroupMap.set(key = "col_${cnt}", value = formGroup)
+                    }else{
+                        val information :MutableMap<String,String> = mutableMapOf()
+                        val parentSelect = formAction.getParentSelect(formInfo.choiceValue)
+                        val colTargetPart:MutableList<String> = mutableListOf()
+                        Log.d("デバック用ログ","親の値が[${parentSelect}]の時、処理を走らせる")
+                        information.set(key = "keyWord" ,value = parentSelect.toString())
+                        information.set(key = "parentId",value = formInfo.parentFieldId.toString())
+                        parentMap.set(cnt.toString(),information)
+                        val selectValues = formAction.getSelectValue(formInfo.choiceValue)
+                        selectValues.forEach{
                             val formPart =
                                 formAction.createSingleSelection(layoutParams, it, radioCount)
-                            //初期値の検索
                             selectedValueId = formAction.setDefaultValueRadio(
                                 formDefaultValueList[0].get("fld${cnt}"),
                                 formPart,
                                 radioCount,
                                 selectedValueId
                             )
+                            formPart.isEnabled = false
+
                             //値のセット
                             radioValue.set(key = "${radioCount}", value = formPart)
+                            colTargetPart.add(radioCount.toString())
                             formGroup.addView(formPart)
                             radioCount += 1
-
                         }
+                        //初期値が登録されている場合、初期値をセットする
+                        selectValueMap.set(cnt.toString(),colTargetPart)
+                        formAction.setDefaultValueRadioGroup(formGroup,selectedValueId)
+                        rootView.addView(formGroup)
+                        radioGroupMap.set(key = "col_${cnt}", value = formGroup)
                     }
-                    //初期値が登録されている場合、初期値をセットする
-                    formAction.setDefaultValueRadioGroup(formGroup,selectedValueId)
-                    rootView.addView(formGroup)
-                    radioGroupMap.set(key = "col_${cnt}", value = formGroup)
                 }
 
                 FieldType.MULTIPLE_SELECTION -> {
@@ -320,6 +436,25 @@ class ItemEditFragment : Fragment() {
             space.setLayoutParams(layoutParamsSpace)
             rootView.addView(space)
             cnt += 1
+        }
+
+
+
+        //親の値があった時の処理
+        parentMap.forEach{
+            Log.d("デバック用ログ","parentMap=>${it}")
+            val parent = it
+            idMap.forEach{
+                if(it.value == parent.value["parentId"] && formDefaultValueList[0]["fld${it.key}"] == parent.value["keyWord"]){
+                    Log.d("デバック用ログ","分岐完了")
+                    val list = selectValueMap[parent.key]!!
+                    list.forEach {
+                        //ラジオボタンを編集可能にする
+                        radioValue[it]!!.isEnabled = true
+                        Log.d("デバック用ログ", "${it}")
+                    }
+                }
+            }
         }
 
 

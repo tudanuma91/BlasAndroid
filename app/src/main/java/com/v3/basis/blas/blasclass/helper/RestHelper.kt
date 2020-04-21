@@ -47,8 +47,10 @@ class RestHelper {
             val jsonField = JSONObject(jsonStr)
             val field = jsonField.getJSONObject("Field")
             //値の取得と格納
+            Log.d("デバック用ログ","取得した値=>${field}")
             valueMap.set(key = "field_col" ,value = field["col"].toString())
             valueMap.set(key = "field_name",value = field["name"].toString())
+            valueMap.set(key = "type",value = field["type"].toString())
             rtnMap.set(key = i.toString() ,value = valueMap)
 
         }
@@ -102,12 +104,15 @@ class RestHelper {
             val jsonFormField = JSONObject(formFieldList[i].toString())
             val formField = jsonFormField.getJSONObject("Field")
             //値を格納
+            Log.d("デバック用ログ","RestHelper_値の取得${formField}")
             valueMap.set(key = "name" ,value = formField["name"].toString())
             valueMap.set(key = "type",value = formField["type"].toString())
             valueMap.set(key = "unique_chk" ,value = formField["unique_chk"].toString())
             valueMap.set(key = "essential",value = formField["essential"].toString())
+            valueMap.set(key = "parent_field_id",value = formField["parent_field_id"].toString())
             valueMap.set(key = "choice" ,value = formField["choice"].toString())
             valueMap.set(key = "field_col" ,value = formField["col"].toString())
+            valueMap.set(key = "field_id",value = formField["field_id"].toString())
             //配列に格納
             rtnMap.set(key=i.toString(),value = valueMap)
 
@@ -131,6 +136,7 @@ class RestHelper {
             if(item["item_id"] == item_id.toString()){
                 valueMap.set(key = "item_id",value = item["item_id"].toString() )
                 for(j in 1 ..colMax ){
+                    Log.d("デバック用ログ","配列の中身は以下になる=>${item}")
                     val value = item["fld${j}"].toString()
                     //Nullの時true。それ以外でfalseが入る
                     val chk = item.isNull("fld${j}")
@@ -164,6 +170,19 @@ class RestHelper {
         }
 
         return rtnMap
+    }
+
+    fun createCheckValue(value:String?): String {
+        var newValue = ""
+        if(value != "") {
+            val jsonValue = JSONObject(value)
+            Log.d("デバック用ログ", "値はこのとおり=>${jsonValue["value"]}")
+            newValue += "${jsonValue["value"]}"
+            if (jsonValue["memo"].toString() != "") {
+                newValue += "(備考)${jsonValue["memo"]}"
+            }
+        }
+        return newValue
     }
 
 }

@@ -21,6 +21,7 @@ import com.v3.basis.blas.blasclass.app.searchAndroid
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.formaction.FormActionDataSearch
 import com.v3.basis.blas.blasclass.helper.RestHelper
+import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import org.json.JSONObject
@@ -57,9 +58,6 @@ class ItemSearchFragment : Fragment() {
     private val minute = calender.get(Calendar.MONTH)
     //インスタンス作成
     private lateinit var formAction:FormActionDataSearch
-    //この下は最終的に消す
-    private val jsonItemList:MutableMap<String,JSONObject> = mutableMapOf()
-    private val itemList: MutableList<MutableMap<String, String?>> = mutableListOf()
 
 
     override fun onCreateView(
@@ -167,16 +165,48 @@ class ItemSearchFragment : Fragment() {
                         //チェックボックスの時
                         var colCheckMap : MutableMap<String?,CheckBox?> = mutableMapOf()
                         val colCheckBoxValues = formInfo.choiceValue
-                        if(colCheckBoxValues != null) {
-                            colCheckBoxValues.forEach {
-                                val formPart =
-                                    formAction.createMutipleSelection(layoutParams, it, checkCount)
-                                rootView.addView(formPart)
-                                colCheckMap.set(key = "col_${cnt}_${checkCount}", value = formPart)
-                                checkCount += 1
+                        if(formInfo.parentFieldId =="0") {
+                            if (colCheckBoxValues != null) {
+                                colCheckBoxValues.forEach {
+                                    val formPart =
+                                        formAction.createMutipleSelection(
+                                            layoutParams,
+                                            it,
+                                            checkCount
+                                        )
+                                    rootView.addView(formPart)
+                                    colCheckMap.set(
+                                        key = "col_${cnt}_${checkCount}",
+                                        value = formPart
+                                    )
+                                    checkCount += 1
 
+                                }
+                                checkMap.set(key = "col_${cnt}", value = colCheckMap)
                             }
-                            checkMap.set(key = "col_${cnt}", value = colCheckMap)
+                        }else{
+                            if (colCheckBoxValues != null) {
+                                val testL = formAction.getSelectValue(colCheckBoxValues)
+                                Log.d("デバック用ログ","イメージ=>${test}")
+                                var vCnt = 0
+                                colCheckBoxValues.forEach {
+                                    val formPart =
+                                        formAction.createMutipleSelection(
+                                            layoutParams,
+                                            testL[vCnt],
+                                            checkCount
+                                        )
+                                    rootView.addView(formPart)
+                                    colCheckMap.set(
+                                        key = "col_${cnt}_${checkCount}",
+                                        value = formPart
+                                    )
+                                    checkCount += 1
+                                    vCnt += 1
+
+                                }
+                                checkMap.set(key = "col_${cnt}", value = colCheckMap)
+                            }
                         }
                     }
 
@@ -285,7 +315,22 @@ class ItemSearchFragment : Fragment() {
      * フィールド取得失敗時
      */
     private fun getFail(errorCode: Int, aplCode:Int) {
-        Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
+
+        var message:String? = null
+
+        when(errorCode) {
+            BlasRestErrCode.NETWORK_ERROR -> {
+                //サーバと通信できません
+                message = getString(R.string.network_error)
+            }
+            else-> {
+                //サーバでエラーが発生しました(要因コード)
+                message = getString(R.string.server_error, errorCode)
+            }
+        }
+
+        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+
         //エラーのため、データを初期化する
         //fieldMap = mutableMapOf<Int, MutableMap<String, String?>>()
     }

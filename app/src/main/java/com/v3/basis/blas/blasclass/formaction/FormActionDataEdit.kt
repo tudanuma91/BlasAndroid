@@ -46,7 +46,7 @@ class FormActionDataEdit(setToken: String, setActivity: FragmentActivity):FormAc
 
 
     override fun createTextAlea(params: LinearLayout.LayoutParams?, cnt: Int, formInfo: formType): EditText {
-        var edit = super.createDateTime(params, cnt, formInfo)
+        var edit = super.createTextAlea(params, cnt, formInfo)
         edit = setMessate(edit,formInfo)
         edit.isFocusableInTouchMode = true
         return edit
@@ -90,7 +90,7 @@ class FormActionDataEdit(setToken: String, setActivity: FragmentActivity):FormAc
     fun setDefaultValueRadioGroup(formPart: RadioGroup,selectedValueId:Int){
         Log.d("gaegtar","${selectedValueId}")
         if (selectedValueId != -1) {
-            formPart.check(selectedValueId!!.toInt())
+            formPart.check(selectedValueId)
         }
     }
 
@@ -103,5 +103,6 @@ class FormActionDataEdit(setToken: String, setActivity: FragmentActivity):FormAc
             }
         }
     }
+
 
 }

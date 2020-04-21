@@ -35,7 +35,9 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
                         var title: String?,
                         var choiceValue: List<String?>?,
                         var require:String?,
-                        var unique:String?)
+                        var unique:String?,
+                        var fieldId:String?,
+                        var parentFieldId:String?)
 
 
     /**
@@ -56,16 +58,22 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
      *                それ以外 => nullを返す
      */
     open fun typeCheck(list:MutableMap<String, String?>?): formType {
-        var choiceValue:List<String>? = null
-        var rtnType:String? =null
-        var rtnTitle :String?= null
-        var nullable:String? = null
-        var unique:String? = null
-        var formInfo =  formType(rtnType,rtnTitle, choiceValue, nullable,unique)
+        val choiceValue:List<String>? = null
+        val rtnType:String? =null
+        val rtnTitle :String?= null
+        val nullable:String? = null
+        val unique:String? = null
+        val fieldId:String? = null
+        val parentFieldId :String? = null
+        val formInfo =  formType(rtnType,rtnTitle, choiceValue, nullable,unique,fieldId,parentFieldId)
+
         if(list!=null){
+            Log.d("デバック用ログ","配列中身=>${list}")
             formInfo.title = list.get("name")
             formInfo.require = list.get("essential").toString()
             formInfo.unique = list.get("unique_chk").toString()
+            formInfo.fieldId = list.get("field_id").toString()
+            formInfo.parentFieldId = list.get("parent_field_id").toString()
 
             val chkType = list.get("type")
             when(chkType){
@@ -109,12 +117,12 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
                     formInfo.type = FieldType.QR_CODE
 
                 }
-                FieldType.KENPIN_RENDOU_QR->{
-                    formInfo.type = FieldType.KENPIN_RENDOU_QR
-
-                }
                 FieldType.TEKKILYO_RENDOU_QR->{
                     formInfo.type = FieldType.TEKKILYO_RENDOU_QR
+
+                }
+                FieldType.CHECK_VALUE->{
+                    formInfo.type = FieldType.CHECK_VALUE
 
                 }
             }
@@ -356,5 +364,54 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
         val space = Space(baseActivity)
         space.setLayoutParams(layoutParamsSpace)
         return space
+    }
+
+    fun getSelectValue(list:List<String?>?): MutableList<String> {
+        val valueList : MutableList<String> = mutableListOf()
+        if(list != null) {
+            val listSize = list.size
+            for (i in 0 until listSize){
+                var selectedValue = list[i]
+                if(selectedValue != null) {
+                    when (i) {
+                        0 -> {
+                            selectedValue = selectedValue.drop(2)
+                            val delNum = selectedValue.indexOf("\":\"")
+                            selectedValue = selectedValue.removeRange(0,delNum+3)
+                        }
+                        listSize-1 -> {
+                            selectedValue = selectedValue.dropLast(2)
+                        }
+                    }
+                    valueList.add(i,selectedValue)
+                }
+            }
+        }
+        return valueList
+    }
+
+    fun getParentSelect(list:List<String?>?): String? {
+        Log.d("デバック用ログ","値の取得=>${list}")
+        var master :String?= null
+        if(list != null) {
+            val parentValue = list[0]
+            if(parentValue != null){
+                master = parentValue.drop(2)
+                val delNum = master.indexOf("\":\"")
+                Log.d("デバック用ログ","値はこの通り=>${delNum}")
+                Log.d("デバック用ログ","値はこの通り=>${master.removeRange(delNum,master.length)}")
+                master = master.removeRange(delNum,master.length)
+            }
+        }
+        return master
+
+    }
+
+    fun getColNum(num:String): String {
+        var protoNum = num
+        val delNum = num.indexOf("_")
+        protoNum = num.dropLast(delNum+1)
+        Log.d("デバック用ログ","該当するのはコレ=>${protoNum}")
+        return protoNum
     }
 }

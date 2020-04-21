@@ -18,6 +18,7 @@
     <!-- エラー系 -->
     <string name="download_error">ファイルダウンロードでエラーが起きました</string>
     <string name="uri_error">ファイルが見つかりません。</string>
+    <string name="check_error">値が異なります。備考を入力してください</string>
 
     <!-- 通信系 -->
     <string name="network_error">サーバと通信できません</string>

@@ -13,12 +13,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemImageActivity
+import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.helper.RestHelper
+import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.ext.getStringExtra
 import kotlinx.android.synthetic.main.fragment_item_view.recyclerView
 import org.json.JSONObject
+import java.lang.Exception
 
 
 /**
@@ -32,6 +35,7 @@ class ItemViewFragment : Fragment() {
     private val jsonItemList:MutableMap<String,JSONObject> = mutableMapOf()
     private val dataList = mutableListOf<RowModel>()
     private lateinit var rootView:View
+    private val helper:RestHelper = RestHelper()
 
     private var currentIndex: Int = 0
     companion object {
@@ -116,7 +120,7 @@ class ItemViewFragment : Fragment() {
     private fun createDataList() {
         var colMax = fieldMap.size
         Log.d("gafeaqwaf","${colMax}")
-        val itemInfo = RestHelper().createItemList(jsonItemList, colMax )
+        val itemInfo = helper.createItemList(jsonItemList, colMax )
         itemListAll.addAll(itemInfo)
         makeDataList()
     }
@@ -145,8 +149,12 @@ class ItemViewFragment : Fragment() {
                 } else {
                     Log.d("フィールドの値：","値=>${it[fldName]}")
                     text += "\n${fieldMap[col]!!["field_name"]}"
-                    text += " ：${it[fldName]}"
-
+                    if(fieldMap[col]!!["type"] == FieldType.CHECK_VALUE){
+                        val newValue = helper.createCheckValue(it[fldName].toString())
+                        text += " ：${newValue}"
+                    }else {
+                        text += " ：${it[fldName]}"
+                    }
                 }
                 loopcnt += 1
             }
@@ -210,7 +218,7 @@ class ItemViewFragment : Fragment() {
         //カラム順に並べ替える
         fieldMap.clear()
         Log.d("aaaaa","${result}")
-        val fieldList = RestHelper().createFieldList(result)
+        val fieldList = helper.createFieldList(result)
         var cnt = 1
         fieldList.forEach{
             fieldMap[cnt] = it
@@ -228,8 +236,22 @@ class ItemViewFragment : Fragment() {
      * フィールド取得失敗時
      */
     private fun fieldRecvError(errorCode: Int , aplCode:Int) {
-        Log.d("aaaaaaa", "失敗")
-        Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
+    
+        var message:String? = null
+        
+        when(errorCode) {
+            BlasRestErrCode.NETWORK_ERROR -> {
+                //サーバと通信できません
+                message = getString(R.string.network_error)
+            }
+            else-> {
+                //サーバでエラーが発生しました(要因コード)
+                message = getString(R.string.server_error, errorCode)
+            }
+        }
+
+        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+
         itemListAll.clear()
         fieldMap.clear()
     }
@@ -244,4 +266,6 @@ class ItemViewFragment : Fragment() {
         itemListAll.clear()
         fieldMap.clear()
     }
+
+
 }

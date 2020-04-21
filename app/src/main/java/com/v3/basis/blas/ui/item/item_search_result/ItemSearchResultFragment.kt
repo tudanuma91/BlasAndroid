@@ -11,7 +11,9 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.searchAndroid
+import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.helper.RestHelper
+import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.ext.getStringExtra
@@ -33,6 +35,7 @@ class ItemSearchResultFragment : Fragment() {
     private val itemList: MutableList<MutableMap<String, String?>> = mutableListOf()
     private val jsonItemList:MutableMap<String, JSONObject> = mutableMapOf()
     private val dataList = mutableListOf<RowModel>()
+    private val helper:RestHelper = RestHelper()
 
     private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
         override fun onClickRow(tappedView: View, rowModel: RowModel) {
@@ -93,7 +96,7 @@ class ItemSearchResultFragment : Fragment() {
 
     private fun createDataList(): MutableList<RowModel> {
         var colMax = fieldMap.size
-        var itemInfo = RestHelper().createItemList(jsonItemList, colMax )
+        var itemInfo = helper.createItemList(jsonItemList, colMax )
         itemInfo = searchAndroid(findValueMap,itemInfo,dateTimeCol)
         itemList.addAll(itemInfo)
         itemList.forEach {
@@ -108,8 +111,14 @@ class ItemSearchResultFragment : Fragment() {
                     text = "${fieldMap[col]!!["field_name"]}"
                     text += "\n${it[fldName]}"
                 } else {
+                    Log.d("フィールドの値：","値=>${it[fldName]}")
                     text += "\n${fieldMap[col]!!["field_name"]}"
-                    text += "\n${it[fldName]}"
+                    if(fieldMap[col]!!["type"] == FieldType.CHECK_VALUE){
+                        val newValue = helper.createCheckValue(it[fldName].toString())
+                        text += " ：${newValue}"
+                    }else {
+                        text += " ：${it[fldName]}"
+                    }
                 }
                 loopcnt += 1
             }
@@ -158,7 +167,7 @@ class ItemSearchResultFragment : Fragment() {
     private fun fieldRecv(result: JSONObject) {
         //カラム順に並べ替える
         fieldMap.clear()
-        val fieldList = RestHelper().createFieldList(result)
+        val fieldList = helper.createFieldList(result)
         var cnt = 1
         fieldList.forEach{
             fieldMap[cnt] = it
@@ -174,21 +183,45 @@ class ItemSearchResultFragment : Fragment() {
      * フィールド取得失敗時
      */
     private fun fieldRecvError(errorCode: Int, aplCode:Int) {
-        Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
+
+        var message:String? = null
+        when(errorCode) {
+            BlasRestErrCode.NETWORK_ERROR -> {
+                //サーバと通信できません
+                message = getString(R.string.network_error)
+            }
+            else-> {
+                //サーバでエラーが発生しました(要因コード)
+                message = getString(R.string.server_error, errorCode)
+            }
+        }
+        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
         itemList.clear()
         fieldMap.clear()
+
     }
 
     /**
      * データ取得失敗時
      */
     private fun itemRecvError(errorCode: Int, aplCode:Int) {
-        Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
+
+        var message:String? = null
+        when(errorCode) {
+            BlasRestErrCode.NETWORK_ERROR -> {
+                //サーバと通信できません
+                message = getString(R.string.network_error)
+            }
+            else-> {
+                //サーバでエラーが発生しました(要因コード)
+                message = getString(R.string.server_error, errorCode)
+            }
+        }
+
+        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
         //エラーのため、データを初期化する
         itemList.clear()
         fieldMap.clear()
     }
-
-
 
 }

@@ -120,47 +120,4 @@ class FormActionDataSearch(setToken: String, setActivity: FragmentActivity) : Fo
         return value
     }
 
-    /*fun pickUpDateTime(dateTime:MutableMap<String,EditText>,cnt:Int,mode:String,select:String): String {
-        var value = ""
-        if (select == "Min") {
-            when (mode) {
-                "Day" -> {
-                    //日付検索の値作成
-                    val minDay = dateTime["col_${cnt}_minDay"]!!.text.toString()
-                    if (minDay != "") {
-                        value += minDay
-                    }
-                }
-                "Time" -> {
-                    //時間検索の作成
-                    val minTime = dateTime["col_${cnt}_minTime"]!!.text.toString()
-                    if (minTime != "") {
-                        value += minTime
-                    }
-
-                }
-            }
-        }else{
-            when (mode) {
-                "Day" -> {
-                    //日付検索の値作成
-                    val maxDay = dateTime["col_${cnt}_maxDay"]!!.text.toString()
-                    if (maxDay != "") {
-                        value += maxDay
-                    }
-                }
-                "Time" -> {
-                    //時間検索の作成
-                    val maxTime = dateTime["col_${cnt}_maxTime"]!!.text.toString()
-                    if (maxTime != "") {
-                        value += maxTime
-                    }
-
-                }
-            }
-        }
-        return value
-    }*/
-
-
 }

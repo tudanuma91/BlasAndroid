@@ -17,6 +17,9 @@ import com.v3.basis.blas.blasclass.app.encrypt
 import com.v3.basis.blas.blasclass.app.getHash
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
 import io.reactivex.Completable
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
+import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import org.json.JSONException
 import org.json.JSONObject
@@ -57,8 +60,8 @@ open class BlasRest() : AsyncTask<String, String, String>() {
 
         const val URL = BuildConfig.API_URL
         //const val URL = "http://192.168.0.104/blas7/api/v1/"
-        const val CONTEXT_TIME_OUT = 1000
-        const val READ_TIME_OUT = 1000
+        const val CONTEXT_TIME_OUT = 100000
+        const val READ_TIME_OUT = 100000
         var queuefuncList = mutableListOf<FuncList>()
         val context = BlasApp.applicationContext()
         var cacheFileName = ""
@@ -73,35 +76,9 @@ open class BlasRest() : AsyncTask<String, String, String>() {
     }
 
     override fun onPostExecute(result: String?) {
-        var json:JSONObject? = null
-        var errorCode:Int = 0
-        try {
-            json = JSONObject(result)
-            //エラーコード取得
-            errorCode = json.getInt("error_code")
-        }
-        catch (e: JSONException){
-            //JSONの展開に失敗
-            Toast.makeText(context, "データ取得失敗", Toast.LENGTH_LONG).show()
-            return
-        }
-
-        //正常時だけキャッシュに保存する
-        /* キャッシュ処理は子クラスにて行う
-        if(errorCode == 0) {
-            //正常のときだけキャッシュにjsonファイルを保存する
-            try {
-                if(result != null) {
-                    saveJson(cacheFileName, result)
-                }
-            }
-            catch(e: Exception) {
-                Toast.makeText(context, e.message, Toast.LENGTH_LONG).show()
-            }
-        }
-        */
 
     }
+
     /**
      * オブジェクトをJSON文字列に変換するメソッド
      * [引数]
@@ -332,28 +309,28 @@ open class BlasRest() : AsyncTask<String, String, String>() {
      */
     fun saveJson(fileName:String, jsonText:String) {
 
-        val hashSource = userNameRest + passwordRest
-        val hash = getHash(hashSource)
-        val shortHash = hash.substring(0,16)
 
-        lateinit var encJsonText:String
-
-        try{
-            encJsonText = encrypt(jsonText,shortHash)
-        } catch(e: Exception){
-            Log.d("Encryot Error", e.message)
-        }
+        val disposable = CompositeDisposable()
 
         Completable
             .fromAction {
                 File(fileName).writer().use {
+                    val hashSource = userNameRest + passwordRest
+                    val hash = getHash(hashSource)
+                    val shortHash = hash.substring(0,16)
 
-                    it.write(encJsonText)
+                    try{
+                        val encJsonText = encrypt(jsonText,shortHash)
+                        it.write(encJsonText)
+                    } catch(e: Exception){
+                        Log.d("Encryot Error", e.message)
+                    }
                 }
             }
             .subscribeOn(Schedulers.newThread())
+            .doOnComplete { disposable.dispose() }
             .subscribe()
-            .dispose()
+            .addTo(disposable)
     }
 
 

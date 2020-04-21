@@ -251,6 +251,7 @@ object QueueController {
 
         val rtn: RestfulRtn = cakeToAndroid(response, tableName)
         if(rtn == null) {
+            noticeAdd(reqArray,APL_QUEUE_ERR)
             queueFunc.errorFun(BlasRestErrCode.JSON_PARSE_ERROR,APL_QUEUE_ERR)
         }
         else if(rtn.errorCode == 0) {

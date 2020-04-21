@@ -13,6 +13,8 @@ class FieldType {
         val SIG_FOX = "9"
         val QR_CODE = "10"
         val TEKKILYO_RENDOU_QR = "11"
+        val ACOUNT_NAME = "12"
+        val CHECK_VALUE = "13"
         //ユニークチェック
         val UNIQUE_CHK = "unique_chk"
         val TURE = "1"
