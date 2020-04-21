@@ -231,6 +231,9 @@ class ItemViewFragment : Fragment() {
         var message:String? = null
         
         when(errorCode) {
+            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
+                message = getString(R.string.record_not_found)
+            }
             BlasRestErrCode.NETWORK_ERROR -> {
                 //サーバと通信できません
                 message = getString(R.string.network_error)
@@ -245,6 +248,7 @@ class ItemViewFragment : Fragment() {
 
         itemListAll.clear()
         fieldMap.clear()
+        chkProgress(false,rootView)
     }
 
     /**
@@ -252,9 +256,28 @@ class ItemViewFragment : Fragment() {
      */
     private fun itemRecvError(errorCode: Int , aplCode:Int) {
         Log.d("aaaaaaa", "失敗")
-        Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
+        
+        var message:String? = null
+        
+        when(errorCode) {
+            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
+                message = getString(R.string.record_not_found)
+            }
+            BlasRestErrCode.NETWORK_ERROR -> {
+                //サーバと通信できません
+                message = getString(R.string.network_error)
+            }
+            else-> {
+                //サーバでエラーが発生しました(要因コード)
+                message = getString(R.string.server_error, errorCode)
+            }
+        }
+
+        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+
         //エラーのため、データを初期化する
         itemListAll.clear()
         fieldMap.clear()
+        chkProgress(false,rootView)
     }
 }

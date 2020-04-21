@@ -15,6 +15,9 @@
     <string name="password_too_long">パスワードが長すぎます</string>
     <string name="account_error">ユーザ名，またはパスワードに誤りがあります</string>
 
+    <!-- データ系 -->
+    <string name="record_not_found">レコードがありません。</string>
+
     <!-- エラー系 -->
     <string name="download_error">ファイルダウンロードでエラーが起きました</string>
     <string name="uri_error">ファイルが見つかりません。</string>
