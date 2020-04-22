@@ -24,6 +24,7 @@ import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
+import com.v3.basis.blas.ui.ext.addTitle
 import org.json.JSONObject
 import java.nio.channels.NonReadableChannelException
 import java.util.*
@@ -61,6 +62,10 @@ class ItemCreateFragment : Fragment() {
 
     private lateinit var qrCodeView: EditText
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        addTitle("projectName")
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

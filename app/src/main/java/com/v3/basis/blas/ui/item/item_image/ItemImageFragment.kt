@@ -12,21 +12,21 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.content.PermissionChecker.checkSelfPermission
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.R
-import com.v3.basis.blas.ui.ext.rotateRight
 import com.v3.basis.blas.ui.item.item_image.adapter.AdapterCellItem
 import com.v3.basis.blas.ui.item.item_image.model.ImageFieldModel
-import com.v3.basis.blas.ui.item.item_image.model.ItemImage
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -73,6 +73,8 @@ class ItemImageFragment : Fragment() {
     private var adapterCellItems: MutableList<AdapterCellItem> = mutableListOf()
     private var imageUri: Uri? = null
     private var uploadId: String = ""
+
+    private var deniedPermission = false
 
     private val disposables: CompositeDisposable = CompositeDisposable()
 
@@ -132,15 +134,13 @@ class ItemImageFragment : Fragment() {
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
 
-        val isReadPermissionGranted = (activity?.let { checkSelfPermission(it,READ_EXTERNAL_STORAGE) } == PackageManager.PERMISSION_GRANTED)
-        val isWritePermissionGranted = (activity?.let { checkSelfPermission(it,WRITE_EXTERNAL_STORAGE) } == PackageManager.PERMISSION_GRANTED)
-        val isCameraPermissionGranted = (activity?.let { checkSelfPermission(it,CAMERA) } == PackageManager.PERMISSION_GRANTED)
-
-        if (isReadPermissionGranted && isWritePermissionGranted && isCameraPermissionGranted) {
+        val permissions = listOf(READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, CAMERA)
+        if (permissions.all { ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED}) {
             startFileChoicer()
         } else {
             requestPermissions(arrayOf(CAMERA,WRITE_EXTERNAL_STORAGE), REQUEST_CAMERA_PERMISSION)
         }
+
         return false
     }
 
@@ -175,7 +175,27 @@ class ItemImageFragment : Fragment() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when(requestCode) {
-            REQUEST_CAMERA_PERMISSION -> { initCameraPermission() }
+            REQUEST_CAMERA_PERMISSION -> {
+
+                permissions.forEach {
+                    val notGranted = ContextCompat.checkSelfPermission(requireContext(), it) != PackageManager.PERMISSION_GRANTED
+                    if (notGranted && !ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), it)) {
+                        if ( !deniedPermission ) {
+                            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                            val uri: Uri = Uri.fromParts("package", requireContext().packageName, null)
+                            intent.data = uri
+                            startActivityForResult(intent, REQUEST_CAMERA_PERMISSION)
+                            deniedPermission = true
+                            return
+                        }
+                    }
+                }
+
+                val allGranted = grantResults.firstOrNull { it == -1 }?.let { false } ?: true
+                if (allGranted) {
+                    startFileChoicer()
+                }
+            }
         }
     }
 

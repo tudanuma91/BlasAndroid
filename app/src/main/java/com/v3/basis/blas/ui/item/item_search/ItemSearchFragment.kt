@@ -24,6 +24,7 @@ import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
+import com.v3.basis.blas.ui.ext.addTitle
 import org.json.JSONObject
 import java.util.*
 
@@ -62,6 +63,10 @@ class ItemSearchFragment : Fragment() {
     private val jsonItemList:MutableMap<String,JSONObject> = mutableMapOf()
     private val itemList: MutableList<MutableMap<String, String?>> = mutableListOf()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        addTitle("projectName")
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
