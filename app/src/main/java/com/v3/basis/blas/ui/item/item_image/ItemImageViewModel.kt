@@ -1,10 +1,8 @@
 package com.v3.basis.blas.ui.item.item_image
 
-import android.content.Intent
 import android.graphics.Bitmap
 import android.util.Base64
 import android.util.Log
-import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.v3.basis.blas.blasclass.rest.BlasRestImage
@@ -70,16 +68,23 @@ class ItemImageViewModel : ViewModel() {
 
         fun success(json: JSONObject) {
 
-            Single.just(decode(json))
+            decode(json)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(Schedulers.newThread())
-                .subscribeBy {
-                    item.image.set(it.bitmap)
-                    item.empty.set(false)
-                    item.loading.set(false)
-                    item.imageId = it.image_id
-                    item.ext = it.ext
-                }
+                .subscribeBy(
+                    onError = {
+                        item.loading.set(false)
+                        item.empty.set(true)
+                        Log.d("fetchImage", "failed to decode image")
+                    },
+                    onSuccess = {
+                        item.image.set(it.bitmap)
+                        item.empty.set(false)
+                        item.loading.set(false)
+                        item.imageId = it.image_id
+                        item.ext = it.ext
+                    }
+                )
                 .addTo(disposable)
         }
 
@@ -148,7 +153,7 @@ class ItemImageViewModel : ViewModel() {
             .subscribeBy {
 
                 val success: (jsonObject: JSONObject) -> Unit = {
-                    item.loading.set(false)
+                    fetchImage(item)
                 }
 
                 val payload = mapOf(
@@ -174,14 +179,26 @@ class ItemImageViewModel : ViewModel() {
         return Base64.encodeToString(byteArray, flag)
     }
 
-    private fun decode(json: JSONObject) : ItemImage {
-        images = Gson().fromJson(json.toString(), ItemImageModel::class.java)
-        val item = images.records?.map { it.Image }?.first()?.let {
-            it.apply {
-                bitmap = Base64.decode(image, Base64.DEFAULT).translateToBitmap()
-                Log.d("fetch image", "file = ${it.filename}")
+    private fun decode(json: JSONObject) : Single<ItemImage> {
+        return Single.create<ItemImage> { emitter ->
+            images = Gson().fromJson(json.toString(), ItemImageModel::class.java)
+            val item = images.records?.map { it.Image }?.first()?.let {
+                it.apply {
+                    try {
+                        bitmap = Base64.decode(image, Base64.DEFAULT).translateToBitmap()
+                        Log.d("fetch image", "file = ${it.filename}")
+                    } catch (t :Throwable) {
+                        emitter.onError(t)
+                    }
+                }
             }
+            item?.also { emitter.onSuccess(it) }
+                ?: emitter.onError(IllegalStateException("BlasRestImage:failed to json convert"))
         }
-        return item ?: throw IllegalStateException("BlasRestImage:failed to json convert")
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        disposable.dispose()
     }
 }
