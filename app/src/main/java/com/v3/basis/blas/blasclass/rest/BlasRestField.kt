@@ -69,8 +69,10 @@ open class BlasRestField(
             json = JSONObject(result)
             //エラーコード取得
             errorCode = json.getInt("error_code")
-            records = json.getJSONArray("records")
 
+            if(json.has("records")) {
+                records = json.getJSONArray("records")
+            }
         } catch (e: JSONException){
             //JSONの展開に失敗
             Toast.makeText(context, "データ取得失敗", Toast.LENGTH_LONG).show()

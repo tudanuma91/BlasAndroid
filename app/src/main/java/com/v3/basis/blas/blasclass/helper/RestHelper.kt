@@ -78,7 +78,9 @@ class RestHelper {
             val item = jsonField.getJSONObject("Item")
             valueMap.set(key = "item_id",value = item["item_id"].toString() )
             for(j in 1 ..colMax ){
-                valueMap.set(key = "fld${j}",value = item["fld${j}"].toString())
+                if (item.has("fld${j}")) {
+                    valueMap.set(key = "fld${j}", value = item["fld${j}"].toString())
+                }
             }
             rtnMap.add(i,valueMap)
         }
