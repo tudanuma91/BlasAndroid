@@ -165,7 +165,7 @@ class RestHelper {
     /**
      * userの情報を取得する処理
      */
-    fun createUserMap(result:JSONObject):  MutableMap<String, MutableMap<String, String?>> {
+    fun createUserList(result:JSONObject):  MutableMap<String, MutableMap<String, String?>> {
 
         val rtnMap :MutableMap<String,MutableMap<String, String?>> = mutableMapOf()
         val userList = result.getJSONArray("records")
