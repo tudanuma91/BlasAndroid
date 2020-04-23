@@ -2,6 +2,7 @@ package com.v3.basis.blas.ui.terminal.project
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -29,6 +30,7 @@ class ProjectFragment : Fragment() {
 
     private lateinit var homeViewModel: ProjectViewModel
     private var token: String? = null
+    private var handler = Handler()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -121,9 +123,10 @@ class ProjectFragment : Fragment() {
             }
 
         }
-        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+        handler.post {
+            Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+        }
         val intent = Intent(activity, TerminalActivity::class.java)
-        //intent.putExtra("token",token)
         startActivity(intent)
     }
 

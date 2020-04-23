@@ -173,6 +173,7 @@ class RestHelper {
         return rtnMap
     }
 
+
     fun createCheckValue(value:String?): String {
         var newValue = ""
         if(value != "") {
@@ -194,6 +195,34 @@ class RestHelper {
             }
         }
         return newValue
+    }
+
+
+    /**
+     * userの情報を取得する処理
+     */
+    fun createUserList(result:JSONObject):  MutableMap<String, MutableMap<String, String?>> {
+
+        val rtnMap :MutableMap<String,MutableMap<String, String?>> = mutableMapOf()
+        val userList = result.getJSONArray("records")
+
+        for (i in 0  until userList.length()){
+
+            val valueMap : MutableMap<String,String?> = mutableMapOf()
+            val userObj = JSONObject(userList[i].toString())
+            val userInfo = userObj.getJSONObject("User")
+            //値を格納
+            valueMap.set(key = "user_id", value = userInfo["user_id"].toString())
+            valueMap.set(key = "username", value = userInfo["username"].toString())
+            valueMap.set(key = "mail", value = userInfo["mail"].toString())
+            valueMap.set(key = "org_id", value = userInfo["org_id"].toString())
+            valueMap.set(key = "name", value = userInfo["name"].toString())
+            valueMap.set(key = "group_id", value = userInfo["group_id"].toString())
+            rtnMap.set("${i}",valueMap)
+
+        }
+
+        return rtnMap
     }
 
 

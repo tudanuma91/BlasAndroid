@@ -82,7 +82,10 @@ open class BlasRestImageField(val payload:Map<String, String?>,
             json = JSONObject(result)
             //エラーコード取得
             errorCode = json.getInt("error_code")
-            records = json.getJSONArray("records")
+
+            if(json.has("records")) {
+                records = json.getJSONArray("records")
+            }
 
         } catch (e: JSONException){
             //JSONの展開に失敗

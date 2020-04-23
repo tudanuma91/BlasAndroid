@@ -2,6 +2,7 @@ package com.v3.basis.blas.ui.item.item_view
 
 
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -45,7 +46,7 @@ class ItemViewFragment : Fragment() {
     private var baseList :MutableList<MutableMap<String,String?>> = mutableListOf()
     private lateinit var rootView:View
     private val helper:RestHelper = RestHelper()
-
+    private var handler = Handler()
     private var currentIndex: Int = 0
     companion object {
         const val CREATE_UNIT = 20
@@ -255,7 +256,9 @@ class ItemViewFragment : Fragment() {
             }
         }
 
-        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+        handler.post {
+            Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+        }
 
         itemListAll.clear()
         fieldMap.clear()
@@ -284,8 +287,9 @@ class ItemViewFragment : Fragment() {
                 message = getString(R.string.server_error, errorCode)
             }
         }
-
-        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+        handler.post {
+            Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+        }
 
         //エラーのため、データを初期化する
         itemListAll.clear()
