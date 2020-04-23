@@ -12,6 +12,7 @@ import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.NavigationUI.setupWithNavController
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.v3.basis.blas.R
+import com.v3.basis.blas.ui.ext.setBlasCustomView
 import com.v3.basis.blas.ui.ext.showBackKeyForActionBar
 import kotlinx.android.synthetic.main.activity_item.*
 
@@ -53,6 +54,8 @@ class ItemActivity : AppCompatActivity() {
             showBackKeyForActionBar()
             supportActionBar?.title = destination.label
         }
+
+        setBlasCustomView()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
