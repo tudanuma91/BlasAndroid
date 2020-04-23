@@ -183,7 +183,6 @@ class ItemViewFragment : Fragment() {
 
         createCardManager(list,colMax,"New")
 
-        // update
         if (list.isNotEmpty()) {
             currentIndex += CREATE_UNIT
         }
