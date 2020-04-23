@@ -18,7 +18,7 @@ open class BlasRestOrgs(val payload:Map<String, String?>,
                         val orgsSearchError:(Int,Int)->Unit) : BlasRest() {
 
     init{
-        cacheFileName = context.filesDir.toString() + "/org.json"
+        cacheFileName = context.cacheDir.toString() + "/org.json"
     }
 
     companion object {

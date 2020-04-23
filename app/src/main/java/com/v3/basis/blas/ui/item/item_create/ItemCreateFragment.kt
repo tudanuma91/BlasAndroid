@@ -24,6 +24,7 @@ import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
+import com.v3.basis.blas.ui.ext.addTitle
 import org.json.JSONObject
 import java.nio.channels.NonReadableChannelException
 import java.util.*
@@ -35,6 +36,7 @@ class ItemCreateFragment : Fragment() {
     private lateinit var token: String
     private lateinit var projectId: String
     private lateinit var rootView: LinearLayout
+    private var parentChk :Boolean = true
 
     private var formInfoMap: MutableMap<String, MutableMap<String, String?>> = mutableMapOf()
     private var editMap: MutableMap<String, EditText?> = mutableMapOf()
@@ -61,6 +63,10 @@ class ItemCreateFragment : Fragment() {
     private lateinit var formAction: FormActionDataCreate
     private lateinit var qrCodeView: EditText
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        addTitle("projectName")
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -309,9 +315,31 @@ class ItemCreateFragment : Fragment() {
                         information.set(key = "parentId",value = formInfo.parentFieldId.toString())
                         parentMap.set(cnt.toString(),information)
 
+                    }
 
+                    FieldType.ACOUNT_NAME->{
+
+                        //アカウント名。現在実装不可
+                        val view = TextView(activity)
+                        view.setText("アカウント名は実装中です。完成までお待ちください")
+
+                        view.setTextColor(Color.BLACK)
+                        view.setLayoutParams(layoutParams)
+                        rootView.addView(view)
 
                     }
+
+                    FieldType.SIG_FOX->{
+                        //シグフォックス。現在実装不可
+                        val view = TextView(activity)
+                        view.setText("シグフォックスは使用できません")
+                        //文字の色変更したい。
+                        view.setTextColor(Color.BLACK)
+                        view.setLayoutParams(layoutParams)
+                        rootView.addView(view)
+
+                    }
+
                 }
 
                 //フォームセクションごとにスペース入れる処理。試しに入れてみた。
@@ -340,7 +368,7 @@ class ItemCreateFragment : Fragment() {
 
             //ボタン押下時の処理
             button.setOnClickListener {
-                var parentChk = true
+                parentChk = true
                 val parentErrorMap:MutableMap<String,MutableMap<String,String?>> = mutableMapOf()
 
                 val payload: MutableMap<String, String?> =
@@ -356,8 +384,6 @@ class ItemCreateFragment : Fragment() {
 
                     formInfoMap.forEach {
 
-                        Log.d("send button", "it.value === " + it.value)
-
 
                         when (it.value["type"]) {
                             FieldType.TEXT_FIELD,
@@ -367,7 +393,6 @@ class ItemCreateFragment : Fragment() {
                                 //自由入力(1行)・自由入力(複数行)・日付入力・時間入力
                                 value = formAction.pickUpValue(editMap, cnt)
                                 payload.set("fld${cnt}", value)
-                                Log.d("でばっく処理","値=>${value}")
                             }
 
                             FieldType.SINGLE_SELECTION -> {
@@ -376,7 +401,6 @@ class ItemCreateFragment : Fragment() {
                                     formAction.getCheckedRadioId(radioGroupMap, cnt)
                                 value = formAction.getCheckedValue(radioValue, checkedRadioId)
                                 payload.set("fld${cnt}", "${value}")
-                                Log.d("でばっく処理","値=>${value}")
                             }
 
                             FieldType.MULTIPLE_SELECTION -> {
@@ -384,7 +408,6 @@ class ItemCreateFragment : Fragment() {
                                 val colCheckMap = checkMap.get("col_${cnt}")
                                 value = formAction.getCheckedValues(colCheckMap)
                                 payload.set("fld${cnt}", "${value}")
-                                Log.d("でばっく処理","値=>${value}")
 
                             }
                             FieldType.KENPIN_RENDOU_QR,
@@ -396,19 +419,16 @@ class ItemCreateFragment : Fragment() {
                                 if(colCheckMap != null) {
                                     value = colCheckMap.text.toString()
                                     payload.set("fld${cnt}", "${value}")
-                                    Log.d("でばっく処理","値=>${value}")
                                 }
                             }
                             FieldType.CHECK_VALUE-> {
                                 value = formAction.pickUpValue(editMap, cnt)
-                                payload.set("fld${cnt}", value)
-                                Log.d("でばっく処理", "値=>${value}")
+                                val memoValue = memoMap["col_${cnt}"]?.text.toString()
                                 val protoMap = parentMap[cnt.toString()]
                                 val parentId = protoMap?.get("parentId")
                                 idMap.forEach{
                                     if(it.value == parentId){
                                         var parentValue = ""
-                                        Log.d("parentcol","${it.key}")
                                         val parentCol = it.key
                                         when(formInfoMap[parentCol]?.get("type")){
                                             FieldType.TEXT_FIELD,
@@ -438,22 +458,18 @@ class ItemCreateFragment : Fragment() {
                                                 }
                                             }
                                         }
-                                        Log.d("デバック用ログ","子供の値=>${value}")
-                                        Log.d("デバック用ログ","親の値=>${parentValue}")
                                         if(parentValue != value){
                                             val status :MutableMap<String,String?> = mutableMapOf()
                                             status.set(key = "parentId",value = parentId)
                                             status.set(key = "parentCol",value = parentCol)
                                             parentErrorMap.set(cnt.toString(),status)
-                                            val memoValue = memoMap["col_${cnt}"]?.text.toString()
                                             if(memoValue == ""){
                                                 parentChk = false
                                                 Toast.makeText(activity, getText(R.string.check_error), Toast.LENGTH_SHORT).show()
                                             }
-                                            payload.set("fld${cnt}", "{\"value\":\"${value}\",\"memo\":\"${memoValue}\"}")
-                                            Log.d("デバック用ログ","備考の値${memoValue}")
                                         }
                                     }
+                                    payload.set("fld${cnt}", "{\"value\": \"${value}\", \"memo\": \"${memoValue}\"}")
                                 }
                             }
 
@@ -491,6 +507,9 @@ class ItemCreateFragment : Fragment() {
         var message:String? = null
         
         when(errorCode) {
+            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
+                message = getString(R.string.record_not_found)
+            }
             BlasRestErrCode.NETWORK_ERROR -> {
                 //サーバと通信できません
                 message = getString(R.string.network_error)

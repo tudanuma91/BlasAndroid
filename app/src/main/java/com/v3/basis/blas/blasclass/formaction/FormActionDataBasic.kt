@@ -125,6 +125,12 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
                     formInfo.type = FieldType.CHECK_VALUE
 
                 }
+                FieldType.ACOUNT_NAME->{
+                    formInfo.type = FieldType.ACOUNT_NAME
+                }
+                FieldType.SIG_FOX->{
+                    formInfo.type = FieldType.SIG_FOX
+                }
             }
         }
         return formInfo

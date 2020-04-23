@@ -23,6 +23,7 @@ import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
+import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.item.item_create.ItemCreateFragment
 import org.json.JSONObject
 import java.util.*
@@ -40,7 +41,7 @@ class ItemEditFragment : Fragment() {
     private lateinit var projectId: String
     private lateinit var itemId: String
     private lateinit var rootView: LinearLayout
-
+    private var parentChk :Boolean = true
 
     private var formInfoMap:MutableMap<String, MutableMap<String, String?>> = mutableMapOf()
     private val editMap:MutableMap<String, EditText?> = mutableMapOf()
@@ -51,6 +52,7 @@ class ItemEditFragment : Fragment() {
     private val jsonItem:MutableMap<String,JSONObject> = mutableMapOf()
     private val formDefaultValueList: MutableList<MutableMap<String, String?>> = mutableListOf()
     private val textViewMap:MutableMap<String,TextView> = mutableMapOf()
+    private var memoMap:MutableMap<String,EditText> = mutableMapOf()
 
     private val idMap:MutableMap<String,String?> = mutableMapOf()
     private val parentMap:MutableMap<String,MutableMap<String,String>> = mutableMapOf()
@@ -68,8 +70,13 @@ class ItemEditFragment : Fragment() {
     private val minute = calender.get(Calendar.MONTH)
 
     private lateinit var formAction: FormActionDataEdit
-
+    private val helper:RestHelper = RestHelper()
     private lateinit var qrCodeView: EditText
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        addTitle("projectName")
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -136,6 +143,9 @@ class ItemEditFragment : Fragment() {
         var message:String? = null
         
         when(errorCode) {
+            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
+                message = getString(R.string.record_not_found)
+            }
             BlasRestErrCode.NETWORK_ERROR -> {
                 //サーバと通信できません
                 message = getString(R.string.network_error)
@@ -171,6 +181,9 @@ class ItemEditFragment : Fragment() {
         var message:String? = null
 
         when(errorCode) {
+            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
+                message = getString(R.string.record_not_found)
+            }
             BlasRestErrCode.NETWORK_ERROR -> {
                 //サーバと通信できません
                 message = getString(R.string.network_error)
@@ -308,9 +321,6 @@ class ItemEditFragment : Fragment() {
                                         val protoNum = it.key
                                         colNum = formAction.getColNum(protoNum)
                                         val colId = idMap[colNum.toString()]
-                                        /*Log.d("デバック用ログ","protoNum =>　${protoNum}")
-                                          Log.d("デバック用ログ","colNum =>　${colNum}")
-                                          Log.d("デバック用ログ","colId =>　${colId}")*/
                                         var flg = false
                                         parentMap.forEach{
                                             //親IDが同じかつkeyWordが一致した時の処理
@@ -414,7 +424,6 @@ class ItemEditFragment : Fragment() {
                 FieldType.KENPIN_RENDOU_QR,
                 FieldType.QR_CODE,
                 FieldType.TEKKILYO_RENDOU_QR -> {
-
                     //  QR code 読み取り
                     val layout = requireActivity().layoutInflater.inflate(R.layout.cell_qr_item, null)
                     rootView.addView(layout)
@@ -429,6 +438,46 @@ class ItemEditFragment : Fragment() {
                     //初期値を設定。配列に格納
                     ed.setText(formDefaultValueList[0].get("fld${cnt}").toString())
                     editMap.set(key = "col_${cnt}", value = ed)
+                }
+                FieldType.CHECK_VALUE->{
+                    //値チェック
+                    val layout = requireActivity().layoutInflater.inflate(R.layout.cell_checkvalue, null)
+                    rootView.addView(layout)
+                    val value = layout.findViewById<EditText>(R.id.editValue)
+                    val memo = layout.findViewById<EditText>(R.id.editMemo)
+                    val valueText = helper.createCheckValueText(formDefaultValueList[0].get("fld${cnt}").toString(),"value")
+                    val memoText = helper.createCheckValueText(formDefaultValueList[0].get("fld${cnt}").toString(),"memo")
+
+                    value.setText(valueText)
+                    memo.setText(memoText)
+
+                    editMap.set(key = "col_${cnt}", value = value)
+                    memoMap.set(key = "col_${cnt}",value = memo)
+
+                    val information :MutableMap<String,String> = mutableMapOf()
+                    information.set(key = "parentId",value = formInfo.parentFieldId.toString())
+                    parentMap.set(cnt.toString(),information)
+
+                }
+                FieldType.ACOUNT_NAME->{
+                    //アカウント名。現在実装不可
+                    val view = TextView(activity)
+                    view.setText("アカウント名は実装中です。完成までお待ちください")
+                    //文字の色変更したい。
+                    view.setTextColor(Color.BLACK)
+                    view.setLayoutParams(layoutParams)
+                    rootView.addView(view)
+
+                }
+                FieldType.SIG_FOX->{
+                    //シグフォックス。現在実装不可
+                    val view = TextView(activity)
+                    view.setText("シグフォックスは使用できません")
+                    //文字の色変更したい。
+                    view.setTextColor(Color.BLACK)
+                    view.setLayoutParams(layoutParams)
+                    rootView.addView(view)
+
                 }
             }
             //フォームセクションごとにスペース入れる処理。試しに入れてみた。
@@ -466,6 +515,8 @@ class ItemEditFragment : Fragment() {
 
         //ボタン押下時の処理
         button.setOnClickListener {
+            parentChk = true
+            val parentErrorMap:MutableMap<String,MutableMap<String,String?>> = mutableMapOf()
 
             val payload: MutableMap<String, String?> =
                 mutableMapOf("token" to token, "project_id" to projectId, "item_id" to itemId)
@@ -503,11 +554,62 @@ class ItemEditFragment : Fragment() {
                     FieldType.QR_CODE,
                     FieldType.TEKKILYO_RENDOU_QR->{
                         //格納した値から取得
-
                         val colCheckMap = editMap.get("col_${cnt}")
                         if(colCheckMap != null) {
                             value = colCheckMap.text.toString()
                             payload.set("fld${cnt}", "${value}")
+                        }
+                    }
+                    FieldType.CHECK_VALUE-> {
+                        parentChk = true
+                        value = formAction.pickUpValue(editMap, cnt)
+                        val memoValue = memoMap["col_${cnt}"]?.text.toString()
+                        val protoMap = parentMap[cnt.toString()]
+                        val parentId = protoMap?.get("parentId")
+                        idMap.forEach{
+                            if(it.value == parentId){
+                                var parentValue = ""
+                                val parentCol = it.key
+                                when(formInfoMap[parentCol]?.get("type")){
+                                    FieldType.TEXT_FIELD,
+                                    FieldType.TEXT_AREA,
+                                    FieldType.DATE_TIME,
+                                    FieldType.TIME -> {
+                                        //自由入力(1行)・自由入力(複数行)・日付入力・時間入力
+                                        parentValue = formAction.pickUpValue(editMap, parentCol.toInt())
+                                    }
+                                    FieldType.SINGLE_SELECTION -> {
+                                        //ラジオボタン
+                                        val checkedRadioId = formAction.getCheckedRadioId(radioGroupMap, cnt)
+                                        parentValue = formAction.getCheckedValue(radioValue, checkedRadioId)
+                                    }
+                                    FieldType.MULTIPLE_SELECTION -> {
+                                        //チェックボックス
+                                        val colCheckMap = checkMap.get("col_${cnt}")
+                                        parentValue = formAction.getCheckedValues(colCheckMap)
+                                    }
+                                    FieldType.KENPIN_RENDOU_QR,
+                                    FieldType.QR_CODE,
+                                    FieldType.TEKKILYO_RENDOU_QR -> {
+                                        //配列に格納した値を取得
+                                        val colCheckMap = editMap.get("col_${cnt}")
+                                        if (colCheckMap != null) {
+                                            parentValue = colCheckMap.text.toString()
+                                        }
+                                    }
+                                }
+                                if(parentValue != value){
+                                    val status :MutableMap<String,String?> = mutableMapOf()
+                                    status.set(key = "parentId",value = parentId)
+                                    status.set(key = "parentCol",value = parentCol)
+                                    parentErrorMap.set(cnt.toString(),status)
+                                    if(memoValue == ""){
+                                        parentChk = false
+                                        Toast.makeText(activity, getText(R.string.check_error), Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                            payload.set("fld${cnt}", "{\"value\": \"${value}\", \"memo\": \"${memoValue}\"}")
                         }
                     }
 
@@ -521,7 +623,7 @@ class ItemEditFragment : Fragment() {
 
             //エラーチェック
             errorCnt = formAction.countNullError(nullChk, textViewMap)
-            if (errorCnt == 0) {
+            if (errorCnt == 0 && parentChk) {
                 BlasRestItem("update", payload, ::updateSuccess, ::updateError).execute()
             }
         }

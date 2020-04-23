@@ -1,6 +1,7 @@
 package com.v3.basis.blas.blasclass.formaction
 
 import android.graphics.Color
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -49,8 +50,7 @@ class FormActionDataSearch(setToken: String, setActivity: FragmentActivity) : Fo
     fun createFreeWordSearchTitle(params: LinearLayout.LayoutParams?): TextView {
         val view = TextView(baseActivity)
         val title = "フリーワード検索"
-        var formTitle =
-        view.setText("${title}")
+        view.setText(title)
         //文字の色変更したい。
         view.setTextColor(Color.BLACK)
         view.setLayoutParams(params)
@@ -118,6 +118,19 @@ class FormActionDataSearch(setToken: String, setActivity: FragmentActivity) : Fo
             }
         }
         return value
+    }
+
+
+    fun pickupCheckValue(editMap:MutableMap<String,EditText?>,cnt:Int): String {
+        var newValue = ""
+        val value = editMap.get("col_${cnt}_value")
+        val memo = editMap.get("col_${cnt}_memo")
+
+        if(value != null && memo != null){
+            newValue = "{\"value\": \"${value.text}\", \"memo\": \"${memo.text}\"}"
+        }
+        Log.d("テスト、checkValue","バリュー=>${newValue}")
+        return newValue
     }
 
 }

@@ -21,6 +21,7 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
+import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
 import kotlinx.android.synthetic.main.fragment_fixture_search_result.*
 import org.json.JSONObject
@@ -36,6 +37,10 @@ class FixtureSearchResultFragment : Fragment() {
     private val baseDataList:MutableList<MutableMap<String,String?>> = mutableListOf()
     private var searchValueMap:MutableMap<String,String?> = mutableMapOf()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        addTitle("project_name")
+    }
 
     private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
         override fun onClickRow(tappedView: View, rowModel: RowModel) {
@@ -121,7 +126,7 @@ class FixtureSearchResultFragment : Fragment() {
         Log.d("aaaa","${cnt}")
 
         //ここで検索処理をする
-        val searchResult = searchAndroid(searchValueMap,baseDataList,"")
+        val searchResult = searchAndroid(searchValueMap,baseDataList,"","")
 
         //検索処理の結果を表示
         searchResult.forEach{
@@ -212,6 +217,9 @@ class FixtureSearchResultFragment : Fragment() {
         var message:String? = null
 
         when(errorCode) {
+            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
+                message = getString(R.string.record_not_found)
+            }
             BlasRestErrCode.NETWORK_ERROR -> {
                 //サーバと通信できません
                 message = getString(R.string.network_error)

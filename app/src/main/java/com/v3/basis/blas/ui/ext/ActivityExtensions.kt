@@ -29,6 +29,13 @@ fun AppCompatActivity.showBackKeyForActionBar() {
     }
 }
 
+fun Fragment.addTitle(extraName: String) {
+
+    val actionBar = (requireActivity() as AppCompatActivity).supportActionBar
+    val title = actionBar?.title
+    actionBar?.title = title?.toString() + "　" + getStringExtra(extraName)
+}
+
 /**
  * パーミッションをとる関数。
  */

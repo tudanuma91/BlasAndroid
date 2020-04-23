@@ -24,7 +24,7 @@ open class BlasRestField(
     }
 
     init{
-        cacheFileName = context.filesDir.toString() +  "/field_" + payload["project_id"] + ".json"
+        cacheFileName = context.cacheDir.toString() +  "/field_" + payload["project_id"] + ".json"
     }
 
     /**
@@ -35,10 +35,6 @@ open class BlasRestField(
         var response:String? = null
         try {
             response = super.getResponseData(payload,"GET", BlasRestField.FIELD_SEARCH_URL)
-
-            //TODO テスト用にキューの呼出し追加
-            //   super.reqDataSave(payload,"GET",FIELD_SEARCH_URL,fieldSearchSuccess,fieldSearchError,"Fields")
-
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)

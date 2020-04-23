@@ -3,6 +3,7 @@ package com.v3.basis.blas.ui.item.item_search
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Intent
+import android.graphics.Color
 import android.icu.text.MessagePattern
 import android.os.Bundle
 import android.util.Log
@@ -24,6 +25,7 @@ import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
+import com.v3.basis.blas.ui.ext.addTitle
 import org.json.JSONObject
 import java.util.*
 
@@ -59,6 +61,10 @@ class ItemSearchFragment : Fragment() {
     //インスタンス作成
     private lateinit var formAction:FormActionDataSearch
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        addTitle("projectName")
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -127,7 +133,9 @@ class ItemSearchFragment : Fragment() {
                     FieldType.TEXT_AREA,
                     FieldType.QR_CODE,
                     FieldType.TEKKILYO_RENDOU_QR,
-                    FieldType.KENPIN_RENDOU_QR->{
+                    FieldType.KENPIN_RENDOU_QR,
+                    FieldType.SIG_FOX,
+                    FieldType.ACOUNT_NAME->{
                         //自由入力(1行)または自由入力(複数行)
                         val formPart =formAction.createTextField(layoutParams,cnt,formInfo)
                         rootView.addView(formPart)
@@ -209,6 +217,15 @@ class ItemSearchFragment : Fragment() {
                             }
                         }
                     }
+                    FieldType.CHECK_VALUE->{
+                        val layout = requireActivity().layoutInflater.inflate(R.layout.cell_search_checkvalue, null)
+                        val value = layout.findViewById<EditText>(R.id.searchValue)
+                        val memo = layout.findViewById<EditText>(R.id.searchMemo)
+
+                        rootView.addView(layout)
+                        editMap.set(key = "col_${cnt}_value",value = value )
+                        editMap.set(key = "col_${cnt}_memo",value = memo )
+                    }
 
                 }
                 //フォームセクションごとにスペース入れる処理。試しに入れてみた。
@@ -233,6 +250,7 @@ class ItemSearchFragment : Fragment() {
                 searchValue.set("freeWord",freeWordValue)
                 var cnt = 1
                 var dateTimeCol = ""
+                var checkValueCol = ""
                 formInfoMap.forEach{
                     var value = ""
                     when(it.value["type"]){
@@ -240,7 +258,9 @@ class ItemSearchFragment : Fragment() {
                         FieldType.TEXT_AREA,
                         FieldType.QR_CODE,
                         FieldType.TEKKILYO_RENDOU_QR,
-                        FieldType.KENPIN_RENDOU_QR->{
+                        FieldType.KENPIN_RENDOU_QR,
+                        FieldType.SIG_FOX ,
+                        FieldType.ACOUNT_NAME->{
                             //自由入力(1行)・自由入力(複数行)
                             value = formAction.pickUpValue(editMap,cnt)
                             searchValue.set("fld${cnt}",value)
@@ -248,20 +268,12 @@ class ItemSearchFragment : Fragment() {
 
                         FieldType.DATE_TIME->{
                             //日付入力
-                           /* value = formAction.pickUpDateTime(dateTime,cnt,"Day","Min")
-                            searchValue.set("fld${cnt}_Min",value)
-                            value = formAction.pickUpDateTime(dateTime,cnt,"Day","Max")
-                            searchValue.set("fld${cnt}_Max",value)*/
                             value = formAction.pickUpDateTime(dateTime,cnt,"Day")
                             searchValue.set("fld${cnt}",value)
                             dateTimeCol += "${cnt},"
                         }
                         FieldType.TIME->{
                             //時間入力
-                            /*value = formAction.pickUpDateTime(dateTime,cnt,"Time","Min")
-                            searchValue.set("fld${cnt}_Min",value)
-                            value = formAction.pickUpDateTime(dateTime,cnt,"Time","Max")
-                            searchValue.set("fld${cnt}_Max",value)*/
                             value = formAction.pickUpDateTime(dateTime,cnt,"Time")
                             searchValue.set("fld${cnt}",value)
                             dateTimeCol += "${cnt},"
@@ -274,6 +286,14 @@ class ItemSearchFragment : Fragment() {
                             searchValue.set("fld${cnt}",value)
                         }
 
+                        FieldType.CHECK_VALUE->{
+                            //値チェック時
+                            value = formAction.pickupCheckValue(editMap,cnt)
+                            searchValue.set("fld${cnt}",value)
+                            checkValueCol += "${cnt},"
+
+                        }
+
                         else->{
                             searchValue.set("fld${cnt}",value)
                         }
@@ -281,11 +301,6 @@ class ItemSearchFragment : Fragment() {
                     cnt += 1
                 }
                 //ここから検索処理入れる
-                //ここで新しいアクティビティ？フラグメントを起動
-                searchValue.forEach{
-                    Log.d("testesttest","${it}")
-                }
-                Log.d("ログ取得中","==================================================================")
 
                 //検索結果画面を開くための処理
                 val intent = Intent(activity, ItemSearchResultActivity::class.java)
@@ -299,6 +314,11 @@ class ItemSearchFragment : Fragment() {
                 if(dateTimeCol != "" ){
                     val newDateTimeCol = dateTimeCol.dropLast(1)
                     intent.putExtra("dateTimeCol",newDateTimeCol)
+                }
+
+                if (checkValueCol != ""){
+                    val newCheckValueCol = checkValueCol.dropLast(1)
+                    intent.putExtra("checkValueCol",newCheckValueCol)
                 }
 
                 //検索する値を検索画面に送信する
@@ -319,6 +339,9 @@ class ItemSearchFragment : Fragment() {
         var message:String? = null
 
         when(errorCode) {
+            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
+                message = getString(R.string.record_not_found)
+            }
             BlasRestErrCode.NETWORK_ERROR -> {
                 //サーバと通信できません
                 message = getString(R.string.network_error)

@@ -6,8 +6,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ProgressBar
+import android.widget.Switch
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,6 +21,7 @@ import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
+import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
 import kotlinx.android.synthetic.main.fragment_item_view.recyclerView
 import org.json.JSONObject
@@ -30,10 +34,15 @@ import java.lang.Exception
 class ItemViewFragment : Fragment() {
     var token:String? = null
     var projectId:String? = null
+    private var normalShow = true
+    private var endShow = false
+    private var progressBarFlg = false
+
     private val fieldMap: MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
     private val itemListAll: MutableList<MutableMap<String, String?>> = mutableListOf()
     private val jsonItemList:MutableMap<String,JSONObject> = mutableMapOf()
     private val dataList = mutableListOf<RowModel>()
+    private var baseList :MutableList<MutableMap<String,String?>> = mutableListOf()
     private lateinit var rootView:View
     private val helper:RestHelper = RestHelper()
 
@@ -44,6 +53,7 @@ class ItemViewFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        addTitle("projectName")
     }
 
 
@@ -70,7 +80,42 @@ class ItemViewFragment : Fragment() {
         rootView = root
         token = getStringExtra("token")
         projectId = getStringExtra("project_id")
-        chkProgress(false,root)
+        progressBarFlg = true
+        chkProgress(progressBarFlg,root)
+
+        val normalSwitch = rootView.findViewById<Switch>(R.id.switch_normal)
+        val endSwitch = rootView.findViewById<Switch>(R.id.switch_end_flg)
+        val viewBtn = rootView.findViewById<Button>(R.id.button_view)
+        normalSwitch.setOnCheckedChangeListener{ _, isChecked->
+            if(isChecked){
+                Log.d("デバック管理","チェックされた。ONになった")
+                normalShow = true
+            }else{
+                Log.d("デバック管理","チェックされた。OFFになった")
+                normalShow = false
+            }
+        }
+
+        endSwitch.setOnCheckedChangeListener{_ ,isChecked->
+            if(isChecked){
+                Log.d("デバック管理","チェックされた。ONになった")
+                endShow = true
+            }else{
+                Log.d("デバック管理","チェックされた。OFFになった")
+                endShow = false
+            }
+        }
+
+        viewBtn.setOnClickListener{
+            Log.d("デバック管理","HEllo world")
+            if(progressBarFlg){
+                Log.d("デバック管理","処理させない。ぐるぐるしているから")
+            }else{
+                Log.d("デバック管理","いいっすよ！！！")
+                createCardManager(baseList,fieldMap.size,"Update")
+            }
+
+        }
 
         return root
     }
@@ -88,7 +133,6 @@ class ItemViewFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.d("lifeCycle", "onViewCreated")
         //リサイクラ-viewを取得
         //基本的にデータはまだ到着していないため、空のアクティビティとadapterだけ設定しておく
         val recyclerView = recyclerView
@@ -111,15 +155,14 @@ class ItemViewFragment : Fragment() {
         })
 
         //呼ぶタイミングを確定させる！！
-        chkProgress(true,rootView)
+        progressBarFlg = true
+        chkProgress(progressBarFlg,rootView)
         val payload2 = mapOf("token" to token, "project_id" to projectId)
-        Log.d("aaaaaaa", "処理開始")
         BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
     }
 
     private fun createDataList() {
         var colMax = fieldMap.size
-        Log.d("gafeaqwaf","${colMax}")
         val itemInfo = helper.createItemList(jsonItemList, colMax )
         itemListAll.addAll(itemInfo)
         makeDataList()
@@ -134,46 +177,10 @@ class ItemViewFragment : Fragment() {
             (index >= currentIndex) && (index <= currentIndex + CREATE_UNIT)
         }.toMutableList())
 
-        list.forEach {
-            val item_id = it["item_id"].toString()
-            var text: String? = "String"
-            var loopcnt = 1
-            Log.d("freaga", "${it}")
-            //カラムの定義取得
-            for (col in 1..colMax) {
-                val fldName = "fld${col}"
-                //レコードの定義取得
-                if (loopcnt == 1) {
-                    text = "${fieldMap[col]!!["field_name"]}"
-                    text += " ： ${it[fldName]}"
-                } else {
-                    Log.d("フィールドの値：","値=>${it[fldName]}")
-                    text += "\n${fieldMap[col]!!["field_name"]}"
-                    if(fieldMap[col]!!["type"] == FieldType.CHECK_VALUE){
-                        val newValue = helper.createCheckValue(it[fldName].toString())
-                        text += " ：${newValue}"
-                    }else {
-                        text += " ：${it[fldName]}"
-                    }
-                }
-                loopcnt += 1
-            }
+        baseList = list
 
-            val rowModel = RowModel().also {
-                if (item_id != null) {
-                    it.title = item_id
-                    it.itemId = item_id
-                }
-                if (text != null) {
-                    it.detail = text
-                }
-                it.projectId = projectId
-                it.token = token
-                it.itemList = itemListAll
-            }
 
-            dataList.add(rowModel)
-        }
+        createCardManager(list,colMax,"New")
 
         // update
         if (list.isNotEmpty()) {
@@ -188,19 +195,16 @@ class ItemViewFragment : Fragment() {
         Log.d("konishi", "setAdapter")
         createDataList()
         adapter.notifyItemInserted(0)
-        chkProgress(false,rootView)
+        progressBarFlg = false
+        chkProgress(progressBarFlg,rootView)
     }
 
     /**
      * データ取得時
      */
     private fun itemRecv(result: JSONObject) {
-        Log.d("aaaaaaa", "成功")
         itemListAll.clear()
         jsonItemList.clear()
-        Log.d("aaaaaaa", "${result}")
-        //val itemMap = RestHelper().createItemList(result)
-        //itemMap?.also { itemList.addAll(0, itemMap) }
         jsonItemList.set("1", result)
         if(jsonItemList.isEmpty()){
             Log.d("fteay","jsonitemListはnull")
@@ -214,10 +218,8 @@ class ItemViewFragment : Fragment() {
      * フィールド取得時
      */
     private fun fieldRecv(result: JSONObject) {
-        Log.d("aaaaaaa", "成功")
         //カラム順に並べ替える
         fieldMap.clear()
-        Log.d("aaaaa","${result}")
         val fieldList = helper.createFieldList(result)
         var cnt = 1
         fieldList.forEach{
@@ -240,6 +242,9 @@ class ItemViewFragment : Fragment() {
         var message:String? = null
         
         when(errorCode) {
+            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
+                message = getString(R.string.record_not_found)
+            }
             BlasRestErrCode.NETWORK_ERROR -> {
                 //サーバと通信できません
                 message = getString(R.string.network_error)
@@ -254,6 +259,8 @@ class ItemViewFragment : Fragment() {
 
         itemListAll.clear()
         fieldMap.clear()
+        progressBarFlg = false
+        chkProgress(progressBarFlg,rootView)
     }
 
     /**
@@ -261,10 +268,130 @@ class ItemViewFragment : Fragment() {
      */
     private fun itemRecvError(errorCode: Int , aplCode:Int) {
         Log.d("aaaaaaa", "失敗")
-        Toast.makeText(getActivity(), errorCode.toString(), Toast.LENGTH_LONG).show()
+        
+        var message:String? = null
+        
+        when(errorCode) {
+            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
+                message = getString(R.string.record_not_found)
+            }
+            BlasRestErrCode.NETWORK_ERROR -> {
+                //サーバと通信できません
+                message = getString(R.string.network_error)
+            }
+            else-> {
+                //サーバでエラーが発生しました(要因コード)
+                message = getString(R.string.server_error, errorCode)
+            }
+        }
+
+        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+
         //エラーのため、データを初期化する
         itemListAll.clear()
         fieldMap.clear()
+        progressBarFlg = false
+        chkProgress(progressBarFlg,rootView)
+    }
+
+    private fun  createCardManager(list:MutableList<MutableMap<String,String?>>,colMax : Int,mode:String){
+        Log.d("デバック処理","ノーマルshowの値=>${normalShow}")
+        Log.d("デバック処理","エンドshowの値=>${endShow}")
+        if(mode == "New"){
+            list.forEach {
+                if (it["endFlg"] == "0") {
+                    val item_id = it["item_id"].toString()
+                    var text: String? = ""
+                    text = createCardText(text, it, colMax)
+                    createCard(item_id, text)
+                }
+            }
+
+        }else {
+            //アダプターにつないでいるデータリストを削除する
+            progressBarFlg = true
+            chkProgress(progressBarFlg,rootView)
+            dataList.clear()
+
+            //以下はカードを作成する処理。画面上部のスイッチの状態によって処理内容を変更する
+            if (normalShow && endShow) {
+                list.forEach {
+                    val item_id = it["item_id"].toString()
+                    var text: String? = ""
+                    text = createCardText(text, it, colMax)
+                    createCard(item_id, text)
+                }
+
+            } else if (!normalShow && endShow) {
+                list.forEach {
+                    if (it["endFlg"] == "1") {
+                        val item_id = it["item_id"].toString()
+                        var text: String? = ""
+                        text = createCardText(text, it, colMax)
+                        createCard(item_id, text)
+                    }
+                }
+            } else if (normalShow && !endShow) {
+                list.forEach {
+                    if (it["endFlg"] == "0") {
+                        val item_id = it["item_id"].toString()
+                        var text: String? = ""
+                        text = createCardText(text, it, colMax)
+                        createCard(item_id, text)
+                    }
+                }
+
+            } else {
+
+            }
+            //adapterにリストの内容を変更したことを伝える処理
+            adapter.notifyDataSetChanged()
+            progressBarFlg = false
+            chkProgress(progressBarFlg,rootView)
+        }
+    }
+
+    private fun createCardText(text:String?,it:MutableMap<String,String?>,colMax: Int): String? {
+        var loopcnt = 1
+        var text = text
+        for (col in 1..colMax) {
+            val fldName = "fld${col}"
+            Log.d("デバック用のログ", "itの中身=>${it}")
+            //レコードの定義取得
+            if (loopcnt == 1) {
+                text = "【${fieldMap[col]!!["field_name"]}】\n"
+                text += " ${it[fldName]}\n"
+            } else {
+                text += "【${fieldMap[col]!!["field_name"]}】\n"
+
+                if (fieldMap[col]!!["type"] == FieldType.CHECK_VALUE) {
+                    val newValue = helper.createCheckValue(it[fldName].toString())
+                    text += " ${newValue}\n"
+                } else {
+                    text += " ${it[fldName]}\n"
+                }
+
+            }
+            loopcnt += 1
+        }
+        return text
+    }
+
+    fun createCard(item_id:String,text: String?){
+        val rowModel = RowModel().also {
+            if (item_id != null) {
+                it.title = item_id
+                it.itemId = item_id
+            }
+            if (text != null) {
+                it.detail = text
+            }
+            it.projectId = projectId
+            it.token = token
+            it.itemList = itemListAll
+        }
+
+        dataList.add(rowModel)
     }
 
 

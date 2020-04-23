@@ -12,6 +12,7 @@ import android.widget.Button
 
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemActivity
+import com.v3.basis.blas.ui.ext.addTitle
 
 
 /**
@@ -26,6 +27,7 @@ class ItemResultFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        addTitle("projectName")
     }
 
     override fun onCreateView(

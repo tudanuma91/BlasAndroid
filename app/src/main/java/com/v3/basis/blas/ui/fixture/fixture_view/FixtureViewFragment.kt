@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -21,6 +22,7 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
+import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
 import kotlinx.android.synthetic.main.fragment_item_view.*
 import org.json.JSONObject
@@ -41,6 +43,11 @@ class FixtureViewFragment : Fragment() {
     private var currentIndex: Int = 0
     companion object {
         const val CREATE_UNIT = 20
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        addTitle("project_name")
     }
 
     private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
@@ -204,6 +211,9 @@ class FixtureViewFragment : Fragment() {
 
         var message:String? = null
         when(errorCode) {
+            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
+                message = getString(R.string.record_not_found)
+            }
             BlasRestErrCode.NETWORK_ERROR -> {
                 //サーバと通信できません
                 message = getString(R.string.network_error)
@@ -230,7 +240,7 @@ class FixtureViewFragment : Fragment() {
         var value:String? =null
         value = "【${getString(R.string.col_serialnumber)}】"
         value += "\n  ${list["serial_number"]}"
-        value += "\n\n${getString(R.string.col_serialnumber)}"
+        value += "\n\n【${getString(R.string.col_status)}】\n"
         value += when(list["status"]){//config.FixtureTypeにて定義している。
             canTakeOut -> {"${statusCanTakeOut}"}
             takeOut -> {"${statusTakeOut}"}
@@ -238,29 +248,29 @@ class FixtureViewFragment : Fragment() {
             notTakeOut -> {"${statusNotTakeOut}"}
             else -> { }
         }
-        value += "\n\n\n${getString(R.string.col_kenpin_org)}"
+        value += "\n\n\n【${getString(R.string.col_kenpin_org)}】\n"
         value += setValue(list["fix_org"].toString())
-        value += "\n${getString(R.string.col_kenpin_user)}"
+        value += "\n【${getString(R.string.col_kenpin_user)}】\n"
         value += setValue(list["fix_user"].toString())
-        value += "\n${getString(R.string.col_kenpin_date)}"
+        value += "\n【${getString(R.string.col_kenpin_date)}】\n"
         value += setValue(list["fix_date"].toString())
-        value += "\n\n${getString(R.string.col_takeout_org)}"
+        value += "\n\n【${getString(R.string.col_takeout_org)}】\n"
         value += setValue(list["takeout_org"].toString())
-        value += "\n${getString(R.string.col_takeout_user)}"
+        value += "\n【${getString(R.string.col_takeout_user)}】\n"
         value += setValue(list["takeout_user"].toString())
-        value += "\n${getString(R.string.col_takeout_date)}"
+        value += "\n【${getString(R.string.col_takeout_date)}】\n"
         value += setValue(list["takeout_date"].toString())
-        value += "\n\n${getString(R.string.col_return_org)}"
+        value += "\n\n【${getString(R.string.col_return_org)}】\n"
         value += setValue(list["rtn_org"].toString())
-        value += "\n${getString(R.string.col_return_user)}"
+        value += "\n【${getString(R.string.col_return_user)}】\n"
         value += setValue(list["rtn_user"].toString())
-        value += "\n${getString(R.string.col_return_date)}"
+        value += "\n【${getString(R.string.col_return_date)}】\n"
         value += setValue(list["rtn_date"].toString())
-        value += "\n\n${getString(R.string.col_item_org)}"
+        value += "\n\n【${getString(R.string.col_item_org)}】\n"
         value += setValue(list["item_org"].toString())
-        value += "\n${getString(R.string.col_item_user)}"
+        value += "\n【${getString(R.string.col_item_user)}】\n"
         value += setValue(list["item_user"].toString())
-        value += "\n${getString(R.string.col_item_date)}"
+        value += "\n【${getString(R.string.col_item_date)}】\n"
         value += setValue(list["item_date"].toString())
 
         return value

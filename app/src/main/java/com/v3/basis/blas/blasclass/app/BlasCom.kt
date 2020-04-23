@@ -13,6 +13,7 @@ import java.time.temporal.ChronoUnit
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 import android.icu.text.SimpleDateFormat
+import com.v3.basis.blas.blasclass.helper.RestHelper
 import java.lang.Exception
 import java.security.MessageDigest
 import java.util.*
@@ -104,7 +105,10 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
      * @param dateTimeCol 日付・時間検索のカラム
      * @return result 検索結果
      */
-    public fun searchAndroid(cond:MutableMap<String, String?>, search:MutableList<MutableMap<String, String?>>,dateTimeCol:String): MutableList<MutableMap<String, String?>> {
+    public fun searchAndroid(cond:MutableMap<String, String?>,
+                             search:MutableList<MutableMap<String, String?>>,
+                             dateTimeCol:String,
+                             checkValue:String): MutableList<MutableMap<String, String?>> {
         //TODO:検索窓に記号が入力されたときの処理を実装する
         //java.util.regex.PatternSyntaxException: Incorrectly nested parentheses in regexp pattern near index 1
         //多分だけど、"("は判定できないのかな？ちょっとテストする必要あり
@@ -113,11 +117,15 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
         //別件だけど$,^,|,:,でなぜか全件ヒットする...
 
         val dateTimeColList :MutableList<String> = mutableListOf()
+        val checkValueColList :MutableList<String> = mutableListOf()
         val result = search.toMutableList()
         val chkList :MutableList<Int> = mutableListOf()
         val removeIdList:MutableList<MutableList<Int>> = mutableListOf()
         if(dateTimeCol != "") {
             dateTimeColList.addAll(dateTimeCol.split(","))
+        }
+        if(checkValue != ""){
+            checkValueColList.addAll(checkValue.split(","))
         }
 
 
@@ -145,31 +153,29 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
                 }
                 removeIdList.add(chkList)
             }
-
             if(fld.containsMatchIn(condKey) && condValue != ""){
                 //keyがfld○○の場合の関数を作る => データ管理画面から検索をした時の処理
-                if(dateTimeColList.size != 0) {
-                    //検索項目の中に日付・時間検索が含まれているとき
-                    val target = condKey.drop(3)
-                    var dateFlg = false
-                    dateTimeCol.forEach {
-                        if (target == it.toString()) {
-                            dateFlg = true
-                        }
-                    }
-                    if (dateFlg) {
-                        val dataRemoveIdList = itemSearchDateTimeManager(condKey,condValue,result)
-                        removeIdList.add(dataRemoveIdList)
+                // 検索項目の中に日付・時間検索が含まれているとき
+                val target = condKey.drop(3)
+               // val dataRemoveIdList  :MutableList<Int> = mutableListOf()
+                if(dateTimeColList.contains(target)){
+                    val dataRemoveIdList = itemSearchDateTimeManager(condKey,condValue,result)
+                    removeIdList.add(dataRemoveIdList)
 
-                    } else {
-                        val dataRemoveIdList = itemSearch(condKey, condValue, result)
-                        removeIdList.add(dataRemoveIdList)
-                    }
+                }else if(checkValueColList.contains(target)){
+                    //値チェックの項目
+                    Log.d("dsfsgh","分岐可能分岐した")
+                    Log.d("dsfsgh","分岐可能分岐した")
+                    val dataRemoveIdList = itemSearchCheckValue(condKey,condValue,result)
+                    removeIdList.add(dataRemoveIdList)
 
-                }else{
+                } else {
                     val dataRemoveIdList = itemSearch(condKey, condValue, result)
                     removeIdList.add(dataRemoveIdList)
                 }
+                //removeIdList.add(dataRemoveIdList)
+
+
             }
 
             if(!fld.containsMatchIn(condKey) && condKey !="freeWord" && condValue != ""){
@@ -775,4 +781,41 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
 
         return hashStr
 
+    }
+
+    fun itemSearchCheckValue(condKey:String,condValue:String?, search:MutableList<MutableMap<String, String?>>): MutableList<Int>{
+        val delList : MutableList<Int> = mutableListOf()
+        val helper = RestHelper()
+        val valueText = helper.createCheckValueText(condValue,"value")
+        val keyText = helper.createCheckValueText(condValue,"memo")
+        val keyValueText = Regex(valueText)
+        val keyMemoText = Regex(keyText)
+        for (idx in 0 until search.size){
+            val baseString  = search[idx][condKey].toString()
+            if(baseString != "") {
+                if(valueText != "" && keyText != "") {
+                    val baseValueText = helper.createCheckValueText(baseString, "value")
+                    val baseMemoText = helper.createCheckValueText(baseString, "memo")
+                    if (!keyMemoText.containsMatchIn(baseMemoText) || !keyValueText.containsMatchIn(baseValueText)) {
+                        delList.add(idx)
+                    }
+                }
+                if(valueText !="" && keyText == ""){
+                    val baseValueText = helper.createCheckValueText(baseString, "value")
+                    if (!keyValueText.containsMatchIn(baseValueText)) {
+                        delList.add(idx)
+                    }
+                }
+                if (valueText == "" && keyText !=""){
+                    val baseMemoText = helper.createCheckValueText(baseString, "memo")
+                    if (!keyMemoText.containsMatchIn(baseMemoText) ) {
+                        delList.add(idx)
+                    }
+                }
+            }else{
+                delList.add(idx)
+            }
+        }
+
+        return delList
     }

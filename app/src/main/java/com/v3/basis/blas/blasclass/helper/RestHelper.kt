@@ -47,7 +47,6 @@ class RestHelper {
             val jsonField = JSONObject(jsonStr)
             val field = jsonField.getJSONObject("Field")
             //値の取得と格納
-            Log.d("デバック用ログ","取得した値=>${field}")
             valueMap.set(key = "field_col" ,value = field["col"].toString())
             valueMap.set(key = "field_name",value = field["name"].toString())
             valueMap.set(key = "type",value = field["type"].toString())
@@ -84,7 +83,10 @@ class RestHelper {
                 //Nullの時true。それ以外でfalseが入る
                 val chk = item.isNull("fld${j}")
                 val inputValue = if(chk) "" else value
+                val endFlg = item["end_flg"].toString()
+
                 valueMap.set(key = "fld${j}", value = inputValue)
+                valueMap.set(key = "endFlg", value = endFlg)
             }
             rtnMap.add(i,valueMap)
         }
@@ -136,7 +138,6 @@ class RestHelper {
             if(item["item_id"] == item_id.toString()){
                 valueMap.set(key = "item_id",value = item["item_id"].toString() )
                 for(j in 1 ..colMax ){
-                    Log.d("デバック用ログ","配列の中身は以下になる=>${item}")
                     val value = item["fld${j}"].toString()
                     //Nullの時true。それ以外でfalseが入る
                     val chk = item.isNull("fld${j}")
@@ -176,14 +177,25 @@ class RestHelper {
         var newValue = ""
         if(value != "") {
             val jsonValue = JSONObject(value)
-            Log.d("デバック用ログ", "値はこのとおり=>${jsonValue["value"]}")
             newValue += "${jsonValue["value"]}"
-            if (jsonValue["memo"].toString() != "") {
+            if (jsonValue["memo"].toString() != "" && !jsonValue.isNull("memo") ) {
                 newValue += "(備考)${jsonValue["memo"]}"
             }
         }
         return newValue
     }
+
+    fun createCheckValueText(value: String?,type:String):String{
+        var newValue = ""
+        if(value != null) {
+            val jsonValue = JSONObject(value)
+            if (jsonValue[type].toString() != "" && !jsonValue.isNull(type)) {
+                newValue = jsonValue[type].toString()
+            }
+        }
+        return newValue
+    }
+
 
 }
 

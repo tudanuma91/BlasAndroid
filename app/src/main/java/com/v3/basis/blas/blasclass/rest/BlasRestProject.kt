@@ -22,7 +22,7 @@ open class BlasRestProject(val payload:Map<String, String?>,
 
     private val SEARCH_PGOJECT_URL = BlasRest.URL + "projects/search/"
     init{
-        cacheFileName = context.filesDir.toString() + "/project.json"
+        cacheFileName = context.cacheDir.toString() + "/project.json"
     }
 
     /**
