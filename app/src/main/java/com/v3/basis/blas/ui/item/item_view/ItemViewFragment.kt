@@ -302,11 +302,12 @@ class ItemViewFragment : Fragment() {
         Log.d("デバック処理","エンドshowの値=>${endShow}")
         if(mode == "New"){
             list.forEach {
-                if (it["endFlg"] == "0") {
+                val valueFlg = it["endFlg"].toString()
+                if (valueFlg == FieldType.NORMAL) {
                     val item_id = it["item_id"].toString()
                     var text: String? = ""
                     text = createCardText(text, it, colMax)
-                    createCard(item_id, text)
+                    createCard(item_id, text,valueFlg)
                 }
             }
 
@@ -319,28 +320,31 @@ class ItemViewFragment : Fragment() {
             //以下はカードを作成する処理。画面上部のスイッチの状態によって処理内容を変更する
             if (normalShow && endShow) {
                 list.forEach {
+                    val valueFlg = it["endFlg"].toString()
                     val item_id = it["item_id"].toString()
                     var text: String? = ""
                     text = createCardText(text, it, colMax)
-                    createCard(item_id, text)
+                    createCard(item_id, text,valueFlg)
                 }
 
             } else if (!normalShow && endShow) {
                 list.forEach {
-                    if (it["endFlg"] == "1") {
+                    val valueFlg = it["endFlg"].toString()
+                    if (valueFlg == FieldType.END) {
                         val item_id = it["item_id"].toString()
                         var text: String? = ""
                         text = createCardText(text, it, colMax)
-                        createCard(item_id, text)
+                        createCard(item_id, text,valueFlg)
                     }
                 }
             } else if (normalShow && !endShow) {
                 list.forEach {
-                    if (it["endFlg"] == "0") {
+                    val valueFlg = it["endFlg"].toString()
+                    if (valueFlg == FieldType.NORMAL) {
                         val item_id = it["item_id"].toString()
                         var text: String? = ""
                         text = createCardText(text, it, colMax)
-                        createCard(item_id, text)
+                        createCard(item_id, text,valueFlg)
                     }
                 }
 
@@ -380,10 +384,15 @@ class ItemViewFragment : Fragment() {
         return text
     }
 
-    fun createCard(item_id:String,text: String?){
+    fun createCard(item_id:String,text: String?,valueFlg : String){
         val rowModel = RowModel().also {
             if (item_id != null) {
-                it.title = item_id
+                if(valueFlg == FieldType.END) {
+                    getString(R.string.endflg_text)
+                    it.title = "${item_id}${getString(R.string.endflg_text)}"
+                }else{
+                    it.title = item_id
+                }
                 it.itemId = item_id
             }
             if (text != null) {

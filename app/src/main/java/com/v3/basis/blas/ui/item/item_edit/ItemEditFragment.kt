@@ -14,7 +14,6 @@ import android.view.ViewGroup
 import android.widget.*
 
 import com.v3.basis.blas.R
-import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.QRActivity
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.BTN_SAVE
 import com.v3.basis.blas.blasclass.config.FieldType
@@ -23,9 +22,10 @@ import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
+import com.v3.basis.blas.blasclass.rest.BlasRestUser
 import com.v3.basis.blas.ui.ext.addTitle
-import com.v3.basis.blas.ui.item.item_create.ItemCreateFragment
 import org.json.JSONObject
+import java.lang.reflect.Field
 import java.util.*
 
 /**
@@ -53,6 +53,7 @@ class ItemEditFragment : Fragment() {
     private val formDefaultValueList: MutableList<MutableMap<String, String?>> = mutableListOf()
     private val textViewMap:MutableMap<String,TextView> = mutableMapOf()
     private var memoMap:MutableMap<String,EditText> = mutableMapOf()
+    private var userMap :MutableMap<String,String?> = mutableMapOf()
 
     private val idMap:MutableMap<String,String?> = mutableMapOf()
     private val parentMap:MutableMap<String,MutableMap<String,String>> = mutableMapOf()
@@ -118,8 +119,10 @@ class ItemEditFragment : Fragment() {
         //レイアウトの設置位置の設定
         val payload = mapOf("token" to token, "project_id" to projectId)
         val payloadItem = mapOf("token" to token, "project_id" to projectId )
+        val payload2 = mapOf("token" to token,"my_self" to "1")
         //item_idでの取得ができない!!
         BlasRestField(payload, ::getSuccess, ::getFail).execute()
+        BlasRestUser(payload2, ::userGetSuccess, ::userGetFail).execute()
         BlasRestItem("search", payloadItem, ::itemRecv, ::itemRecvError).execute()
     }
 
@@ -460,13 +463,16 @@ class ItemEditFragment : Fragment() {
 
                 }
                 FieldType.ACOUNT_NAME->{
-                    //アカウント名。現在実装不可
-                    val view = TextView(activity)
-                    view.setText("アカウント名は実装中です。完成までお待ちください")
-                    //文字の色変更したい。
-                    view.setTextColor(Color.BLACK)
-                    view.setLayoutParams(layoutParams)
-                    rootView.addView(view)
+
+                    val layout = requireActivity().layoutInflater.inflate(R.layout.cell_account,null)
+                    rootView.addView(layout)
+                    val account = layout.findViewById<EditText>(R.id.editAccount)
+                    val btn = layout.findViewById<Button>(R.id.buttonAccount)
+                    btn.setOnClickListener{
+                        account.setText(userMap["name"])
+                    }
+                    account.setText(formDefaultValueList[0].get("fld${cnt}").toString())
+                    editMap.set(key = "col_${cnt}", value = account)
 
                 }
                 FieldType.SIG_FOX->{
@@ -550,6 +556,13 @@ class ItemEditFragment : Fragment() {
                         value = formAction.getCheckedValues(colCheckMap)
                         payload.set("fld${cnt}", "${value}")
                     }
+                    FieldType.ACOUNT_NAME->{
+                        val colCheckMap = editMap.get("col_${cnt}")
+                        if(colCheckMap != null) {
+                            value = colCheckMap.text.toString()
+                            payload.set("fld${cnt}", "${value}")
+                        }
+                    }
                     FieldType.KENPIN_RENDOU_QR,
                     FieldType.QR_CODE,
                     FieldType.TEKKILYO_RENDOU_QR->{
@@ -611,6 +624,10 @@ class ItemEditFragment : Fragment() {
                             }
                             payload.set("fld${cnt}", "{\"value\": \"${value}\", \"memo\": \"${memoValue}\"}")
                         }
+                    }
+                    FieldType.SIG_FOX->{
+                        value = formDefaultValueList[0].get("fld${cnt}").toString()
+                        payload.set("fld${cnt}",value)
                     }
 
                 }
@@ -695,5 +712,21 @@ class ItemEditFragment : Fragment() {
             val qr = data?.getStringExtra("qr_code")
             qrCodeView.setText(qr)
         }
+    }
+
+    private fun userGetSuccess(result: JSONObject){
+        val test = helper.createUserList(result)
+        test.forEach{
+            val map = it.value
+            map.forEach{
+                userMap.set(key = it.key,value = it.value)
+            }
+        }
+        Log.d("デバックログ","ユーザの中身=>${userMap}")
+    }
+
+
+    private fun userGetFail(errorCode: Int, aplCode:Int){
+
     }
 }

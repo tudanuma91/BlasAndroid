@@ -19,6 +19,7 @@ class FieldType {
         val UNIQUE_CHK = "unique_chk"
         val TURE = "1"
         val FALSE = "0"
-
+        val NORMAL = "0"
+        val END = "1"
     }
 }

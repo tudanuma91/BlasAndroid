@@ -89,6 +89,7 @@
     <string name="col_item_date">設置した日</string>
     <string name="col_datetime">時間</string>
     <string name="col_day">日付</string>
+    <string name="col_account">アカウント名を入力する</string>
 
 
     <!-- 登録データ画像 -->
@@ -102,6 +103,9 @@
     <string name="switch_normal">通常のデータ</string>
     <string name="switch_end_flg">ゴミ箱のデータ</string>
     <string name="switch_view">表示する</string>
+    <string name="endflg_text">(ゴミ箱のデータ)</string>
+
+    <!-- 作成画面等-->
 
 
 </resources>

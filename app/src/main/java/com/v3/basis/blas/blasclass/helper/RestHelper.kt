@@ -186,6 +186,7 @@ class RestHelper {
         return newValue
     }
 
+
     fun createCheckValueText(value: String?,type:String):String{
         var newValue = ""
         if(value != null) {

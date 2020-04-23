@@ -24,9 +24,9 @@ import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
+import com.v3.basis.blas.blasclass.rest.BlasRestUser
 import com.v3.basis.blas.ui.ext.addTitle
 import org.json.JSONObject
-import java.nio.channels.NonReadableChannelException
 import java.util.*
 
 /**
@@ -47,11 +47,13 @@ class ItemCreateFragment : Fragment() {
     private var layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
     private var layoutParamsSpace = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 50)
     private var memoMap:MutableMap<String,EditText> = mutableMapOf()
+    private var userMap :MutableMap<String,String?> = mutableMapOf()
 
     private val idMap:MutableMap<String,String?> = mutableMapOf()
     private val parentMap:MutableMap<String,MutableMap<String,String>> = mutableMapOf()
     private val selectValueMap:MutableMap<String,MutableList<String>> = mutableMapOf()
     private val valueIdColMap : MutableMap<String,String> = mutableMapOf()
+    private val helper:RestHelper = RestHelper()
 
     private val calender = Calendar.getInstance()
     private val year = calender.get(Calendar.YEAR)
@@ -100,7 +102,9 @@ class ItemCreateFragment : Fragment() {
         rootView.addView(space)
         //レイアウトの設置位置の設定
         val payload = mapOf("token" to token, "project_id" to projectId)
+        val payload2 = mapOf("token" to token,"my_self" to "1")
         BlasRestField(payload, ::getSuccess, ::getFail).execute()
+        BlasRestUser(payload2, ::userGetSuccess, ::userGetFail).execute()
 
     }
 
@@ -111,7 +115,7 @@ class ItemCreateFragment : Fragment() {
         var checkCount = 1
         if (result != null) {
             //colによる並び替えが発生しているため、ソートを行う
-            val sortFormFieldList = RestHelper().createFormField(result)
+            val sortFormFieldList = helper.createFormField(result)
             val test = sortFormFieldList.values.sortedBy { it["field_col"]!!.toInt() }
             test.forEach {
                 Log.d("aaaaaaa", "${it}")
@@ -318,15 +322,15 @@ class ItemCreateFragment : Fragment() {
                     }
 
                     FieldType.ACOUNT_NAME->{
-
                         //アカウント名。現在実装不可
-                        val view = TextView(activity)
-                        view.setText("アカウント名は実装中です。完成までお待ちください")
-
-                        view.setTextColor(Color.BLACK)
-                        view.setLayoutParams(layoutParams)
-                        rootView.addView(view)
-
+                        val layout = requireActivity().layoutInflater.inflate(R.layout.cell_account, null)
+                        rootView.addView(layout)
+                        val editAccount = layout.findViewById<EditText>(R.id.editAccount)
+                        val btn = layout.findViewById<Button>(R.id.buttonAccount)
+                        btn.setOnClickListener{
+                            editAccount.setText(userMap["name"])
+                        }
+                        editMap.set(key = "col_${cnt}", value = editAccount)
                     }
 
                     FieldType.SIG_FOX->{
@@ -421,6 +425,13 @@ class ItemCreateFragment : Fragment() {
                                     payload.set("fld${cnt}", "${value}")
                                 }
                             }
+                            FieldType.ACOUNT_NAME->{
+                                val colCheckMap = editMap.get("col_${cnt}")
+                                if(colCheckMap != null) {
+                                    value = colCheckMap.text.toString()
+                                    payload.set("fld${cnt}", "${value}")
+                                }
+                            }
                             FieldType.CHECK_VALUE-> {
                                 value = formAction.pickUpValue(editMap, cnt)
                                 val memoValue = memoMap["col_${cnt}"]?.text.toString()
@@ -457,6 +468,12 @@ class ItemCreateFragment : Fragment() {
                                                     parentValue = colCheckMap.text.toString()
                                                 }
                                             }
+                                            FieldType.ACOUNT_NAME->{
+                                                val colCheckMap = editMap.get("col_${cnt}")
+                                                if (colCheckMap != null) {
+                                                    parentValue = colCheckMap.text.toString()
+                                                }
+                                            }
                                         }
                                         if(parentValue != value){
                                             val status :MutableMap<String,String?> = mutableMapOf()
@@ -472,7 +489,6 @@ class ItemCreateFragment : Fragment() {
                                     payload.set("fld${cnt}", "{\"value\": \"${value}\", \"memo\": \"${memoValue}\"}")
                                 }
                             }
-
                         }
 
                         val nullChkMap: MutableMap<String, String> =
@@ -591,6 +607,22 @@ class ItemCreateFragment : Fragment() {
             val qr = data?.getStringExtra("qr_code")
             qrCodeView.setText(qr)
         }
+    }
+
+    private fun userGetSuccess(result: JSONObject){
+        val test = helper.createUserList(result)
+        test.forEach{
+            val map = it.value
+            map.forEach{
+                userMap.set(key = it.key,value = it.value)
+            }
+        }
+        Log.d("デバックログ","ユーザの中身=>${userMap}")
+    }
+
+
+    private fun userGetFail(errorCode: Int, aplCode:Int){
+
     }
 }
 

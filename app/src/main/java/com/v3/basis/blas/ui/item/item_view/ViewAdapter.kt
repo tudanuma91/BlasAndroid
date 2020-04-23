@@ -1,5 +1,6 @@
 package com.v3.basis.blas.ui.item.item_view
 
+import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -26,6 +27,11 @@ class ViewAdapter(private val list: List<RowModel>, private val listener: ListLi
         holder.itemList = model.itemList
         holder.itemView.setOnClickListener { listener.onClickRow(it, model) }
         holder.image.setOnClickListener { listener.onClickImage(model.itemId) }
+
+        val regex = Regex("ゴミ箱のデータ")
+        if(regex.containsMatchIn(holder.titleView.text.toString())){
+            holder.titleView.setTextColor(Color.RED)
+        }
     }
 
     override fun getItemCount(): Int {
