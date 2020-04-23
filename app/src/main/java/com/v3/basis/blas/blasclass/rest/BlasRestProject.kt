@@ -76,7 +76,7 @@ open class BlasRestProject(val payload:Map<String, String?>,
 
         //BLASから取得したデータをjson形式に変換する
         var json:JSONObject? = null
-        var errorCode:Int
+        var errorCode:Int = 0
 
         try {
             json = JSONObject(result)
@@ -84,11 +84,9 @@ open class BlasRestProject(val payload:Map<String, String?>,
             errorCode = json.getInt("error_code")
             records = json.getJSONArray("records")
 
-
         } catch (e: JSONException){
             //JSONの展開に失敗
-            Toast.makeText(context, "データの取得", Toast.LENGTH_LONG).show()
-            return
+            Toast.makeText(context, "データ取得失敗", Toast.LENGTH_LONG).show()
         }
 
         //正常時だけキャッシュに保存する
