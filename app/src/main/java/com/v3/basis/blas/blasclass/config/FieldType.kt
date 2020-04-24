@@ -21,5 +21,6 @@ class FieldType {
         val FALSE = "0"
         val NORMAL = "0"
         val END = "1"
+        val ENDTEXT = "(ゴミ箱のデータ)"
     }
 }
