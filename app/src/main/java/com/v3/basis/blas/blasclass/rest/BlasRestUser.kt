@@ -21,9 +21,7 @@ open class BlasRestUser(val payload:Map<String, String?>,
                         val funcError:(Int,Int)->Unit) : BlasRest() {
 
     private val SEARCH_USER_URL = BlasRest.URL + "users/search/"
-    init{
-        cacheFileName = context.cacheDir.toString() + "/user.json"
-    }
+    val cacheFileName = context.cacheDir.toString() + "/user.json"
 
     /**
      * ユーザー一覧取得要求をBLASに送信する

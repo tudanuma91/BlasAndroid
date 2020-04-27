@@ -91,6 +91,7 @@ object QueueController {
 
         var resCorde : Int
         var response : String
+        lateinit var result:Pair<Int,String>
 
         /* 通信のバックグラウンド処理 */
         while(!stop_flg) {
@@ -99,7 +100,11 @@ object QueueController {
                 reqList = loadQueueFromDB()
 
                 for (i in reqList.indices) {
-                    var result  = doConnect(reqList[i])
+                    try {
+                        result = doConnect(reqList[i])
+                    }catch(e:Exception) {
+                        Log.e("ConnectError", e.toString())
+                    }
 
                     try {
                         // 通信が正常の場合

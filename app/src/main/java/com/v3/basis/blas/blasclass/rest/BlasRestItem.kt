@@ -158,18 +158,30 @@ open class BlasRestItem(val crud:String = "search",
 
         var idex:Int
         val responseJson = JSONObject(response)
-        val check = responseJson.getJSONArray("checkField")
         val resultList: MutableList<String> = mutableListOf()
+        var check:JSONObject
+        var fldStr:String
+
+        if (responseJson.has("unique_chk")) {
+            check = responseJson.getJSONObject("unique_chk")
+        }else{
+            return resultList
+        }
 
         for (idex in 0 until check.length()){
-            val field = check.get(idex)
-            val fieldJson = JSONObject(field.toString())
-            val valLIst = fieldJson.getJSONArray(check[idex].toString())
+
+            if (check.has("fld${idex}")) {
+                fldStr = check["fld${idex}"].toString()
+            }else{
+                continue
+            }
+
+            val valLIst = JSONObject(fldStr)
 
             for ((payKey, payValue) in payload) {
                 for (j in 0 until valLIst.length()) {
-                    if(payKey == field.toString()){
-                        if(payValue == valLIst[j].toString()){
+                    if(payKey == "fld${idex}"){
+                        if(payValue == valLIst["${j}"].toString()){
                             resultList.add(payKey)
                             break
                         }
