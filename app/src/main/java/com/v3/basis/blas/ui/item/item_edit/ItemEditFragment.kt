@@ -521,6 +521,7 @@ class ItemEditFragment : Fragment() {
 
         //ボタン押下時の処理
         button.setOnClickListener {
+            formAction.setDefaultTitle(textViewMap)
             parentChk = true
             val parentErrorMap:MutableMap<String,MutableMap<String,String?>> = mutableMapOf()
 

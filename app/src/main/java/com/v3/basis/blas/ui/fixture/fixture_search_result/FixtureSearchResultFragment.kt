@@ -1,6 +1,7 @@
 package com.v3.basis.blas.ui.fixture.fixture_search_result
 
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -121,31 +122,43 @@ class FixtureSearchResultFragment : Fragment() {
         BlasRestFixture("search",payload2, ::fixtureGetSuccess, ::fixtureGetError).execute()
     }
 
-    private fun createDataList(): List<RowModel> {
+    private fun createDataList() {
         val cnt = 1
         Log.d("aaaa","${cnt}")
 
         //ここで検索処理をする
         val searchResult = searchAndroid(searchValueMap,baseDataList,"","")
+        if(searchResult.size > 0) {
 
-        //検索処理の結果を表示
-        searchResult.forEach{
-            val fixture_id = it["fixture_id"]
-            //バリューの取得
-            val value = createValue(it)
-            val rowModel = RowModel().also {
-                //モデル作成
-                if(fixture_id != null ){
-                    it.title = fixture_id.toString()
+            //検索処理の結果を表示
+            searchResult.forEach {
+                val fixture_id = it["fixture_id"]
+                //バリューの取得
+                val value = createValue(it)
+                val rowModel = RowModel().also {
+                    //モデル作成
+                    if (fixture_id != null) {
+                        it.title = fixture_id.toString()
+                    }
+                    if (value != null) {
+                        it.detail = value
+                    }
                 }
-                if (value != null){
-                    it.detail = value
-                }
+                //作成したもでモデルを追加。表示する。
+                dataList.add(rowModel)
             }
-            //作成したもでモデルを追加。表示する。
-            dataList.add(rowModel)
+        }else{
+            val title = getString(R.string.dialog_title)
+            val text = getString(R.string.search_error)
+            AlertDialog.Builder(activity)
+                .setTitle(title)
+                .setMessage(text)
+                .setPositiveButton("OK"){ dialog, which ->
+                    activity!!.finish()
+                }
+                .show()
         }
-        return dataList
+
     }
 
     /**

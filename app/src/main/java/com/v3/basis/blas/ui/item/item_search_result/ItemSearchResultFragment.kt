@@ -1,15 +1,14 @@
 package com.v3.basis.blas.ui.item.item_search_result
 
 
+import android.app.AlertDialog
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.Switch
-import android.widget.Toast
+import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
@@ -155,9 +154,20 @@ class ItemSearchResultFragment : Fragment() {
         itemList.addAll(itemInfo)
 
         baseList = itemList
-
-        createCardManager(itemList,colMax,"New")
-
+        Log.d("デバックログ","baseListの中身=>${baseList.size}")
+        if(baseList.size > 0) {
+            createCardManager(itemList, colMax, "New")
+        }else{
+            val title = getString(R.string.dialog_title)
+            val text = getString(R.string.search_error)
+            AlertDialog.Builder(activity)
+                .setTitle(title)
+                .setMessage(text)
+                .setPositiveButton("OK"){ dialog, which ->
+                    activity!!.finish()
+                }
+                .show()
+        }
     }
 
     /**
@@ -263,11 +273,12 @@ class ItemSearchResultFragment : Fragment() {
         Log.d("デバック処理","エンドshowの値=>${endShow}")
         if(mode == "New"){
             list.forEach {
-                if (it["endFlg"] == "0") {
+                val valueFlg = it["endFlg"].toString()
+                if (valueFlg == FieldType.NORMAL) {
                     val item_id = it["item_id"].toString()
                     var text: String? = ""
                     text = createCardText(text, it, colMax)
-                    createCard(item_id, text)
+                    createCard(item_id, text,valueFlg)
                 }
             }
 
@@ -280,28 +291,31 @@ class ItemSearchResultFragment : Fragment() {
             //以下はカードを作成する処理。画面上部のスイッチの状態によって処理内容を変更する
             if (normalShow && endShow) {
                 list.forEach {
+                    val valueFlg = it["endFlg"].toString()
                     val item_id = it["item_id"].toString()
                     var text: String? = ""
                     text = createCardText(text, it, colMax)
-                    createCard(item_id, text)
+                    createCard(item_id, text,valueFlg)
                 }
 
             } else if (!normalShow && endShow) {
                 list.forEach {
-                    if (it["endFlg"] == "1") {
+                    val valueFlg = it["endFlg"].toString()
+                    if (valueFlg == FieldType.END) {
                         val item_id = it["item_id"].toString()
                         var text: String? = ""
                         text = createCardText(text, it, colMax)
-                        createCard(item_id, text)
+                        createCard(item_id, text,valueFlg)
                     }
                 }
             } else if (normalShow && !endShow) {
                 list.forEach {
-                    if (it["endFlg"] == "0") {
+                    val valueFlg = it["endFlg"].toString()
+                    if (valueFlg == FieldType.NORMAL) {
                         val item_id = it["item_id"].toString()
                         var text: String? = ""
                         text = createCardText(text, it, colMax)
-                        createCard(item_id, text)
+                        createCard(item_id, text,valueFlg)
                     }
                 }
 
@@ -339,10 +353,14 @@ class ItemSearchResultFragment : Fragment() {
         return text
     }
 
-    fun createCard(item_id:String,text: String?){
+    fun createCard(item_id:String,text: String?,valueFlg:String){
         val rowModel = RowModel().also {
             if (item_id != null) {
-                it.title = item_id
+                if(valueFlg == FieldType.END) {
+                    it.title = "${item_id}${FieldType.ENDTEXT}"
+                }else{
+                    it.title = item_id
+                }
             }
             if (text != null) {
                 it.detail = text

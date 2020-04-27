@@ -388,8 +388,7 @@ class ItemViewFragment : Fragment() {
         val rowModel = RowModel().also {
             if (item_id != null) {
                 if(valueFlg == FieldType.END) {
-                    getString(R.string.endflg_text)
-                    it.title = "${item_id}${getString(R.string.endflg_text)}"
+                    it.title = "${item_id}${FieldType.ENDTEXT}"
                 }else{
                     it.title = item_id
                 }

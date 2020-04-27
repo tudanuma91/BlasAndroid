@@ -1,11 +1,13 @@
 package com.v3.basis.blas.ui.item.item_search_result
 
+import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.config.FieldType
 
 class ViewAdapter(private val list: List<RowModel>, private val listener: ListListener) : RecyclerView.Adapter<ViewHolders>() {
 
@@ -24,6 +26,13 @@ class ViewAdapter(private val list: List<RowModel>, private val listener: ListLi
         holder.itemList = list[position].itemList
         holder.itemView.setOnClickListener {
             listener.onClickRow(it, list[position])
+        }
+
+        val regex = Regex(FieldType.ENDTEXT)
+        if(regex.containsMatchIn(holder.titleView.text.toString())){
+            holder.titleView.setTextColor(Color.RED)
+        }else{
+            holder.titleView.setTextColor(Color.DKGRAY)
         }
     }
 

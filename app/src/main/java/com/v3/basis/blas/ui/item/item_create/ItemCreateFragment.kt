@@ -48,6 +48,7 @@ class ItemCreateFragment : Fragment() {
     private var layoutParamsSpace = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 50)
     private var memoMap:MutableMap<String,EditText> = mutableMapOf()
     private var userMap :MutableMap<String,String?> = mutableMapOf()
+    private val nullChk: MutableMap<Int, MutableMap<String, String>> = mutableMapOf()
 
     private val idMap:MutableMap<String,String?> = mutableMapOf()
     private val parentMap:MutableMap<String,MutableMap<String,String>> = mutableMapOf()
@@ -322,7 +323,7 @@ class ItemCreateFragment : Fragment() {
                     }
 
                     FieldType.ACOUNT_NAME->{
-                        //アカウント名。現在実装不可
+                        //アカウント名。
                         val layout = requireActivity().layoutInflater.inflate(R.layout.cell_account, null)
                         rootView.addView(layout)
                         val editAccount = layout.findViewById<EditText>(R.id.editAccount)
@@ -334,7 +335,7 @@ class ItemCreateFragment : Fragment() {
                     }
 
                     FieldType.SIG_FOX->{
-                        //シグフォックス。現在実装不可
+                        //シグフォックス。
                         val view = TextView(activity)
                         view.setText("シグフォックスは使用できません")
                         //文字の色変更したい。
@@ -372,6 +373,10 @@ class ItemCreateFragment : Fragment() {
 
             //ボタン押下時の処理
             button.setOnClickListener {
+                val nullChk: MutableMap<Int, MutableMap<String, String>> = mutableMapOf()
+                formAction.setDefaultTitle(textViewMap)
+                nullChk.clear()
+
                 parentChk = true
                 val parentErrorMap:MutableMap<String,MutableMap<String,String?>> = mutableMapOf()
 
@@ -379,7 +384,6 @@ class ItemCreateFragment : Fragment() {
                     mutableMapOf("token" to token, "project_id" to projectId)
                 var cnt = 1
                 var errorCnt = 0
-                val nullChk: MutableMap<Int, MutableMap<String, String>> = mutableMapOf()
                 formInfoMap.forEach {
                     var value = ""
                     Log.d("ItemCreateFragment", "「SEND」ボタンが押されました")
@@ -499,6 +503,7 @@ class ItemCreateFragment : Fragment() {
 
                 }
                 errorCnt = formAction.countNullError(nullChk, textViewMap)
+                Log.d("デバックログの取得","nullChk => ${nullChk}")
                 if (errorCnt == 0 && parentChk) {
                     BlasRestItem("create", payload, ::createSuccess, ::createError).execute()
                 }
