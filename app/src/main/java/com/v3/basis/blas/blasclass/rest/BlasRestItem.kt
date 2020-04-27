@@ -22,10 +22,9 @@ open class BlasRestItem(val crud:String = "search",
         val TABLE_NAME = "Item"
     }
 
-    init{
-        cacheFileName = context.cacheDir.toString() + "/item_" + payload["project_id"] + ".json"
+
+    var cacheFileName = context.cacheDir.toString() + "/item_" + payload["project_id"] + ".json"
     //    uniqueCheckFile = context.filesDir.toString() + "/uniqueCheck_" + payload["project_id"] + ".json"
-    }
     var method = "GET"
     var aplCode:Int = 0
 

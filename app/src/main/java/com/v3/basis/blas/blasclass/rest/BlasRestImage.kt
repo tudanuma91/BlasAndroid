@@ -23,9 +23,8 @@ open class BlasRestImage(val crud:String = "download",
         val TABLE_NAME = "Image"
     }
 
-    init{
-        cacheFileName = context.cacheDir.toString() +  "/image_" + payload["item_id"] + "_" + payload["project_image_id"] +".json"
-    }
+
+    var cacheFileName = context.cacheDir.toString() +  "/image_" + payload["item_id"] + "_" + payload["project_image_id"] +".json"
     var method = "GET"
     var aplCode:Int = 0
 

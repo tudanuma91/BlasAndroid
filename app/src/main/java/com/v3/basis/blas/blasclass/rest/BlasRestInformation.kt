@@ -22,9 +22,8 @@ open class BlasRestInformation(val crud:String = "search",
                                val funcSuccess:(JSONObject)->Unit,
                                val funcError:(Int,Int)->Unit) : BlasRest() {
 
-    init{
-        cacheFileName = context.cacheDir.toString() + "/information.json"
-    }
+
+    var cacheFileName = context.cacheDir.toString() + "/information.json"
     var aplCode:Int = APL_OK
 
     /**

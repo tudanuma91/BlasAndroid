@@ -17,9 +17,9 @@ open class BlasRestOrgs(val payload:Map<String, String?>,
                         val orgsSearchSuccess:(JSONObject)->Unit,
                         val orgsSearchError:(Int,Int)->Unit) : BlasRest() {
 
-    init{
-        cacheFileName = context.cacheDir.toString() + "/org.json"
-    }
+
+    var cacheFileName = context.cacheDir.toString() + "/org.json"
+
 
     companion object {
         val ORGS_SEARCH_URL = BlasRest.URL + "orgs/search/"

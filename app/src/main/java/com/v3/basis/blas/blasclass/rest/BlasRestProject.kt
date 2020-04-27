@@ -21,9 +21,8 @@ open class BlasRestProject(val payload:Map<String, String?>,
                            val projectSearchError:(Int,Int)->Unit) : BlasRest() {
 
     private val SEARCH_PGOJECT_URL = BlasRest.URL + "projects/search/"
-    init{
-        cacheFileName = context.cacheDir.toString() + "/project.json"
-    }
+
+    var cacheFileName = context.cacheDir.toString() + "/project.json"
 
     /**
      * プロジェクト一覧取得要求をBLASに送信する
