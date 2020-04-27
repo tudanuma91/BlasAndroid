@@ -1,15 +1,14 @@
 package com.v3.basis.blas.ui.item.item_search_result
 
 
+import android.app.AlertDialog
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.Switch
-import android.widget.Toast
+import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
@@ -155,9 +154,20 @@ class ItemSearchResultFragment : Fragment() {
         itemList.addAll(itemInfo)
 
         baseList = itemList
-
-        createCardManager(itemList,colMax,"New")
-
+        Log.d("デバックログ","baseListの中身=>${baseList.size}")
+        if(baseList.size > 0) {
+            createCardManager(itemList, colMax, "New")
+        }else{
+            val title = getString(R.string.dialog_title)
+            val text = getString(R.string.search_error)
+            AlertDialog.Builder(activity)
+                .setTitle(title)
+                .setMessage(text)
+                .setPositiveButton("OK"){ dialog, which ->
+                    activity!!.finish()
+                }
+                .show()
+        }
     }
 
     /**

@@ -118,7 +118,7 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/FixKenpinOrg"
+                    android:id="@+id/fixKenpinOrg"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="0.7"
@@ -207,7 +207,7 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/FixTakeoutOrg"
+                    android:id="@+id/fixTakeoutOrg"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="0.7"
@@ -296,7 +296,7 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/FixReturnOrg"
+                    android:id="@+id/fixReturnOrg"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="0.7"

@@ -3,6 +3,7 @@ package com.v3.basis.blas.ui.item.item_search
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.icu.text.MessagePattern
 import android.os.Bundle
@@ -28,6 +29,7 @@ import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.ext.addTitle
 import org.json.JSONObject
 import java.util.*
+import kotlin.concurrent.timerTask
 
 /**
  * A simple [Fragment] subclass.
@@ -48,6 +50,8 @@ class ItemSearchFragment : Fragment() {
     private var dateTime:MutableMap<String,EditText> = mutableMapOf()
     private var checkMap:MutableMap<String,MutableMap<String?, CheckBox?>> = mutableMapOf()
     private var searchValue:MutableMap<String,String?> = mutableMapOf()
+    private var errorList:MutableList<String> = mutableListOf()
+    private var titleMap:MutableMap<String,TextView> = mutableMapOf()
     //パラメータ
     private var layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
     private var layoutParamsSpace = LinearLayout.LayoutParams( LinearLayout.LayoutParams.MATCH_PARENT,50)
@@ -95,6 +99,7 @@ class ItemSearchFragment : Fragment() {
         rootView.addView(space)
         rootView.addView(title)
         rootView.addView(freeWordSearch)
+        titleMap.set(key = "freeWord",value = title)
 
         //レイアウトの設置位置の設定
         val payload = mapOf("token" to token, "project_id" to projectId)
@@ -122,6 +127,7 @@ class ItemSearchFragment : Fragment() {
                 //先に項目のタイトルをセットする
                 val formSectionTitle = formAction.createFormSectionTitle(layoutParams,formInfo)
                 rootView.addView(formSectionTitle)
+                titleMap.set(key = cnt.toString(),value = formSectionTitle)
 
                 //フォームの項目の情報をメンバ変数に格納
                 val typeMap = formAction.createFormInfoMap(formInfo)
@@ -195,7 +201,6 @@ class ItemSearchFragment : Fragment() {
                         }else{
                             if (colCheckBoxValues != null) {
                                 val testL = formAction.getSelectValue(colCheckBoxValues)
-                                Log.d("デバック用ログ","イメージ=>${test}")
                                 var vCnt = 0
                                 colCheckBoxValues.forEach {
                                     val formPart =
@@ -244,9 +249,26 @@ class ItemSearchFragment : Fragment() {
 
             //ボタン押下時の処理
             button.setOnClickListener{
+
+                if(errorList.size>0) {
+                    errorList.forEach {
+                        val text = formAction.test2(it,titleMap)
+                        titleMap[it]?.setText(text)
+                        titleMap[it]?.setTextColor(Color.DKGRAY)
+                    }
+                }
+                errorList.clear()
+
+
                 val freeWordEdit = editMap.get("col_0")!!
                 val freeWordValue ="${freeWordEdit.text}"
                 Log.d("検索結果(フリーワード)","${freeWordValue}")
+                if(freeWordValue != "") {
+                    val chk = formAction.valueChk(freeWordValue)
+                    if (chk) {
+                        errorList.add("freeWord")
+                    }
+                }
                 searchValue.set("freeWord",freeWordValue)
                 var cnt = 1
                 var dateTimeCol = ""
@@ -263,6 +285,12 @@ class ItemSearchFragment : Fragment() {
                         FieldType.ACOUNT_NAME->{
                             //自由入力(1行)・自由入力(複数行)
                             value = formAction.pickUpValue(editMap,cnt)
+                            if(value != "") {
+                                val chk = formAction.valueChk(value)
+                                if (chk) {
+                                    errorList.add(cnt.toString())
+                                }
+                            }
                             searchValue.set("fld${cnt}",value)
                         }
 
@@ -293,39 +321,44 @@ class ItemSearchFragment : Fragment() {
                             checkValueCol += "${cnt},"
 
                         }
-
-                        else->{
-                            searchValue.set("fld${cnt}",value)
-                        }
                     }
                     cnt += 1
                 }
-                //ここから検索処理入れる
 
-                //検索結果画面を開くための処理
-                val intent = Intent(activity, ItemSearchResultActivity::class.java)
-                val fldSize = searchValue.size-1
-                intent.putExtra("token",token)
-                intent.putExtra("project_id",projectId)
-                intent.putExtra("freeWord",searchValue["freeWord"])
-                intent.putExtra("fldSize",fldSize.toString())
 
-                //dateTimeColに値が入っていた場合のみ処理を行う
-                if(dateTimeCol != "" ){
-                    val newDateTimeCol = dateTimeCol.dropLast(1)
-                    intent.putExtra("dateTimeCol",newDateTimeCol)
+                if(errorList.size>0) {
+                    //ここから検索処理入れる
+                    //バリデーション入れるならここっす
+                    errorList.forEach{
+                        titleMap[it] = formAction.test(it,titleMap)
+                    }
+
+                }else {
+                    //検索結果画面を開くための処理
+                    val intent = Intent(activity, ItemSearchResultActivity::class.java)
+                    val fldSize = searchValue.size - 1
+                    intent.putExtra("token", token)
+                    intent.putExtra("project_id", projectId)
+                    intent.putExtra("freeWord", searchValue["freeWord"])
+                    intent.putExtra("fldSize", fldSize.toString())
+
+                    //dateTimeColに値が入っていた場合のみ処理を行う
+                    if (dateTimeCol != "") {
+                        val newDateTimeCol = dateTimeCol.dropLast(1)
+                        intent.putExtra("dateTimeCol", newDateTimeCol)
+                    }
+
+                    if (checkValueCol != "") {
+                        val newCheckValueCol = checkValueCol.dropLast(1)
+                        intent.putExtra("checkValueCol", newCheckValueCol)
+                    }
+
+                    //検索する値を検索画面に送信する
+                    for (idx in 1..searchValue.size - 1) {
+                        intent.putExtra("fld${idx}", searchValue["fld${idx}"])
+                    }
+                    startActivity(intent)
                 }
-
-                if (checkValueCol != ""){
-                    val newCheckValueCol = checkValueCol.dropLast(1)
-                    intent.putExtra("checkValueCol",newCheckValueCol)
-                }
-
-                //検索する値を検索画面に送信する
-                for(idx in 1 .. searchValue.size-1){
-                    intent.putExtra("fld${idx}",searchValue["fld${idx}"])
-                }
-                startActivity(intent)
 
             }
         }

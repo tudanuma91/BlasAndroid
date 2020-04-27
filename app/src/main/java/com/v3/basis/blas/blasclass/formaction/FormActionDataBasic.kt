@@ -353,11 +353,11 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
             val values = textViewMap["${i}"]
             if(value != null && values!=null) {
                 if (value["nullChk"] == "error") {
-                    values.setTextColor(Color.parseColor("#FF0000"))
+                    values.setTextColor(Color.RED)
                     val title = values.text
                     //複数回、入力必須項目ですを出力しない
-                    if (!title.contains("(入力必須項目です。)")) {
-                        values.text = "${title}(入力必須項目です。)"
+                    if (!title.contains(FieldType.REQUIRED)) {
+                        values.text = "${title}${FieldType.REQUIRED}"
                     }
                     errorCnt += 1
                 }
@@ -404,8 +404,6 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
             if(parentValue != null){
                 master = parentValue.drop(2)
                 val delNum = master.indexOf("\":\"")
-                Log.d("デバック用ログ","値はこの通り=>${delNum}")
-                Log.d("デバック用ログ","値はこの通り=>${master.removeRange(delNum,master.length)}")
                 master = master.removeRange(delNum,master.length)
             }
         }
@@ -417,7 +415,18 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
         var protoNum = num
         val delNum = num.indexOf("_")
         protoNum = num.dropLast(delNum+1)
-        Log.d("デバック用ログ","該当するのはコレ=>${protoNum}")
         return protoNum
+    }
+
+    fun  setDefaultTitle(textViewMap :MutableMap<String,TextView>){
+        textViewMap.forEach{
+            if(it.value.text.toString().contains((FieldType.REQUIRED)) ){
+                val newValue = it.value.text.toString().dropLast( FieldType.REQUIRED.length)
+                it.value.setText(newValue)
+                it.value.setTextColor(Color.DKGRAY)
+                it.value.setError("入力必須の項目です")
+            }
+        }
+
     }
 }

@@ -129,8 +129,46 @@ class FormActionDataSearch(setToken: String, setActivity: FragmentActivity) : Fo
         if(value != null && memo != null){
             newValue = "{\"value\": \"${value.text}\", \"memo\": \"${memo.text}\"}"
         }
-        Log.d("テスト、checkValue","バリュー=>${newValue}")
         return newValue
+    }
+
+
+    //[(,),?,\,[,{,},*,+,.,]
+    //別件だけど$,^,|,:,でなぜか全件ヒットする...
+    fun valueChk(value:String): Boolean {
+        val valueLen = value.length
+        var chk = false
+        Log.d("デバック用ログ","値の中身はコレ!!=>${value}")
+        loop@ for(idx in 0 until valueLen){
+            Log.d("デバック用ログ","値の中身はコレ!!=>${value.get(idx)}")
+            Log.d("デバック用ログ","値の中身はコレ!!=>${'\\'}")
+            when(value.get(idx)){
+                '[', ']', '(', ')', '\\', '{', '}',
+                '*', '+', '.', '$', '^', '|', ':', '!'
+                ->{
+                    chk = true
+                    break@loop
+                }
+            }
+        }
+        Log.d("結果","処理結果はこの通り=>${chk.toString()}")
+        return chk
+    }
+
+    fun test(key:String,titleMap:MutableMap<String,TextView>): TextView {
+        var title = titleMap[key]!!
+        val newTitle = title.text.toString() + FieldType.SEARCH_ERROR
+        title.setText(newTitle)
+        title.setTextColor(Color.RED)
+
+        return title
+    }
+
+    fun test2(value: String , titleMap:MutableMap<String,TextView>): String {
+        var text = titleMap[value]?.text.toString()
+        val delNum = FieldType.SEARCH_ERROR.length
+        text = text.dropLast(delNum)
+        return text
     }
 
 }

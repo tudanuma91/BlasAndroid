@@ -24,7 +24,9 @@ import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
+import kotlinx.android.synthetic.main.fragment_fixture_view.*
 import kotlinx.android.synthetic.main.fragment_item_view.*
+import kotlinx.android.synthetic.main.fragment_item_view.recyclerView
 import org.json.JSONObject
 
 
@@ -70,7 +72,7 @@ class FixtureViewFragment : Fragment() {
         token = getStringExtra("token")
         project_id = getStringExtra("project_id")
 
-        return inflater.inflate(R.layout.fragment_item_view, container, false)
+        return inflater.inflate(R.layout.fragment_fixture_view, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -90,7 +92,7 @@ class FixtureViewFragment : Fragment() {
                 if (valueMap.isNotEmpty()) {
                     val notOverSize = currentIndex + CREATE_UNIT <= dataListAll.size
                     if (!recyclerView.canScrollVertically(1) && notOverSize) {
-                        progressBarItemView.visibility = View.VISIBLE
+                        progressBar.visibility = View.VISIBLE
                         setAdapter()
                     }
                 }
@@ -125,7 +127,7 @@ class FixtureViewFragment : Fragment() {
         Log.d("konishi", "setAdapter")
         createDataList()
         adapter.notifyItemInserted(0)
-        progressBarItemView.visibility = View.INVISIBLE
+        progressBar.visibility = View.INVISIBLE
     }
 
     /**
@@ -230,7 +232,7 @@ class FixtureViewFragment : Fragment() {
         valueMap.clear()
 
         Log.d("取得失敗","${errorCode}")
-        progressBarItemView.visibility = View.INVISIBLE
+        progressBar.visibility = View.INVISIBLE
     }
 
     /**

@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -17,6 +18,7 @@ import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureSearchResultActivity
 import com.v3.basis.blas.activity.ItemSearchResultActivity
 import com.v3.basis.blas.blasclass.app.searchAndroid
+import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
@@ -32,10 +34,14 @@ import java.util.*
  * create an instance of this fragment.
  */
 class FixtureSearchFragment : Fragment() {
+
     private var token:String? = null
     private var projectId:String? = null
     private var freeWord:String?= null
     private val formMap :MutableMap<String,EditText> = mutableMapOf()
+    private var errorList:MutableList<String> = mutableListOf()
+    private var titleMap:MutableMap<String,TextView> = mutableMapOf()
+
     val calender = Calendar.getInstance()
     val year = calender.get(Calendar.YEAR)
     val month = calender.get(Calendar.MONTH)
@@ -79,6 +85,8 @@ class FixtureSearchFragment : Fragment() {
         formMap.set("itemUser",root.findViewById<EditText>(R.id.fixItemUserSelect))
         formMap.set("itemDayMin",root.findViewById<EditText>(R.id.fixItemDayMin))
         formMap.set("itemDayMax",root.findViewById<EditText>(R.id.fixItemDayMax))
+
+
 
 
         //検品日付最小値タップ処理
@@ -149,17 +157,37 @@ class FixtureSearchFragment : Fragment() {
         //検索ボタンタップ処理
         val btnSearch = root.findViewById<Button>(R.id.fixSerchBtn)
         btnSearch.setOnClickListener{
-            val freeWordEdit = root.findViewById<EditText>(R.id.fixFreeWordValue)
-            freeWord = freeWordEdit.text.toString()
-            val payload2 = mapOf("token" to token, "project_id" to projectId)
-            Log.d("testtest","取得する")
-            BlasRestFixture("search",payload2, ::fixtureGetSuccess, ::fixtureGetError).execute()
+
+            if(errorList.size>0) {
+                errorList.forEach {
+                    //val text = formAction.test2(it,titleMap)
+                   // titleMap[it]?.setText(text)
+                    //titleMap[it]?.setTextColor(Color.DKGRAY)
+                    titleRecover(it)
+                    Log.d("デバック用ログ","ここの値はこれだぜ=>${it}")
+                }
+
+            }
+
+            errorList.clear()
+
+            val errorFlg = checkSearchValueManager()
+            if(errorFlg) {
+                errorList.forEach{
+                    errorTitleCreate(it)
+                }
+            }else{
+                val freeWordEdit = root.findViewById<EditText>(R.id.fixFreeWordValue)
+                freeWord = freeWordEdit.text.toString()
+                Log.d("testtest", "取得する")
+                startSearch()
+            }
         }
         return root
     }
 
 
-    private fun fixtureGetSuccess(result: JSONObject) {
+    private fun startSearch() {
         //検索フィールドの値処理
         val searchValueMap:MutableMap<String,String?> = mutableMapOf()
 
@@ -167,12 +195,12 @@ class FixtureSearchFragment : Fragment() {
         formMap.forEach{
             //入力されていないフィールドは""になる
             searchValueMap.set(it.key,it.value.text.toString())
-            Log.d("機器管理検索画面","key = ${it.key}, value = ${it.value.text.toString()}")
+            Log.d("機器管理検索画面","key = ${it.key}, value = ${it.value.text}")
         }
         //edittext以外のフォームはここで個別で格納。（増えてきたらなんか策考えます。）
         val statusSpinner = root.findViewById<Spinner>(R.id.fixSelectStatus)
         searchValueMap.set("status",statusSpinner.selectedItem.toString())
-        Log.d("機器管理検索画面","value = ${statusSpinner.selectedItem.toString()}")
+        Log.d("機器管理検索画面","value = ${statusSpinner.selectedItem}")
 
 
         val intent = Intent(activity, FixtureSearchResultActivity::class.java)
@@ -199,14 +227,10 @@ class FixtureSearchFragment : Fragment() {
         intent.putExtra("itemDayMax",searchValueMap["itemDayMax"].toString())
         intent.putExtra("status",searchValueMap["status"].toString())
 
-        //とりあえずfreewordのみ渡す
         startActivity(intent)
 
     }
 
-    private fun fixtureGetError(errorCode: Int, aplCode:Int) {
-
-    }
 
     /**
      * タップ時の処理
@@ -218,6 +242,79 @@ class FixtureSearchFragment : Fragment() {
             kenpinDay.setText(String.format("%d/%02d/%02d",y,m+1,d))
         }, year,month,day)
         dtp.show()
+    }
+
+
+    private fun checkSearchValueManager(): Boolean {
+        //検索フィールドの値処理
+        var errorFlg = false
+
+        formMap.forEach{
+            val text = it.value.text.toString()
+            val chk = valueChk(text)
+            if(chk){
+                errorList.add(it.key)
+                errorFlg = true
+            }
+        }
+        return errorFlg
+    }
+
+    fun valueChk(value:String): Boolean {
+        val valueLen = value.length
+        var chk = false
+        Log.d("デバック用ログ","値の中身はコレ!!=>${value}")
+        loop@ for(idx in 0 until valueLen){
+            when(value.get(idx)){
+                '[', ']', '(', ')', '\\', '{', '}',
+                '*', '+', '.', '$', '^', '|', ':', '!'
+                ->{
+                    chk = true
+                    break@loop
+                }
+            }
+        }
+        Log.d("結果","処理結果はこの通り=>${chk.toString()}")
+        return chk
+    }
+
+    private fun errorTitleCreate(idx:String){
+        val title = titlePicker(idx)
+        if(title != null) {
+            val titleText = title.text.toString()
+            val newTitleText = "${titleText}${FieldType.SEARCH_ERROR}"
+            title.setText(newTitleText)
+            title.setTextColor(Color.RED)
+        }
+    }
+
+    private fun titleRecover(idx: String){
+        val title = titlePicker(idx)
+        if(title != null) {
+            val delNum = FieldType.SEARCH_ERROR.length
+            val newTitleText = title.text.toString().dropLast(delNum)
+            title.setText(newTitleText)
+            title.setTextColor(Color.DKGRAY)
+        }
+    }
+
+    private fun titlePicker(idx: String): TextView? {
+        var title :TextView ?
+        when(idx) {
+            "freeWord" -> { title = root.findViewById<TextView>(R.id.fixFreeWord) }
+            "serialNumber"->{ title = root.findViewById<TextView>(R.id.fixSerialNumber) }
+            "dataId"->{ title = root.findViewById<TextView>(R.id.fixDataId) }
+            "kenpinOrg"->{ title = root.findViewById<TextView>(R.id.fixKenpinOrg) }
+            "kenpinUser"->{ title = root.findViewById<TextView>(R.id.fixKenpinUser) }
+            "takeOutOrg"->{ title = root.findViewById<TextView>(R.id.fixTakeoutOrg) }
+            "takeOutUser"->{ title = root.findViewById<TextView>(R.id.fixTakeoutUser) }
+            "returnOrg"->{ title = root.findViewById<TextView>(R.id.fixReturnOrg) }
+            "returnUser"->{ title = root.findViewById<TextView>(R.id.fixReturnUser) }
+            "itemOrg"->{ title = root.findViewById<TextView>(R.id.fixItemOrg) }
+            "itemUser"->{ title = root.findViewById<TextView>(R.id.fixItemUser) }
+            else ->{ title = null }
+        }
+        return title
     }
 
 }

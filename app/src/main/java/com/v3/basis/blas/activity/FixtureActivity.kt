@@ -31,6 +31,7 @@ import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.CompoundBarcodeView
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
+import com.v3.basis.blas.ui.ext.setBlasCustomView
 import com.v3.basis.blas.ui.ext.showBackKeyForActionBar
 import com.v3.basis.blas.ui.fixture.fixture_kenpin.FixtureKenpinFragment
 import com.v3.basis.blas.ui.fixture.fixture_return.FixtureReturnFragment
@@ -79,6 +80,8 @@ class FixtureActivity : AppCompatActivity() {
             showBackKeyForActionBar()
             supportActionBar?.title = destination.label
         }
+
+        setBlasCustomView()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

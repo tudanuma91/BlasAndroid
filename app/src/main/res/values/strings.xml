@@ -1,6 +1,6 @@
 <resources>
     <!--画面のタイトル-->
-    <string name="app_name">Blas</string>
+    <string name="app_name">BlasJ</string>
     <string name="title_login">ログイン画面</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="test_token">test_token</string>
@@ -23,6 +23,7 @@
     <string name="uri_error">ファイルが見つかりません。</string>
     <string name="check_error">値が異なります。備考を入力してください</string>
 
+
     <!-- 通信系 -->
     <string name="network_error">サーバと通信できません</string>
     <string name="server_error">サーバ内でエラーが発生しました。管理者に連絡してください。要因コード(%1$d)</string>
@@ -40,10 +41,12 @@
     <string name="navi_title_terminal_status">ステータス</string>
     <!--データ管理画面-->
     <string name="navi_title_item_search">データ検索</string>
+    <string name="navi_title_item_search_result">データ検索結果</string>
     <string name="navi_title_item_view">データ一覧</string>
     <string name="navi_title_item_create">データ新規作成</string>
     <!--機器管理画面-->
     <string name="navi_title_fixture_search">機器検索</string>
+    <string name="navi_title_fixture_search_result">機器検索結果</string>
     <string name="navi_title_fixture_kenpin">機器検品</string>
     <string name="navi_title_fixture_motidasi">機器持ち出し</string>
     <string name="navi_title_fixture_return">機器返却</string>
@@ -100,11 +103,14 @@
     <string name="cell_item_image_loading">画像ファイル読込中。。。</string>
 
     <!-- 表示画面-->
-    <string name="switch_normal">通常のデータ</string>
-    <string name="switch_end_flg">ゴミ箱のデータ</string>
+    <string name="switch_normal">通常</string>
+    <string name="switch_end_flg">ゴミ箱</string>
     <string name="switch_view">表示する</string>
 
-    <!-- 作成画面等-->
+   <!-- ダイアログ -->
+    <string name="dialog_title">メッセージ</string>
+    <string name="search_error">検索条件に合致するレコードは存在しません</string>
+
 
 
 </resources>

@@ -7,12 +7,14 @@ import android.content.pm.PackageManager
 import android.database.Cursor
 import android.net.Uri
 import android.provider.MediaStore
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import com.v3.basis.blas.R
 
 fun AppCompatActivity.setActionBarTitle(resId: Int) {
     this.supportActionBar?.title = getString(resId)
@@ -31,9 +33,22 @@ fun AppCompatActivity.showBackKeyForActionBar() {
 
 fun Fragment.addTitle(extraName: String) {
 
-    val actionBar = (requireActivity() as AppCompatActivity).supportActionBar
-    val title = actionBar?.title
-    actionBar?.title = title?.toString() + "　" + getStringExtra(extraName)
+    (requireActivity() as AppCompatActivity).supportActionBar?.also {
+        getStringExtra(extraName)?.run {
+            it.customView.findViewById<TextView>(R.id.title)?.text = it.title
+            it.customView.findViewById<TextView>(R.id.projectName)?.text = this
+        }
+    }
+}
+
+fun AppCompatActivity.setBlasCustomView() {
+
+    supportActionBar?.apply {
+        setCustomView(R.layout.view_blas_actionbar)
+        setDisplayShowCustomEnabled(true)
+        setDisplayShowTitleEnabled(true)
+        setDisplayShowHomeEnabled(true)
+    }
 }
 
 /**

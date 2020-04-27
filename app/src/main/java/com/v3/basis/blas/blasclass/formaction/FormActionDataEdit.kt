@@ -28,10 +28,7 @@ class FormActionDataEdit(setToken: String, setActivity: FragmentActivity):FormAc
         var title =  super.createFormSectionTitle(params, formInfo)
         if(formInfo.require == FieldType.TURE){
             //ラジオボタンかチェックボックスの場合、タイトルに入力必須を表示。
-            when(formInfo.type){
-                FieldType.SINGLE_SELECTION ->{title.setError("入力必須です")}
-                FieldType.MULTIPLE_SELECTION ->{title.setError("入力必須です")}
-            }
+            title.setError("入力必須です")
         }
         return title
     }
