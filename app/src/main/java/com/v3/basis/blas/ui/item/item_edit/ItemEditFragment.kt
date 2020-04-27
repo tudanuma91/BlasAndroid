@@ -6,6 +6,7 @@ import android.app.TimePickerDialog
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -73,6 +74,7 @@ class ItemEditFragment : Fragment() {
     private lateinit var formAction: FormActionDataEdit
     private val helper:RestHelper = RestHelper()
     private lateinit var qrCodeView: EditText
+    private var handler = Handler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -653,7 +655,11 @@ class ItemEditFragment : Fragment() {
      */
     fun updateSuccess(result: JSONObject){
         //更新成功を通知
-        Toast.makeText(activity, getText(R.string.success_data_update), Toast.LENGTH_LONG).show()
+        if (isAdded()) {
+            handler.post {
+                Toast.makeText(activity, getText(R.string.success_data_update), Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     /**
@@ -661,7 +667,9 @@ class ItemEditFragment : Fragment() {
      */
     fun updateError(errorCode: Int, aplCode:Int){
         //更新失敗を通知
-        Toast.makeText(activity, getText(R.string.error_data_update), Toast.LENGTH_LONG).show()
+        handler.post {
+            Toast.makeText(activity, getText(R.string.error_data_update), Toast.LENGTH_LONG).show()
+        }
     }
 
     /**
