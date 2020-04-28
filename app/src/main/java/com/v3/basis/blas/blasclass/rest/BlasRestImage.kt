@@ -35,14 +35,18 @@ open class BlasRestImage(val crud:String = "download",
     override fun doInBackground(vararg params: String?): String? {
         var response:String? = null
 
+<<<<<<< HEAD
         var blasUrl = BlasRest.URL + "images/download230/"
         var json:JSONObject? = null
         var errorCode = 0
+=======
+        var blasUrl = BlasRest.URL + "images/download/"
+>>>>>>> 1256a14599c47b40a22d182ec40e29617d7c5bf6
 
         when(crud) {
             "download"->{
                 method = "GET"
-                blasUrl = BlasRest.URL + "images/download230/"
+                blasUrl = BlasRest.URL + "images/download/"
                 cacheFileName = context.cacheDir.toString() +  "/image_" + payload["item_id"] + "_" + payload["project_image_id"] +".json"
             }
             "upload"->{

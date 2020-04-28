@@ -40,14 +40,14 @@ class LoginFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setListener(btnLogin, ::loginSuccess, ::loginError)
-        setListener(login_test1, ::testLoginSuccess1, ::loginError)
-        setListener(login_test2, ::testLoginSuccess2, ::loginError)
-        setListener(login_test3, ::testLoginSuccess3, ::loginError)
+//        setListener(login_test1, ::testLoginSuccess1, ::loginError)
+//        setListener(login_test2, ::testLoginSuccess2, ::loginError)
+//        setListener(login_test3, ::testLoginSuccess3, ::loginError)
 
-        btnQR.setOnClickListener {
-            val intent = Intent(activity, QRActivity::class.java)
-            startActivity(intent)
-        }
+//        btnQR.setOnClickListener {
+//            val intent = Intent(activity, QRActivity::class.java)
+//            startActivity(intent)
+//        }
     }
 
     /**
