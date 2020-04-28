@@ -36,6 +36,8 @@ open class BlasRestImage(val crud:String = "download",
         var response:String? = null
 
         var blasUrl = BlasRest.URL + "images/download230/"
+        var json:JSONObject? = null
+        var errorCode = 0
 
         when(crud) {
             "download"->{
@@ -59,27 +61,34 @@ open class BlasRestImage(val crud:String = "download",
         catch(e: Exception) {
             Log.d("blas-log", e.message)
 
-            if(method == "GET") {
-
-
-
-                //通信エラーが発生したため、キャッシュを読み込む
-                if (File(cacheFileName).exists()) {
-                    try {
-                        response = loadJson(cacheFileName)
-                    } catch (e: Exception) {
-                        //キャッシュの読み込み失敗
+            //通信エラーが発生したため、キャッシュを読み込む
+            if (File(cacheFileName).exists()) {
+                try {
+                    response = loadJson(cacheFileName)
+                } catch (e: Exception) {
+                    //キャッシュの読み込み失敗
+                    if((method == "GET") or (method  == "DELETE")) {
                         funcError(BlasRestErrCode.FILE_READ_ERROR, APL_OK)
                     }
-                } else {
-                    //キャッシュファイルがないため、エラーにする
-                    funcError(BlasRestErrCode.NETWORK_ERROR , APL_OK)
                 }
-            }else if (method == "POST"){
+            } else {
+                if((method == "GET") or (method  == "DELETE")) {
+                    //キャッシュファイルがないため、エラーにする
+                    funcError(BlasRestErrCode.NETWORK_ERROR, APL_OK)
+                    return response
+                }
 
+            }
+            if (method == "POST"){
                 // 失敗した場合、キュー処理を呼び出す
                 super.reqDataSave(payload,"GET",blasUrl,funcSuccess,funcError,"Images")
                 aplCode = APL_QUEUE_SAVE
+
+                if(response != null) {
+                    json = JSONObject(response)
+                    json.put("error_code", BlasRestErrCode.NETWORK_ERROR)
+                    response = json.toString()
+                }
             }
         }
         return response

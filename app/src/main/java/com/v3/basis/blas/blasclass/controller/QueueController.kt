@@ -29,6 +29,7 @@ import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
 import com.v3.basis.blas.blasclass.rest.*
 import com.v3.basis.blas.blasclass.rest.BlasRest.Companion.context
 import com.v3.basis.blas.blasclass.rest.BlasRest.Companion.queuefuncList
+import com.v3.basis.blas.blasclass.rest.BlasRestErrCode.Companion.NETWORK_ERROR
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.File
@@ -172,7 +173,7 @@ object QueueController {
 
         val fileDir = BlasApp.applicationContext().getFilesDir().getPath()
         val filePath: String = fileDir + "/" + reqArray.param_file
-        val response:String
+        var response:String = ""
         var resCorde:Int = 0
 
         //ファイルからパラメータ取得
@@ -202,20 +203,25 @@ object QueueController {
         con.doOutput = true
         val outStream = con.outputStream
         //リクエスト処理
-        outStream.write(param.toByteArray())
-        outStream.flush()
-        //エラーコードなど飛んでくるのでログに出力する
-        resCorde = con.responseCode
-        Log.d("【Queue】", "Http_status:${resCorde}")
+        try {
+            outStream.write(param.toByteArray())
+            outStream.flush()
+            //エラーコードなど飛んでくるのでログに出力する
+            resCorde = con.responseCode
+            Log.d("【Queue】", "Http_status:${resCorde}")
 
-        //リクエスト処理処理終了
-        outStream.close()
+            //リクエスト処理処理終了
+            outStream.close()
 
-        //レスポンスデータを取得
-        val responseData = con.inputStream
-        response = Is2String(responseData)
+            //レスポンスデータを取得
+            val responseData = con.inputStream
+            response = Is2String(responseData)
 
-        con.disconnect()
+            con.disconnect()
+        }catch(e:Exception){
+            Log.d("ConnectionError", e.message)
+            return Pair(NETWORK_ERROR,response)
+        }
         return Pair(resCorde,response)
 
     }

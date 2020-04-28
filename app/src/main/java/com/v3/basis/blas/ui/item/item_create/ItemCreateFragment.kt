@@ -7,6 +7,7 @@ import android.app.TimePickerDialog
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -65,6 +66,7 @@ class ItemCreateFragment : Fragment() {
 
     private lateinit var formAction: FormActionDataCreate
     private lateinit var qrCodeView: EditText
+    private var handler = Handler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -551,7 +553,32 @@ class ItemCreateFragment : Fragment() {
      */
     fun createError(errorCode: Int, aplCode:Int) {
         Log.d("sippai ", "失敗")
-        Toast.makeText(activity, getText(R.string.error_data_create), Toast.LENGTH_LONG).show()
+        var message:String? = null
+
+        when(errorCode) {
+            BlasRestErrCode.DATA_DUPLI_ERROR -> {
+                message = getString(R.string.data_dupli_error)
+            }
+            BlasRestErrCode.NETWORK_ERROR -> {
+                //サーバと通信できません
+                message = getString(R.string.network_error)
+            }
+            else-> {
+                //サーバでエラーが発生しました(要因コード)
+                message = getString(R.string.server_error, errorCode)
+            }
+        }
+
+        when(aplCode) {
+            BlasDef.APL_QUEUE_SAVE -> {
+                message = message + getString(R.string.apl_queue_save)
+            }
+
+        }
+
+        handler.post {
+            Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+        }
     }
 
     /**

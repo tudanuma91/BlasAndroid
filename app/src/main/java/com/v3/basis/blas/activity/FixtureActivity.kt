@@ -14,6 +14,7 @@ import android.util.Log
 import android.view.MenuItem
 import android.widget.PopupMenu
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
@@ -30,6 +31,8 @@ import com.google.zxing.ResultPoint
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.CompoundBarcodeView
+import com.v3.basis.blas.blasclass.app.BlasDef
+import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.ui.ext.setBlasCustomView
 import com.v3.basis.blas.ui.ext.showBackKeyForActionBar
@@ -199,8 +202,32 @@ class FixtureActivity : AppCompatActivity() {
         tone.startTone(ToneGenerator.TONE_CDMA_ONE_MIN_BEEP,200)
         Log.d("NG","作成失敗")
         Log.d("errorCorde","${errorCode}")
+
+        var message:String? = null
+
+        when(errorCode) {
+            BlasRestErrCode.FX_NOT_ENTRY_FIXTURE -> {
+                message = getString(R.string.data_dupli_error)
+            }
+            BlasRestErrCode.NETWORK_ERROR -> {
+                //サーバと通信できません
+                message = getString(R.string.network_error)
+            }
+            else-> {
+                //サーバでエラーが発生しました(要因コード)
+                message = getString(R.string.server_error, errorCode)
+            }
+        }
+
+        when(aplCode) {
+            BlasDef.APL_QUEUE_SAVE -> {
+                message = message + getString(R.string.apl_queue_save)
+            }
+        }
+
         messageText.setTextColor(Color.RED)
-        messageText.text = "すでに登録済のQRコードです"
+        messageText.text = message
+
     }
 
 }

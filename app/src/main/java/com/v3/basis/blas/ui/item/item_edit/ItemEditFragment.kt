@@ -16,6 +16,7 @@ import android.widget.*
 
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.QRActivity
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_QUEUE_SAVE
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.BTN_SAVE
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.formaction.FormActionDataEdit
@@ -666,10 +667,34 @@ class ItemEditFragment : Fragment() {
      * 更新失敗時の処理
      */
     fun updateError(errorCode: Int, aplCode:Int){
-        //更新失敗を通知
-        handler.post {
-            Toast.makeText(activity, getText(R.string.error_data_update), Toast.LENGTH_LONG).show()
+
+        var message:String? = null
+
+        when(errorCode) {
+            BlasRestErrCode.DATA_DUPLI_ERROR -> {
+                message = getString(R.string.data_dupli_error)
+            }
+            BlasRestErrCode.NETWORK_ERROR -> {
+                //サーバと通信できません
+                message = getString(R.string.network_error)
+            }
+            else-> {
+                //サーバでエラーが発生しました(要因コード)
+                message = getString(R.string.server_error, errorCode)
+            }
         }
+
+        when(aplCode) {
+            APL_QUEUE_SAVE -> {
+                message = message + getString(R.string.apl_queue_save)
+            }
+
+        }
+
+        handler.post {
+            Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+        }
+
     }
 
     /**

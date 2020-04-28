@@ -39,6 +39,8 @@ open class BlasRestItem(val crud:String = "search",
         var response:String? = null
 
         var blasUrl = BlasRest.URL + "items/search/"
+        var json:JSONObject? = null
+        var errorCode = 0
 
         when(crud) {
             "search"->{
@@ -75,13 +77,17 @@ open class BlasRestItem(val crud:String = "search",
                     response = loadJson(cacheFileName)
                 } catch (e: Exception) {
                     //キャッシュの読み込み失敗
-                    funcError(BlasRestErrCode.FILE_READ_ERROR,APL_OK)
+                    if(method == "GET") {
+                        funcError(BlasRestErrCode.FILE_READ_ERROR, APL_OK)
+                        return response
+                    }
                 }
             }else{
-                    if(method == "GET") {
-                        //キャッシュファイルがないため、エラーにする
-                        funcError(BlasRestErrCode.NETWORK_ERROR,APL_OK)
-                    }
+                if(method == "GET") {
+                    //キャッシュファイルがないため、エラーにする
+                    funcError(BlasRestErrCode.NETWORK_ERROR,aplCode)
+                    return response
+                }
             }
 
             if ((method == "POST") or (method == "PUT")){
@@ -91,6 +97,15 @@ open class BlasRestItem(val crud:String = "search",
                 if (resultList.size == 0){
                     super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
                     aplCode = APL_QUEUE_SAVE
+                    errorCode = BlasRestErrCode.NETWORK_ERROR
+                }else{
+                    errorCode = BlasRestErrCode.DATA_DUPLI_ERROR
+                }
+
+                if(response != null) {
+                    json = JSONObject(response)
+                    json.put("error_code", errorCode)
+                    response = json.toString()
                 }
             }
         }
