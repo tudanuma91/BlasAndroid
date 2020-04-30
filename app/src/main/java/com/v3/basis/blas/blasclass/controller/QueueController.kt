@@ -259,11 +259,16 @@ object QueueController {
             }
         }
 
+        //DBからデータを削除する
+        try {
+            database.delete(REQUEST_TABLE, whereClauses, whereArgs)
+        }catch(exception: Exception) {
+            Log.e("deleteData " + reqArray.request_id, exception.toString())
+        }
+
         try {
             tableName = queueFunc.tableName
         }catch(exception: Exception) {
-            database.delete(REQUEST_TABLE, whereClauses, whereArgs)
-            Log.e("deleteData " + reqArray.request_id, exception.toString())
             return
         }
 
@@ -282,13 +287,6 @@ object QueueController {
             queueFunc.errorFun(rtn.errorCode,APL_QUEUE_ERR)
         }
 
-        //DBからデータを削除する
-        try {
-            database.delete(REQUEST_TABLE, whereClauses, whereArgs)
-        }catch(exception: Exception) {
-            Log.e("deleteData " + reqArray.request_id, exception.toString())
-        }
-
     }
 
     private fun queueError(reqArray:RestRequestData,response :String) {
@@ -303,7 +301,7 @@ object QueueController {
         }
 
         values.put("retry_count", retry_count)
-        val whereClauses = "id = ?"
+        val whereClauses = "queue_id = ?"
         val whereArgs = arrayOf(reqArray.request_id.toString())
 
         try {

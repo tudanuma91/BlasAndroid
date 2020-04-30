@@ -81,7 +81,7 @@ open class BlasRestImage(val crud:String = "download",
             }
             if (method == "POST"){
                 // 失敗した場合、キュー処理を呼び出す
-                super.reqDataSave(payload,"GET",blasUrl,funcSuccess,funcError,"Images")
+                super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Images")
                 aplCode = APL_QUEUE_SAVE
 
                 if(response != null) {
