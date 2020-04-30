@@ -182,6 +182,7 @@ object QueueController {
        }catch (e: FileNotFoundException){
             Log.e("FileReadError", e.toString())
         }
+        param = param.removeSuffix("\n")
 
         // TODO テスト用にGETのキュー処理も追加
         if( (reqArray.method == "GET") or (reqArray.method == "DELETE") ) {

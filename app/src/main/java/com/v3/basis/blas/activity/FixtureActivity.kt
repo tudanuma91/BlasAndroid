@@ -3,6 +3,7 @@ package com.v3.basis.blas.activity
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.graphics.Color
 import android.media.AudioManager
 import android.media.ToneGenerator
@@ -31,7 +32,9 @@ import com.google.zxing.ResultPoint
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.CompoundBarcodeView
+import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.app.BlasDef
+import com.v3.basis.blas.blasclass.rest.BlasRest.Companion.context
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.ui.ext.setBlasCustomView
@@ -203,25 +206,27 @@ class FixtureActivity : AppCompatActivity() {
         Log.d("NG","作成失敗")
         Log.d("errorCorde","${errorCode}")
 
-        var message:String? = null
+        var message:String? = ""
+        val context = BlasApp.applicationContext()
+        val res = context.getResources();
 
         when(errorCode) {
             BlasRestErrCode.FX_NOT_ENTRY_FIXTURE -> {
-                message = getString(R.string.data_dupli_error)
+                message = res.getString(R.string.data_dupli_error)
             }
             BlasRestErrCode.NETWORK_ERROR -> {
                 //サーバと通信できません
-                message = getString(R.string.network_error)
+                message = res.getString(R.string.network_error)
             }
             else-> {
                 //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, errorCode)
+                message = res.getString(R.string.server_error, errorCode)
             }
         }
 
         when(aplCode) {
             BlasDef.APL_QUEUE_SAVE -> {
-                message = message + getString(R.string.apl_queue_save)
+                message = message + res.getString(R.string.apl_queue_save)
             }
         }
 
