@@ -123,7 +123,7 @@ object QueueController {
 
             /* キューデータを通信エラーになるまでループする */
 
-            Thread.sleep(10* 1000)
+            Thread.sleep(10 * 1000)
         }
 
     }
@@ -295,15 +295,17 @@ object QueueController {
         //ステータス、リトライ回数を更新する
         val values = ContentValues()
         val retry_count = reqArray.retry_count + 1
+        val whereClauses = "queue_id = ?"
+        val whereArgs = arrayOf(reqArray.request_id.toString())
 
         if(retry_count >= 100) {
             values.put("status", STS_RETRY_MAX)
             noticeAdd(reqArray,APL_RETRY_MAX_ERR)
+            database.delete(REQUEST_TABLE, whereClauses, whereArgs)
         }
 
         values.put("retry_count", retry_count)
-        val whereClauses = "queue_id = ?"
-        val whereArgs = arrayOf(reqArray.request_id.toString())
+
 
         try {
             database.update(REQUEST_TABLE, values, whereClauses, whereArgs)

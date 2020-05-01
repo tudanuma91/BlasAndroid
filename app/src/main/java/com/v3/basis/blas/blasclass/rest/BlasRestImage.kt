@@ -42,7 +42,7 @@ open class BlasRestImage(val crud:String = "download",
         when(crud) {
             "download"->{
                 method = "GET"
-                blasUrl = BlasRest.URL + "images/download/"
+                blasUrl = BlasRest.URL + "images/download230/"
                 cacheFileName = context.cacheDir.toString() +  "/image_" + payload["item_id"] + "_" + payload["project_image_id"] +".json"
             }
             "upload"->{
