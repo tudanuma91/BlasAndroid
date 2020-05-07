@@ -6,6 +6,7 @@ import android.app.TimePickerDialog
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -25,6 +26,7 @@ import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.blasclass.rest.BlasRestUser
 import com.v3.basis.blas.ui.ext.addTitle
 import org.json.JSONObject
+import java.lang.Exception
 import java.lang.reflect.Field
 import java.util.*
 
@@ -42,6 +44,7 @@ class ItemEditFragment : Fragment() {
     private lateinit var itemId: String
     private lateinit var rootView: LinearLayout
     private var parentChk :Boolean = true
+    private var projectName : String = ""
 
     private var formInfoMap:MutableMap<String, MutableMap<String, String?>> = mutableMapOf()
     private val editMap:MutableMap<String, EditText?> = mutableMapOf()
@@ -52,6 +55,7 @@ class ItemEditFragment : Fragment() {
     private val jsonItem:MutableMap<String,JSONObject> = mutableMapOf()
     private val formDefaultValueList: MutableList<MutableMap<String, String?>> = mutableListOf()
     private val textViewMap:MutableMap<String,TextView> = mutableMapOf()
+    private val nullChk: MutableMap<Int, MutableMap<String, String>> = mutableMapOf()
     private var memoMap:MutableMap<String,EditText> = mutableMapOf()
     private var userMap :MutableMap<String,String?> = mutableMapOf()
 
@@ -73,6 +77,7 @@ class ItemEditFragment : Fragment() {
     private lateinit var formAction: FormActionDataEdit
     private val helper:RestHelper = RestHelper()
     private lateinit var qrCodeView: EditText
+    private var handler = Handler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,7 +94,6 @@ class ItemEditFragment : Fragment() {
         val extras = activity?.intent?.extras
         if (extras?.getString("token") != null) {
             token = extras.getString("token").toString()
-            Log.d("token_item", "${token}")
         }
         if (extras?.getString("project_id") != null) {
             projectId = extras.getString("project_id").toString()
@@ -97,9 +101,17 @@ class ItemEditFragment : Fragment() {
         if (extras?.getString("item_id") != null) {
             itemId = extras.getString("item_id").toString()
         }
-
-        if(token != null && activity != null){
-            formAction = FormActionDataEdit(token,activity!!)
+        if(extras?.getString("projectNames") != null){
+            projectName = extras.getString("projectNames").toString()
+        }
+        try {
+            if (token != null && activity != null && projectId != null && itemId != null&& projectName != null) {
+                formAction = FormActionDataEdit(token, activity!!)
+                Log.d("CL6_0001","トークン等の受け渡し完了")
+            }
+        }catch (e:Exception){
+            //::TODO:: ここエラー内容分岐すること（可能性としてはtokenの受け渡し失敗等）
+            Log.d("取得失敗","トークンの取得に失敗しました")
         }
 
 
@@ -116,14 +128,23 @@ class ItemEditFragment : Fragment() {
         space.setLayoutParams(layoutParamsSpace)
         rootView.addView(space)
 
-        //レイアウトの設置位置の設定
-        val payload = mapOf("token" to token, "project_id" to projectId)
-        val payloadItem = mapOf("token" to token, "project_id" to projectId )
-        val payload2 = mapOf("token" to token,"my_self" to "1")
-        //item_idでの取得ができない!!
-        BlasRestField(payload, ::getSuccess, ::getFail).execute()
-        BlasRestUser(payload2, ::userGetSuccess, ::userGetFail).execute()
-        BlasRestItem("search", payloadItem, ::itemRecv, ::itemRecvError).execute()
+        try {
+            //レイアウトの設置位置の設定
+            if (token != null && activity != null && projectId != null && itemId != null && projectName != null) {
+                val payload = mapOf("token" to token, "project_id" to projectId)
+                val payloadItem = mapOf("token" to token, "project_id" to projectId)
+                val payload2 = mapOf("token" to token, "my_self" to "1")
+                //item_idでの取得ができない!!
+                Log.d("CL6_0001","payload設定完了・rest開始")
+                BlasRestField(payload, ::getSuccess, ::getFail).execute()
+                BlasRestUser(payload2, ::userGetSuccess, ::userGetFail).execute()
+                BlasRestItem("search", payloadItem, ::itemRecv, ::itemRecvError).execute()
+
+            }
+
+        }catch (e:Exception){
+            Log.d("取得失敗","トークンの取得に失敗しました")
+        }
     }
 
     /**
@@ -132,7 +153,9 @@ class ItemEditFragment : Fragment() {
     private fun getSuccess(result: JSONObject) {
         formFieldList.clear()
         formFieldList = RestHelper().createFormField(result)
+        Log.d("CL6_0001","フィールド取得完了")
         if (jsonItem.isNotEmpty() && formFieldList.isNotEmpty()) {
+            Log.d("CL6_0001","フィールド取得/アイテム取得共に完了")
             createForm()
         }
 
@@ -172,7 +195,9 @@ class ItemEditFragment : Fragment() {
         formDefaultValueList.clear()
         jsonItem.clear()
         jsonItem.set(key = "1",value = result)
+        Log.d("CL6_0001","アイテム取得完了")
         if (jsonItem.isNotEmpty() && formFieldList.isNotEmpty()) {
+            Log.d("CL6_0001","フィールド取得/アイテム取得共に完了")
             createForm()
         }
 
@@ -239,15 +264,16 @@ class ItemEditFragment : Fragment() {
             textViewMap.set(cnt.toString(), formSectionTitle)
             rootView.addView(formSectionTitle)
 
-            //フォームの項目の情報をメンバ変数に格納
+            //フォームの項目の情報をメンバ変数に格納(必須入力・重複不可・一行入力等のタイプ)
+            //名前をformConditionMapとかにした方がいいかも
             val typeMap = formAction.createFormInfoMap(formInfo)
             formInfoMap.set(key = "${cnt}", value = typeMap)
 
             //フォームの作成処理。項目の数だけ行う。
             when (formInfo.type) {
                 FieldType.TEXT_FIELD-> {
-                    //自由入力(1行)と自由入力(複数行)
-                    //editTextを作成
+                    //自由入力(1行)
+                    Log.d("CL6_0001","自由入力（一行）")
                     var formPart = formAction.createTextField(layoutParams, cnt, formInfo)
                     formPart = formAction.setDefaultValueEdit(
                         formDefaultValueList[0].get("fld${cnt}"),
@@ -258,6 +284,7 @@ class ItemEditFragment : Fragment() {
                     editMap.set(key = "col_${cnt}", value = formPart)
                 }
                 FieldType.TEXT_AREA ->{
+                    //自由入力（複数行）
                     var formPart = formAction.createTextAlea(layoutParams, cnt, formInfo)
                     formPart = formAction.setDefaultValueEdit(
                         formDefaultValueList[0].get("fld${cnt}"),
@@ -318,7 +345,6 @@ class ItemEditFragment : Fragment() {
                                     selectedValueId
                                 )
                                 formPart.setOnClickListener {
-                                    Log.d("デバック用ログ", "選択された値=>${formPart.text}")
                                     var colNum:String? = null
                                     valueIdColMap.forEach{
                                         val protoNum = it.key
@@ -372,7 +398,6 @@ class ItemEditFragment : Fragment() {
                         val information :MutableMap<String,String> = mutableMapOf()
                         val parentSelect = formAction.getParentSelect(formInfo.choiceValue)
                         val colTargetPart:MutableList<String> = mutableListOf()
-                        Log.d("デバック用ログ","親の値が[${parentSelect}]の時、処理を走らせる")
                         information.set(key = "keyWord" ,value = parentSelect.toString())
                         information.set(key = "parentId",value = formInfo.parentFieldId.toString())
                         parentMap.set(cnt.toString(),information)
@@ -436,6 +461,7 @@ class ItemEditFragment : Fragment() {
                         qrCodeView = layout.findViewById(R.id.editText)
                         val intent = Intent(activity, QRActivity::class.java)
                         intent.putExtra("colNumber","${cnt}")
+                        intent.putExtra("projectName", projectName)
                         startActivityForResult(intent, QRActivity.QR_CODE)
                     }
                     //初期値を設定。配列に格納
@@ -463,6 +489,7 @@ class ItemEditFragment : Fragment() {
 
                 }
                 FieldType.ACOUNT_NAME->{
+                    Log.d("CL6_0001","アカウント名")
 
                     val layout = requireActivity().layoutInflater.inflate(R.layout.cell_account,null)
                     rootView.addView(layout)
@@ -476,6 +503,7 @@ class ItemEditFragment : Fragment() {
 
                 }
                 FieldType.SIG_FOX->{
+                    Log.d("CL6_0001","シグフォックス")
                     //シグフォックス。現在実装不可
                     val view = TextView(activity)
                     view.setText("シグフォックスは使用できません")
@@ -497,16 +525,13 @@ class ItemEditFragment : Fragment() {
 
         //親の値があった時の処理
         parentMap.forEach{
-            Log.d("デバック用ログ","parentMap=>${it}")
             val parent = it
             idMap.forEach{
                 if(it.value == parent.value["parentId"] && formDefaultValueList[0]["fld${it.key}"] == parent.value["keyWord"]){
-                    Log.d("デバック用ログ","分岐完了")
                     val list = selectValueMap[parent.key]!!
                     list.forEach {
                         //ラジオボタンを編集可能にする
                         radioValue[it]!!.isEnabled = true
-                        Log.d("デバック用ログ", "${it}")
                     }
                 }
             }
@@ -521,16 +546,16 @@ class ItemEditFragment : Fragment() {
 
         //ボタン押下時の処理
         button.setOnClickListener {
-            formAction.setDefaultTitle(textViewMap)
+            formAction.setDefaultTitle(textViewMap,formInfoMap)
             parentChk = true
+
             val parentErrorMap:MutableMap<String,MutableMap<String,String?>> = mutableMapOf()
 
             val payload: MutableMap<String, String?> =
                 mutableMapOf("token" to token, "project_id" to projectId, "item_id" to itemId)
-            val nullChk: MutableMap<Int, MutableMap<String, String>> = mutableMapOf()
+            nullChk.clear()
             var cnt = 1
             var errorCnt: Int = 0
-            Log.d("aafqgrea", "${payload}")
 
             formInfoMap.forEach {
                 var value = ""
@@ -546,8 +571,14 @@ class ItemEditFragment : Fragment() {
 
                     FieldType.SINGLE_SELECTION -> {
                         //ラジオボタン
+
                         val checkedRadioId = formAction.getCheckedRadioId(radioGroupMap, cnt)
-                        value = formAction.getCheckedValue(radioValue, checkedRadioId)
+                        val radioGrp = radioValue.get(checkedRadioId)
+                        if(radioGrp != null) {
+                            if (radioGrp.isEnabled) {
+                                value = formAction.getCheckedValue(radioValue, checkedRadioId)
+                            }
+                        }
                         payload.set("fld${cnt}", "${value}")
                     }
 
@@ -575,6 +606,7 @@ class ItemEditFragment : Fragment() {
                         }
                     }
                     FieldType.CHECK_VALUE-> {
+                        //TODO::追加テストする。ここの仕様がやや甘い
                         parentChk = true
                         value = formAction.pickUpValue(editMap, cnt)
                         val memoValue = memoMap["col_${cnt}"]?.text.toString()
@@ -594,19 +626,19 @@ class ItemEditFragment : Fragment() {
                                     }
                                     FieldType.SINGLE_SELECTION -> {
                                         //ラジオボタン
-                                        val checkedRadioId = formAction.getCheckedRadioId(radioGroupMap, cnt)
+                                        val checkedRadioId = formAction.getCheckedRadioId(radioGroupMap, parentCol.toInt())
                                         parentValue = formAction.getCheckedValue(radioValue, checkedRadioId)
                                     }
                                     FieldType.MULTIPLE_SELECTION -> {
                                         //チェックボックス
-                                        val colCheckMap = checkMap.get("col_${cnt}")
+                                        val colCheckMap = checkMap.get("col_${parentCol.toInt()}")
                                         parentValue = formAction.getCheckedValues(colCheckMap)
                                     }
                                     FieldType.KENPIN_RENDOU_QR,
                                     FieldType.QR_CODE,
                                     FieldType.TEKKILYO_RENDOU_QR -> {
                                         //配列に格納した値を取得
-                                        val colCheckMap = editMap.get("col_${cnt}")
+                                        val colCheckMap = editMap.get("col_${parentCol.toInt()}")
                                         if (colCheckMap != null) {
                                             parentValue = colCheckMap.text.toString()
                                         }
@@ -640,7 +672,7 @@ class ItemEditFragment : Fragment() {
             }
 
             //エラーチェック
-            errorCnt = formAction.countNullError(nullChk, textViewMap)
+            errorCnt = formAction.countNullError(nullChk, textViewMap,formInfoMap)
             if (errorCnt == 0 && parentChk) {
                 BlasRestItem("update", payload, ::updateSuccess, ::updateError).execute()
             }
@@ -653,7 +685,11 @@ class ItemEditFragment : Fragment() {
      */
     fun updateSuccess(result: JSONObject){
         //更新成功を通知
-        Toast.makeText(activity, getText(R.string.success_data_update), Toast.LENGTH_LONG).show()
+        if (isAdded()) {
+            handler.post {
+                Toast.makeText(activity, getText(R.string.success_data_update), Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     /**
@@ -661,7 +697,9 @@ class ItemEditFragment : Fragment() {
      */
     fun updateError(errorCode: Int, aplCode:Int){
         //更新失敗を通知
-        Toast.makeText(activity, getText(R.string.error_data_update), Toast.LENGTH_LONG).show()
+        handler.post {
+            Toast.makeText(activity, getText(R.string.error_data_update), Toast.LENGTH_LONG).show()
+        }
     }
 
     /**
@@ -669,12 +707,11 @@ class ItemEditFragment : Fragment() {
      */
     private fun setClickDateTime(formPart:EditText): EditText {
         //editTextタップ時の処理
+        Log.d("CL6_0001","日付タップ時の処理を書き加える")
         formPart.setOnClickListener {
             val dtp = DatePickerDialog(
                 getContext()!!,
                 DatePickerDialog.OnDateSetListener { view, y, m, d ->
-                    Toast.makeText(activity, "日付を選択しました${y}/${m + 1}/${d}", Toast.LENGTH_LONG)
-                        .show()
                     //フォーマットを作成
                     formPart.setText(String.format("%d/%02d/%02d", y, m + 1, d))
                 },
@@ -692,10 +729,10 @@ class ItemEditFragment : Fragment() {
      */
     private fun setClickTime(formPart: EditText): EditText {
         //editTextタップ時の処理
+        Log.d("CL6_0001","時間タップ時の処理を書き加える")
         formPart.setOnClickListener{
             val tp = TimePickerDialog(context,
                 TimePickerDialog.OnTimeSetListener{ view, hour, minute->
-                    Toast.makeText(activity, "時間を選択しました${hour}:${minute}", Toast.LENGTH_LONG).show()
                     formPart.setText(String.format("%02d:%02d",hour,minute))
                 },hour,minute,true)
             tp.show()

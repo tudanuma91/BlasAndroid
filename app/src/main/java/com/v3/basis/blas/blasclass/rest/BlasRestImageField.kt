@@ -24,9 +24,8 @@ open class BlasRestImageField(val payload:Map<String, String?>,
         val TABLE_NAME = "ProjectImages"
     }
 
-    init{
-        cacheFileName = context.cacheDir.toString() + "/imageField_" + payload["project_id"] + ".json"
-    }
+
+    var cacheFileName = context.cacheDir.toString() + "/imageField_" + payload["project_id"] + ".json"
 
     /**
      * プロジェクトに設定されているフィールドの情報取得要求を行う

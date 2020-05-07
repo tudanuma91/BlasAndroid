@@ -18,10 +18,6 @@ class FormActionDataCreate(setToken: String, setActivity: FragmentActivity):Form
             }
         }
 
-    override fun typeCheck(list: MutableMap<String, String?>?): formType {
-        return super.typeCheck(list)
-
-    }
 
     override fun createFormSectionTitle(
         params: LinearLayout.LayoutParams?,
@@ -35,13 +31,4 @@ class FormActionDataCreate(setToken: String, setActivity: FragmentActivity):Form
         }
         return title
     }
-
-
-
-
-
-
-
-
-
 }

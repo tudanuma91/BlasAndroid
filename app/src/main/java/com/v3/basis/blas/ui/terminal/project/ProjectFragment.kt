@@ -59,7 +59,6 @@ class ProjectFragment : Fragment() {
      * @return プロジェクトのリスト
      */
     private fun createProjectList(from: MutableMap<String,MutableMap<String, String>>): List<RowModel> {
-        Log.d("がばれっじテスト","CL1_002_2")
         val dataList = mutableListOf<RowModel>()
         from.forEach{
             val project_name = it.value["project_name"].toString()
@@ -81,7 +80,6 @@ class ProjectFragment : Fragment() {
      */
     private fun projectSearchSuccess(result: JSONObject) {
         val newMap = RestHelper().createProjectList(result)
-        Log.d("がばれっじテスト","CL1_002_1")
         val recyclerView = recyclerView
         var project_list = createProjectList(newMap)
         val adapter = ViewAdapterAdapter(project_list,

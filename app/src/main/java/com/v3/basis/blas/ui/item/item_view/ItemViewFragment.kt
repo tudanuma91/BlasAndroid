@@ -35,6 +35,7 @@ import java.lang.Exception
 class ItemViewFragment : Fragment() {
     var token:String? = null
     var projectId:String? = null
+    private var projectNames:String? = null
     private var normalShow = true
     private var endShow = false
     private var progressBarFlg = false
@@ -81,6 +82,7 @@ class ItemViewFragment : Fragment() {
         rootView = root
         token = getStringExtra("token")
         projectId = getStringExtra("project_id")
+        projectNames = getStringExtra("projectName")
         progressBarFlg = true
         chkProgress(progressBarFlg,root)
 
@@ -148,6 +150,7 @@ class ItemViewFragment : Fragment() {
                 if (itemListAll.isNotEmpty()) {
                     val notOverSize = currentIndex + CREATE_UNIT <= itemListAll.size
                     if (!recyclerView.canScrollVertically(1) && notOverSize) {
+                        progressBarFlg = true
                         chkProgress(true, rootView)
                         setAdapter()
                     }
@@ -156,20 +159,25 @@ class ItemViewFragment : Fragment() {
         })
 
         //呼ぶタイミングを確定させる！！
-        progressBarFlg = true
-        chkProgress(progressBarFlg,rootView)
-        val payload2 = mapOf("token" to token, "project_id" to projectId)
-        BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
+        try {
+            progressBarFlg = true
+            chkProgress(progressBarFlg, rootView)
+            val payload2 = mapOf("token" to token, "project_id" to projectId)
+            BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
+        }catch (e:Exception){
+            //::TODO:: ここエラー内容分岐すること（可能性としてはtokenの受け渡し失敗等）
+            Log.d("エラー","エラー発生:${e}")
+        }
     }
 
     private fun createDataList() {
         var colMax = fieldMap.size
         val itemInfo = helper.createItemList(jsonItemList, colMax )
         itemListAll.addAll(itemInfo)
-        makeDataList()
+        createCardView()
     }
 
-    private fun makeDataList() {
+    private fun createCardView() {
 
         val colMax = fieldMap.size
         val list = mutableListOf<MutableMap<String, String?>>()
@@ -206,12 +214,7 @@ class ItemViewFragment : Fragment() {
         itemListAll.clear()
         jsonItemList.clear()
         jsonItemList.set("1", result)
-        if(jsonItemList.isEmpty()){
-            Log.d("fteay","jsonitemListはnull")
-        }
-        if (jsonItemList.isNotEmpty() && fieldMap.isNotEmpty()) {
-            setAdapter()
-        }
+        setAdapter()
     }
 
     /**
@@ -226,21 +229,18 @@ class ItemViewFragment : Fragment() {
             fieldMap[cnt] = it
             cnt +=1
         }
-        if(fieldMap.isEmpty()){
-            Log.d("fteay","fieldMapはnull")
-        } else {
-            val payload2 = mapOf("token" to token, "project_id" to projectId)
-            BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
-        }
+        val payload2 = mapOf("token" to token, "project_id" to projectId)
+        BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
+
     }
 
     /**
      * フィールド取得失敗時
      */
     private fun fieldRecvError(errorCode: Int , aplCode:Int) {
-    
+
         var message:String? = null
-        
+
         when(errorCode) {
             BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
                 message = getString(R.string.record_not_found)
@@ -270,9 +270,9 @@ class ItemViewFragment : Fragment() {
      */
     private fun itemRecvError(errorCode: Int , aplCode:Int) {
         Log.d("aaaaaaa", "失敗")
-        
+
         var message:String? = null
-        
+
         when(errorCode) {
             BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
                 message = getString(R.string.record_not_found)
@@ -298,6 +298,7 @@ class ItemViewFragment : Fragment() {
     }
 
     private fun  createCardManager(list:MutableList<MutableMap<String,String?>>,colMax : Int,mode:String){
+
         Log.d("デバック処理","ノーマルshowの値=>${normalShow}")
         Log.d("デバック処理","エンドshowの値=>${endShow}")
         if(mode == "New"){
@@ -363,19 +364,18 @@ class ItemViewFragment : Fragment() {
         var text = text
         for (col in 1..colMax) {
             val fldName = "fld${col}"
-            Log.d("デバック用のログ", "itの中身=>${it}")
             //レコードの定義取得
             if (loopcnt == 1) {
                 text = "【${fieldMap[col]!!["field_name"]}】\n"
-                text += " ${it[fldName]}\n"
+                text += "${it[fldName]}\n"
             } else {
                 text += "【${fieldMap[col]!!["field_name"]}】\n"
 
                 if (fieldMap[col]!!["type"] == FieldType.CHECK_VALUE) {
                     val newValue = helper.createCheckValue(it[fldName].toString())
-                    text += " ${newValue}\n"
+                    text += "${newValue}\n"
                 } else {
-                    text += " ${it[fldName]}\n"
+                    text += "${it[fldName]}\n"
                 }
 
             }
@@ -386,20 +386,18 @@ class ItemViewFragment : Fragment() {
 
     fun createCard(item_id:String,text: String?,valueFlg : String){
         val rowModel = RowModel().also {
-            if (item_id != null) {
-                if(valueFlg == FieldType.END) {
-                    it.title = "${item_id}${FieldType.ENDTEXT}"
-                }else{
-                    it.title = item_id
-                }
-                it.itemId = item_id
+            if(valueFlg == FieldType.END) {
+                it.title = "${item_id}${FieldType.ENDTEXT}"
+            }else{
+                it.title = item_id
             }
-            if (text != null) {
-                it.detail = text
-            }
+            it.itemId = item_id
+
+            it.detail = text.toString()
             it.projectId = projectId
             it.token = token
             it.itemList = itemListAll
+            it.projectNames = projectNames
         }
 
         dataList.add(rowModel)

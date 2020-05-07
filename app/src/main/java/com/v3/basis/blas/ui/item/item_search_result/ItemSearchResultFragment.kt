@@ -154,7 +154,6 @@ class ItemSearchResultFragment : Fragment() {
         itemList.addAll(itemInfo)
 
         baseList = itemList
-        Log.d("デバックログ","baseListの中身=>${baseList.size}")
         if(baseList.size > 0) {
             createCardManager(itemList, colMax, "New")
         }else{

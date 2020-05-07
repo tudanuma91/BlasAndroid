@@ -23,9 +23,8 @@ open class BlasRestFixture(val crud:String = "search",
     val TOUROKU_FIXTURE_URL = BlasRest.URL +"fixtures/takeout"
     val RETURN_FIXTURE_URL = BlasRest.URL +"fixtures/trn"
 
-    init{
-        cacheFileName = context.cacheDir.toString() + "/fixture_" + payload["project_id"] + ".json"
-    }
+
+    val cacheFileName = context.cacheDir.toString() + "/fixture_" + payload["project_id"] + ".json"
     var method = "GET"
     var aplCode:Int = 0
 

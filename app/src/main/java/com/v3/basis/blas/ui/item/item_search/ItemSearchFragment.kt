@@ -28,6 +28,7 @@ import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.ext.addTitle
 import org.json.JSONObject
+import java.lang.Exception
 import java.util.*
 import kotlin.concurrent.timerTask
 
@@ -83,7 +84,13 @@ class ItemSearchFragment : Fragment() {
         if (extras?.getString("project_id") != null) {
             projectId = extras.getString("project_id").toString()
         }
-        formAction = FormActionDataSearch(token,activity!!)
+        try {
+            if(token != null && projectId != null && activity != null) {
+                formAction = FormActionDataSearch(token, activity!!)
+            }
+        }catch (e:Exception){
+
+        }
         val root= inflater.inflate(R.layout.fragment_item_search, container, false)
         return root
     }
@@ -92,18 +99,24 @@ class ItemSearchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         rootView = view.findViewById<LinearLayout>(R.id.item_search_liner)
 
-        val space = formAction.createSpace(layoutParamsSpace)
-        val title = formAction.createFreeWordSearchTitle(layoutParams)
-        val freeWordSearch = formAction.createFreeWordSearch(layoutParams)
-        editMap.set(key="col_${0}",value = freeWordSearch)
-        rootView.addView(space)
-        rootView.addView(title)
-        rootView.addView(freeWordSearch)
-        titleMap.set(key = "freeWord",value = title)
+        try {
+            if (token != null && projectId != null && activity != null) {
+                val space = formAction.createSpace(layoutParamsSpace)
+                val title = formAction.createFreeWordSearchTitle(layoutParams)
+                val freeWordSearch = formAction.createFreeWordSearch(layoutParams)
+                editMap.set(key = "col_${0}", value = freeWordSearch)
+                rootView.addView(space)
+                rootView.addView(title)
+                rootView.addView(freeWordSearch)
+                titleMap.set(key = "freeWord", value = title)
 
-        //レイアウトの設置位置の設定
-        val payload = mapOf("token" to token, "project_id" to projectId)
-        BlasRestField(payload, ::getSuccess, ::getFail).execute()
+                //レイアウトの設置位置の設定
+                val payload = mapOf("token" to token, "project_id" to projectId)
+                BlasRestField(payload, ::getSuccess, ::getFail).execute()
+            }
+        } catch (e:Exception){
+
+        }
     }
 
     private fun getSuccess(result:JSONObject?) {

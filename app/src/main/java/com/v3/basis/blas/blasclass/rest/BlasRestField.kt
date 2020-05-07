@@ -7,6 +7,7 @@ import com.v3.basis.blas.blasclass.app.cakeToAndroid
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.File
 import kotlin.reflect.KFunction1
 
 
@@ -23,9 +24,7 @@ open class BlasRestField(
         val FIELD_SEARCH_URL = BlasRest.URL + "project_fields/search/"
     }
 
-    init{
-        cacheFileName = context.cacheDir.toString() +  "/field_" + payload["project_id"] + ".json"
-    }
+     val cacheFileName = context.cacheDir.toString() +  "/field_" + payload["project_id"] + ".json"
 
     /**
      * プロジェクトに設定されているフィールドの情報取得要求を行う
@@ -38,6 +37,14 @@ open class BlasRestField(
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)
+            if (File(cacheFileName).exists()) {
+                try {
+                    response = loadJson(cacheFileName)
+                } catch (e: Exception) {
+                    //キャッシュの読み込み失敗
+                    fieldSearchError(BlasRestErrCode.FILE_READ_ERROR,APL_OK)
+                }
+            }
         }
         return response
     }

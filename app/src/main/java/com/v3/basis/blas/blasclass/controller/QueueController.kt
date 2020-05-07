@@ -91,6 +91,7 @@ object QueueController {
 
         var resCorde : Int
         var response : String
+        lateinit var result:Pair<Int,String>
 
         /* 通信のバックグラウンド処理 */
         while(!stop_flg) {
@@ -99,7 +100,11 @@ object QueueController {
                 reqList = loadQueueFromDB()
 
                 for (i in reqList.indices) {
-                    var result  = doConnect(reqList[i])
+                    try {
+                        result = doConnect(reqList[i])
+                    }catch(e:Exception) {
+                        Log.e("ConnectError", e.toString())
+                    }
 
                     try {
                         // 通信が正常の場合
@@ -240,6 +245,7 @@ object QueueController {
         val whereClauses = "queue_id = ?"
         val whereArgs = arrayOf(reqArray.request_id.toString())
         lateinit var queueFunc:FuncList
+        var tableName:String
 
         for(i in queuefuncList){
             if (i.id == reqArray.request_id){
@@ -247,7 +253,13 @@ object QueueController {
             }
         }
 
-        val tableName = queueFunc.tableName
+        try {
+            tableName = queueFunc.tableName
+        }catch(exception: Exception) {
+            database.delete(REQUEST_TABLE, whereClauses, whereArgs)
+            Log.e("deleteData " + reqArray.request_id, exception.toString())
+            return
+        }
 
         val rtn: RestfulRtn = cakeToAndroid(response, tableName)
         if(rtn == null) {

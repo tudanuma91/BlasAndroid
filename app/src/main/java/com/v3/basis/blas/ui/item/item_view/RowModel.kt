@@ -11,4 +11,5 @@ class RowModel {
     var itemId: String? = null
     var image: ImageButton? = null
     var image2 : ImageButton? = null
+    var projectNames : String? = null
 }

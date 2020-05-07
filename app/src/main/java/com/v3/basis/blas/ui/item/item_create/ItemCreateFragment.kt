@@ -27,6 +27,7 @@ import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.blasclass.rest.BlasRestUser
 import com.v3.basis.blas.ui.ext.addTitle
 import org.json.JSONObject
+import java.lang.Exception
 import java.util.*
 
 /**
@@ -87,8 +88,12 @@ class ItemCreateFragment : Fragment() {
             projectId = extras.getString("project_id").toString()
         }
 
-        if(token != null && activity != null){
-            formAction = FormActionDataCreate(token, activity!!)
+        try {
+            if (token != null && activity != null&& projectId != null) {
+                formAction = FormActionDataCreate(token, activity!!)
+            }
+        }catch (e:Exception){
+
         }
         return inflater.inflate(R.layout.fragment_item_create, container, false)
     }
@@ -102,10 +107,14 @@ class ItemCreateFragment : Fragment() {
         space.setLayoutParams(layoutParamsSpace)
         rootView.addView(space)
         //レイアウトの設置位置の設定
-        val payload = mapOf("token" to token, "project_id" to projectId)
-        val payload2 = mapOf("token" to token,"my_self" to "1")
-        BlasRestField(payload, ::getSuccess, ::getFail).execute()
-        BlasRestUser(payload2, ::userGetSuccess, ::userGetFail).execute()
+        try {
+            val payload = mapOf("token" to token, "project_id" to projectId)
+            val payload2 = mapOf("token" to token, "my_self" to "1")
+            BlasRestField(payload, ::getSuccess, ::getFail).execute()
+            BlasRestUser(payload2, ::userGetSuccess, ::userGetFail).execute()
+        }catch (e:Exception){
+
+        }
 
     }
 
@@ -117,10 +126,8 @@ class ItemCreateFragment : Fragment() {
         if (result != null) {
             //colによる並び替えが発生しているため、ソートを行う
             val sortFormFieldList = helper.createFormField(result)
-            val test = sortFormFieldList.values.sortedBy { it["field_col"]!!.toInt() }
-            test.forEach {
-                Log.d("aaaaaaa", "${it}")
-
+            val formFields = sortFormFieldList.values.sortedBy { it["field_col"]!!.toInt() }
+            formFields.forEach {
                 /**
                  * formInfoには以下の情報が入っている。
                  * ・title => 項目のタイトル
@@ -354,17 +361,6 @@ class ItemCreateFragment : Fragment() {
                 cnt += 1
             }
 
-            parentMap.forEach{
-                Log.d("デバック用ログ","値=>${it}")
-            }
-            idMap.forEach{
-                Log.d("デバック用ログ","値=>${it}")
-            }
-
-
-
-
-
             //ボタンの作成処理
             val button = Button(activity)
             button.text = BlasDef.BTN_SAVE
@@ -373,8 +369,7 @@ class ItemCreateFragment : Fragment() {
 
             //ボタン押下時の処理
             button.setOnClickListener {
-                val nullChk: MutableMap<Int, MutableMap<String, String>> = mutableMapOf()
-                formAction.setDefaultTitle(textViewMap)
+                formAction.setDefaultTitle(textViewMap,formInfoMap)
                 nullChk.clear()
 
                 parentChk = true
@@ -386,8 +381,6 @@ class ItemCreateFragment : Fragment() {
                 var errorCnt = 0
                 formInfoMap.forEach {
                     var value = ""
-                    Log.d("ItemCreateFragment", "「SEND」ボタンが押されました")
-
                     var cnt = 1
 
                     formInfoMap.forEach {
@@ -403,11 +396,19 @@ class ItemCreateFragment : Fragment() {
                                 payload.set("fld${cnt}", value)
                             }
 
+                            FieldType.SIG_FOX->{
+                                payload.set("fld${cnt}", value)
+                            }
+
                             FieldType.SINGLE_SELECTION -> {
                                 //ラジオボタン
-                                val checkedRadioId =
-                                    formAction.getCheckedRadioId(radioGroupMap, cnt)
-                                value = formAction.getCheckedValue(radioValue, checkedRadioId)
+                                val checkedRadioId = formAction.getCheckedRadioId(radioGroupMap, cnt)
+                                val radioGrp = radioValue.get(checkedRadioId)
+                                if(radioGrp != null) {
+                                    if (radioGrp.isEnabled) {
+                                        value = formAction.getCheckedValue(radioValue, checkedRadioId)
+                                    }
+                                }
                                 payload.set("fld${cnt}", "${value}")
                             }
 
@@ -455,25 +456,27 @@ class ItemCreateFragment : Fragment() {
                                             }
                                             FieldType.SINGLE_SELECTION -> {
                                                 //ラジオボタン
-                                                val checkedRadioId = formAction.getCheckedRadioId(radioGroupMap, cnt)
+                                                val checkedRadioId = formAction.getCheckedRadioId(radioGroupMap, parentCol.toInt())
                                                 parentValue = formAction.getCheckedValue(radioValue, checkedRadioId)
+                                                Log.d("値チェック(ラジオボタン)","parentValue = ${parentValue}")
                                             }
                                             FieldType.MULTIPLE_SELECTION -> {
                                                 //チェックボックス
-                                                val colCheckMap = checkMap.get("col_${cnt}")
+                                                val colCheckMap = checkMap.get("col_${parentCol}")
                                                 parentValue = formAction.getCheckedValues(colCheckMap)
+                                                Log.d("値チェック(チェックボックス)","parentValue = ${parentValue}")
                                             }
                                             FieldType.KENPIN_RENDOU_QR,
                                             FieldType.QR_CODE,
                                             FieldType.TEKKILYO_RENDOU_QR -> {
                                                 //配列に格納した値を取得
-                                                val colCheckMap = editMap.get("col_${cnt}")
+                                                val colCheckMap = editMap.get("col_${parentCol}")
                                                 if (colCheckMap != null) {
                                                     parentValue = colCheckMap.text.toString()
                                                 }
                                             }
                                             FieldType.ACOUNT_NAME->{
-                                                val colCheckMap = editMap.get("col_${cnt}")
+                                                val colCheckMap = editMap.get("col_${parentCol}")
                                                 if (colCheckMap != null) {
                                                     parentValue = colCheckMap.text.toString()
                                                 }
@@ -502,7 +505,7 @@ class ItemCreateFragment : Fragment() {
                     }
 
                 }
-                errorCnt = formAction.countNullError(nullChk, textViewMap)
+                errorCnt = formAction.countNullError(nullChk, textViewMap,formInfoMap)
                 Log.d("デバックログの取得","nullChk => ${nullChk}")
                 if (errorCnt == 0 && parentChk) {
                     BlasRestItem("create", payload, ::createSuccess, ::createError).execute()

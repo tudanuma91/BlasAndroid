@@ -17,9 +17,6 @@ class FormActionDataEdit(setToken: String, setActivity: FragmentActivity):FormAc
             }
         }
 
-    override fun typeCheck(list: MutableMap<String, String?>?): formType {
-        return super.typeCheck(list)
-    }
 
     override fun createFormSectionTitle(
         params: LinearLayout.LayoutParams?,
@@ -33,36 +30,6 @@ class FormActionDataEdit(setToken: String, setActivity: FragmentActivity):FormAc
             }
         }
         return title
-    }
-
-
-    override fun createTextField(params: LinearLayout.LayoutParams?, cnt: Int, formInfo: formType): EditText {
-        var edit = super.createDateTime(params, cnt, formInfo)
-        edit = setMessate(edit,formInfo)
-        edit.isFocusableInTouchMode = true
-        return edit
-    }
-
-
-    override fun createTextAlea(params: LinearLayout.LayoutParams?, cnt: Int, formInfo: formType): EditText {
-        var edit = super.createTextAlea(params, cnt, formInfo)
-        edit = setMessate(edit,formInfo)
-        edit.isFocusableInTouchMode = true
-        return edit
-    }
-
-
-    override fun createDateTime(params: LinearLayout.LayoutParams?, cnt: Int, formInfo: formType): EditText {
-        var edit = super.createDateTime(params, cnt, formInfo)
-        edit = setMessate(edit,formInfo)
-        return edit
-    }
-
-    fun setMessate(editText: EditText,formInfo: formType): EditText {
-        if(formInfo.require == FieldType.TURE){
-            editText.setError("入力必須の項目です")
-        }
-        return editText
     }
 
 
@@ -87,7 +54,6 @@ class FormActionDataEdit(setToken: String, setActivity: FragmentActivity):FormAc
 
 
     fun setDefaultValueRadioGroup(formPart: RadioGroup,selectedValueId:Int){
-        Log.d("gaegtar","${selectedValueId}")
         if (selectedValueId != -1) {
             formPart.check(selectedValueId)
         }

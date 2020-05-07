@@ -59,28 +59,28 @@
             app:layout_constraintVertical_bias="0.2" />
 
 
-        <Button
-            android:id="@+id/login_test1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="test1(小西用)_login" />
+<!--        <Button-->
+<!--            android:id="@+id/login_test1"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="test1(小西用)_login" />-->
 
-        <Button
-            android:id="@+id/login_test2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="test2(武内用)_login" />
-        <Button
-            android:id="@+id/login_test3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="test3(木島用)_login" />
+<!--        <Button-->
+<!--            android:id="@+id/login_test2"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="test2(武内用)_login" />-->
+<!--        <Button-->
+<!--            android:id="@+id/login_test3"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="test3(木島用)_login" />-->
 
-        <Button
-            android:id="@+id/btnQR"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="QRコードへ" />
+<!--        <Button-->
+<!--            android:id="@+id/btnQR"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="QRコードへ" />-->
 
     </LinearLayout>
     <FrameLayout

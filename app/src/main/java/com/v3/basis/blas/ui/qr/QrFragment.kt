@@ -29,6 +29,7 @@ import com.v3.basis.blas.ui.ext.checkPermissions
 import com.v3.basis.blas.ui.ext.permissionChk
 import com.v3.basis.blas.ui.fixture.fixture_kenpin.FixtureKenpinFragment
 import kotlinx.android.synthetic.main.fragment_qr.*
+import kotlinx.android.synthetic.main.view_blas_actionbar.*
 import org.json.JSONObject
 
 /**
@@ -61,11 +62,14 @@ class QrFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         intent = Intent(activity, QRActivity::class.java)
+        val extras = activity?.intent?.extras
+        data_qr_project_name.text = ""
+        //プロジェクト名をここで入れる。
+        if(extras?.getString("projectName") != null){
+            data_qr_project_name.text = extras.getString("projectName")
+        }
 
         requireActivity().checkPermissions()
-
-        //プロジェクト名をここで入れる。
-        data_qr_project_name.text = "aiueo"
 
 
         //ライト光るボタン実装
