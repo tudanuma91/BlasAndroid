@@ -182,7 +182,7 @@ open class BlasRestItem(val crud:String = "search",
             return resultList
         }
 
-        for (idex in 0 until check.length()){
+        for (idex in 1 until check.length() + 1){
 
             if (check.has("fld${idex}")) {
                 fldStr = check["fld${idex}"].toString()
@@ -190,15 +190,17 @@ open class BlasRestItem(val crud:String = "search",
                 continue
             }
 
-            val valLIst = JSONObject(fldStr)
+            val valLIst = JSONArray(fldStr)
 
             for ((payKey, payValue) in payload) {
                 for (j in 0 until valLIst.length()) {
                     if(payKey == "fld${idex}"){
-                        if(payValue == valLIst["${j}"].toString()){
+                        if(payValue == valLIst[j].toString()){
                             resultList.add(payKey)
                             break
                         }
+                    }else{
+                        break
                     }
                 }
             }
