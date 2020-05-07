@@ -29,6 +29,7 @@ import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
 import com.v3.basis.blas.blasclass.rest.*
 import com.v3.basis.blas.blasclass.rest.BlasRest.Companion.context
 import com.v3.basis.blas.blasclass.rest.BlasRest.Companion.queuefuncList
+import com.v3.basis.blas.blasclass.rest.BlasRestErrCode.Companion.NETWORK_ERROR
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.File
@@ -122,7 +123,7 @@ object QueueController {
 
             /* キューデータを通信エラーになるまでループする */
 
-            Thread.sleep(10* 1000)
+            Thread.sleep(10 * 1000)
         }
 
     }
@@ -172,7 +173,7 @@ object QueueController {
 
         val fileDir = BlasApp.applicationContext().getFilesDir().getPath()
         val filePath: String = fileDir + "/" + reqArray.param_file
-        val response:String
+        var response:String = ""
         var resCorde:Int = 0
 
         //ファイルからパラメータ取得
@@ -181,6 +182,7 @@ object QueueController {
        }catch (e: FileNotFoundException){
             Log.e("FileReadError", e.toString())
         }
+        param = param.removeSuffix("\n")
 
         // TODO テスト用にGETのキュー処理も追加
         if( (reqArray.method == "GET") or (reqArray.method == "DELETE") ) {
@@ -202,20 +204,25 @@ object QueueController {
         con.doOutput = true
         val outStream = con.outputStream
         //リクエスト処理
-        outStream.write(param.toByteArray())
-        outStream.flush()
-        //エラーコードなど飛んでくるのでログに出力する
-        resCorde = con.responseCode
-        Log.d("【Queue】", "Http_status:${resCorde}")
+        try {
+            outStream.write(param.toByteArray())
+            outStream.flush()
+            //エラーコードなど飛んでくるのでログに出力する
+            resCorde = con.responseCode
+            Log.d("【Queue】", "Http_status:${resCorde}")
 
-        //リクエスト処理処理終了
-        outStream.close()
+            //リクエスト処理処理終了
+            outStream.close()
 
-        //レスポンスデータを取得
-        val responseData = con.inputStream
-        response = Is2String(responseData)
+            //レスポンスデータを取得
+            val responseData = con.inputStream
+            response = Is2String(responseData)
 
-        con.disconnect()
+            con.disconnect()
+        }catch(e:Exception){
+            Log.d("ConnectionError", e.message)
+            return Pair(NETWORK_ERROR,response)
+        }
         return Pair(resCorde,response)
 
     }
@@ -253,11 +260,16 @@ object QueueController {
             }
         }
 
+        //DBからデータを削除する
+        try {
+            database.delete(REQUEST_TABLE, whereClauses, whereArgs)
+        }catch(exception: Exception) {
+            Log.e("deleteData " + reqArray.request_id, exception.toString())
+        }
+
         try {
             tableName = queueFunc.tableName
         }catch(exception: Exception) {
-            database.delete(REQUEST_TABLE, whereClauses, whereArgs)
-            Log.e("deleteData " + reqArray.request_id, exception.toString())
             return
         }
 
@@ -276,13 +288,6 @@ object QueueController {
             queueFunc.errorFun(rtn.errorCode,APL_QUEUE_ERR)
         }
 
-        //DBからデータを削除する
-        try {
-            database.delete(REQUEST_TABLE, whereClauses, whereArgs)
-        }catch(exception: Exception) {
-            Log.e("deleteData " + reqArray.request_id, exception.toString())
-        }
-
     }
 
     private fun queueError(reqArray:RestRequestData,response :String) {
@@ -290,15 +295,17 @@ object QueueController {
         //ステータス、リトライ回数を更新する
         val values = ContentValues()
         val retry_count = reqArray.retry_count + 1
+        val whereClauses = "queue_id = ?"
+        val whereArgs = arrayOf(reqArray.request_id.toString())
 
         if(retry_count >= 100) {
             values.put("status", STS_RETRY_MAX)
             noticeAdd(reqArray,APL_RETRY_MAX_ERR)
+            database.delete(REQUEST_TABLE, whereClauses, whereArgs)
         }
 
         values.put("retry_count", retry_count)
-        val whereClauses = "id = ?"
-        val whereArgs = arrayOf(reqArray.request_id.toString())
+
 
         try {
             database.update(REQUEST_TABLE, values, whereClauses, whereArgs)

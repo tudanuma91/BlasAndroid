@@ -104,6 +104,7 @@ class HomeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             Log.e("FileProviderUriGetError", exception.toString())
         }
 
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         // パーミッションの追加　updateで必要となった　ハマりポイント
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 

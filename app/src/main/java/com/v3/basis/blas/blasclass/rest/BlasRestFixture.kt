@@ -3,6 +3,7 @@ package com.v3.basis.blas.blasclass.rest
 import android.util.Log
 import com.v3.basis.blas.blasclass.app.BlasDef
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
+import com.v3.basis.blas.blasclass.rest.BlasRestErrCode.Companion.NETWORK_ERROR
 
 import org.json.JSONObject
 import java.io.File
@@ -28,12 +29,15 @@ open class BlasRestFixture(val crud:String = "search",
     var method = "GET"
     var aplCode:Int = 0
 
+
     /**
      * プロジェクトに設定されているフィールドの情報取得要求を行う
      * @param in params 指定なし
      */
     override fun doInBackground(vararg params: String?): String? {
         var response:String? = null
+        var json:JSONObject? = null
+        var errorCode = 0
 
         var blasUrl = BlasRest.URL + "fixtures/search/"
 
@@ -84,16 +88,28 @@ open class BlasRestFixture(val crud:String = "search",
                     response = loadJson(cacheFileName)
                 } catch (e: Exception) {
                     //キャッシュの読み込み失敗
-                    funcError(BlasRestErrCode.FILE_READ_ERROR, APL_OK)
+                    if(method == "GET") {
+                        funcError(BlasRestErrCode.FILE_READ_ERROR, APL_OK)
+                        return response
+                    }
                 }
             } else {
                 //キャッシュファイルがないため、エラーにする
-                funcError(BlasRestErrCode.NETWORK_ERROR, APL_OK)
+                if(method == "GET") {
+                    funcError(BlasRestErrCode.FILE_READ_ERROR, APL_OK)
+                    return response
+                }
             }
 
             if ((method == "POST") or (method == "PUT")){
                 super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Item")
                 aplCode = BlasDef.APL_QUEUE_SAVE
+
+                if(response != null) {
+                    json = JSONObject(response)
+                    json.put("error_code", NETWORK_ERROR)
+                    response = json.toString()
+                }
             }
 
         }

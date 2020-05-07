@@ -25,7 +25,7 @@
 
 
     <!-- 通信系 -->
-    <string name="network_error">サーバと通信できません</string>
+    <string name="network_error">サーバと通信できません。</string>
     <string name="server_error">サーバ内でエラーが発生しました。管理者に連絡してください。要因コード(%1$d)</string>
     <string name="String">test</string>
     <string name="title_activity_item">ItemActivity</string>
@@ -60,8 +60,10 @@
     <string name="error_session_qr">通信エラーのため、機器情報を登録できません</string>
     <string name="success_data_create">新規作成に成功しました</string>
     <string name="error_data_create">新規作成に失敗しました</string>
-    <string name="success_data_update">更新に成功しました</string>
-    <string name="error_data_update">更新に失敗しました</string>
+    <string name="success_data_update">更新に成功しました。</string>
+    <string name="error_data_update">更新に失敗しました。</string>
+    <string name="apl_queue_save">アプリで継続して送信を行います。ステータス画面で結果を確認して下さい</string>
+    <string name="data_dupli_error">データが重複しています</string>
 
 
     <!-- 選択肢 -->

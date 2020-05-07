@@ -45,6 +45,9 @@ class BlasRestErrCode() {
         const val IMG_SAVE_ERROR = 501
         const val IMG_NOT_FOUND_DEL_IMG = 502
 
+        //データ
+        const val DATA_DUPLI_ERROR = 600
+
         //通信
         const val NETWORK_ERROR = 1001
 
