@@ -215,7 +215,7 @@ class FixtureActivity : AppCompatActivity() {
 
         when(errorCode) {
             BlasRestErrCode.FX_NOT_ENTRY_FIXTURE -> {
-                message = res.getString(R.string.data_dupli_error)
+                message = res.getString(R.string.fx_not_entry)
             }
             BlasRestErrCode.NETWORK_ERROR -> {
                 //サーバと通信できません
