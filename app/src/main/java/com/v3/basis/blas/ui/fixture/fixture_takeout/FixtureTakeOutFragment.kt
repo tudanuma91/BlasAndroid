@@ -123,12 +123,15 @@ class FixtureTakeOutFragment : Fragment() {
         initQRCamera()
     }
 
+    /**
+     * カメラの初期化（カメラの起動・停止はonResume,onPauseにて実施する）
+     */
     private fun initQRCamera() {//QRコードリーダ起動
         //権限チェック
         val setPermisson = requireActivity().permissionChk()
-        //カメラの起動
+
         if (setPermisson) {
-            qr_view.resume()
+            // qr_view.resume()
             FixtureActivity().openQRCamera(
                 "takeout",
                 qr_view,
@@ -147,6 +150,15 @@ class FixtureTakeOutFragment : Fragment() {
         }
     }
 
+    override  fun onResume() {
+        super.onResume()
+        qr_view.resume()    // カメラ起動
+    }
+
+    override  fun onPause() {
+        super.onPause()
+        qr_view.pause()    // カメラ停止
+    }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)

@@ -95,13 +95,15 @@ class FixtureKenpinFragment : Fragment() {
         initQRCamera()
     }
 
-
+    /**
+     * カメラの初期化（カメラの起動・停止はonResume,onPauseにて実施する）
+     */
     private fun initQRCamera() {//QRコードリーダ起動
         //権限チェック
         val setPermisson =requireActivity().permissionChk()
-        //カメラの起動
+
         if (setPermisson) {
-            qr_view.resume()
+            // qr_view.resume()
             FixtureActivity().openQRCamera(
                 "kenpin",
                 qr_view,
@@ -116,6 +118,16 @@ class FixtureKenpinFragment : Fragment() {
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
             ), REQUEST_CAMERA_PERMISSION)
         }
+    }
+
+    override  fun onResume() {
+        super.onResume()
+        qr_view.resume()    // カメラ起動
+    }
+
+    override  fun onPause() {
+        super.onPause()
+        qr_view.pause()    // カメラ停止
     }
 
     /*private fun openQRCamera() {
