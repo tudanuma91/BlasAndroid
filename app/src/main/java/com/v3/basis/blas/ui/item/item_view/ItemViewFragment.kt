@@ -1,8 +1,11 @@
 package com.v3.basis.blas.ui.item.item_view
 
 
+import android.media.AudioManager
+import android.media.ToneGenerator
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -11,7 +14,6 @@ import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.Switch
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -24,9 +26,8 @@ import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
-import kotlinx.android.synthetic.main.fragment_item_view.recyclerView
+import kotlinx.android.synthetic.main.fragment_item_view.*
 import org.json.JSONObject
-import java.lang.Exception
 
 
 /**

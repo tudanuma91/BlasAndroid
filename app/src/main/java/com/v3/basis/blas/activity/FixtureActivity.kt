@@ -1,40 +1,29 @@
 package com.v3.basis.blas.activity
 
-import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
-import android.content.res.Resources
 import android.graphics.Color
 import android.media.AudioManager
 import android.media.ToneGenerator
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import android.os.VibrationEffect
-import android.os.Vibrator
+import android.os.*
 import android.util.Log
 import android.view.MenuItem
 import android.widget.PopupMenu
 import android.widget.TextView
-import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.core.content.PermissionChecker
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.get
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.NavigationUI.setupWithNavController
-import com.v3.basis.blas.R
-import kotlinx.android.synthetic.main.activity_fixture.*
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.google.zxing.ResultPoint
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.CompoundBarcodeView
+import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.app.BlasDef
-import com.v3.basis.blas.blasclass.rest.BlasRest.Companion.context
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.ui.ext.setBlasCustomView
@@ -42,6 +31,7 @@ import com.v3.basis.blas.ui.ext.showBackKeyForActionBar
 import com.v3.basis.blas.ui.fixture.fixture_kenpin.FixtureKenpinFragment
 import com.v3.basis.blas.ui.fixture.fixture_return.FixtureReturnFragment
 import com.v3.basis.blas.ui.fixture.fixture_takeout.FixtureTakeOutFragment
+import kotlinx.android.synthetic.main.activity_fixture.*
 import org.json.JSONObject
 
 class FixtureActivity : AppCompatActivity() {
@@ -51,7 +41,7 @@ class FixtureActivity : AppCompatActivity() {
     private var vibrationEffect = VibrationEffect.createOneShot(300,
         VibrationEffect.DEFAULT_AMPLITUDE
     )
-    private var tone: ToneGenerator = ToneGenerator(AudioManager.STREAM_SYSTEM, ToneGenerator.MAX_VOLUME)
+    private var tone: ToneGenerator? = null
 
    /* QRコード読を読み取りました</string>
     <string name="error_create_qr">すでに登録済のQRコードです</string>
@@ -193,7 +183,7 @@ class FixtureActivity : AppCompatActivity() {
     fun success(result: JSONObject){
         vibrationEffect = VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
         vibrator.vibrate(vibrationEffect)
-        tone.startTone(ToneGenerator.TONE_DTMF_S,200)
+        playTone(ToneGenerator.TONE_DTMF_S)
         Log.d("OK","作成完了")
         messageText.setTextColor(Color.GREEN)
         messageText.text = "QRコードを読み取りました"
@@ -205,7 +195,7 @@ class FixtureActivity : AppCompatActivity() {
     fun error(errorCode: Int, aplCode :Int){
         vibrationEffect = VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
         vibrator.vibrate(vibrationEffect)
-        tone.startTone(ToneGenerator.TONE_CDMA_ONE_MIN_BEEP,200)
+        playTone(ToneGenerator.TONE_CDMA_ONE_MIN_BEEP)
         Log.d("NG","作成失敗")
         Log.d("errorCorde","${errorCode}")
 
@@ -238,4 +228,25 @@ class FixtureActivity : AppCompatActivity() {
 
     }
 
+    private fun playTone(mediaFileRawId: Int) {
+
+        try {
+            if (tone == null) {
+                tone = ToneGenerator(AudioManager.STREAM_SYSTEM, ToneGenerator.MAX_VOLUME)
+            }
+            tone?.also {
+                it.startTone(mediaFileRawId, 200)
+                val handler = Handler(Looper.getMainLooper())
+                handler.postDelayed({
+                    if (it != null) {
+                        Log.d("FixtureActivity", "ToneGenerator released")
+                        it.release()
+                        tone = null
+                    }
+                }, 200)
+            }
+        } catch (e: Exception) {
+            Log.d("FixtureActivity", "Exception while playing sound:$e")
+        }
+    }
 }
