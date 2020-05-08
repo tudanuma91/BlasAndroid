@@ -100,13 +100,15 @@ class QrFragment : Fragment() {
         initQRCamera()
     }
 
-
+    /**
+     * カメラの初期化（カメラの起動・停止はonResume,onPauseにて実施する）
+     */
     private fun initQRCamera() {//QRコードリーダ起動
         //権限チェック
         val setPermisson =requireActivity().permissionChk()
-        //カメラの起動
+
         if (setPermisson) {
-            qr_view.resume()
+            // qr_view.resume()
             openQRCamera(
                 "kenpin",
                 qr_view,
@@ -134,6 +136,16 @@ class QrFragment : Fragment() {
 
     fun callOnPouse(){
         onPause()
+    }
+
+    override  fun onResume() {
+        super.onResume()
+        qr_view.resume()    // カメラ起動
+    }
+
+    override  fun onPause() {
+        super.onPause()
+        qr_view.pause()    // カメラ停止
     }
 
     /**
@@ -191,7 +203,8 @@ class QrFragment : Fragment() {
                         //val intent = Intent(activity, QRActivity::class.java)
 
 
-                        qr_view.pause()
+                        // onPauseがコールされるので不要
+                        //qr_view.pause()
 
                         Log.d("OK", "終了")
                         requireActivity().finish()
