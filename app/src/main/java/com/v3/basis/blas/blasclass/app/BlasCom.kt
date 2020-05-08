@@ -261,42 +261,46 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
     * */
     fun itemSearchDateTimeManager(condKey:String,condValue:String?, search:MutableList<MutableMap<String, String?>>): MutableList<Int> {
         val result : MutableList<Int> = mutableListOf()
-        val valueList = condValue.toString().split("_from_")
-        val min = valueList[0]
-        val max = valueList[1]
-        val minLength = min.length
-        val maxLength = max.length
-        if(minLength == 5 || maxLength == 5){
-            //Time
-            var searchValueMin:Date? =  null
-            var searchValueMax:Date? =  null
-            if(min != "Null"){
-                searchValueMin = searchWordCreateTime(min)
-                result.addAll(itemSearchTime(searchValueMin,condKey,condValue,search,"Min"))
+        try {
+            val valueList = condValue.toString().split("_from_")
+            val min = valueList[0]
+            val max = valueList[1]
+            val minLength = min.length
+            val maxLength = max.length
+            if (minLength == 5 || maxLength == 5) {
+                //Time
+                var searchValueMin: Date? = null
+                var searchValueMax: Date? = null
+                if (min != "Null") {
+                    searchValueMin = searchWordCreateTime(min)
+                    result.addAll(itemSearchTime(searchValueMin, condKey, condValue, search, "Min"))
+                }
+                if (max != "Null") {
+                    searchValueMax = searchWordCreateTime(max)
+                    Log.d("デバック用のログ", "${searchValueMax}")
+                    result.addAll(itemSearchTime(searchValueMax, condKey, condValue, search, "Max"))
+                }
+            } else {
+                //Day
+                var searchValueMin: LocalDate? = null
+                var searchValueMax: LocalDate? = null
+                if (min != "Null") {
+                    searchValueMin = searchWordCreate(min)
+                    result.addAll(itemSearchDate(searchValueMin, condKey, search, "Min"))
+                    //検索処理
+                    //result.addAll(検索処理の値)
+                }
+                if (max != "Null") {
+                    searchValueMax = searchWordCreate(max)
+                    result.addAll(itemSearchDate(searchValueMax, condKey, search, "Max"))
+                    //検索処理
+                    //result.addAll()
+                }
             }
-            if(max != "Null"){
-                searchValueMax = searchWordCreateTime(max)
-                Log.d("デバック用のログ","${searchValueMax}")
-                result.addAll(itemSearchTime(searchValueMax,condKey,condValue,search,"Max"))
-            }
-        }else{
-            //Day
-            var searchValueMin:LocalDate? =  null
-            var searchValueMax:LocalDate? =  null
-            if(min != "Null"){
-                searchValueMin = searchWordCreate(min)
-                result.addAll(itemSearchDate(searchValueMin,condKey,search,"Min"))
-                //検索処理
-                //result.addAll(検索処理の値)
-            }
-            if(max != "Null"){
-                searchValueMax = searchWordCreate(max)
-                result.addAll(itemSearchDate(searchValueMax,condKey,search,"Max"))
-                //検索処理
-                //result.addAll()
-            }
+            return result
+        }catch (e:Exception){
+            return result
         }
-        return result
     }
 
     /**
@@ -692,15 +696,19 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
      *
      */
     public fun chkDateMin(condValue: String?,baseValue:String?): Boolean {
-        val searchValue = searchWordCreate(condValue)
-        val baseValue = baseWordCreate(baseValue)
-        if(searchValue !=null && baseValue!=null) {
-            val resultValue = ChronoUnit.DAYS.between(searchValue, baseValue)
-            //これでtrueかfalseを返却できるみたい
-            return resultValue.toInt() < 0
-        }else{
-            //日付が空白またはnullの場合は条件に合わないので、removeIdに追加するflgをtrueにする
-            return true
+        try {
+            val searchValue = searchWordCreate(condValue)
+            val baseValue = baseWordCreate(baseValue)
+            if (searchValue != null && baseValue != null) {
+                val resultValue = ChronoUnit.DAYS.between(searchValue, baseValue)
+                //これでtrueかfalseを返却できるみたい
+                return resultValue.toInt() < 0
+            } else {
+                //日付が空白またはnullの場合は条件に合わないので、removeIdに追加するflgをtrueにする
+                return true
+            }
+        }catch (e:Exception){
+            return  true
         }
     }
 
@@ -716,14 +724,18 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
      *
      */
     public fun chkDateMax(condValue: String?,baseValue:String?): Boolean {
-        val searchValue = searchWordCreate(condValue)
-        val baseValue = baseWordCreate(baseValue)
-        if(searchValue != null && baseValue != null) {
-            val resultValue = ChronoUnit.DAYS.between(searchValue, baseValue)
-            //これでtrueかfalseを返却できるみたい
-            return resultValue.toInt() > 0
-        }else{
-            //日付が空白またはnullの場合は条件に合わないので、removeIdに追加するflgをtrueにする
+        try {
+            val searchValue = searchWordCreate(condValue)
+            val baseValue = baseWordCreate(baseValue)
+            if (searchValue != null && baseValue != null) {
+                val resultValue = ChronoUnit.DAYS.between(searchValue, baseValue)
+                //これでtrueかfalseを返却できるみたい
+                return resultValue.toInt() > 0
+            } else {
+                //日付が空白またはnullの場合は条件に合わないので、removeIdに追加するflgをtrueにする
+                return true
+            }
+        }catch (e:Exception){
             return true
         }
     }

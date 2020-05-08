@@ -382,12 +382,10 @@ class ItemCreateFragment : Fragment() {
                 var cnt = 1
                 var errorCnt = 0
                 formInfoMap.forEach {
-                    var value = ""
                     var cnt = 1
 
                     formInfoMap.forEach {
-
-
+                        var value = ""
                         when (it.value["type"]) {
                             FieldType.TEXT_FIELD,
                             FieldType.TEXT_AREA,
