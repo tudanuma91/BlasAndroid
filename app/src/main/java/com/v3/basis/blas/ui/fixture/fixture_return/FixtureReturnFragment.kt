@@ -146,8 +146,8 @@ class FixtureReturnFragment : Fragment() {
     }
 
     override  fun onPause() {
-        super.onPause()
         qr_view.pause()    // カメラ停止
+        super.onPause()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

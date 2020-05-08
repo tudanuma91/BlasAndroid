@@ -144,8 +144,8 @@ class QrFragment : Fragment() {
     }
 
     override  fun onPause() {
-        super.onPause()
         qr_view.pause()    // カメラ停止
+        super.onPause()
     }
 
     /**
