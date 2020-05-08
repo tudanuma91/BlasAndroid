@@ -40,14 +40,6 @@ class LoginFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setListener(btnLogin, ::loginSuccess, ::loginError)
-//        setListener(login_test1, ::testLoginSuccess1, ::loginError)
-//        setListener(login_test2, ::testLoginSuccess2, ::loginError)
-//        setListener(login_test3, ::testLoginSuccess3, ::loginError)
-
-//        btnQR.setOnClickListener {
-//            val intent = Intent(activity, QRActivity::class.java)
-//            startActivity(intent)
-//        }
     }
 
     /**
@@ -144,38 +136,4 @@ class LoginFragment : Fragment() {
         Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
     }
 
-    //下記三つはテスト用の関数
-    /** ログインに成功したときにコールバックされ、
-     * 掲示板の画面をキックする
-     * @param in token ログインに成功したときのトークン
-     */
-    private fun testLoginSuccess1(token:String) {
-        Log.d("BLAS", "Test1成功")
-
-        val intent = Intent(activity,Test1Activity::class.java)
-        intent.putExtra("token",token)
-        startActivity(intent)
-    }
-
-    /** ログインに成功したときにコールバックされ、
-     * 掲示板の画面をキックする
-     * @param in token ログインに成功したときのトークン
-     */
-    private fun testLoginSuccess2(token:String) {
-        Log.d("BLAS", "Test2成功")
-        val intent = Intent(activity, Test2Activity::class.java)
-        intent.putExtra("token",token)
-        startActivity(intent)
-    }
-
-    /** ログインに成功したときにコールバックされ、
-     * 掲示板の画面をキックする
-     * @param in token ログインに成功したときのトークン
-     */
-    private fun testLoginSuccess3(token:String) {
-        Log.d("BLAS", "Test3成功")
-        val intent = Intent(activity, Test3Activity::class.java)
-        intent.putExtra("token",token)
-        startActivity(intent)
-    }
 }

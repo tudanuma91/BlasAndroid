@@ -22,21 +22,6 @@ class FormActionDataSearch(setToken: String, setActivity: FragmentActivity) : Fo
             }
         }
 
-    override fun typeCheck(list: MutableMap<String, String?>?): formType {
-        return super.typeCheck(list)
-    }
-
-    override fun createTextField(params: LinearLayout.LayoutParams?, cnt: Int, formInfo: formType): EditText {
-        return super.createTextField(params, cnt, formInfo)
-    }
-
-    override fun createTextAlea(params: LinearLayout.LayoutParams?, cnt: Int, formInfo: formType): EditText {
-        return super.createTextAlea(params, cnt, formInfo)
-    }
-
-    override fun createDateTime(params: LinearLayout.LayoutParams?, cnt: Int, formInfo: formType): EditText {
-        return super.createDateTime(params, cnt, formInfo)
-    }
 
     fun createFreeWordSearch(params: LinearLayout.LayoutParams?): EditText {
         val edit = EditText(baseActivity)

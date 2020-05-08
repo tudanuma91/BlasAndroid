@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Context
 import android.graphics.Color
+import android.text.InputType
 import android.util.Log
 import android.widget.*
 import androidx.fragment.app.FragmentActivity
@@ -68,7 +69,6 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
         val formInfo =  formType(rtnType,rtnTitle, choiceValue, nullable,unique,fieldId,parentFieldId)
 
         if(list!=null){
-            Log.d("デバック用ログ","配列中身=>${list}")
             formInfo.title = list.get("name")
             formInfo.require = list.get("essential").toString()
             formInfo.unique = list.get("unique_chk").toString()
@@ -110,7 +110,7 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
                     }
                 }
                 FieldType.KENPIN_RENDOU_QR->{
-                    //チェックボックス選択
+                    //検品連動
                     formInfo.type = FieldType.KENPIN_RENDOU_QR
                 }
                 FieldType.QR_CODE->{
@@ -226,14 +226,17 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
         edit.inputType = 1
         edit.setLayoutParams(params)
         edit.id = cnt
+        edit.setInputType( InputType.TYPE_CLASS_DATETIME)
         //これがミソ！！！これなしだとタップ2回での起動になる
         edit.isFocusableInTouchMode = false
+        //edit.focusable = false
+        edit.isFocusable = false
 
         return edit
     }
 
     /**
-     * 日付・時間フィールドを作成する関数。
+     * ラジオグループを作成する関数。
      * [引数]
      * params => LinearLayoutに設定したパラメータ
      * act => 操作をするFragmentActivity
@@ -249,7 +252,7 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
     }
 
     /**
-     * 日付・時間フィールドを作成する関数。
+     * ラジオボタンを作成する関数。
      * [引数]
      * params => LinearLayoutに設定したパラメータ
      * act => 操作をするFragmentActivity
@@ -265,6 +268,15 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
 
     }
 
+    /**
+     * チェックボックスを作成する関数。
+     * [引数]
+     * params => LinearLayoutに設定したパラメータ
+     * act => 操作をするFragmentActivity
+     * cnt => 作成しているフォームは何行目かを示す
+     *
+     * []
+     */
     open fun createMutipleSelection(params:LinearLayout.LayoutParams?,it:String?,cnt: Int): CheckBox {
         val checkbox = CheckBox(baseActivity)
         checkbox.setText(it)
@@ -275,6 +287,15 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
     }
 
 
+    /**
+     * 入力されている値を取得する関数。
+     * [引数]
+     * editMap => フォームを格納している
+     * cnt => 何行目のフォームかを示す
+     *
+     * [返り値]
+     * value => フォームに入力した値
+     */
     open fun pickUpValue(editMap:MutableMap<String,EditText?>,cnt:Int): String {
         val editText = editMap.get("col_${cnt}")
         var value = ""
@@ -284,6 +305,15 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
         return value
     }
 
+    /**
+     * チェックしたラジオボタンのIDを取得する。
+     * [引数]
+     * radioGroupMap => ラジオグループを格納している
+     * cnt => 何行目のフォームかを示す
+     *
+     * [返り値]
+     * checkedRadioId => 選択したラジオボタンのIDを取得する
+     */
     open fun getCheckedRadioId(radioGroupMap:MutableMap<String,RadioGroup?>,cnt: Int): String {
         val radioGroup = radioGroupMap.get("col_${cnt}")
         var checkedRadioId = ""
@@ -294,6 +324,15 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
         return checkedRadioId
     }
 
+    /**
+     * チェックしたラジオボタンの値を取得する。
+     * [引数]
+     * radioGroupMap => ラジオグループを格納している
+     * cnt => 何行目のフォームかを示す
+     *
+     * [返り値]
+     * value => 選択したラジオボタンの値を取得する
+     */
     open fun getCheckedValue(radioValue:MutableMap<String,RadioButton?>,checkedRadioId:String): String {
         val checkValue = radioValue.get(checkedRadioId)
         var value = ""
@@ -304,6 +343,14 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
         return value
     }
 
+    /**
+     * チェックしたチェックボックスから値を作成する。
+     * [引数]
+     * radioGroupMap =>チェックボックスを格納している
+     *
+     * [返り値]
+     * value => 作成した値
+     */
     open fun getCheckedValues(colCheckMap:MutableMap<String?,CheckBox?>?): String {
         var value = ""
         var v_cnt = 1
@@ -324,6 +371,14 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
         return value
     }
 
+    /**
+     * null制約を違反しているレコードある場合はどれが該当するのかを返す。
+     * [引数]
+     * it => null制約があるかを格納
+     *
+     * [返り値]
+     * nullChkMap => null制約を違反しているレコードある場合はどれが該当するのかを返す。
+     */
     open fun chkNull(it:String?,value: String?): MutableMap<String, String> {
         var nullChkMap:MutableMap<String,String> = mutableMapOf()
         when(it) {
@@ -346,32 +401,60 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
         return nullChkMap
     }
 
-    open fun countNullError(nullChk:MutableMap<Int,MutableMap<String,String>>,textViewMap :MutableMap<String,TextView>): Int {
+    /**
+     * 入力必須制約違反した時、項目名を赤くする処理を行い、制約違反の数を返す
+     * [引数]
+     * nullChkMap => null制約を違反しているレコードある場合はどれが該当するのかを返す。
+     * textViewMap => 項目名のテキストview
+     *
+     * [返り値]
+     * 制約違反をしている数
+     */
+    open fun countNullError(nullChk:MutableMap<Int,MutableMap<String,String>>,textViewMap :MutableMap<String,TextView>,formInfoMap: MutableMap<String, MutableMap<String, String?>>): Int {
         var errorCnt = 0
         for(i in 1 until nullChk.size+1){
-            val value =  nullChk[i]
-            val values = textViewMap["${i}"]
-            if(value != null && values!=null) {
-                if (value["nullChk"] == "error") {
-                    values.setTextColor(Color.RED)
-                    val title = values.text
-                    //複数回、入力必須項目ですを出力しない
-                    if (!title.contains(FieldType.REQUIRED)) {
-                        values.text = "${title}${FieldType.REQUIRED}"
+            val type = formInfoMap[i.toString()]?.get("type")
+            if(type != FieldType.SIG_FOX) {
+                val value = nullChk[i]
+                val values = textViewMap["${i}"]
+                if (value != null && values != null) {
+                    if (value["nullChk"] == "error") {
+                        values.setTextColor(Color.RED)
+                        val title = values.text
+                        //複数回、入力必須項目ですを出力しない
+                        if (!title.contains(FieldType.REQUIRED)) {
+                            values.text = "${title}${FieldType.REQUIRED}"
+                        }
+                        errorCnt += 1
                     }
-                    errorCnt += 1
                 }
             }
         }
         return errorCnt
     }
 
+    /**
+     * スペースを作成する
+     * [引数]
+     * nullChkMap => レイアウトのパラメータ
+     *
+     * [返り値]
+     * レイアウトのパラメータを反映したスペースを返す
+     */
     open fun createSpace(layoutParamsSpace:LinearLayout.LayoutParams): Space {
         val space = Space(baseActivity)
         space.setLayoutParams(layoutParamsSpace)
         return space
     }
 
+    /**
+     * 子供（親単一がいる場合）のラジオボタンの選択肢を作成する処理
+     * [引数]
+     * list => 項目に指定されている値
+     *
+     * [返り値]
+     * 選択肢を配列で返す
+     */
     fun getSelectValue(list:List<String?>?): MutableList<String> {
         val valueList : MutableList<String> = mutableListOf()
         if(list != null) {
@@ -396,8 +479,16 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
         return valueList
     }
 
+
+    /**
+     * 子供（親単一がいる場合）のラジオボタン親を返す
+     * [引数]
+     * list => 項目に指定されている値
+     *
+     * [返り値]
+     * 親を返す
+     */
     fun getParentSelect(list:List<String?>?): String? {
-        Log.d("デバック用ログ","値の取得=>${list}")
         var master :String?= null
         if(list != null) {
             val parentValue = list[0]
@@ -411,6 +502,9 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
 
     }
 
+    /**
+     *　
+     */
     fun getColNum(num:String): String {
         var protoNum = num
         val delNum = num.indexOf("_")
@@ -418,14 +512,25 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
         return protoNum
     }
 
-    fun  setDefaultTitle(textViewMap :MutableMap<String,TextView>){
+    /**
+     * 制約違反をしたフォームのタイトルに対して走る処理。項目名を黒に戻す処理
+     * [引数]
+     * textViewMap => 項目のテキストフィールドを格納する
+     */
+    fun  setDefaultTitle(textViewMap :MutableMap<String,TextView>,formInfoMap: MutableMap<String, MutableMap<String, String?>>){
+        var cnt = 1
         textViewMap.forEach{
-            if(it.value.text.toString().contains((FieldType.REQUIRED)) ){
-                val newValue = it.value.text.toString().dropLast( FieldType.REQUIRED.length)
-                it.value.setText(newValue)
-                it.value.setTextColor(Color.DKGRAY)
-                it.value.setError("入力必須の項目です")
+            val type = formInfoMap[cnt.toString()]?.get("type")
+            Log.d("デバック用ログ","formInfoをどうぞ${type}")
+            if(type != FieldType.SIG_FOX) {
+                if (it.value.text.toString().contains((FieldType.REQUIRED))) {
+                    val newValue = it.value.text.toString().dropLast(FieldType.REQUIRED.length)
+                    it.value.setText(newValue)
+                    it.value.setTextColor(Color.DKGRAY)
+                    it.value.setError("入力必須の項目です")
+                }
             }
+            cnt += 1
         }
 
     }

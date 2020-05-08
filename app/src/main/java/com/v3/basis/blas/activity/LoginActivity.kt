@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toolbar
 import com.v3.basis.blas.R
-import com.v3.basis.blas.ui.test1.Test1Fragment
 import kotlinx.android.synthetic.main.fragment_login.*
 import androidx.core.app.ComponentActivity.ExtraData
 import androidx.core.content.ContextCompat.getSystemService

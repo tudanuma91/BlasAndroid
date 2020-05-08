@@ -22,6 +22,7 @@ import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
 import kotlinx.android.synthetic.main.fragment_item_search_result.*
 import org.json.JSONObject
+import java.lang.Exception
 
 /**
  * A simple [Fragment] subclass.
@@ -131,19 +132,25 @@ class ItemSearchResultFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.d("lifeCycle", "onViewCreated")
-        //リサイクラ-viewを取得
-        //基本的にデータはまだ到着していないため、空のアクティビティとadapterだけ設定しておく
-        progressBarFlg = true
-        chkProgress(progressBarFlg,rootView)
-        val recyclerView = recyclerView
-        recyclerView.setHasFixedSize(true)
-        recyclerView.layoutManager = LinearLayoutManager(activity)
-        recyclerView.adapter = adapter
+        try {
+            if(token != null && fldSize != null && findValueMap != null && dateTimeCol != null && checkValueCol != null) {
+                //リサイクラ-viewを取得
+                //基本的にデータはまだ到着していないため、空のアクティビティとadapterだけ設定しておく
+                progressBarFlg = true
+                chkProgress(progressBarFlg, rootView)
+                val recyclerView = recyclerView
+                recyclerView.setHasFixedSize(true)
+                recyclerView.layoutManager = LinearLayoutManager(activity)
+                recyclerView.adapter = adapter
 
-        //呼ぶタイミングを確定させる！！
-        val payload2 = mapOf("token" to token, "project_id" to projectId)
-        BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
-        BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
+                //呼ぶタイミングを確定させる！！
+                val payload2 = mapOf("token" to token, "project_id" to projectId)
+                BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
+                BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
+            }
+        }catch (e:Exception){
+
+        }
 
     }
 
@@ -154,7 +161,6 @@ class ItemSearchResultFragment : Fragment() {
         itemList.addAll(itemInfo)
 
         baseList = itemList
-        Log.d("デバックログ","baseListの中身=>${baseList.size}")
         if(baseList.size > 0) {
             createCardManager(itemList, colMax, "New")
         }else{

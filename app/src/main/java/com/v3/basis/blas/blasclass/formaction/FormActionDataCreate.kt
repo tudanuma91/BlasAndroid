@@ -18,10 +18,6 @@ class FormActionDataCreate(setToken: String, setActivity: FragmentActivity):Form
             }
         }
 
-    override fun typeCheck(list: MutableMap<String, String?>?): formType {
-        return super.typeCheck(list)
-
-    }
 
     override fun createFormSectionTitle(
         params: LinearLayout.LayoutParams?,
@@ -29,18 +25,10 @@ class FormActionDataCreate(setToken: String, setActivity: FragmentActivity):Form
     ): TextView {
         var title =  super.createFormSectionTitle(params, formInfo)
         if(formInfo.require == FieldType.TURE){
-            //ラジオボタンかチェックボックスの場合、タイトルに入力必須を表示。
-            title.setError("入力必須です")
+            if(formInfo.type != FieldType.SIG_FOX) {
+                title.setError("入力必須です")
+            }
         }
         return title
     }
-
-
-
-
-
-
-
-
-
 }

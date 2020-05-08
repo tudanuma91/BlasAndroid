@@ -28,6 +28,7 @@ class ViewAdapter(private val list: List<RowModel>, private val listener: ListLi
         holder.itemList = model.itemList
         holder.itemView.setOnClickListener { listener.onClickRow(it, model) }
         holder.image.setOnClickListener { listener.onClickImage(model.itemId) }
+        holder.projectNames = model.projectNames
 
         val regex = Regex(FieldType.ENDTEXT)
         if(regex.containsMatchIn(holder.titleView.text.toString())){

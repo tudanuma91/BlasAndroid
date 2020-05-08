@@ -21,24 +21,10 @@ class ViewHolders(itemView: View) : RecyclerView.ViewHolder(itemView){
     var itemList: MutableList<MutableMap<String, String?>> = mutableListOf()
     var token :String? = null
     var projectId:String? = null
+    var projectNames:String? = null
 
-    //var projectId:String? = null
-    //var token :String? = null
-    //val itemListEditFragment = ItemEditFragment()
 
     init{
-
-       // token = getStringExtra("token")
-        //projectId = getStringExtra("project_id")
-
-        //画像アイコンタップ時の処理
-//        image.setOnClickListener{
-////            Log.d("test","${titleView.text}")
-////            val context = itemView.context
-////            val intent = Intent(context, ItemImageActivity::class.java)
-////            context.startActivity(intent)
-//        }
-
         //編集アイコンタップ時の処理
         val valueList :ArrayList<String?> = arrayListOf()
         var check =false
@@ -53,10 +39,12 @@ class ViewHolders(itemView: View) : RecyclerView.ViewHolder(itemView){
                   break
                 }
             }
+            Log.d("編集アイコンタップ","編集アイコンタップ処理が走りました")
             val context = itemView.context
             val intent = Intent(context, ItemEditActivity::class.java)
             intent.putExtra("item_id", "${titleView.text}")
             intent.putExtra("token", token)
+            intent.putExtra("projectNames",projectNames)
             intent.putExtra("project_id", projectId)
             intent.putExtra("value_list",valueList)
             context.startActivity(intent)
