@@ -229,6 +229,8 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
         edit.setInputType( InputType.TYPE_CLASS_DATETIME)
         //これがミソ！！！これなしだとタップ2回での起動になる
         edit.isFocusableInTouchMode = false
+        //edit.focusable = false
+        edit.isFocusable = false
 
         return edit
     }
