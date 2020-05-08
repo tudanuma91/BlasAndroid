@@ -4,6 +4,7 @@ import android.util.Log
 import android.widget.Toast
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_QUEUE_SAVE
+import com.v3.basis.blas.ui.item.item_edit.ItemEditFragment.Companion.formDefaultValueList
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -193,11 +194,19 @@ open class BlasRestItem(val crud:String = "search",
             val valLIst = JSONArray(fldStr)
 
             for ((payKey, payValue) in payload) {
+
+                if ((method == "PUT") and (formDefaultValueList.size != 0)){
+                    val beforeVal = formDefaultValueList[0]?.get("fld${idex}")
+                    // 値に変更がない場合は、判定対象としない
+                    if (payValue == beforeVal) {
+                        continue
+                    }
+                }
+
                 for (j in 0 until valLIst.length()) {
                     if(payKey == "fld${idex}"){
                         if(payValue == valLIst[j].toString()){
                             resultList.add(payKey)
-                            break
                         }
                     }else{
                         break
