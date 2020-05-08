@@ -150,15 +150,18 @@ class FixtureActivity : AppCompatActivity() {
                         //restで更新する処理
                         when(type){
                             "kenpin"->{
-                                FixtureKenpinFragment().callOnPouse()
+                                // onResumeをオーバーライドしたので，手動呼び出しは禁止
+                                // FixtureKenpinFragment().callOnPouse()
                                 BlasRestFixture("kenpin", payload2, ::success, ::error).execute()
                             }
                             "takeout"->{
-                                FixtureTakeOutFragment().callOnPouse()
+                                // onResumeをオーバーライドしたので，手動呼び出しは禁止
+                                // FixtureTakeOutFragment().callOnPouse()
                                 BlasRestFixture("takeout",payload2, ::success, ::error).execute()
                             }
                             "return"->{
-                                FixtureReturnFragment().callOnPouse()
+                                // onResumeをオーバーライドしたので，手動呼び出しは禁止
+                                // FixtureReturnFragment().callOnPouse()
                                 BlasRestFixture("rtn",payload2, ::success, ::error).execute()
                             }
                         }
@@ -202,7 +205,7 @@ class FixtureActivity : AppCompatActivity() {
 
         when(errorCode) {
             BlasRestErrCode.FX_NOT_ENTRY_FIXTURE -> {
-                message = res.getString(R.string.data_dupli_error)
+                message = res.getString(R.string.fx_not_entry)
             }
             BlasRestErrCode.NETWORK_ERROR -> {
                 //サーバと通信できません

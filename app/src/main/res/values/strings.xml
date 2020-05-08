@@ -64,7 +64,7 @@
     <string name="error_data_update">更新に失敗しました。</string>
     <string name="apl_queue_save">アプリで継続して送信を行います。ステータス画面で結果を確認して下さい</string>
     <string name="data_dupli_error">データが重複しています</string>
-
+    <string name="fx_not_entry">未登録のシリアルナンバーです</string>
 
     <!-- 選択肢 -->
     <string-array name="fixture_status_list">
