@@ -27,6 +27,7 @@ import java.io.*
 import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.NetworkInterface
+import java.net.URLEncoder
 import java.security.MessageDigest
 import java.util.*
 import javax.crypto.Cipher
@@ -151,7 +152,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
             var postData: String = ""
 
             for ((k, v) in payload) {
-                postData += "${k}=${v}&"
+                postData += "${k}=${URLEncoder.encode(v,"UTF-8")}&"
             }
 
             postData = postData.substring(0, postData.length - 1)
