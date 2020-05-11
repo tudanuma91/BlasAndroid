@@ -40,13 +40,17 @@ import java.util.*
  * create an instance of this fragment.
  */
 class ItemEditFragment : Fragment() {
+
+    companion object {
+        val formDefaultValueList: MutableList<MutableMap<String, String?>> = mutableListOf()
+    }
+
     private lateinit var token: String
     private lateinit var projectId: String
     private lateinit var itemId: String
     private lateinit var rootView: LinearLayout
     private var parentChk :Boolean = true
     private var projectName : String = ""
-
     private var formInfoMap:MutableMap<String, MutableMap<String, String?>> = mutableMapOf()
     private val editMap:MutableMap<String, EditText?> = mutableMapOf()
     private val radioGroupMap:MutableMap<String, RadioGroup?> = mutableMapOf()
@@ -54,7 +58,7 @@ class ItemEditFragment : Fragment() {
     private val checkMap:MutableMap<String,MutableMap<String?, CheckBox?>> = mutableMapOf()
     private var formFieldList:MutableMap<String, MutableMap<String, String?>> = mutableMapOf()
     private val jsonItem:MutableMap<String,JSONObject> = mutableMapOf()
-    private val formDefaultValueList: MutableList<MutableMap<String, String?>> = mutableListOf()
+
     private val textViewMap:MutableMap<String,TextView> = mutableMapOf()
     private val nullChk: MutableMap<Int, MutableMap<String, String>> = mutableMapOf()
     private var memoMap:MutableMap<String,EditText> = mutableMapOf()

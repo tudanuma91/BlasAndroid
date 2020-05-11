@@ -95,13 +95,15 @@ class FixtureKenpinFragment : Fragment() {
         initQRCamera()
     }
 
-
+    /**
+     * カメラの初期化（カメラの起動・停止はonResume,onPauseにて実施する）
+     */
     private fun initQRCamera() {//QRコードリーダ起動
         //権限チェック
         val setPermisson =requireActivity().permissionChk()
-        //カメラの起動
+
         if (setPermisson) {
-            qr_view.resume()
+            // qr_view.resume()
             FixtureActivity().openQRCamera(
                 "kenpin",
                 qr_view,
@@ -118,6 +120,50 @@ class FixtureKenpinFragment : Fragment() {
         }
     }
 
+
+    override  fun onResume() {
+        super.onResume()
+        qr_view.resume()    // カメラ起動
+    }
+
+    override  fun onPause() {
+        qr_view.pause()    // カメラ停止
+        super.onPause()
+    }
+
+    /*private fun openQRCamera() {
+        qr_view.decodeContinuous(object : BarcodeCallback {
+            override fun barcodeResult(result: BarcodeResult?) {//QRコードを読み取った時の処理
+                if(result.toString() != oldResult) {
+                    if (result != null) {
+                        //読み取りを伝えるバイブレーション
+
+
+                        //Thread.sleep(500)
+                        Log.d("QRCode", "処理実行！！")
+                        kenpin_result_text.text = "$result"
+
+
+                        //ひとつ前のQRコードをこのQRコードにする。連続読み取りを避けるため。
+                        oldResult = result.toString()
+                        onPause()
+
+                        //restで更新する処理
+                        var payload2 = mapOf(
+                            "token" to token,
+                            "project_id" to projectId,
+                            "serial_number" to "${result}"
+                        )
+                        BlasRestFixture("kenpin", payload2, ::success, ::error).execute()
+                        Log.d("OK", "終了")
+                        //この時、エラーが帰ってきたら逃がす処理を追加する。
+                    }
+
+                }
+            }
+            override fun possibleResultPoints(resultPoints: MutableList<ResultPoint>?) { }
+        })
+    }*/
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
