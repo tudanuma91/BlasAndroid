@@ -255,7 +255,44 @@ class FixtureSearchResultFragment : Fragment() {
      */
     private fun createValue(list: MutableMap<String,String?>): String? {
         var value:String? =null
-        value = "【${getString(R.string.col_serialnumber)}】"
+        value = "[${getString(R.string.col_serialnumber)}]"
+        value += "\n${list["serial_number"]}"
+        value += "\n[${getString(R.string.col_status)}]\n"
+        value += when(list["status"]){//config.FixtureTypeにて定義している。
+            canTakeOut -> {"${statusCanTakeOut}"}
+            takeOut -> {"${statusTakeOut}"}
+            finishInstall -> {"${statusFinishInstall}"}
+            notTakeOut -> {"${statusNotTakeOut}"}
+            else -> { }
+        }
+        value += "\n\n\n[${getString(R.string.col_kenpin_org)}]\n"
+        value += setValue(list["FixOrg"].toString())
+        value += "\n[${getString(R.string.col_kenpin_user)}]\n"
+        value += setValue(list["FixUser"].toString())
+        value += "\n[${getString(R.string.col_kenpin_date)}]\n"
+        value += setValue(list["fix_date"].toString())
+        value += "\n\n[${getString(R.string.col_takeout_org)}]\n"
+        value += setValue(list["TakeOutOrg"].toString())
+        value += "\n[${getString(R.string.col_takeout_user)}]\n"
+        value += setValue(list["TakeOutUser"].toString())
+        value += "\n[${getString(R.string.col_takeout_date)}]\n"
+        value += setValue(list["takeout_date"].toString())
+        value += "\n\n[${getString(R.string.col_return_org)}]\n"
+        value += setValue(list["RtnOrg"].toString())
+        value += "\n[${getString(R.string.col_return_user)}]\n"
+        value += setValue(list["RtnUser"].toString())
+        value += "\n[${getString(R.string.col_return_date)}]\n"
+        value += setValue(list["rtn_date"].toString())
+        value += "\n\n[${getString(R.string.col_item_org)}]\n"
+        value += setValue(list["ItemOrg"].toString())
+        value += "\n[${getString(R.string.col_item_user)}]\n"
+        value += setValue(list["ItemUser"].toString())
+        value += "\n[${getString(R.string.col_item_date)}]\n"
+        value += setValue(list["item_date"].toString())
+
+
+
+      /*  value = "【${getString(R.string.col_serialnumber)}】"
         value += "\n  ${list["serial_number"]}"
         value += "\n\n${getString(R.string.col_status)}"
         value += when(list["status"]){//config.FixtureTypeにて定義している。
@@ -288,8 +325,7 @@ class FixtureSearchResultFragment : Fragment() {
         value += "\n${getString(R.string.col_item_user)}"
         value += setValue(list["ItemUser"].toString())
         value += "\n${getString(R.string.col_item_date)}"
-        value += setValue(list["item_date"].toString())
-
+        value += setValue(list["item_date"].toString())*/
         return value
     }
 

@@ -159,6 +159,7 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
                 val target = condKey.drop(3)
                // val dataRemoveIdList  :MutableList<Int> = mutableListOf()
                 if(dateTimeColList.contains(target)){
+                    //時間と日付項目
                     val dataRemoveIdList = itemSearchDateTimeManager(condKey,condValue,result)
                     removeIdList.add(dataRemoveIdList)
 
@@ -170,6 +171,7 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
                     removeIdList.add(dataRemoveIdList)
 
                 } else {
+                    //チェックボックスとテキストフィールドの項目
                     val dataRemoveIdList = itemSearch(condKey, condValue, result)
                     removeIdList.add(dataRemoveIdList)
                 }
@@ -230,21 +232,41 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
      * @param search 検索する対象
      * @return result 検索結果
      *
-     * やりたいこととしては、fld○○の検索を行う。
+     * fld○○の検索を行う。
      * 検索条件と不一致IDを返す。
      * 検索条件が空白の時は上の検索条件ではじく[if value != ""]で実行
      * */
     public fun itemSearch(condKey:String,condValue:String?, search:MutableList<MutableMap<String, String?>>): MutableList<Int> {
         val result: MutableList<Int> = mutableListOf()
-        val value =  Regex(condValue.toString())
-
-        for (idx in 0 until search.size){
-            if(!value.containsMatchIn(search[idx][condKey].toString())){
-                result.add(idx)
+       // val valueList = condValue.split(",")
+        val value = Regex(condValue.toString())
+        Log.d("検索ワードのLOG","ワード=>${condValue}")
+        if(condValue != null){
+            val valueList = condValue.split(",")
+            val num = valueList.size
+            for (idx in 0 until search.size) {
+                var errorCnt = 0
+                for(keyWord in 0 until num) {
+                    val keyValue = Regex(valueList[keyWord])
+                    Log.d("keyValue","keyValue => ${keyValue}")
+                    if (!keyValue.containsMatchIn(search[idx][condKey].toString())) {
+                       // result.add(idx)
+                        errorCnt += 1
+                    }
+                }
+                if (errorCnt == num){
+                    result.add(idx)
+                }
             }
         }
 
+        /*for (idx in 0 until search.size) {
+            if (!value.containsMatchIn(search[idx][condKey].toString())) {
+                result.add(idx)
+            }
+        }*/
         return result
+
     }
 
 

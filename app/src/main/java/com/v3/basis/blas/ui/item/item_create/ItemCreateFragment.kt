@@ -16,7 +16,6 @@ import android.view.ViewGroup
 import android.widget.*
 
 import com.v3.basis.blas.R
-import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.QRActivity
 import com.v3.basis.blas.blasclass.app.BlasDef
 import com.v3.basis.blas.blasclass.config.FieldType
@@ -30,6 +29,13 @@ import com.v3.basis.blas.ui.ext.addTitle
 import org.json.JSONObject
 import java.lang.Exception
 import java.util.*
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.CheckBox
+import android.widget.RadioButton
+import android.widget.RadioGroup
+
+
 
 /**
  * A simple [Fragment] subclass.
@@ -512,15 +518,6 @@ class ItemCreateFragment : Fragment() {
                 }
             }
         }
-    }
-    fun getButtonSuccess(json: JSONObject) {
-        Log.d("getButtonSuccess", "start")
-
-        val intent = Intent(activity, ItemActivity::class.java)
-        intent.putExtra("token", token)
-        intent.putExtra("project_id", projectId)
-        startActivity(intent)
-
     }
 
     /**

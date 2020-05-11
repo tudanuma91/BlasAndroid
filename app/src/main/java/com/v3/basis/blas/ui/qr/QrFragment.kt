@@ -203,32 +203,4 @@ class QrFragment : Fragment() {
             override fun possibleResultPoints(resultPoints: MutableList<ResultPoint>?) { }
         })
     }
-
-    /**
-     * rest成功時の処理
-     *
-     */
-    fun success(result: JSONObject){
-        vibrationEffect = VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
-        vibrator.vibrate(vibrationEffect)
-//        tone.startTone(ToneGenerator.TONE_DTMF_S,200)
-        Log.d("OK","作成完了")
-        messageText.setTextColor(Color.GREEN)
-        messageText.text = "QRコードを読み取りました"
-    }
-
-    /**
-     * rest失敗時の処理
-     */
-    fun error(errorCode: Int){
-        vibrationEffect = VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
-        vibrator.vibrate(vibrationEffect)
-//        tone.startTone(ToneGenerator.TONE_CDMA_ONE_MIN_BEEP,200)
-        Log.d("NG","作成失敗")
-        Log.d("errorCorde","${errorCode}")
-        messageText.setTextColor(Color.RED)
-        messageText.text = "すでに登録済のQRコードです"
-
-    }
-
 }

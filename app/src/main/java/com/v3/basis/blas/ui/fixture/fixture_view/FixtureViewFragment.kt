@@ -195,7 +195,6 @@ class FixtureViewFragment : Fragment() {
                         it.title = fixture_id.toString()
                     }
                     if (value != null) {
-                        //値を何とかしなくちゃね
                         it.detail = value
                     }
                 }
@@ -240,9 +239,9 @@ class FixtureViewFragment : Fragment() {
      */
     private fun createValue(list: MutableMap<String,String?>): String? {
         var value:String? =null
-        value = "【${getString(R.string.col_serialnumber)}】"
+        value = "[${getString(R.string.col_serialnumber)}]"
         value += "\n  ${list["serial_number"]}"
-        value += "\n\n【${getString(R.string.col_status)}】\n"
+        value += "\n[${getString(R.string.col_status)}]\n"
         value += when(list["status"]){//config.FixtureTypeにて定義している。
             canTakeOut -> {"${statusCanTakeOut}"}
             takeOut -> {"${statusTakeOut}"}
@@ -250,32 +249,77 @@ class FixtureViewFragment : Fragment() {
             notTakeOut -> {"${statusNotTakeOut}"}
             else -> { }
         }
-        value += "\n\n\n【${getString(R.string.col_kenpin_org)}】\n"
+        value += "\n\n\n[${getString(R.string.col_kenpin_org)}]\n"
         value += setValue(list["fix_org"].toString())
-        value += "\n【${getString(R.string.col_kenpin_user)}】\n"
+        value += "\n[${getString(R.string.col_kenpin_user)}]\n"
         value += setValue(list["fix_user"].toString())
-        value += "\n【${getString(R.string.col_kenpin_date)}】\n"
+        value += "\n[${getString(R.string.col_kenpin_date)}]\n"
         value += setValue(list["fix_date"].toString())
-        value += "\n\n【${getString(R.string.col_takeout_org)}】\n"
+        value += "\n\n\n[${getString(R.string.col_takeout_org)}]\n"
         value += setValue(list["takeout_org"].toString())
-        value += "\n【${getString(R.string.col_takeout_user)}】\n"
+        value += "\n[${getString(R.string.col_takeout_user)}]\n"
         value += setValue(list["takeout_user"].toString())
-        value += "\n【${getString(R.string.col_takeout_date)}】\n"
+        value += "\n[${getString(R.string.col_takeout_date)}]\n"
         value += setValue(list["takeout_date"].toString())
-        value += "\n\n【${getString(R.string.col_return_org)}】\n"
+        value += "\n\n\n[${getString(R.string.col_return_org)}]\n"
         value += setValue(list["rtn_org"].toString())
-        value += "\n【${getString(R.string.col_return_user)}】\n"
+        value += "\n[${getString(R.string.col_return_user)}]\n"
         value += setValue(list["rtn_user"].toString())
-        value += "\n【${getString(R.string.col_return_date)}】\n"
+        value += "\n[${getString(R.string.col_return_date)}]\n"
         value += setValue(list["rtn_date"].toString())
-        value += "\n\n【${getString(R.string.col_item_org)}】\n"
+        value += "\n\n\n[${getString(R.string.col_item_org)}]\n"
         value += setValue(list["item_org"].toString())
-        value += "\n【${getString(R.string.col_item_user)}】\n"
+        value += "\n[${getString(R.string.col_item_user)}]\n"
         value += setValue(list["item_user"].toString())
-        value += "\n【${getString(R.string.col_item_date)}】\n"
+        value += "\n[${getString(R.string.col_item_date)}]\n"
         value += setValue(list["item_date"].toString())
 
         return value
+
+
+
+        /*
+         value = "[${getString(R.string.col_serialnumber)}]"
+        value += "\n  ${list["serial_number"]}"
+        value += "\n[${getString(R.string.col_status)}]\n"
+        value += when(list["status"]){//config.FixtureTypeにて定義している。
+            canTakeOut -> {"${statusCanTakeOut}"}
+            takeOut -> {"${statusTakeOut}"}
+            finishInstall -> {"${statusFinishInstall}"}
+            notTakeOut -> {"${statusNotTakeOut}"}
+            else -> { }
+        }
+        value += "\n\n\n[検品]\n"
+        value += "会社："
+        value += setValue(list["fix_org"].toString())
+        value += "\nユーザ："
+        value += setValue(list["fix_user"].toString())
+        value += "\n日付："
+        value += setValue(list["fix_date"].toString())
+        value += "\n\n\n[持ち出し]"
+        value += "会社："
+        value += setValue(list["takeout_org"].toString())
+        value += "\nユーザ："
+        value += setValue(list["takeout_user"].toString())
+        value += "\n日付："
+        value += setValue(list["takeout_date"].toString())
+        value += "\n会社："
+        value += "\n\n\n[返却]"
+        value += "\n会社："
+        value += setValue(list["rtn_org"].toString())
+        value += "\nユーザ："
+        value += setValue(list["rtn_user"].toString())
+        value += "\n日付："
+        value += setValue(list["rtn_date"].toString())
+        value += "\n\n\n[設置]"
+        value += "\n会社："
+        value += setValue(list["item_org"].toString())
+        value += "\nユーザ："
+        value += setValue(list["item_user"].toString())
+        value += "\n日付："
+        value += setValue(list["item_date"].toString())
+
+         */
     }
 
 

@@ -33,13 +33,13 @@ class LogoutFragment : Fragment() {
             AlertDialog.Builder(activity)
                 .setTitle("メッセージ")
                 .setMessage("ログアウトしますか？")
-                .setPositiveButton("YES",{dialog, which ->
+                .setPositiveButton("YES") { dialog, which ->
                     //TODO YESを押したときの処理
                     requireActivity().finish()
-                })
-                .setNegativeButton("NO", { dialog, which ->
+                }
+                .setNegativeButton("NO") { dialog, which ->
                     //TODO NOを押したときの処理
-                })
+                }
                 .show()
         }
     }

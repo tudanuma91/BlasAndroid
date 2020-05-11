@@ -2,6 +2,7 @@ package com.v3.basis.blas.activity
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Color
@@ -190,7 +191,8 @@ class FixtureActivity : AppCompatActivity() {
     fun success(result: JSONObject){
         vibrationEffect = VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
         vibrator.vibrate(vibrationEffect)
-        tone.startTone(ToneGenerator.TONE_DTMF_S,200)
+       // tone.startTone(ToneGenerator.TONE_DTMF_S,200)
+        tone.startTone(ToneGenerator.TONE_CDMA_ANSWER,200)
         Log.d("OK","作成完了")
         messageText.setTextColor(Color.GREEN)
         messageText.text = "QRコードを読み取りました"
@@ -202,7 +204,8 @@ class FixtureActivity : AppCompatActivity() {
     fun error(errorCode: Int, aplCode :Int){
         vibrationEffect = VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
         vibrator.vibrate(vibrationEffect)
-        tone.startTone(ToneGenerator.TONE_CDMA_ONE_MIN_BEEP,200)
+        tone.startTone(ToneGenerator.TONE_CDMA_HIGH_PBX_S_X4,200)
+
         Log.d("NG","作成失敗")
         Log.d("errorCorde","${errorCode}")
 
@@ -233,6 +236,21 @@ class FixtureActivity : AppCompatActivity() {
         messageText.setTextColor(Color.RED)
         messageText.text = message
 
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        reloard()
+    }
+
+    fun reloard(){
+        val intent = intent
+        overridePendingTransition(0, 0)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        finish()
+
+        overridePendingTransition(0, 0)
+        startActivity(intent)
     }
 
 }

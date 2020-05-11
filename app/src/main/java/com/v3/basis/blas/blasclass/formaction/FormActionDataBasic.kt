@@ -230,6 +230,7 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
         //これがミソ！！！これなしだとタップ2回での起動になる
         edit.isFocusableInTouchMode = false
         //edit.focusable = false
+        //フォーカスを不可にする（タップ時のみ操作可能にする）
         edit.isFocusable = false
 
         return edit

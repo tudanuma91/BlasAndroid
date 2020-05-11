@@ -366,10 +366,10 @@ class ItemViewFragment : Fragment() {
             val fldName = "fld${col}"
             //レコードの定義取得
             if (loopcnt == 1) {
-                text = "【${fieldMap[col]!!["field_name"]}】\n"
+                text = "[${fieldMap[col]!!["field_name"]}]\n"
                 text += "${it[fldName]}\n"
             } else {
-                text += "【${fieldMap[col]!!["field_name"]}】\n"
+                text += "[${fieldMap[col]!!["field_name"]}]\n"
 
                 if (fieldMap[col]!!["type"] == FieldType.CHECK_VALUE) {
                     val newValue = helper.createCheckValue(it[fldName].toString())

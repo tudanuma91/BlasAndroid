@@ -1,5 +1,6 @@
 package com.v3.basis.blas.activity
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
@@ -24,5 +25,20 @@ class ItemSearchResultActivity : AppCompatActivity() {
             }
             else -> return super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        reloard()
+    }
+
+    fun reloard(){
+        val intent = intent
+        overridePendingTransition(0, 0)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        finish()
+
+        overridePendingTransition(0, 0)
+        startActivity(intent)
     }
 }
