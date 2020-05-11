@@ -50,7 +50,7 @@ class FixtureKenpinFragment : Fragment() {
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
 
-        token = getStringExtra("token")
+        //token = getStringExtra("token")
         projectId = getStringExtra("project_id")
         projectName = getStringExtra("project_name")
 
@@ -91,8 +91,13 @@ class FixtureKenpinFragment : Fragment() {
                 e.printStackTrace();
             }
         }
+        try {
+            if(token != null && projectId != null && projectName != null) {
+                initQRCamera()
+            }
+        }catch (e:Exception){
 
-        initQRCamera()
+        }
     }
 
     /**

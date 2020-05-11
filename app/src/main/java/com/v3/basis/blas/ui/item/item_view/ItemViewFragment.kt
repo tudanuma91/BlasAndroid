@@ -117,7 +117,14 @@ class ItemViewFragment : Fragment() {
                 Log.d("デバック管理","処理させない。ぐるぐるしているから")
             }else{
                 Log.d("デバック管理","いいっすよ！！！")
-                createCardManager(baseList,fieldMap.size,"Update")
+                progressBarFlg = true
+                chkProgress(progressBarFlg,rootView)
+                dataList.clear()
+                adapter.notifyDataSetChanged()
+                currentIndex = 0
+                setAdapter()
+                progressBarFlg = false
+                chkProgress(progressBarFlg,rootView)
             }
 
         }
@@ -150,7 +157,8 @@ class ItemViewFragment : Fragment() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 if (itemListAll.isNotEmpty()) {
-                    val notOverSize = currentIndex + CREATE_UNIT <= itemListAll.size
+                    Log.d("テスト!!","itemListAll => ${itemListAll.size}")
+                    val notOverSize = currentIndex  <= itemListAll.size
                     if (!recyclerView.canScrollVertically(1) && notOverSize) {
                         progressBarFlg = true
                         chkProgress(true, rootView)
@@ -172,13 +180,6 @@ class ItemViewFragment : Fragment() {
         }
     }
 
-    private fun createDataList() {
-        var colMax = fieldMap.size
-        val itemInfo = helper.createItemList(jsonItemList, colMax )
-        itemListAll.addAll(itemInfo)
-        createCardView()
-    }
-
     private fun createCardView() {
 
         val colMax = fieldMap.size
@@ -187,11 +188,11 @@ class ItemViewFragment : Fragment() {
         list.addAll(itemListAll.filterIndexed { index, mutableMap ->
             (index >= currentIndex) && (index <= currentIndex + CREATE_UNIT)
         }.toMutableList())
+        Log.d("ここまで生きている","${list}")
 
-        baseList = list
 
 
-        createCardManager(list,colMax,"New")
+        createCardManager(list,colMax)
 
         if (list.isNotEmpty()) {
             currentIndex += CREATE_UNIT
@@ -203,8 +204,8 @@ class ItemViewFragment : Fragment() {
      */
     private fun setAdapter() {
         Log.d("konishi", "setAdapter")
-        createDataList()
-        adapter.notifyItemInserted(0)
+        createCardView()
+        adapter.notifyDataSetChanged()
         progressBarFlg = false
         chkProgress(progressBarFlg,rootView)
     }
@@ -216,6 +217,9 @@ class ItemViewFragment : Fragment() {
         itemListAll.clear()
         jsonItemList.clear()
         jsonItemList.set("1", result)
+        var colMax = fieldMap.size
+        val itemInfo = helper.createItemList(jsonItemList, colMax )
+        itemListAll.addAll(itemInfo)
         setAdapter()
     }
 
@@ -276,7 +280,48 @@ class ItemViewFragment : Fragment() {
         chkProgress(progressBarFlg,rootView)
     }
 
-    private fun  createCardManager(list:MutableList<MutableMap<String,String?>>,colMax : Int,mode:String){
+
+    private fun  createCardManager(list:MutableList<MutableMap<String,String?>>,colMax : Int){
+        Log.d("デバック処理","ノーマルshowの値=>${normalShow}")
+        Log.d("デバック処理","エンドshowの値=>${endShow}")
+        if (normalShow && endShow) {
+            list.forEach {
+                val valueFlg = it["endFlg"].toString()
+                val item_id = it["item_id"].toString()
+                var text: String? = ""
+                text = createCardText(text, it, colMax)
+                createCard(item_id, text,valueFlg)
+            }
+
+        } else if (!normalShow && endShow) {
+            list.forEach {
+                val valueFlg = it["endFlg"].toString()
+                if (valueFlg == FieldType.END) {
+                    val item_id = it["item_id"].toString()
+                    var text: String? = ""
+                    text = createCardText(text, it, colMax)
+                    createCard(item_id, text,valueFlg)
+                }
+            }
+        } else if (normalShow && !endShow) {
+            list.forEach {
+                val valueFlg = it["endFlg"].toString()
+                Log.d("ここまで生きている","どこで死んでんねんコレ" +
+                        "")
+                if (valueFlg == FieldType.NORMAL) {
+                    val item_id = it["item_id"].toString()
+                    var text: String? = ""
+                    text = createCardText(text, it, colMax)
+                    createCard(item_id, text,valueFlg)
+                }
+            }
+
+        } else {
+
+        }
+    }
+
+    /*private fun  createCardManager(list:MutableList<MutableMap<String,String?>>,colMax : Int,mode:String){
 
         Log.d("デバック処理","ノーマルshowの値=>${normalShow}")
         Log.d("デバック処理","エンドshowの値=>${endShow}")
@@ -320,6 +365,8 @@ class ItemViewFragment : Fragment() {
             } else if (normalShow && !endShow) {
                 list.forEach {
                     val valueFlg = it["endFlg"].toString()
+                    Log.d("ここまで生きている","どこで死んでんねんコレ" +
+                            "")
                     if (valueFlg == FieldType.NORMAL) {
                         val item_id = it["item_id"].toString()
                         var text: String? = ""
@@ -336,12 +383,14 @@ class ItemViewFragment : Fragment() {
             progressBarFlg = false
             chkProgress(progressBarFlg,rootView)
         }
-    }
+    }*/
 
     private fun createCardText(text:String?,it:MutableMap<String,String?>,colMax: Int): String? {
         var loopcnt = 1
         var text = text
+        Log.d("配列の中身","${it}")
         for (col in 1..colMax) {
+            Log.d("配列の中身","${it["fld${col}"]}")
             val fldName = "fld${col}"
             //レコードの定義取得
             if (loopcnt == 1) {
@@ -371,6 +420,7 @@ class ItemViewFragment : Fragment() {
                 it.title = item_id
             }
             it.itemId = item_id
+            Log.d("testtst","${item_id}")
 
             it.detail = text.toString()
             it.projectId = projectId
@@ -380,6 +430,7 @@ class ItemViewFragment : Fragment() {
         }
 
         dataList.add(rowModel)
+        Log.d("チェック!!","dataListの値 => ${dataList}")
     }
 
 

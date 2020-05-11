@@ -28,6 +28,7 @@ import kotlinx.android.synthetic.main.fragment_fixture_view.*
 import kotlinx.android.synthetic.main.fragment_item_view.*
 import kotlinx.android.synthetic.main.fragment_item_view.recyclerView
 import org.json.JSONObject
+import java.lang.Exception
 
 
 /**
@@ -77,32 +78,42 @@ class FixtureViewFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        try {
+            if(token != null && project_id != null) {
+                Log.d("lifeCycle", "onViewCreated")
+                //リサイクラ-viewを取得
+                //基本的にデータはまだ到着していないため、空のアクティビティとadapterだけ設定しておく
+                val recyclerView = recyclerView
+                recyclerView.setHasFixedSize(true)
+                recyclerView.layoutManager = LinearLayoutManager(activity)
+                recyclerView.adapter = adapter
+                recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
-        Log.d("lifeCycle", "onViewCreated")
-        //リサイクラ-viewを取得
-        //基本的にデータはまだ到着していないため、空のアクティビティとadapterだけ設定しておく
-        val recyclerView = recyclerView
-        recyclerView.setHasFixedSize(true)
-        recyclerView.layoutManager = LinearLayoutManager(activity)
-        recyclerView.adapter = adapter
-        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                super.onScrollStateChanged(recyclerView, newState)
-                if (valueMap.isNotEmpty()) {
-                    val notOverSize = currentIndex + CREATE_UNIT <= dataListAll.size
-                    if (!recyclerView.canScrollVertically(1) && notOverSize) {
-                        progressBar.visibility = View.VISIBLE
-                        setAdapter()
+                    override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                        super.onScrollStateChanged(recyclerView, newState)
+                        if (valueMap.isNotEmpty()) {
+                            val notOverSize = currentIndex + CREATE_UNIT <= dataListAll.size
+                            if (!recyclerView.canScrollVertically(1) && notOverSize) {
+                                progressBar.visibility = View.VISIBLE
+                                setAdapter()
+                            }
+                        }
                     }
-                }
-            }
-        })
+                })
 
-        //呼ぶタイミングを確定させる！！
-        val payload2 = mapOf("token" to token, "project_id" to project_id)
-        Log.d("testtest","取得する")
-        BlasRestFixture("search",payload2, ::fixtureGetSuccess, ::fixtureGetError).execute()
+                //呼ぶタイミングを確定させる！！
+                val payload2 = mapOf("token" to token, "project_id" to project_id)
+                Log.d("testtest", "取得する")
+                BlasRestFixture(
+                    "search",
+                    payload2,
+                    ::fixtureGetSuccess,
+                    ::fixtureGetError
+                ).execute()
+            }
+        }catch (e:Exception){
+
+        }
     }
 
     private fun createDataList() {
@@ -240,7 +251,7 @@ class FixtureViewFragment : Fragment() {
     private fun createValue(list: MutableMap<String,String?>): String? {
         var value:String? =null
         value = "[${getString(R.string.col_serialnumber)}]"
-        value += "\n  ${list["serial_number"]}"
+        value += "\n${list["serial_number"]}"
         value += "\n[${getString(R.string.col_status)}]\n"
         value += when(list["status"]){//config.FixtureTypeにて定義している。
             canTakeOut -> {"${statusCanTakeOut}"}
