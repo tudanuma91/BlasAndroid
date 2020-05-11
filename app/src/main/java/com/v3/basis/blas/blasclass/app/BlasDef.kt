@@ -11,10 +11,10 @@ class BlasDef {
 
         //APLコード
         const val APL_OK = 0          // queue処理正常終了
-        const val APL_QUEUE_SAVE = 1 // queueへの登録を表す
-        const val APL_QUEUE_ERR = 900
-        const val APL_RETRY_MAX_ERR = 901
-        const val APL_SERVER_ERROR = 902
+        const val APL_QUEUE_SAVE = 900 // queueへの登録を表す
+        const val APL_QUEUE_ERR = 901
+        const val APL_RETRY_MAX_ERR = 902
+        const val APL_SERVER_ERROR = 903
 
         const val FUNC_NAME_FIXTURE = "機器管理"
         const val FUNC_NAME_ITEM = "データ管理"

@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemImageActivity
+import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
@@ -242,19 +243,7 @@ class ItemViewFragment : Fragment() {
 
         var message:String? = null
 
-        when(errorCode) {
-            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
-                message = getString(R.string.record_not_found)
-            }
-            BlasRestErrCode.NETWORK_ERROR -> {
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, errorCode)
-            }
-        }
+        message = BlasMsg().getMessage(errorCode,aplCode)
 
         handler.post {
             Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
@@ -274,19 +263,8 @@ class ItemViewFragment : Fragment() {
 
         var message:String? = null
 
-        when(errorCode) {
-            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
-                message = getString(R.string.record_not_found)
-            }
-            BlasRestErrCode.NETWORK_ERROR -> {
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, errorCode)
-            }
-        }
+        message = BlasMsg().getMessage(errorCode,aplCode)
+
         handler.post {
             Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
         }
