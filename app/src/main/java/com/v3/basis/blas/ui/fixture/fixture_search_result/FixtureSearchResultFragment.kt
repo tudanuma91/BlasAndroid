@@ -26,6 +26,7 @@ import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
 import kotlinx.android.synthetic.main.fragment_fixture_search_result.*
 import org.json.JSONObject
+import java.lang.Exception
 
 /**
  * A simple [Fragment] subclass.
@@ -108,18 +109,22 @@ class FixtureSearchResultFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        Log.d("lifeCycle", "onViewCreated")
-        //リサイクラ-viewを取得
-        //基本的にデータはまだ到着していないため、空のアクティビティとadapterだけ設定しておく
-        val recyclerView = recyclerView
-        recyclerView.setHasFixedSize(true)
-        recyclerView.layoutManager = LinearLayoutManager(activity)
-        recyclerView.adapter = adapter
+        try {
+            Log.d("lifeCycle", "onViewCreated")
+            //リサイクラ-viewを取得
+            //基本的にデータはまだ到着していないため、空のアクティビティとadapterだけ設定しておく
+            val recyclerView = recyclerView
+            recyclerView.setHasFixedSize(true)
+            recyclerView.layoutManager = LinearLayoutManager(activity)
+            recyclerView.adapter = adapter
 
-        //呼ぶタイミングを確定させる！！
-        val payload2 = mapOf("token" to token, "project_id" to project_id)
-        Log.d("testtest","取得する")
-        BlasRestFixture("search",payload2, ::fixtureGetSuccess, ::fixtureGetError).execute()
+            //呼ぶタイミングを確定させる！！
+            val payload2 = mapOf("token" to token, "project_id" to project_id)
+            Log.d("testtest", "取得する")
+            BlasRestFixture("search", payload2, ::fixtureGetSuccess, ::fixtureGetError).execute()
+        }catch (e:Exception){
+
+        }
     }
 
     private fun createDataList() {

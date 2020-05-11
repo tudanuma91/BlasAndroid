@@ -76,6 +76,7 @@ class FixtureReturnFragment : Fragment() {
         //現在エラーが出ているので使用不可
         //TODO : ここのエラーを解消すること！！
 
+
         val btn_light = root.findViewById<ImageButton>(R.id.returnBtnLight)
         McameraManager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager?
 
@@ -107,10 +108,16 @@ class FixtureReturnFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        //許可取ってカメラを起動する
-        fragm = activity
-        requireActivity().checkPermissions()
-        initQRCamera()
+        try {
+            if(token != null && projectId != null && projectName != null) {
+                //許可取ってカメラを起動する
+                fragm = activity
+                requireActivity().checkPermissions()
+                initQRCamera()
+            }
+        }catch (e:Exception){
+
+        }
     }
 
     /**

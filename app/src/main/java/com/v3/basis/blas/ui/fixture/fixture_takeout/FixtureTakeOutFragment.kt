@@ -118,9 +118,15 @@ class FixtureTakeOutFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         //許可取ってカメラを起動する
-        fragm = activity
-        requireActivity().checkPermissions()
-        initQRCamera()
+        try {
+            if(token != null && projectId != null && projectName != null) {
+                fragm = activity
+                requireActivity().checkPermissions()
+                initQRCamera()
+            }
+        }catch (e:Exception){
+
+        }
     }
 
     /**
