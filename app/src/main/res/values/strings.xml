@@ -1,4 +1,6 @@
 <resources>
+
+
     <!--画面のタイトル-->
     <string name="app_name">BlasJ</string>
     <string name="title_login">ログイン画面</string>
@@ -13,7 +15,7 @@
     <string name="password_null">パスワードが指定されていません</string>
     <string name="user_name_too_long">ユーザ名が長すぎます</string>
     <string name="password_too_long">パスワードが長すぎます</string>
-    <string name="account_error">ユーザ名，またはパスワードに誤りがあります</string>
+
 
     <!-- データ系 -->
     <string name="record_not_found">レコードがありません。</string>
@@ -25,8 +27,7 @@
 
 
     <!-- 通信系 -->
-    <string name="network_error">サーバと通信できません。</string>
-    <string name="server_error">サーバ内でエラーが発生しました。管理者に連絡してください。要因コード(%1$d)</string>
+
     <string name="String">test</string>
     <string name="title_activity_item">ItemActivity</string>
     <string name="title_home">Home</string>
@@ -62,9 +63,7 @@
     <string name="error_data_create">新規作成に失敗しました</string>
     <string name="success_data_update">更新に成功しました。</string>
     <string name="error_data_update">更新に失敗しました。</string>
-    <string name="apl_queue_save">アプリで継続して送信を行います。ステータス画面で結果を確認して下さい</string>
-    <string name="data_dupli_error">データが重複しています</string>
-    <string name="fx_not_entry">未登録のシリアルナンバーです</string>
+
 
     <!-- 選択肢 -->
     <string-array name="fixture_status_list">
@@ -112,6 +111,53 @@
    <!-- ダイアログ -->
     <string name="dialog_title">メッセージ</string>
     <string name="search_error">検索条件に合致するレコードは存在しません</string>
+
+
+    <!-- メッセージ -->
+    <string name="token_invalid">トークンが不正です</string>
+    <string name="token_expired">トークンの有効期限が切れています</string>
+    <string name="internal_error">サーバでエラーが発生しました</string>
+    <string name="already_logout">すでに開放済みです</string>
+    <string name="account_error">ユーザ名，またはパスワードに誤りがあります</string>
+    <string name="create_token_error">トークンの作成に失敗しました</string>
+    <string name="temp_user_error">仮登録中のためログインできません</string>
+    <string name="user_lock_error">ログインできませんでした（ロックされています）</string>
+    <string name="perm_no_error">アクセス権限がありません</string>
+    <string name="not_found_record">レコードが見つかりません</string>
+    <string name="add_record_error">レコードの追加に失敗しました</string>
+    <string name="update_record_error">レコードの更新に失敗しました</string>
+    <string name="delete_record_error">レコードの削除に失敗しました</string>
+    <string name="not_found_param">必須パラメーターが指定されていません</string>
+    <string name="not_found_id">指定されたIDは存在しません</string>
+    <string name="set_param_error">同時に指定できません</string>
+    <string name="invalid_param">不正な値が指定されています</string>
+    <string name="not_found_image">画像はありません</string>
+    <string name="out_of_range">指定された値が範囲外です</string>
+    <string name="data_dupli_error">重複不可の項目で値が重複しています</string>
+    <string name="set_fx_error">設置機器が登録されているものと異なります</string>
+    <string name="set_refx_error">撤去機器が登録されているものと異なります</string>
+    <string name="not_entry_takeout">持出登録が行われていません</string>
+    <string name="diff_user">設置者と作業者が異なります</string>
+    <string name="already_set">すでに設置済みです</string>
+    <string name="already_check">検品済みです</string>
+    <string name="dont_takeout">持出しできない機器です</string>
+    <string name="fx_not_entry">未登録のシリアルナンバーです</string>
+    <string name="already_takeout">すでに持出中です</string>
+    <string name="not_entry_id">指定されたＩＤは登録されていません</string>
+    <string name="already_return">すでに返却済みです</string>
+    <string name="already_removal_rentry">既に撤去登録済みです</string>
+    <string name="not_entry_removal">撤去登録されていません</string>
+    <string name="not_removal_serial">撤去されていないシリアルナンバーです</string>
+    <string name="already_removal_comp">すでに撤去完了済みです</string>
+    <string name="image_cant_access">画像ファイルにアクセスできませんでした。リトライしてください</string>
+    <string name="image_save_error">画像の保存に失敗しました</string>
+    <string name="image_cant_del">削除する画像がありません</string>
+    <string name="apl_queue_save">アプリで継続して送信を行います。ステータス画面で結果を確認して下さい</string>
+    <string name="apl_queue_max">アプリ自動送信処理が上限に達しました。再度実行して下さい</string>
+    <string name="server_error">サーバ内でエラーが発生しました。管理者に連絡してください。要因コード(%1$d)</string>
+    <string name="network_error">サーバと通信できません。</string>
+    <string name="json_parse_error">データが読み込めませんでした</string>
+    <string name="file_read_error">ファイルが読み込めませんでした</string>
 
 
 

@@ -28,6 +28,9 @@ class BlasRestErrCode() {
         const val P_INVALID_PARAM = 303
         const val P_NOT_FOUND_IMAGE = 304
         const val P_OUT_OF_RANGE = 305
+        const val DATA_DUPLI_ERROR = 306
+        const val SET_FX_ERROR = 307
+        const val SET_REFX_ERROR = 308
 
         //機器管理
         const val FX_NOT_ENTRY_TAKEOUT = 400
@@ -45,8 +48,7 @@ class BlasRestErrCode() {
         const val IMG_SAVE_ERROR = 501
         const val IMG_NOT_FOUND_DEL_IMG = 502
 
-        //データ
-        const val DATA_DUPLI_ERROR = 600
+
 
         //通信
         const val NETWORK_ERROR = 1001

@@ -34,7 +34,7 @@ import android.widget.TextView
 import android.widget.CheckBox
 import android.widget.RadioButton
 import android.widget.RadioGroup
-
+import com.v3.basis.blas.blasclass.app.BlasMsg
 
 
 /**
@@ -526,20 +526,8 @@ class ItemCreateFragment : Fragment() {
     fun getFail(errorCode: Int ,aplCode :Int) {
     
         var message:String? = null
-        
-        when(errorCode) {
-            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
-                message = getString(R.string.record_not_found)
-            }
-            BlasRestErrCode.NETWORK_ERROR -> {
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, errorCode)
-            }
-        }
+
+        message = BlasMsg().getMessage(errorCode,aplCode)
 
         Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
         //エラーのため、データを初期化する
@@ -553,26 +541,7 @@ class ItemCreateFragment : Fragment() {
         Log.d("sippai ", "失敗")
         var message:String? = null
 
-        when(errorCode) {
-            BlasRestErrCode.DATA_DUPLI_ERROR -> {
-                message = getString(R.string.data_dupli_error)
-            }
-            BlasRestErrCode.NETWORK_ERROR -> {
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, errorCode)
-            }
-        }
-
-        when(aplCode) {
-            BlasDef.APL_QUEUE_SAVE -> {
-                message = message + getString(R.string.apl_queue_save)
-            }
-
-        }
+        message = BlasMsg().getMessage(errorCode,aplCode)
 
         handler.post {
             Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()

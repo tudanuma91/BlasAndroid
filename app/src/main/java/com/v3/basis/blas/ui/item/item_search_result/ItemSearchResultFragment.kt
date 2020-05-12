@@ -12,6 +12,7 @@ import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.app.searchAndroid
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.helper.RestHelper
@@ -225,19 +226,9 @@ class ItemSearchResultFragment : Fragment() {
     private fun fieldRecvError(errorCode: Int, aplCode:Int) {
 
         var message:String? = null
-        when(errorCode) {
-            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
-                message = getString(R.string.record_not_found)
-            }
-            BlasRestErrCode.NETWORK_ERROR -> {
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, errorCode)
-            }
-        }
+
+        message = BlasMsg().getMessage(errorCode,aplCode)
+
         Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
         itemList.clear()
         fieldMap.clear()
@@ -252,19 +243,8 @@ class ItemSearchResultFragment : Fragment() {
     private fun itemRecvError(errorCode: Int, aplCode:Int) {
 
         var message:String? = null
-        when(errorCode) {
-            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
-                message = getString(R.string.record_not_found)
-            }
-            BlasRestErrCode.NETWORK_ERROR -> {
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, errorCode)
-            }
-        }
+        
+        message = BlasMsg().getMessage(errorCode,aplCode)
 
         Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
         //エラーのため、データを初期化する

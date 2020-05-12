@@ -19,6 +19,7 @@ import com.v3.basis.blas.activity.ItemSearchResultActivity
 import com.v3.basis.blas.activity.TerminalActivity
 import com.v3.basis.blas.blasclass.app.BlasCom
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.BTN_FIND
+import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.app.searchAndroid
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.formaction.FormActionDataSearch
@@ -384,19 +385,7 @@ class ItemSearchFragment : Fragment() {
 
         var message:String? = null
 
-        when(errorCode) {
-            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
-                message = getString(R.string.record_not_found)
-            }
-            BlasRestErrCode.NETWORK_ERROR -> {
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, errorCode)
-            }
-        }
+        message = BlasMsg().getMessage(errorCode,aplCode)
 
         Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
 

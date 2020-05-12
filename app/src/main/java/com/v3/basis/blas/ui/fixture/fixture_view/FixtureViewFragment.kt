@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.canTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.finishInstall
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.notTakeOut
@@ -222,19 +223,8 @@ class FixtureViewFragment : Fragment() {
     private fun fixtureGetError(errorCode: Int, aplCode:Int) {
 
         var message:String? = null
-        when(errorCode) {
-            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
-                message = getString(R.string.record_not_found)
-            }
-            BlasRestErrCode.NETWORK_ERROR -> {
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, errorCode)
-            }
-        }
+
+        message = BlasMsg().getMessage(errorCode,aplCode)
 
         Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
 

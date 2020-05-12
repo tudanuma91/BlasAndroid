@@ -25,6 +25,8 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
+import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.ui.item.item_image.adapter.AdapterCellItem
 import com.v3.basis.blas.ui.item.item_image.model.ImageFieldModel
@@ -78,7 +80,7 @@ class ItemImageFragment : Fragment() {
     private var deniedPermission = false
 
     private val disposables: CompositeDisposable = CompositeDisposable()
-    private var message:String = ""
+    private var message:String? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -112,19 +114,9 @@ class ItemImageFragment : Fragment() {
         viewModel.errorAPI
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
-                when(it) {
-                    BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
-                        message = getString(R.string.record_not_found)
-                    }
-                    BlasRestErrCode.NETWORK_ERROR -> {
-                        //サーバと通信できません
-                        message = getString(R.string.network_error)
-                    }
-                    else-> {
-                        //サーバでエラーが発生しました(要因コード)
-                        message = getString(R.string.server_error, it)
-                    }
-                }
+
+                message = BlasMsg().getMessage(it,APL_OK)
+
                 Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
                 //Toast.makeText(requireContext(), "API Error ($it)", Toast.LENGTH_LONG).show()
             }
