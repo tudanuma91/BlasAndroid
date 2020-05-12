@@ -176,9 +176,5 @@ class FixtureKenpinFragment : Fragment() {
             REQUEST_CAMERA_PERMISSION -> { initQRCamera() }
         }
     }
-
-    fun callOnPouse(){
-        onPause()
-    }
 }
 
