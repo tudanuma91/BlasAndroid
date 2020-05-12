@@ -11,6 +11,8 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.*
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
+import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.Params
 import com.v3.basis.blas.blasclass.rest.BlasRestAuth
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
@@ -118,21 +120,7 @@ class LoginFragment : Fragment() {
     private fun loginError(error_code:Int) {
         var message:String? = null
 
-        when(error_code) {
-            BlasRestErrCode.NETWORK_ERROR->{
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            BlasRestErrCode.AUTH_ACCOUNT_ERROR-> {
-                //ユーザ名，またはパスワードに誤りがあります
-                message = getString(R.string.account_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, error_code)
-            }
-
-        }
+        message = BlasMsg().getMessage(error_code,APL_OK)
         Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
     }
 

@@ -25,6 +25,7 @@ import com.journeyapps.barcodescanner.CompoundBarcodeView
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.app.BlasDef
+import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.ui.ext.setBlasCustomView
@@ -204,28 +205,8 @@ class FixtureActivity : AppCompatActivity() {
         Log.d("errorCorde","${errorCode}")
 
         var message:String? = ""
-        val context = BlasApp.applicationContext()
-        val res = context.getResources();
 
-        when(errorCode) {
-            BlasRestErrCode.FX_NOT_ENTRY_FIXTURE -> {
-                message = res.getString(R.string.fx_not_entry)
-            }
-            BlasRestErrCode.NETWORK_ERROR -> {
-                //サーバと通信できません
-                message = res.getString(R.string.network_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = res.getString(R.string.server_error, errorCode)
-            }
-        }
-
-        when(aplCode) {
-            BlasDef.APL_QUEUE_SAVE -> {
-                message = message + res.getString(R.string.apl_queue_save)
-            }
-        }
+        message = BlasMsg().getMessage(errorCode,aplCode)
 
         messageText.setTextColor(Color.RED)
         messageText.text = message

@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureActivity
 import com.v3.basis.blas.activity.TerminalActivity
+import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestProject
@@ -82,17 +83,8 @@ class FixtureFragment : Fragment() {
     private fun projectSearchError(error_code: Int, aplCode:Int) {
         var message: String? = null
 
-        when (error_code) {
-            BlasRestErrCode.NETWORK_ERROR -> {
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            else -> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, error_code)
-            }
+        message = BlasMsg().getMessage(error_code,aplCode)
 
-        }
         Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
         val intent = Intent(activity, TerminalActivity::class.java)
         //intent.putExtra("token",token)

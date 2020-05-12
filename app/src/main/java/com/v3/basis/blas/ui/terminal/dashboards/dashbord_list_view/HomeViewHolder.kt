@@ -18,6 +18,7 @@ import android.net.Uri
 import com.v3.basis.blas.activity.TerminalActivity
 import android.R.id.message
 import android.app.PendingIntent.getActivity
+import android.os.Handler
 import java.util.Base64.getEncoder
 import java.util.Base64
 import android.util.Base64.NO_WRAP
@@ -25,6 +26,7 @@ import androidx.core.content.FileProvider
 import androidx.core.content.FileProvider.getUriForFile
 import androidx.core.net.toUri
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.rest.BlasRest
 import java.io.*
 import java.lang.Exception
@@ -41,6 +43,7 @@ class HomeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     var token:String? = null
     var informationId:String? = null
+    private var handler = Handler()
 
     init{
         fileView1.setOnClickListener{
@@ -115,5 +118,13 @@ class HomeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     }
     fun getFileError(errorCode:Int , aplCode:Int){
         Log.d("取得失敗","取得失敗")
+        var message:String? = null
+
+        message = BlasMsg().getMessage(errorCode,aplCode)
+
+        handler.post {
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+        }
+
     }
 }
