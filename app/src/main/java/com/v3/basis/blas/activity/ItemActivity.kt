@@ -42,9 +42,9 @@ class ItemActivity : AppCompatActivity() {
         //タイトルバーの名称を変更する処理
         val appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.navi_item_view,
-                R.id.navi_item_create,
-                R.id.navi_item_seach
+                R.id.navi_item_view, //データ一覧
+                R.id.navi_item_create, //データ新規作成
+                R.id.navi_item_seach //データ検索
                // R.id.navi_item_back
             )
         )
