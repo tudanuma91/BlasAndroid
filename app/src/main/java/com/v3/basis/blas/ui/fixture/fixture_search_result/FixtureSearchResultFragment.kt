@@ -88,7 +88,7 @@ class FixtureSearchResultFragment : Fragment() {
         searchValueMap.set("kenpinDayMin",getStringExtra("kenpinDayMin"))
         searchValueMap.set("kenpinDayMax",getStringExtra("kenpinDayMax"))
         searchValueMap.set("TakeOutOrg",getStringExtra("takeOutOrg"))
-        searchValueMap.set("TakeOUtUser",getStringExtra("takeOutUser"))
+        searchValueMap.set("TakeOutUser",getStringExtra("takeOutUser"))
         searchValueMap.set("takeOutDayMin",getStringExtra("takeOutDayMin"))
         searchValueMap.set("takeOutDayMax",getStringExtra("takeOutDayMax"))
         searchValueMap.set("RtnOrg",getStringExtra("returnOrg"))
@@ -198,7 +198,9 @@ class FixtureSearchResultFragment : Fragment() {
             baseValueMap.set("create_date",fixture.get("create_date").toString())
             baseValueMap.set("update_date",fixture.get("update_date").toString())
             baseValueMap.set("FixUser",fields.getJSONObject("FixUser").getString("name"))
+
             baseValueMap.set("TakeOutUser",fields.getJSONObject("TakeOutUser").getString("name"))
+
             baseValueMap.set("RtnUser",fields.getJSONObject("RtnUser").getString("name"))
             baseValueMap.set("ItemUser",fields.getJSONObject("ItemUser").getString("name"))
             baseValueMap.set("FixOrg",fields.getJSONObject("FixOrg").getString("name"))
