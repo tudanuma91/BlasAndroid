@@ -113,8 +113,6 @@ class HomeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         context.startActivity(intent)
 
-        TerminalActivity().resorce()
-
     }
     fun getFileError(errorCode:Int , aplCode:Int){
         Log.d("取得失敗","取得失敗")

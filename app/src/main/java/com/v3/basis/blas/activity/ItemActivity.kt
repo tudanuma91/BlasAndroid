@@ -73,14 +73,19 @@ class ItemActivity : AppCompatActivity() {
                     return true
                 } else {
                     //  ルート以外の画面なら、ルート画面に遷移させる！
-                    val menu = PopupMenu(this, null).menu
-                    menuInflater.inflate(R.menu.bottom_navigation_menu_item, menu)
-                    NavigationUI.onNavDestinationSelected(menu.get(0), navController)
+                    transitionItemListScreen()
                 }
             }
             else -> return super.onOptionsItemSelected(item)
         }
         return true
+    }
+
+    fun transitionItemListScreen() {
+        val navController = findNavController(R.id.nav_host_fragment)
+        val menu = PopupMenu(this, null).menu
+        menuInflater.inflate(R.menu.bottom_navigation_menu_item, menu)
+        NavigationUI.onNavDestinationSelected(menu.get(0), navController)
     }
 
 
