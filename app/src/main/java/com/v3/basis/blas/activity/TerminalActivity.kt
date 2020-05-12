@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.get
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
@@ -43,13 +42,13 @@ class TerminalActivity : AppCompatActivity() {
 
     }
 
-    fun replaceFragment(fragment: Fragment) {
-        val fragmentManager = supportFragmentManager
-        val fragmentTransaction = fragmentManager.beginTransaction()
-        fragmentTransaction.replace(R.id.nav_host_fragment, fragment)
-        fragmentTransaction.commit()
-        Log.d("title","呼ばれた")
-    }
+//    fun replaceFragment(fragment: Fragment) {
+//        val fragmentManager = supportFragmentManager
+//        val fragmentTransaction = fragmentManager.beginTransaction()
+//        fragmentTransaction.replace(R.id.nav_host_fragment, fragment)
+//        fragmentTransaction.commit()
+//        Log.d("title","呼ばれた")
+//    }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_fixture)
@@ -69,10 +68,6 @@ class TerminalActivity : AppCompatActivity() {
             else -> return super.onOptionsItemSelected(item)
         }
         return false
-    }
-
-    fun resorce(){
-
     }
 
     /* 位置情報の許可を求める関数  */

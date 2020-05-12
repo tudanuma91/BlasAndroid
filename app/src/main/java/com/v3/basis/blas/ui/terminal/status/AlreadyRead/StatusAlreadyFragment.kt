@@ -92,4 +92,9 @@ class StatusAlreadyFragment : Fragment() {
 
     }
 
+    override fun onDestroy() {
+        recyclerView.adapter = null
+        super.onDestroy()
+    }
+
 }

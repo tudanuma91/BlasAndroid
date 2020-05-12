@@ -111,4 +111,9 @@ class FixtureFragment : Fragment() {
         }
         return dataList
     }
+
+    override fun onDestroy() {
+        recyclerView.adapter = null
+        super.onDestroy()
+    }
 }

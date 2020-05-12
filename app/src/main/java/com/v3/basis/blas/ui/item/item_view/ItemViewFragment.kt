@@ -433,5 +433,8 @@ class ItemViewFragment : Fragment() {
         Log.d("チェック!!","dataListの値 => ${dataList}")
     }
 
-
+    override fun onDestroy() {
+        recyclerView.adapter = null
+        super.onDestroy()
+    }
 }
