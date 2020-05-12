@@ -50,7 +50,7 @@ class FixtureKenpinFragment : Fragment() {
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
 
-        //token = getStringExtra("token")
+        token = getStringExtra("token")
         projectId = getStringExtra("project_id")
         projectName = getStringExtra("project_name")
 

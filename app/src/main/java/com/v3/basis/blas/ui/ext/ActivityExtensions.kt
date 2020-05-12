@@ -56,9 +56,8 @@ fun AppCompatActivity.setBlasCustomView() {
  */
 fun FragmentActivity.checkPermissions() {//許可取り
     // すでに許可をしていた場合はスキップする
-    if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-        //多分こいつが呼ばれていないせい
-        //qr_view.resume()
+    if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 0)
     }
 
     if (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.CAMERA)) {
