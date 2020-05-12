@@ -133,7 +133,9 @@
     <string name="invalid_param">不正な値が指定されています</string>
     <string name="not_found_image">画像はありません</string>
     <string name="out_of_range">指定された値が範囲外です</string>
-    <string name="data_dupli_error">データが重複しています</string>
+    <string name="data_dupli_error">重複不可の項目で値が重複しています</string>
+    <string name="set_fx_error">設置機器が登録されているものと異なります</string>
+    <string name="set_refx_error">撤去機器が登録されているものと異なります</string>
     <string name="not_entry_takeout">持出登録が行われていません</string>
     <string name="diff_user">設置者と作業者が異なります</string>
     <string name="already_set">すでに設置済みです</string>
