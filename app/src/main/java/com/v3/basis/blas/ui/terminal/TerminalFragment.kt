@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
 import com.v3.basis.blas.R
+import com.v3.basis.blas.activity.TerminalActivity
 import com.v3.basis.blas.ui.ext.setActionBarTitle
 import com.v3.basis.blas.ui.terminal.adapter.TerminalPagerAdapter
 import kotlinx.android.synthetic.main.fragment_terminal.*
@@ -38,8 +39,9 @@ class TerminalFragment : Fragment() {
         })
 
         view.nav_view.setOnNavigationItemSelectedListener {
-            val item = BottomNavButton.findById(it.itemId)
-            switchScreen(item)
+            BottomNavButton.findById(it.itemId)?.also { item ->
+                switchScreen(item)
+            }
             true
         }
 
@@ -57,33 +59,20 @@ class TerminalFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        switchScreen(BottomNavButton.DASH_BOARD)
+
+        val act = requireActivity() as TerminalActivity
+        switchScreen(act.beforeSelectedNavButton)
     }
 
     private fun switchScreen(item: BottomNavButton) {
         pager.setCurrentItem(item.ordinal, false)
         setTitle(item)
+
+        val act = requireActivity() as TerminalActivity
+        act.beforeSelectedNavButton = item
     }
 
     private fun setTitle(item: BottomNavButton) {
         (requireActivity() as AppCompatActivity).setActionBarTitle(item.title)
-    }
-
-    private enum class BottomNavButton(val id: Int, val title: Int) {
-
-        DASH_BOARD(R.id.navigation_dashboard, R.string.navi_title_terminal_dashboard),
-        DATA_MANAGE(R.id.navigation_data_management, R.string.navi_title_terminal_item),
-        EQUIPMENT_MANAGE(R.id.navigation_equipment_management, R.string.navi_title_terminal_fixture),
-        LOGOUT(R.id.navigation_logout, R.string.navi_title_terminal_logout),
-        STATUS(R.id.navigation_status,R.string.navi_title_terminal_status);
-
-        companion object {
-            fun find(position: Int): BottomNavButton {
-                return values().get(position)
-            }
-            fun findById(id: Int): BottomNavButton {
-                return values().first { id == it.id }
-            }
-        }
     }
 }

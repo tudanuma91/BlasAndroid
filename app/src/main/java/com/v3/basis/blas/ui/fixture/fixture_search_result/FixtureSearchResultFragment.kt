@@ -336,6 +336,9 @@ class FixtureSearchResultFragment : Fragment() {
         }
     }
 
-
+    override fun onDestroyView() {
+        recyclerView.adapter = null
+        super.onDestroyView()
+    }
 
 }

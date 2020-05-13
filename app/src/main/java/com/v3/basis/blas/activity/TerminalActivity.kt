@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.get
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
@@ -20,15 +19,24 @@ import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.controller.LocationController
 import com.v3.basis.blas.blasclass.controller.LocationController.getLocation
 import com.v3.basis.blas.blasclass.controller.QueueController
+import com.v3.basis.blas.ui.terminal.BottomNavButton
 import com.v3.basis.blas.ui.terminal.TerminalFragment
 
 
 //ログイン後の画面を表示する処理
 class TerminalActivity : AppCompatActivity() {
 
+    companion object {
+        const val BEFORE_FRAGMENT = "before"
+    }
+
+    lateinit var beforeSelectedNavButton: BottomNavButton
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_terminal)
+
+        beforeSelectedNavButton = intent.extras?.getSerializable(BEFORE_FRAGMENT) as? BottomNavButton ?: BottomNavButton.DASH_BOARD
 
         if (savedInstanceState == null) {
             val transaction: FragmentTransaction = supportFragmentManager.beginTransaction()
@@ -43,13 +51,13 @@ class TerminalActivity : AppCompatActivity() {
 
     }
 
-    fun replaceFragment(fragment: Fragment) {
-        val fragmentManager = supportFragmentManager
-        val fragmentTransaction = fragmentManager.beginTransaction()
-        fragmentTransaction.replace(R.id.nav_host_fragment, fragment)
-        fragmentTransaction.commit()
-        Log.d("title","呼ばれた")
-    }
+//    fun replaceFragment(fragment: Fragment) {
+//        val fragmentManager = supportFragmentManager
+//        val fragmentTransaction = fragmentManager.beginTransaction()
+//        fragmentTransaction.replace(R.id.nav_host_fragment, fragment)
+//        fragmentTransaction.commit()
+//        Log.d("title","呼ばれた")
+//    }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_fixture)
@@ -69,10 +77,6 @@ class TerminalActivity : AppCompatActivity() {
             else -> return super.onOptionsItemSelected(item)
         }
         return false
-    }
-
-    fun resorce(){
-
     }
 
     /* 位置情報の許可を求める関数  */
@@ -112,6 +116,7 @@ class TerminalActivity : AppCompatActivity() {
         val intent = intent
         overridePendingTransition(0, 0)
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        intent.putExtra(BEFORE_FRAGMENT, beforeSelectedNavButton)
         finish()
 
         overridePendingTransition(0, 0)

@@ -34,6 +34,8 @@ import android.widget.TextView
 import android.widget.CheckBox
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import androidx.core.app.NavUtils
+import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
 
 
@@ -555,6 +557,7 @@ class ItemCreateFragment : Fragment() {
         Log.d("seikou ", "成功")
         Toast.makeText(activity, getText(R.string.success_data_create), Toast.LENGTH_LONG)
             .show()
+        (requireActivity() as ItemActivity).transitionItemListScreen()
     }
 
     /**

@@ -3,6 +3,7 @@ package com.v3.basis.blas.ui.item.item_image
 
 import android.Manifest.permission.*
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -108,6 +109,20 @@ class ItemImageFragment : Fragment() {
                 if (initCameraPermission()) {
                     startFileChoicer()
                 }
+            }
+            .addTo(disposables)
+
+        viewModel.deleteAction
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                    .setTitle("画像削除")
+                    .setMessage("本当に削除しても良いですか？")
+                    .setNegativeButton("キャンセル", null)
+                    .setPositiveButton("削除する") { _, _ ->
+                        viewModel.deleteItem(it)
+                    }
+                    .show()
             }
             .addTo(disposables)
 
@@ -240,10 +255,17 @@ class ItemImageFragment : Fragment() {
                     item.loading.set(false)
                     item.image.set(null)
                     item.empty.set(true)
+                    message = BlasMsg().getMessage(i, i1)
+                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
                     Log.d("upload", "upload error")
                 }
                 viewModel.upload(bmp, mime, item, error)
             }
         }
+    }
+
+    override fun onDestroyView() {
+        recyclerView.adapter = null
+        super.onDestroyView()
     }
 }

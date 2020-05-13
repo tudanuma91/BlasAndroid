@@ -122,6 +122,10 @@ class ProjectFragment : Fragment() {
         startActivity(intent)
     }
 
+    override fun onDestroyView() {
+        recyclerView.adapter = null
+        super.onDestroyView()
+    }
 
 }
 
