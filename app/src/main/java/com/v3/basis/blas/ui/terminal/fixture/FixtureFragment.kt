@@ -21,6 +21,7 @@ import com.v3.basis.blas.ui.terminal.fixture.project_list_view.RowModel
 import com.v3.basis.blas.ui.terminal.fixture.project_list_view.ViewAdapterAdapter
 import kotlinx.android.synthetic.main.fragment_project.*
 import org.json.JSONObject
+import java.lang.Exception
 
 class FixtureFragment : Fragment() {
 
@@ -37,8 +38,12 @@ class FixtureFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val payload = mapOf("token" to token)
-        BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
+        try {
+            val payload = mapOf("token" to token)
+            BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
+        }catch (e:Exception){
+
+        }
     }
 
 

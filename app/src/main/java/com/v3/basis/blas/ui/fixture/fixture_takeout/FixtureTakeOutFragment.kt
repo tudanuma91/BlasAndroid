@@ -84,7 +84,6 @@ class FixtureTakeOutFragment : Fragment() {
 
         //ライト光るボタン実装
         //現在エラーが出ているので使用不可
-        //TODO : ここのエラーを解消すること！！
 
         val btn_light = root.findViewById<ImageButton>(R.id.takeoutBtnLight)
         McameraManager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager?

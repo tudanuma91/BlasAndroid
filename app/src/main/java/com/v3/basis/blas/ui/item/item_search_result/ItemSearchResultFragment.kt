@@ -133,7 +133,7 @@ class ItemSearchResultFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Log.d("lifeCycle", "onViewCreated")
         try {
-            if(token != null && fldSize != null && findValueMap != null && dateTimeCol != null && checkValueCol != null) {
+            if(token != null && fldSize != null && findValueMap != null && dateTimeCol != null && checkValueCol != null && fieldMap.isNotEmpty()) {
                 //リサイクラ-viewを取得
                 //基本的にデータはまだ到着していないため、空のアクティビティとadapterだけ設定しておく
                 progressBarFlg = true

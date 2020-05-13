@@ -44,6 +44,7 @@ class ItemEditFragment : Fragment() {
     companion object {
         val formDefaultValueList: MutableList<MutableMap<String, String?>> = mutableListOf()
     }
+    private var receiveData : Boolean = true
 
     private lateinit var token: String
     private lateinit var projectId: String
@@ -116,9 +117,9 @@ class ItemEditFragment : Fragment() {
             }
         }catch (e:Exception){
             //::TODO:: ここエラー内容分岐すること（可能性としてはtokenの受け渡し失敗等）
-            Log.d("取得失敗","トークンの取得に失敗しました")
+            receiveData = false
         }
-
+        //ここでcatchする時、もう追加で処理しないこと
 
 
         return inflater.inflate(R.layout.fragment_item_edit, container, false)
@@ -133,21 +134,17 @@ class ItemEditFragment : Fragment() {
         space.setLayoutParams(layoutParamsSpace)
         rootView.addView(space)
 
-        try {
+        if(receiveData){
             //レイアウトの設置位置の設定
-            if (token != null && activity != null && projectId != null && itemId != null && projectName != null) {
-                val payload = mapOf("token" to token, "project_id" to projectId)
-                val payloadItem = mapOf("token" to token, "project_id" to projectId)
-                val payload2 = mapOf("token" to token, "my_self" to "1")
-                //item_idでの取得ができない!!
-                Log.d("CL6_0001","payload設定完了・rest開始")
-                BlasRestField(payload, ::getSuccess, ::getFail).execute()
-                BlasRestUser(payload2, ::userGetSuccess, ::userGetFail).execute()
-                BlasRestItem("search", payloadItem, ::itemRecv, ::itemRecvError).execute()
+            val payload = mapOf("token" to token, "project_id" to projectId)
+            val payloadItem = mapOf("token" to token, "project_id" to projectId)
+            val payload2 = mapOf("token" to token, "my_self" to "1")
 
-            }
+            BlasRestField(payload, ::getSuccess, ::getFail).execute()
+            BlasRestUser(payload2, ::userGetSuccess, ::userGetFail).execute()
+            BlasRestItem("search", payloadItem, ::itemRecv, ::itemRecvError).execute()
 
-        }catch (e:Exception){
+        }else{
             Log.d("取得失敗","トークンの取得に失敗しました")
         }
     }
@@ -694,6 +691,7 @@ class ItemEditFragment : Fragment() {
             handler.post {
                 Toast.makeText(activity, getText(R.string.success_data_update), Toast.LENGTH_LONG).show()
             }
+            requireActivity().finish()
         }
     }
 

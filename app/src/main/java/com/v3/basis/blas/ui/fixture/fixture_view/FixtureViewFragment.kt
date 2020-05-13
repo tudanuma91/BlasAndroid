@@ -170,19 +170,6 @@ class FixtureViewFragment : Fragment() {
                 "item_date" to fixture.getString("item_date")
                 )
         }
-        /*
-        if(records != null){
-            records.forEach {
-                val id = it["fixture_id"]?.toInt()
-                if(id != null){
-                    valueMap[id] = it
-                }
-            }
-        }
-        Log.d("value_map","${valueMap}")
-        Log.d("value_map","${valueMap.size}")
-        valueSize = valueMap.size
-*/
         if(valueMap.isNotEmpty()) {
             valueMap.forEach {
                 /*val itemRecord = it
@@ -287,50 +274,6 @@ class FixtureViewFragment : Fragment() {
 
         return value
 
-
-
-        /*
-         value = "[${getString(R.string.col_serialnumber)}]"
-        value += "\n  ${list["serial_number"]}"
-        value += "\n[${getString(R.string.col_status)}]\n"
-        value += when(list["status"]){//config.FixtureTypeにて定義している。
-            canTakeOut -> {"${statusCanTakeOut}"}
-            takeOut -> {"${statusTakeOut}"}
-            finishInstall -> {"${statusFinishInstall}"}
-            notTakeOut -> {"${statusNotTakeOut}"}
-            else -> { }
-        }
-        value += "\n\n\n[検品]\n"
-        value += "会社："
-        value += setValue(list["fix_org"].toString())
-        value += "\nユーザ："
-        value += setValue(list["fix_user"].toString())
-        value += "\n日付："
-        value += setValue(list["fix_date"].toString())
-        value += "\n\n\n[持ち出し]"
-        value += "会社："
-        value += setValue(list["takeout_org"].toString())
-        value += "\nユーザ："
-        value += setValue(list["takeout_user"].toString())
-        value += "\n日付："
-        value += setValue(list["takeout_date"].toString())
-        value += "\n会社："
-        value += "\n\n\n[返却]"
-        value += "\n会社："
-        value += setValue(list["rtn_org"].toString())
-        value += "\nユーザ："
-        value += setValue(list["rtn_user"].toString())
-        value += "\n日付："
-        value += setValue(list["rtn_date"].toString())
-        value += "\n\n\n[設置]"
-        value += "\n会社："
-        value += setValue(list["item_org"].toString())
-        value += "\nユーザ："
-        value += setValue(list["item_user"].toString())
-        value += "\n日付："
-        value += setValue(list["item_date"].toString())
-
-         */
     }
 
 

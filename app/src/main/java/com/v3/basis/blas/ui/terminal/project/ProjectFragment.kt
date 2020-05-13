@@ -22,6 +22,7 @@ import com.v3.basis.blas.ui.terminal.project.project_list_view.RowModel
 import com.v3.basis.blas.ui.terminal.project.project_list_view.ViewAdapterAdapter
 import kotlinx.android.synthetic.main.fragment_project.*
 import org.json.JSONObject
+import java.lang.Exception
 
 /**
  * 表示・遷移などデータ管理画面にかかわる処理を行う。
@@ -47,9 +48,13 @@ class ProjectFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        /*プロジェクトの取得*/
-        var payload = mapOf("token" to token)
-        BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
+        try {
+            /*プロジェクトの取得*/
+            val payload = mapOf("token" to token)
+            BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
+        }catch (e:Exception){
+
+        }
 
     }
 

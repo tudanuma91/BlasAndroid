@@ -41,6 +41,7 @@ import android.widget.RadioGroup
  * A simple [Fragment] subclass.
  */
 class ItemCreateFragment : Fragment() {
+    private var receiveData : Boolean = true
     private lateinit var token: String
     private lateinit var projectId: String
     private lateinit var rootView: LinearLayout
@@ -101,8 +102,10 @@ class ItemCreateFragment : Fragment() {
                 formAction = FormActionDataCreate(token, activity!!)
             }
         }catch (e:Exception){
-
+            receiveData = false
+            Log.d("itemCreate_onCreateView_error","内容=>${e}")
         }
+        //この時もう処理しないこと！！
         return inflater.inflate(R.layout.fragment_item_create, container, false)
     }
 
@@ -115,15 +118,15 @@ class ItemCreateFragment : Fragment() {
         space.setLayoutParams(layoutParamsSpace)
         rootView.addView(space)
         //レイアウトの設置位置の設定
-        try {
+
+        if(receiveData) {
             val payload = mapOf("token" to token, "project_id" to projectId)
             val payload2 = mapOf("token" to token, "my_self" to "1")
             BlasRestField(payload, ::getSuccess, ::getFail).execute()
             BlasRestUser(payload2, ::userGetSuccess, ::userGetFail).execute()
-        }catch (e:Exception){
-
+        }else{
+            //ここにトーストかく
         }
-
     }
 
     private fun getSuccess(result: JSONObject?) {

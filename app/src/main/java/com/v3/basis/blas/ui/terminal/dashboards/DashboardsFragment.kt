@@ -18,6 +18,7 @@ import com.v3.basis.blas.ui.terminal.dashboards.dashbord_list_view.RowModel
 import com.v3.basis.blas.ui.terminal.dashboards.dashbord_list_view.ViewAdapterAdapter
 import kotlinx.android.synthetic.main.fragment_project.*
 import org.json.JSONObject
+import java.lang.Exception
 
 class DashboardsFragment : Fragment() {
 
@@ -56,6 +57,7 @@ class DashboardsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val recyclerView = recyclerView
+
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(activity)
         recyclerView.adapter = adapter
@@ -73,8 +75,17 @@ class DashboardsFragment : Fragment() {
             }
         })
 
-        var payload = mapOf("token" to token)
-        BlasRestInformation("search",payload, ::getInformationSuccess, ::getInformationError).execute()
+        try {
+            var payload = mapOf("token" to token)
+            BlasRestInformation(
+                "search",
+                payload,
+                ::getInformationSuccess,
+                ::getInformationError
+            ).execute()
+        }catch (e:Exception){
+
+        }
     }
 
 
