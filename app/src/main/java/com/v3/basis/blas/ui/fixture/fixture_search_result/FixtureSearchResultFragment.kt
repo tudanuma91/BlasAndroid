@@ -134,10 +134,12 @@ class FixtureSearchResultFragment : Fragment() {
 
         //ここで検索処理をする
         val searchResult = searchAndroid(searchValueMap,baseDataList,"","")
-        if(searchResult.size > 0) {
+        var searchList = searchResult.reversed()
+
+        if(searchList.size > 0) {
 
             //検索処理の結果を表示
-            searchResult.forEach {
+            searchList.forEach {
                 val fixture_id = it["fixture_id"]
                 //バリューの取得
                 val value = createValue(it)
