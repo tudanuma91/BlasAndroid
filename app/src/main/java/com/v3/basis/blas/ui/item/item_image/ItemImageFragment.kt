@@ -111,6 +111,7 @@ class ItemImageFragment : Fragment() {
         viewModel = ViewModelProviders.of(this).get(ItemImageViewModel::class.java)
         viewModel.setup(token, projectId, itemId)
 
+
         viewModel.receiveImageFields
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
