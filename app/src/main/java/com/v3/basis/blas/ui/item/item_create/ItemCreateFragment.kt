@@ -11,6 +11,7 @@ import android.os.Handler
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -37,16 +38,21 @@ import android.widget.RadioGroup
 import androidx.core.app.NavUtils
 import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
+import com.v3.basis.blas.ui.ext.closeSoftKeyboard
+import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
+import kotlinx.android.synthetic.main.fragment_item_create.*
 
 
 /**
  * A simple [Fragment] subclass.
  */
 class ItemCreateFragment : Fragment() {
+    private var receiveData : Boolean = true
     private lateinit var token: String
     private lateinit var projectId: String
     private lateinit var rootView: LinearLayout
     private var parentChk :Boolean = true
+    private val toastErrorLen = Toast.LENGTH_LONG
 
     private var formInfoMap: MutableMap<String, MutableMap<String, String?>> = mutableMapOf()
     private var editMap: MutableMap<String, EditText?> = mutableMapOf()
@@ -64,7 +70,6 @@ class ItemCreateFragment : Fragment() {
     private val parentMap:MutableMap<String,MutableMap<String,String>> = mutableMapOf()
     private val selectValueMap:MutableMap<String,MutableList<String>> = mutableMapOf()
     private val valueIdColMap : MutableMap<String,String> = mutableMapOf()
-    private val helper:RestHelper = RestHelper()
 
     private val calender = Calendar.getInstance()
     private val year = calender.get(Calendar.YEAR)
@@ -76,6 +81,8 @@ class ItemCreateFragment : Fragment() {
     private lateinit var formAction: FormActionDataCreate
     private lateinit var qrCodeView: EditText
     private var handler = Handler()
+    private var msg = BlasMsg()
+    private val helper:RestHelper = RestHelper()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,7 +99,6 @@ class ItemCreateFragment : Fragment() {
         val extras = activity?.intent?.extras
         if (extras?.getString("token") != null) {
             token = extras.getString("token").toString()
-            Log.d("token_item", "${token}")
         }
         if (extras?.getString("project_id") != null) {
             projectId = extras.getString("project_id").toString()
@@ -101,10 +107,15 @@ class ItemCreateFragment : Fragment() {
         try {
             if (token != null && activity != null&& projectId != null) {
                 formAction = FormActionDataCreate(token, activity!!)
+            }else{
+                throw java.lang.Exception("Failed to receive internal data ")
             }
         }catch (e:Exception){
-
+            receiveData = false
+            val errorMessage = msg.createErrorMessage("getFail")
+            Toast.makeText(activity, errorMessage, toastErrorLen).show()
         }
+
         return inflater.inflate(R.layout.fragment_item_create, container, false)
     }
 
@@ -117,15 +128,14 @@ class ItemCreateFragment : Fragment() {
         space.setLayoutParams(layoutParamsSpace)
         rootView.addView(space)
         //レイアウトの設置位置の設定
-        try {
+
+        if(receiveData) {
             val payload = mapOf("token" to token, "project_id" to projectId)
             val payload2 = mapOf("token" to token, "my_self" to "1")
             BlasRestField(payload, ::getSuccess, ::getFail).execute()
             BlasRestUser(payload2, ::userGetSuccess, ::userGetFail).execute()
-        }catch (e:Exception){
-
         }
-
+        create_scroller.hideKeyboardWhenTouch(this)
     }
 
     private fun getSuccess(result: JSONObject?) {
@@ -555,7 +565,7 @@ class ItemCreateFragment : Fragment() {
      */
     fun createSuccess(result: JSONObject) {
         Log.d("seikou ", "成功")
-        Toast.makeText(activity, getText(R.string.success_data_create), Toast.LENGTH_LONG)
+        Toast.makeText(activity, getText(R.string.success_data_create), Toast.LENGTH_SHORT)
             .show()
         (requireActivity() as ItemActivity).transitionItemListScreen()
     }
@@ -569,8 +579,6 @@ class ItemCreateFragment : Fragment() {
             val dtp = DatePickerDialog(
                 getContext()!!,
                 DatePickerDialog.OnDateSetListener { view, y, m, d ->
-                    Toast.makeText(activity, "日付を選択しました${y}/${m + 1}/${d}", Toast.LENGTH_LONG)
-                        .show()
                     //フォーマットを作成
                     formPart.setText(String.format("%d/%02d/%02d", y, m + 1, d))
                 },
@@ -592,8 +600,6 @@ class ItemCreateFragment : Fragment() {
             val tp = TimePickerDialog(
                 context,
                 TimePickerDialog.OnTimeSetListener { view, hour, minute ->
-                    Toast.makeText(activity, "時間を選択しました${hour}:${minute}", Toast.LENGTH_LONG)
-                        .show()
                     formPart.setText(String.format("%02d:%02d", hour, minute))
                 }, hour, minute, true
             )

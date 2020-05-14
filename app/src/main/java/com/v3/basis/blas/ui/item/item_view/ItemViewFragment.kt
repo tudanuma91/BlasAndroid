@@ -17,6 +17,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.JsonArray
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemImageActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
@@ -28,6 +29,7 @@ import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
 import kotlinx.android.synthetic.main.fragment_item_view.*
+import org.json.JSONArray
 import org.json.JSONObject
 
 
@@ -35,31 +37,37 @@ import org.json.JSONObject
  * A simple [Fragment] subclass.
  */
 class ItemViewFragment : Fragment() {
-    var token:String? = null
-    var projectId:String? = null
+    lateinit var token:String
     private var projectNames:String? = null
-    private var normalShow = true
+    lateinit var projectId :String
+    private var msg = BlasMsg()
+    private val toastErrorLen = Toast.LENGTH_LONG
+    private var toastSuccessLen = Toast.LENGTH_SHORT
+
     private var endShow = false
     private var progressBarFlg = false
+    private var parseNum = 10
+    private var parseStartNum = 0
+    private var parseFinNum = parseNum
 
     private val fieldMap: MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
     private val itemListAll: MutableList<MutableMap<String, String?>> = mutableListOf()
-    private val jsonItemList:MutableMap<String,JSONObject> = mutableMapOf()
+    private var jsonItemList: JSONObject? = null
     private val dataList = mutableListOf<RowModel>()
-    private var baseList :MutableList<MutableMap<String,String?>> = mutableListOf()
+    private var jsonParseList :JSONArray? = null
+
     private lateinit var rootView:View
     private val helper:RestHelper = RestHelper()
     private var handler = Handler()
     private var currentIndex: Int = 0
     companion object {
-        const val CREATE_UNIT = 20
+        const val CREATE_UNIT = 5
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         addTitle("projectName")
     }
-
 
     private val adapter:ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
 
@@ -69,7 +77,6 @@ class ItemViewFragment : Fragment() {
 
         override fun onClickImage(itemId: String?) {
 
-            Log.d("test","$itemId")
             val context = requireContext()
             val intent = ItemImageActivity.createIntent(context, token, projectId, itemId)
 
@@ -82,24 +89,23 @@ class ItemViewFragment : Fragment() {
 
         val root = inflater.inflate(R.layout.fragment_item_view, container, false)
         rootView = root
-        token = getStringExtra("token")
-        projectId = getStringExtra("project_id")
-        projectNames = getStringExtra("projectName")
+
+        val extras = activity?.intent?.extras
+        if(extras?.getString("token") != null ) {
+            token = extras.getString("token").toString() //トークンの値を取得
+        }
+        if(extras?.getString("project_id") != null ) {
+            projectId = extras.getString("project_id").toString() //トークンの値を取得
+        }
+        if(extras?.getString("projectName") != null ) {
+            projectNames = extras.getString("projectName") //トークンの値を取得
+        }
+
         progressBarFlg = true
         chkProgress(progressBarFlg,root)
 
-        val normalSwitch = rootView.findViewById<Switch>(R.id.switch_normal)
         val endSwitch = rootView.findViewById<Switch>(R.id.switch_end_flg)
         val viewBtn = rootView.findViewById<Button>(R.id.button_view)
-        normalSwitch.setOnCheckedChangeListener{ _, isChecked->
-            if(isChecked){
-                Log.d("デバック管理","チェックされた。ONになった")
-                normalShow = true
-            }else{
-                Log.d("デバック管理","チェックされた。OFFになった")
-                normalShow = false
-            }
-        }
 
         endSwitch.setOnCheckedChangeListener{_ ,isChecked->
             if(isChecked){
@@ -112,16 +118,24 @@ class ItemViewFragment : Fragment() {
         }
 
         viewBtn.setOnClickListener{
-            Log.d("デバック管理","HEllo world")
             if(progressBarFlg){
                 Log.d("デバック管理","処理させない。ぐるぐるしているから")
             }else{
-                Log.d("デバック管理","いいっすよ！！！")
+                Log.d("デバック管理","処理開始")
+                //ぐるぐるを呼ぶ
                 progressBarFlg = true
                 chkProgress(progressBarFlg,rootView)
+
+                //値の初期化
                 dataList.clear()
                 adapter.notifyDataSetChanged()
                 currentIndex = 0
+                parseStartNum = 0
+                parseFinNum = parseNum
+                itemListAll.clear()
+
+                //カードの再作成
+                jsonParse(parseStartNum, parseFinNum)
                 setAdapter()
                 progressBarFlg = false
                 chkProgress(progressBarFlg,rootView)
@@ -157,11 +171,38 @@ class ItemViewFragment : Fragment() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 if (itemListAll.isNotEmpty()) {
-                    Log.d("テスト!!","itemListAll => ${itemListAll.size}")
+
                     val notOverSize = currentIndex  <= itemListAll.size
                     if (!recyclerView.canScrollVertically(1) && notOverSize) {
                         progressBarFlg = true
                         chkProgress(true, rootView)
+
+                        //下追加分
+                        /*
+                        [随時追加処理(不安なので記述する。)]
+                            currentIndexは現在作成したカードの枚数、parseNumは○○枚ずつパースするを定義した数
+                            カードの作成枚数が○○枚に達した場合、再びパースする
+                            パースするのは同じ数（ただし、端数は除く）
+                            (例：42件のレコードを20件ずつパースし、10枚ずつ作成する場合)
+                            parseNum = 20
+                            ①   currentIndex = 10
+                                 10 % 20 !=0よって、パースを実行せずカードを作成する。
+                            ②   currentIndex = 20
+                                 20%20 = 0 よってパースし、カードを作成する。
+                            ③   currentIndex = 30
+                                 30 % 20 != 10 よってパースを実行せずに、カードを作成する
+                            ④   currentIndex = 40
+                                 40 % 20 = 0 よってパースし、カードを作成する。
+                            ⑤   currentIndex = 42
+                                 上のval notOverSize = currentIndex  <= itemListAll.size がfalseになり下の処理が走らない
+
+
+                        */
+                        if(currentIndex%parseNum  == 0) {
+                            nextParseNum()
+                            jsonParse(parseStartNum, parseFinNum)
+                        }
+
                         setAdapter()
                     }
                 }
@@ -170,57 +211,41 @@ class ItemViewFragment : Fragment() {
 
         //呼ぶタイミングを確定させる！！
         try {
-            progressBarFlg = true
-            chkProgress(progressBarFlg, rootView)
-            val payload2 = mapOf("token" to token, "project_id" to projectId)
-            BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
+            Log.d("プロジェクト名","プロジェクト名=>${projectNames}")
+            if(token != null || projectId != null || projectNames != null) {
+                progressBarFlg = true
+                chkProgress(progressBarFlg, rootView)
+                val payload2 = mapOf("token" to token, "project_id" to projectId)
+                BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
+            }else{
+                throw java.lang.Exception("Failed to receive internal data ")
+            }
         }catch (e:Exception){
-            //::TODO:: ここエラー内容分岐すること（可能性としてはtokenの受け渡し失敗等）
-            Log.d("エラー","エラー発生:${e}")
+            progressBarFlg = false
+            chkProgress(progressBarFlg, rootView)
+            val errorMessage = msg.createErrorMessage("getFail")
+            Toast.makeText(activity, errorMessage, toastErrorLen).show()
         }
     }
 
-    private fun createCardView() {
-
-        val colMax = fieldMap.size
-        val list = mutableListOf<MutableMap<String, String?>>()
-
-        list.addAll(itemListAll.filterIndexed { index, mutableMap ->
-            (index >= currentIndex) && (index <= currentIndex + CREATE_UNIT)
-        }.toMutableList())
-        Log.d("ここまで生きている","${list}")
-
-
-
-        createCardManager(list,colMax)
-
-        if (list.isNotEmpty()) {
-            currentIndex += CREATE_UNIT
-        }
-    }
-
-    /**
-     *  データ登録
-     */
-    private fun setAdapter() {
-        Log.d("konishi", "setAdapter")
-        createCardView()
-        adapter.notifyDataSetChanged()
-        progressBarFlg = false
-        chkProgress(progressBarFlg,rootView)
-    }
 
     /**
      * データ取得時
      */
     private fun itemRecv(result: JSONObject) {
+        //初期化
         itemListAll.clear()
-        jsonItemList.clear()
-        jsonItemList.set("1", result)
-        var colMax = fieldMap.size
-        val itemInfo = helper.createItemList(jsonItemList, colMax )
-        itemListAll.addAll(itemInfo)
-        setAdapter()
+        jsonParseList = null
+        jsonParseList = null
+
+        jsonItemList = result
+        Log.d("値取得","jsonItemList => ${jsonItemList}")
+        if(jsonItemList != null) {
+            jsonParseList = helper.createJsonArray(jsonItemList)
+            Log.d("デバックログ","jsonParseList =>${jsonParseList}")
+            jsonParse(parseStartNum, parseFinNum)
+            setAdapter()
+        }
     }
 
     /**
@@ -244,17 +269,15 @@ class ItemViewFragment : Fragment() {
      * フィールド取得失敗時
      */
     private fun fieldRecvError(errorCode: Int , aplCode:Int) {
+        Log.d("itemViewFragment", "カラム取得失敗")
 
         var message:String? = null
 
         message = BlasMsg().getMessage(errorCode,aplCode)
 
         handler.post {
-            Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+            Toast.makeText(getActivity(), message, toastErrorLen).show()
         }
-
-        itemListAll.clear()
-        fieldMap.clear()
         progressBarFlg = false
         chkProgress(progressBarFlg,rootView)
     }
@@ -263,28 +286,70 @@ class ItemViewFragment : Fragment() {
      * データ取得失敗時
      */
     private fun itemRecvError(errorCode: Int , aplCode:Int) {
-        Log.d("aaaaaaa", "失敗")
+        Log.d("itemViewFragment", "データ取得失敗")
 
         var message:String? = null
 
         message = BlasMsg().getMessage(errorCode,aplCode)
 
         handler.post {
-            Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+            Toast.makeText(getActivity(), message, toastErrorLen).show()
         }
 
         //エラーのため、データを初期化する
-        itemListAll.clear()
         fieldMap.clear()
         progressBarFlg = false
         chkProgress(progressBarFlg,rootView)
     }
 
+    /**
+     *  データ登録
+     */
+    private fun setAdapter() {
+        Log.d("konishi", "setAdapter")
+        createCardView()
+        adapter.notifyDataSetChanged()
+        progressBarFlg = false
+        chkProgress(progressBarFlg,rootView)
+    }
 
+
+    private fun createCardView() {
+
+        val colMax = fieldMap.size
+        val list = mutableListOf<MutableMap<String, String?>>()
+        //ここでItemListAllの追加処理を入れる
+
+        if(currentIndex == 0) {
+            list.addAll(itemListAll.filterIndexed { index, mutableMap ->
+                (index >= currentIndex) && (index < currentIndex + CREATE_UNIT)
+            }.toMutableList())
+        }else{
+            list.addAll(itemListAll.filterIndexed { index, mutableMap ->
+                (index >= currentIndex) && (index < currentIndex + CREATE_UNIT)
+            }.toMutableList())
+        }
+
+
+
+        createCardManager(list,colMax)
+        if (list.isNotEmpty()) {
+            currentIndex += CREATE_UNIT
+        }
+    }
+
+
+
+    /**
+     * カードを作るときに使う関数。
+     * endflgから表示するか否かを判断。表示する場合は処理を投げる。
+     *
+     */
     private fun  createCardManager(list:MutableList<MutableMap<String,String?>>,colMax : Int){
-        Log.d("デバック処理","ノーマルshowの値=>${normalShow}")
         Log.d("デバック処理","エンドshowの値=>${endShow}")
-        if (normalShow && endShow) {
+
+        if (endShow) {
+            Log.d("cardManager","ゴミ箱非表示")
             list.forEach {
                 val valueFlg = it["endFlg"].toString()
                 val item_id = it["item_id"].toString()
@@ -292,105 +357,29 @@ class ItemViewFragment : Fragment() {
                 text = createCardText(text, it, colMax)
                 createCard(item_id, text,valueFlg)
             }
-
-        } else if (!normalShow && endShow) {
+        } else {
+            Log.d("cardManager","ゴミ箱非表示")
             list.forEach {
                 val valueFlg = it["endFlg"].toString()
-                if (valueFlg == FieldType.END) {
-                    val item_id = it["item_id"].toString()
-                    var text: String? = ""
-                    text = createCardText(text, it, colMax)
-                    createCard(item_id, text,valueFlg)
-                }
-            }
-        } else if (normalShow && !endShow) {
-            list.forEach {
-                val valueFlg = it["endFlg"].toString()
-                Log.d("ここまで生きている","どこで死んでんねんコレ" +
-                        "")
                 if (valueFlg == FieldType.NORMAL) {
                     val item_id = it["item_id"].toString()
                     var text: String? = ""
                     text = createCardText(text, it, colMax)
-                    createCard(item_id, text,valueFlg)
+                    createCard(item_id, text, valueFlg)
                 }
             }
-
-        } else {
-
         }
+
     }
 
-    /*private fun  createCardManager(list:MutableList<MutableMap<String,String?>>,colMax : Int,mode:String){
 
-        Log.d("デバック処理","ノーマルshowの値=>${normalShow}")
-        Log.d("デバック処理","エンドshowの値=>${endShow}")
-        if(mode == "New"){
-            list.forEach {
-                val valueFlg = it["endFlg"].toString()
-                if (valueFlg == FieldType.NORMAL) {
-                    val item_id = it["item_id"].toString()
-                    var text: String? = ""
-                    text = createCardText(text, it, colMax)
-                    createCard(item_id, text,valueFlg)
-                }
-            }
-
-        }else {
-            //アダプターにつないでいるデータリストを削除する
-            progressBarFlg = true
-            chkProgress(progressBarFlg,rootView)
-            dataList.clear()
-
-            //以下はカードを作成する処理。画面上部のスイッチの状態によって処理内容を変更する
-            if (normalShow && endShow) {
-                list.forEach {
-                    val valueFlg = it["endFlg"].toString()
-                    val item_id = it["item_id"].toString()
-                    var text: String? = ""
-                    text = createCardText(text, it, colMax)
-                    createCard(item_id, text,valueFlg)
-                }
-
-            } else if (!normalShow && endShow) {
-                list.forEach {
-                    val valueFlg = it["endFlg"].toString()
-                    if (valueFlg == FieldType.END) {
-                        val item_id = it["item_id"].toString()
-                        var text: String? = ""
-                        text = createCardText(text, it, colMax)
-                        createCard(item_id, text,valueFlg)
-                    }
-                }
-            } else if (normalShow && !endShow) {
-                list.forEach {
-                    val valueFlg = it["endFlg"].toString()
-                    Log.d("ここまで生きている","どこで死んでんねんコレ" +
-                            "")
-                    if (valueFlg == FieldType.NORMAL) {
-                        val item_id = it["item_id"].toString()
-                        var text: String? = ""
-                        text = createCardText(text, it, colMax)
-                        createCard(item_id, text,valueFlg)
-                    }
-                }
-
-            } else {
-
-            }
-            //adapterにリストの内容を変更したことを伝える処理
-            adapter.notifyDataSetChanged()
-            progressBarFlg = false
-            chkProgress(progressBarFlg,rootView)
-        }
-    }*/
-
+    /**
+     * カードビューのテキストを作成する関数
+     */
     private fun createCardText(text:String?,it:MutableMap<String,String?>,colMax: Int): String? {
         var loopcnt = 1
         var text = text
-        Log.d("配列の中身","${it}")
         for (col in 1..colMax) {
-            Log.d("配列の中身","${it["fld${col}"]}")
             val fldName = "fld${col}"
             //レコードの定義取得
             if (loopcnt == 1) {
@@ -412,6 +401,9 @@ class ItemViewFragment : Fragment() {
         return text
     }
 
+    /**
+     * カードビューを作成する関数
+     */
     fun createCard(item_id:String,text: String?,valueFlg : String){
         val rowModel = RowModel().also {
             if(valueFlg == FieldType.END) {
@@ -433,8 +425,55 @@ class ItemViewFragment : Fragment() {
         Log.d("チェック!!","dataListの値 => ${dataList}")
     }
 
+
+    /**
+     * Jsonをパースする関数。
+     */
+    fun jsonParse(parseStartNum:Int,parseFinNum:Int){
+        val colMax = fieldMap.size
+        Log.d("jsonParse","fildMap.size =>${fieldMap.size}")
+        try {
+            if(jsonParseList != null) {
+                val totalRecordNum = jsonParseList!!.length()
+                Log.d("jsonParse","jsonParseList.size =>${jsonParseList!!.length()}")
+                if(totalRecordNum < parseFinNum) {
+                    val itemInfo =
+                        helper.createSeparateItemList(
+                            jsonParseList,
+                            colMax,
+                            parseStartNum,
+                            totalRecordNum
+                        )
+                    itemListAll.addAll(itemInfo)
+                }else if (totalRecordNum >= parseFinNum){
+                    val itemInfo =
+                        helper.createSeparateItemList(
+                            jsonParseList,
+                            colMax,
+                            parseStartNum,
+                            parseFinNum
+                        )
+                    itemListAll.addAll(itemInfo)
+                }
+            }
+        }catch (e:java.lang.Exception){
+
+        }
+    }
+
+    /**
+     * パースした件数と次に行う件数を記録する
+     */
+    fun nextParseNum(){
+        parseStartNum = parseFinNum
+        parseFinNum += parseNum
+    }
+
+
+
     override fun onDestroyView() {
         recyclerView.adapter = null
         super.onDestroyView()
     }
 }
+

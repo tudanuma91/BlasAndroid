@@ -1,7 +1,9 @@
 package com.v3.basis.blas.blasclass.helper
 
 import android.util.Log
+import org.json.JSONArray
 import org.json.JSONObject
+import java.lang.Exception
 
 class RestHelper {
 
@@ -59,6 +61,92 @@ class RestHelper {
     }
 
     /**
+     * データ管理にて、一覧表示に使用。
+     * jsonを○○件ずつパースして取得する処理
+     */
+    fun createSeparateItemList(resultMap:JSONArray?,
+                               colMax:Int,
+                               parseStartNum:Int,
+                               parseFinNum:Int): MutableList<MutableMap<String, String?>> {
+
+        val rtnMap :MutableList<MutableMap<String, String?>> = mutableListOf()
+
+        Log.d("jsonParse","resultMap => ${resultMap!!.length()}")
+
+        //スタートとゴールのidxが同じ時の処理
+        if(parseFinNum == parseStartNum){
+            if (resultMap != null) {
+                val valueMap: MutableMap<String, String?> = mutableMapOf()
+                val jsonField = JSONObject(resultMap[parseFinNum].toString())
+
+                val item = jsonField.getJSONObject("Item")
+                val endFlg = item["end_flg"].toString()
+                valueMap.set(key = "item_id", value = item["item_id"].toString())
+                valueMap.set(key = "endFlg", value = endFlg)
+
+                for (j in 1..colMax) {
+                    val value = item["fld${j}"].toString()
+                    //Nullの時true。それ以外でfalseが入る
+                    val chk = item.isNull("fld${j}")
+                    val inputValue = if (chk) "" else value
+                    valueMap.set(key = "fld${j}", value = inputValue)
+                }
+
+                rtnMap.add(parseStartNum, valueMap)
+                Log.d("parseJsonから呼ばれた", "valueMap => ${valueMap}")
+            }
+        }else {
+            //スタートとゴールの値が異なる場合
+            Log.d("jsonParse","こちらが呼ばれる！！！!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            Log.d("jsonParse","start => ${parseStartNum} ～ Fin =>${parseFinNum}")
+
+            if (resultMap != null) {
+                try {
+                    var count = 0
+                    for (idx in parseStartNum until parseFinNum) {
+                        Log.d("jsonParse", "idx => ${idx}")
+                        val valueMap: MutableMap<String, String?> = mutableMapOf()
+                        val jsonField = JSONObject(resultMap.get(idx).toString())
+                        Log.d("jsonParse", "ここまで生きている")
+                        val item = jsonField.getJSONObject("Item")
+                        val endFlg = item["end_flg"].toString()
+                        valueMap.set(key = "item_id", value = item["item_id"].toString())
+                        valueMap.set(key = "endFlg", value = endFlg)
+
+                        for (j in 1..colMax) {
+                            val value = item["fld${j}"].toString()
+                            //Nullの時true。それ以外でfalseが入る
+                            val chk = item.isNull("fld${j}")
+                            val inputValue = if (chk) "" else value
+                            valueMap.set(key = "fld${j}", value = inputValue)
+                        }
+
+                        Log.d("jsonParse", "ここまで生きている")
+                        rtnMap.add(count, valueMap)
+                        count += 1
+
+                    }
+                }catch (e:Exception){
+                    Log.d("jsonParse","エラー=>${e}")
+                }
+            }
+        }
+       // Log.d("jsonParse","rtnMap => ${rtnMap}")
+        return rtnMap
+    }
+
+
+    fun createJsonArray(resultMap:JSONObject?): JSONArray? {
+        Log.d("値の取得","resultMap->${resultMap}")
+        var rtnList:JSONArray? = null
+        if(resultMap != null) {
+            rtnList = resultMap.getJSONArray("records")
+        }
+        return rtnList
+    }
+
+
+    /**
      * データ管理にて一覧表示に使用。
      * 登録したデータを取得する
      * この処理すごいもったいないからあとで何とかしましょう！！
@@ -71,22 +159,23 @@ class RestHelper {
         val rtnMap :MutableList<MutableMap<String, String?>> = mutableListOf()
         val itemList = result!!.getJSONArray("records")
 
-
+        //for (i in 0 until 100件ずつ行う処理の続き){
         for (i in 0 until itemList.length()){
             //JSoNオブジェクトを行ごとに取得。
             val valueMap : MutableMap<String,String?> = mutableMapOf()
             val jsonField = JSONObject(itemList[i].toString())
+
             val item = jsonField.getJSONObject("Item")
+            val endFlg = item["end_flg"].toString()
             valueMap.set(key = "item_id",value = item["item_id"].toString() )
+            valueMap.set(key = "endFlg", value = endFlg)
+
             for(j in 1 ..colMax ) {
                 val value = item["fld${j}"].toString()
                 //Nullの時true。それ以外でfalseが入る
                 val chk = item.isNull("fld${j}")
                 val inputValue = if(chk) "" else value
-                val endFlg = item["end_flg"].toString()
-
                 valueMap.set(key = "fld${j}", value = inputValue)
-                valueMap.set(key = "endFlg", value = endFlg)
             }
             rtnMap.add(i,valueMap)
         }

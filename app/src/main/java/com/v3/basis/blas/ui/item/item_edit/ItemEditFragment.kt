@@ -8,28 +8,26 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-
+import androidx.fragment.app.Fragment
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.QRActivity
-import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_QUEUE_SAVE
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.BTN_SAVE
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.formaction.FormActionDataEdit
 import com.v3.basis.blas.blasclass.helper.RestHelper
-import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.blasclass.rest.BlasRestUser
 import com.v3.basis.blas.ui.ext.addTitle
+import com.v3.basis.blas.ui.ext.closeSoftKeyboard
+import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
+import kotlinx.android.synthetic.main.fragment_item_edit.*
 import org.json.JSONObject
-import java.lang.Exception
-import java.lang.reflect.Field
 import java.util.*
 
 /**
@@ -45,6 +43,7 @@ class ItemEditFragment : Fragment() {
     companion object {
         val formDefaultValueList: MutableList<MutableMap<String, String?>> = mutableListOf()
     }
+    private var receiveData : Boolean = true
 
     private lateinit var token: String
     private lateinit var projectId: String
@@ -114,12 +113,14 @@ class ItemEditFragment : Fragment() {
             if (token != null && activity != null && projectId != null && itemId != null&& projectName != null) {
                 formAction = FormActionDataEdit(token, activity!!)
                 Log.d("CL6_0001","トークン等の受け渡し完了")
+            }else{
+                throw java.lang.Exception("Failed to receive internal data ")
             }
         }catch (e:Exception){
             //::TODO:: ここエラー内容分岐すること（可能性としてはtokenの受け渡し失敗等）
-            Log.d("取得失敗","トークンの取得に失敗しました")
+            receiveData = false
         }
-
+        //ここでcatchする時、もう追加で処理しないこと
 
 
         return inflater.inflate(R.layout.fragment_item_edit, container, false)
@@ -134,23 +135,21 @@ class ItemEditFragment : Fragment() {
         space.setLayoutParams(layoutParamsSpace)
         rootView.addView(space)
 
-        try {
+        if(receiveData){
             //レイアウトの設置位置の設定
-            if (token != null && activity != null && projectId != null && itemId != null && projectName != null) {
-                val payload = mapOf("token" to token, "project_id" to projectId)
-                val payloadItem = mapOf("token" to token, "project_id" to projectId)
-                val payload2 = mapOf("token" to token, "my_self" to "1")
-                //item_idでの取得ができない!!
-                Log.d("CL6_0001","payload設定完了・rest開始")
-                BlasRestField(payload, ::getSuccess, ::getFail).execute()
-                BlasRestUser(payload2, ::userGetSuccess, ::userGetFail).execute()
-                BlasRestItem("search", payloadItem, ::itemRecv, ::itemRecvError).execute()
+            val payload = mapOf("token" to token, "project_id" to projectId)
+            val payloadItem = mapOf("token" to token, "project_id" to projectId)
+            val payload2 = mapOf("token" to token, "my_self" to "1")
 
-            }
+            BlasRestField(payload, ::getSuccess, ::getFail).execute()
+            BlasRestUser(payload2, ::userGetSuccess, ::userGetFail).execute()
+            BlasRestItem("search", payloadItem, ::itemRecv, ::itemRecvError).execute()
 
-        }catch (e:Exception){
+        }else{
             Log.d("取得失敗","トークンの取得に失敗しました")
         }
+
+        edit_scroller.hideKeyboardWhenTouch(this)
     }
 
     /**
@@ -633,7 +632,7 @@ class ItemEditFragment : Fragment() {
                                     parentErrorMap.set(cnt.toString(),status)
                                     if(memoValue == ""){
                                         parentChk = false
-                                        Toast.makeText(activity, getText(R.string.check_error), Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(activity, getText(R.string.check_error), Toast.LENGTH_LONG).show()
                                     }
                                 }
                             }
@@ -669,8 +668,9 @@ class ItemEditFragment : Fragment() {
         //更新成功を通知
         if (isAdded()) {
             handler.post {
-                Toast.makeText(activity, getText(R.string.success_data_update), Toast.LENGTH_LONG).show()
+                Toast.makeText(activity, getText(R.string.success_data_update), Toast.LENGTH_SHORT).show()
             }
+            requireActivity().finish()
         }
     }
 

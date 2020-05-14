@@ -1,28 +1,35 @@
 package com.v3.basis.blas.ui.terminal.dashboards
 
 import android.os.Bundle
+import android.util.JsonToken
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestInformation
+import com.v3.basis.blas.blasclass.rest.BlasRestProject
 import com.v3.basis.blas.ui.ext.getStringExtra
 import com.v3.basis.blas.ui.item.item_view.ItemViewFragment
 import com.v3.basis.blas.ui.terminal.dashboards.dashbord_list_view.RowModel
 import com.v3.basis.blas.ui.terminal.dashboards.dashbord_list_view.ViewAdapterAdapter
 import kotlinx.android.synthetic.main.fragment_project.*
 import org.json.JSONObject
+import java.lang.Exception
 
 class DashboardsFragment : Fragment() {
 
     private lateinit var dashboardsViewModel: DashboardsViewModel
-    private var token:String? =null
+    lateinit var token:String
+    private var msg = BlasMsg()
+
     private val dataList = mutableListOf<RowModel>()
     private val dataListAll = mutableListOf<RowModel>()
 
@@ -36,6 +43,9 @@ class DashboardsFragment : Fragment() {
     companion object {
         const val CREATE_UNIT = 20
     }
+    private val toastErrorLen = Toast.LENGTH_LONG
+    private var toastSuccessLen = Toast.LENGTH_SHORT
+
 
     /*private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
         override fun onClickRow(tappedView: View, rowModel: RowModel) {
@@ -48,7 +58,12 @@ class DashboardsFragment : Fragment() {
         dashboardsViewModel =
             ViewModelProviders.of(this).get(DashboardsViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_dashboards, container, false)
-        token = getStringExtra("token") //トークンの値を取得
+
+        val extras = activity?.intent?.extras
+
+        if(extras?.getString("token") != null ) {
+            token = extras.getString("token").toString() //トークンの値を取得
+        }
         return root
     }
 
@@ -56,6 +71,7 @@ class DashboardsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val recyclerView = recyclerView
+
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(activity)
         recyclerView.adapter = adapter
@@ -73,8 +89,19 @@ class DashboardsFragment : Fragment() {
             }
         })
 
-        var payload = mapOf("token" to token)
-        BlasRestInformation("search",payload, ::getInformationSuccess, ::getInformationError).execute()
+        try {
+            if(token != null) {
+                val payload = mapOf("token" to token)
+                BlasRestInformation("search", payload, ::getInformationSuccess, ::getInformationError).execute()
+            }else{
+                throw Exception("Failed to receive internal data ")
+            }
+        }catch (e:Exception){
+            val errorMessage = msg.createErrorMessage("getFail")
+            val toast = Toast.makeText(activity, errorMessage, toastErrorLen)
+            toast.show()
+
+        }
     }
 
 
@@ -120,7 +147,9 @@ class DashboardsFragment : Fragment() {
     }
 
     private fun getInformationError(error_code: Int, aplCode:Int) {
-
+        val errorMessage = msg.getMessage(error_code,aplCode)
+        val toast = Toast.makeText(activity, errorMessage, toastErrorLen)
+        toast.show()
     }
 
     override fun onDestroyView() {

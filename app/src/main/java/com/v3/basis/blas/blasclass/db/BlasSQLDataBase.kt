@@ -29,13 +29,13 @@ class BlasSQLDataBase {
     }
 
     fun getRecordUnRead(): Cursor {
-        val sql = "SELECT * FROM NoticeTable WHERE read_status = '0'"
+        val sql = "SELECT * FROM NoticeTable WHERE read_status = '0' ORDER BY id desc"
         val value = db.rawQuery(sql,null)
         return value
     }
 
     fun getRecordAlreadyRead(): Cursor {
-        val sql = "SELECT * FROM NoticeTable WHERE read_status = '1'"
+        val sql = "SELECT * FROM NoticeTable WHERE read_status = '1' ORDER BY id desc"
         val value = db.rawQuery(sql,null)
         return value
     }

@@ -1,8 +1,10 @@
 package com.v3.basis.blas.blasclass.app
 
+import android.util.Log
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.rest.BlasRest.Companion.context
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode.Companion.AUTH_INVALID_TOKEN
+import java.lang.Exception
 
 open class BlasMsg() {
 
@@ -56,6 +58,10 @@ open class BlasMsg() {
         )
     }
 
+    val androidMsg = mapOf(
+        "getFail" to res.getString(R.string.other_recieve_error)
+    )
+
     open fun getMessage(errorCode : Int, aplCode : Int ) : String? {
 
         var resMessage : String? = null
@@ -73,6 +79,12 @@ open class BlasMsg() {
         }
 
         return resMessage
+    }
+
+
+    open fun createErrorMessage(errorType:String): String? {
+        val errorMessage = androidMsg[errorType]
+        return errorMessage
     }
 
 

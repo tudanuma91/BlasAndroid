@@ -159,6 +159,9 @@
     <string name="json_parse_error">データが読み込めませんでした</string>
     <string name="file_read_error">ファイルが読み込めませんでした</string>
 
+    <!--受け取り失敗系-->
+    <string name="other_recieve_error">内部データの取得に失敗しました。</string>
+
 
 
 </resources>

@@ -37,12 +37,14 @@ import java.lang.Exception
  */
 class FixtureViewFragment : Fragment() {
 
-    private var token:String? = null
-    private var project_id:String? = null
+    lateinit var token:String
+    lateinit var project_id:String
     private var dataListAll = mutableListOf<RowModel>()
     private var dataList = mutableListOf<RowModel>()
     private val valueMap : MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
     private var valueSize :Int = 0
+    private var msg = BlasMsg()
+    private val toastErrorLen = Toast.LENGTH_LONG
 
     private var currentIndex: Int = 0
     companion object {
@@ -57,7 +59,6 @@ class FixtureViewFragment : Fragment() {
     private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
         override fun onClickRow(tappedView: View, rowModel: com.v3.basis.blas.ui.fixture.fixture_view.RowModel) {
             //カードタップ時の処理
-            Toast.makeText(activity, rowModel.title, Toast.LENGTH_LONG).show()
             Log.d(
                 "DataManagement",
                 "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
@@ -71,8 +72,13 @@ class FixtureViewFragment : Fragment() {
 
         super.onCreateView(inflater, container, savedInstanceState)
         Log.d("【onCreateView】","呼ばれた")
-        token = getStringExtra("token")
-        project_id = getStringExtra("project_id")
+        val extras = activity?.intent?.extras
+        if (extras?.getString("token") != null) {
+            token = extras.getString("token").toString()
+        }
+        if (extras?.getString("project_id") != null) {
+            project_id = extras.getString("project_id").toString()
+        }
 
         return inflater.inflate(R.layout.fragment_fixture_view, container, false)
     }
@@ -111,8 +117,13 @@ class FixtureViewFragment : Fragment() {
                     ::fixtureGetSuccess,
                     ::fixtureGetError
                 ).execute()
+            }else{
+                throw java.lang.Exception("Failed to receive internal data ")
             }
         }catch (e:Exception){
+            val errorMessage = msg.createErrorMessage("getFail")
+            Toast.makeText(activity, errorMessage, toastErrorLen).show()
+            progressBar.visibility = View.INVISIBLE
 
         }
     }
@@ -171,27 +182,8 @@ class FixtureViewFragment : Fragment() {
                 "item_date" to fixture.getString("item_date")
                 )
         }
-        /*
-        if(records != null){
-            records.forEach {
-                val id = it["fixture_id"]?.toInt()
-                if(id != null){
-                    valueMap[id] = it
-                }
-            }
-        }
-        Log.d("value_map","${valueMap}")
-        Log.d("value_map","${valueMap.size}")
-        valueSize = valueMap.size
-*/
         if(valueMap.isNotEmpty()) {
             valueMap.forEach {
-                /*val itemRecord = it
-                val colMax = valueMap.size
-                val item_id = it["item_id"]
-                var text: String? = "String"
-                var loopcnt = 1*/
-                Log.d("aaa","ここまで来たぞー！！")
                 var id = "1"
                 var text= "test"
                 //カラムの定義取得
@@ -277,50 +269,6 @@ class FixtureViewFragment : Fragment() {
 
         return value
 
-
-
-        /*
-         value = "[${getString(R.string.col_serialnumber)}]"
-        value += "\n  ${list["serial_number"]}"
-        value += "\n[${getString(R.string.col_status)}]\n"
-        value += when(list["status"]){//config.FixtureTypeにて定義している。
-            canTakeOut -> {"${statusCanTakeOut}"}
-            takeOut -> {"${statusTakeOut}"}
-            finishInstall -> {"${statusFinishInstall}"}
-            notTakeOut -> {"${statusNotTakeOut}"}
-            else -> { }
-        }
-        value += "\n\n\n[検品]\n"
-        value += "会社："
-        value += setValue(list["fix_org"].toString())
-        value += "\nユーザ："
-        value += setValue(list["fix_user"].toString())
-        value += "\n日付："
-        value += setValue(list["fix_date"].toString())
-        value += "\n\n\n[持ち出し]"
-        value += "会社："
-        value += setValue(list["takeout_org"].toString())
-        value += "\nユーザ："
-        value += setValue(list["takeout_user"].toString())
-        value += "\n日付："
-        value += setValue(list["takeout_date"].toString())
-        value += "\n会社："
-        value += "\n\n\n[返却]"
-        value += "\n会社："
-        value += setValue(list["rtn_org"].toString())
-        value += "\nユーザ："
-        value += setValue(list["rtn_user"].toString())
-        value += "\n日付："
-        value += setValue(list["rtn_date"].toString())
-        value += "\n\n\n[設置]"
-        value += "\n会社："
-        value += setValue(list["item_org"].toString())
-        value += "\nユーザ："
-        value += setValue(list["item_user"].toString())
-        value += "\n日付："
-        value += setValue(list["item_date"].toString())
-
-         */
     }
 
 

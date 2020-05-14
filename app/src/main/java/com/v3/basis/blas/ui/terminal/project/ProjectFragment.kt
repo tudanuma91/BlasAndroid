@@ -23,6 +23,7 @@ import com.v3.basis.blas.ui.terminal.project.project_list_view.RowModel
 import com.v3.basis.blas.ui.terminal.project.project_list_view.ViewAdapterAdapter
 import kotlinx.android.synthetic.main.fragment_project.*
 import org.json.JSONObject
+import java.lang.Exception
 
 /**
  * 表示・遷移などデータ管理画面にかかわる処理を行う。
@@ -30,8 +31,11 @@ import org.json.JSONObject
 class ProjectFragment : Fragment() {
 
     private lateinit var homeViewModel: ProjectViewModel
-    private var token: String? = null
     private var handler = Handler()
+    lateinit var token:String
+    private var msg = BlasMsg()
+    private val toastErrorLen = Toast.LENGTH_LONG
+    private var toastSuccessLen = Toast.LENGTH_SHORT
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,7 +44,11 @@ class ProjectFragment : Fragment() {
     ): View? {
 
         homeViewModel = ViewModelProviders.of(this).get(ProjectViewModel::class.java)
-        token = getStringExtra("token") //トークンの値を取得
+
+        val extras = activity?.intent?.extras
+        if(extras?.getString("token") != null ) {
+            token = extras.getString("token").toString() //トークンの値を取得
+        }
 
         return inflater.inflate(R.layout.fragment_project, container, false)
 
@@ -48,9 +56,18 @@ class ProjectFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        /*プロジェクトの取得*/
-        var payload = mapOf("token" to token)
-        BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
+        try {
+            if(token != null) {
+                /*プロジェクトの取得*/
+                val payload = mapOf("token" to token)
+                BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
+            }else{
+                throw Exception("Failed to receive internal data ")
+            }
+        }catch (e:Exception){
+            val errorMessage = msg.createErrorMessage("getFail")
+            Toast.makeText(activity, errorMessage, toastErrorLen).show()
+        }
 
     }
 
@@ -86,7 +103,7 @@ class ProjectFragment : Fragment() {
         val adapter = ViewAdapterAdapter(project_list,
             object : ViewAdapterAdapter.ListListener {
                 override fun onClickRow(tappedView: View, rowModel: RowModel) {
-                    Toast.makeText(activity, rowModel.title, Toast.LENGTH_LONG).show()
+                    //Toast.makeText(activity, rowModel.title, toastSuccessLen).show()
                     Log.d(
                         "DataManagement",
                         "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
@@ -116,7 +133,7 @@ class ProjectFragment : Fragment() {
         message = BlasMsg().getMessage(error_code,aplCode)
 
         handler.post {
-            Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+            Toast.makeText(getActivity(), message, toastErrorLen).show()
         }
         val intent = Intent(activity, TerminalActivity::class.java)
         startActivity(intent)

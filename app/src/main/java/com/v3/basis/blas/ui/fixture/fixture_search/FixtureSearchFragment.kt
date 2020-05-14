@@ -17,11 +17,14 @@ import android.widget.*
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureSearchResultActivity
 import com.v3.basis.blas.activity.ItemSearchResultActivity
+import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.app.searchAndroid
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
+import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
+import kotlinx.android.synthetic.main.fragment_fixture_search.*
 import org.json.JSONObject
 import java.lang.Exception
 import java.util.*
@@ -36,12 +39,14 @@ import java.util.*
  */
 class FixtureSearchFragment : Fragment() {
 
-    private var token:String? = null
-    private var projectId:String? = null
-    private var freeWord:String?= null
+    lateinit var token:String
+    lateinit var projectId:String
+    lateinit var freeWord:String
     private val formMap :MutableMap<String,EditText> = mutableMapOf()
     private var errorList:MutableList<String> = mutableListOf()
-    private var titleMap:MutableMap<String,TextView> = mutableMapOf()
+
+    private var msg = BlasMsg()
+    private val toastErrorLen = Toast.LENGTH_LONG
 
     val calender = Calendar.getInstance()
     val year = calender.get(Calendar.YEAR)
@@ -52,8 +57,15 @@ class FixtureSearchFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        token = getStringExtra("token")
-        projectId = getStringExtra("project_id")
+        val extras = activity?.intent?.extras
+
+        if(extras?.getString("token") != null) {
+            token = extras.getString("token").toString()
+        }
+        if(extras?.getString("project_id") != null) {
+            projectId = extras.getString("project_id").toString()
+        }
+
         addTitle("project_name")
     }
 
@@ -63,100 +75,97 @@ class FixtureSearchFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         root = inflater.inflate(R.layout.fragment_fixture_search, container, false)
+
+        //配列に入力フォームを格納する。
+        formMap.set("freeWord", root.findViewById<EditText>(R.id.fixFreeWordValue))
+        formMap.set("serialNumber", root.findViewById<EditText>(R.id.fixSerialNumberSelect))
+        formMap.set("dataId", root.findViewById<EditText>(R.id.fixDataIdSelect))
+        //ステータスは別口で取得すること
+        formMap.set("kenpinOrg", root.findViewById<EditText>(R.id.fixKenpinOrgSelect))
+        formMap.set("kenpinUser", root.findViewById<EditText>(R.id.fixKenpinUserSelect))
+        formMap.set("kenpinDayMin", root.findViewById<EditText>(R.id.fixKenpinDayMin))
+        formMap.set("kenpinDayMax", root.findViewById<EditText>(R.id.fixKenpinDayMax))
+        formMap.set("takeOutOrg", root.findViewById<EditText>(R.id.fixTakeoutOrgSelect))
+        formMap.set("takeOutUser", root.findViewById<EditText>(R.id.fixTakeoutUserSelect))
+        formMap.set("takeOutDayMin", root.findViewById<EditText>(R.id.fixTakeoutDayMin))
+        formMap.set("takeOutDayMax", root.findViewById<EditText>(R.id.fixTakeoutDayMax))
+        formMap.set("returnOrg", root.findViewById<EditText>(R.id.fixReturnOrgSelect))
+        formMap.set("returnUser", root.findViewById<EditText>(R.id.fixReturnUserSelect))
+        formMap.set("returnDayMin", root.findViewById<EditText>(R.id.fixReturnDayMin))
+        formMap.set("returnDayMax", root.findViewById<EditText>(R.id.fixReturnDayMax))
+        formMap.set("itemOrg", root.findViewById<EditText>(R.id.fixItemOrgSelect))
+        formMap.set("itemUser", root.findViewById<EditText>(R.id.fixItemUserSelect))
+        formMap.set("itemDayMin", root.findViewById<EditText>(R.id.fixItemDayMin))
+        formMap.set("itemDayMax", root.findViewById<EditText>(R.id.fixItemDayMax))
+
+        //検品日付最小値タップ処理
+        val kenpinDayMin = formMap["kenpinDayMin"]
+        if (kenpinDayMin != null) {
+            kenpinDayMin.setOnClickListener {
+                setDateTimeAction(kenpinDayMin)
+            }
+        }
+        //検品最大値タップ時処理
+        val kenpinDayMax = formMap["kenpinDayMax"]
+        if (kenpinDayMax != null) {
+            kenpinDayMax.setOnClickListener {
+                setDateTimeAction(kenpinDayMax)
+            }
+        }
+
+        //持ち出し日付最小値タップ処理
+        val takeOutDayMin = formMap["takeOutDayMin"]
+        if (takeOutDayMin != null) {
+            takeOutDayMin.setOnClickListener {
+                setDateTimeAction(takeOutDayMin)
+            }
+        }
+
+        //持ち出し日付最大値タップ処理
+        val takeOutDayMax = formMap["takeOutDayMax"]
+        if (takeOutDayMax != null) {
+            takeOutDayMax.setOnClickListener {
+                setDateTimeAction(takeOutDayMax)
+            }
+        }
+
+        //返却最小値タップ処理
+        val returnDayMin = formMap["returnDayMin"]
+        if (returnDayMin != null) {
+            returnDayMin.setOnClickListener {
+                setDateTimeAction(returnDayMin)
+            }
+        }
+
+        //返却最大値タップ処理
+        val returnDayMax = formMap["returnDayMax"]
+        if (returnDayMax != null) {
+            returnDayMax.setOnClickListener {
+                setDateTimeAction(returnDayMax)
+            }
+        }
+
+        //最小値
+        val ItemDayMin = formMap["itemDayMin"]
+        if (ItemDayMin != null) {
+            ItemDayMin.setOnClickListener {
+                setDateTimeAction(ItemDayMin)
+            }
+        }
+
+        //返却最大値タップ処理
+        val ItemDayMax = formMap["itemDayMax"]
+        if (ItemDayMax != null) {
+            ItemDayMax.setOnClickListener {
+                setDateTimeAction(ItemDayMax)
+            }
+        }
+
+        val btnSearch = root.findViewById<Button>(R.id.fixSerchBtn)
+
         try {
             if(token != null && projectId != null) {
-                Log.d("機器管理検索画面", "token/${token}:projectId/${projectId}")
-
-                //配列に入力フォームを格納する。
-                formMap.set("freeWord", root.findViewById<EditText>(R.id.fixFreeWordValue))
-                formMap.set("serialNumber", root.findViewById<EditText>(R.id.fixSerialNumberSelect))
-                formMap.set("dataId", root.findViewById<EditText>(R.id.fixDataIdSelect))
-                //ステータスは別口で取得すること
-                formMap.set("kenpinOrg", root.findViewById<EditText>(R.id.fixKenpinOrgSelect))
-                formMap.set("kenpinUser", root.findViewById<EditText>(R.id.fixKenpinUserSelect))
-                formMap.set("kenpinDayMin", root.findViewById<EditText>(R.id.fixKenpinDayMin))
-                formMap.set("kenpinDayMax", root.findViewById<EditText>(R.id.fixKenpinDayMax))
-                formMap.set("takeOutOrg", root.findViewById<EditText>(R.id.fixTakeoutOrgSelect))
-                formMap.set("takeOutUser", root.findViewById<EditText>(R.id.fixTakeoutUserSelect))
-                formMap.set("takeOutDayMin", root.findViewById<EditText>(R.id.fixTakeoutDayMin))
-                formMap.set("takeOutDayMax", root.findViewById<EditText>(R.id.fixTakeoutDayMax))
-                formMap.set("returnOrg", root.findViewById<EditText>(R.id.fixReturnOrgSelect))
-                formMap.set("returnUser", root.findViewById<EditText>(R.id.fixReturnUserSelect))
-                formMap.set("returnDayMin", root.findViewById<EditText>(R.id.fixReturnDayMin))
-                formMap.set("returnDayMax", root.findViewById<EditText>(R.id.fixReturnDayMax))
-                formMap.set("itemOrg", root.findViewById<EditText>(R.id.fixItemOrgSelect))
-                formMap.set("itemUser", root.findViewById<EditText>(R.id.fixItemUserSelect))
-                formMap.set("itemDayMin", root.findViewById<EditText>(R.id.fixItemDayMin))
-                formMap.set("itemDayMax", root.findViewById<EditText>(R.id.fixItemDayMax))
-
-
-                //検品日付最小値タップ処理
-                val kenpinDayMin = formMap["kenpinDayMin"]
-                if (kenpinDayMin != null) {
-                    kenpinDayMin.setOnClickListener {
-                        setDateTimeAction(kenpinDayMin)
-                    }
-                }
-
-                //検品最大値タップ時処理
-                val kenpinDayMax = formMap["kenpinDayMax"]
-                if (kenpinDayMax != null) {
-                    kenpinDayMax.setOnClickListener {
-                        setDateTimeAction(kenpinDayMax)
-                    }
-                }
-
-                //持ち出し日付最小値タップ処理
-                val takeOutDayMin = formMap["takeOutDayMin"]
-                if (takeOutDayMin != null) {
-                    takeOutDayMin.setOnClickListener {
-                        setDateTimeAction(takeOutDayMin)
-                    }
-                }
-
-                //持ち出し日付最大値タップ処理
-                val takeOutDayMax = formMap["takeOutDayMax"]
-                if (takeOutDayMax != null) {
-                    takeOutDayMax.setOnClickListener {
-                        setDateTimeAction(takeOutDayMax)
-                    }
-                }
-
-                //返却最小値タップ処理
-                val returnDayMin = formMap["returnDayMin"]
-                if (returnDayMin != null) {
-                    returnDayMin.setOnClickListener {
-                        setDateTimeAction(returnDayMin)
-                    }
-                }
-
-                //返却最大値タップ処理
-                val returnDayMax = formMap["returnDayMax"]
-                if (returnDayMax != null) {
-                    returnDayMax.setOnClickListener {
-                        setDateTimeAction(returnDayMax)
-                    }
-                }
-
-                //最小値
-                val ItemDayMin = formMap["itemDayMin"]
-                if (ItemDayMin != null) {
-                    ItemDayMin.setOnClickListener {
-                        setDateTimeAction(ItemDayMin)
-                    }
-                }
-
-                //返却最大値タップ処理
-                val ItemDayMax = formMap["itemDayMax"]
-                if (ItemDayMax != null) {
-                    ItemDayMax.setOnClickListener {
-                        setDateTimeAction(ItemDayMax)
-                    }
-                }
-
-
                 //検索ボタンタップ処理
-                val btnSearch = root.findViewById<Button>(R.id.fixSerchBtn)
                 btnSearch.setOnClickListener {
 
                     if (errorList.size > 0) {
@@ -184,11 +193,30 @@ class FixtureSearchFragment : Fragment() {
                         startSearch()
                     }
                 }
+            }else{
+                throw java.lang.Exception("Failed to receive internal data ")
             }
         }catch (e:Exception){
+            val errorMessage = msg.createErrorMessage("getFail")
+            Toast.makeText(activity, errorMessage, toastErrorLen).show()
+            btnSearch.setOnClickListener {
+                AlertDialog.Builder(activity)
+                    .setTitle("メッセージ")
+                    .setMessage("内部データの取得に失敗しました。検索を実行できません")
+                    .setPositiveButton("YES") { dialog, which ->
+                        //TODO YESを押したときの処理
+                    }
+                    .show()
 
+            }
         }
+
         return root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        scrollView.hideKeyboardWhenTouch(this)
     }
 
 
@@ -242,7 +270,6 @@ class FixtureSearchFragment : Fragment() {
      */
     private fun setDateTimeAction(kenpinDay:EditText){
         val dtp = DatePickerDialog(getContext()!!, DatePickerDialog.OnDateSetListener{ view, y, m, d ->
-            Toast.makeText(activity, "日付を選択しました${y}/${m+1}/${d}", Toast.LENGTH_LONG).show()
             //フォーマットを作成
             kenpinDay.setText(String.format("%d/%02d/%02d",y,m+1,d))
         }, year,month,day)

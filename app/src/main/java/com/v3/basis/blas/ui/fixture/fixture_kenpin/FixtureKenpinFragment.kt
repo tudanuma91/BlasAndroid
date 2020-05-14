@@ -12,9 +12,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureActivity
+import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.checkPermissions
 import com.v3.basis.blas.ui.ext.getStringExtra
@@ -31,13 +33,17 @@ class FixtureKenpinFragment : Fragment() {
     companion object {
         const val REQUEST_CAMERA_PERMISSION:Int = 1
     }
-    private var token:String? = null
+    private lateinit var token: String
+    private lateinit var projectId: String
+    private lateinit var projectName: String
+    private var parentChk :Boolean = true
+    private val toastErrorLen = Toast.LENGTH_LONG
     private var cameraManager: CameraManager? = null
     private var cameraID: String? = null
     private var SW: Boolean = false
     private var oldResult:String? =null
-    private var projectName:String? =null
-    private var projectId:String? = null
+    private var msg = BlasMsg()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,10 +56,16 @@ class FixtureKenpinFragment : Fragment() {
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
 
-        token = getStringExtra("token")
-        projectId = getStringExtra("project_id")
-        projectName = getStringExtra("project_name")
-
+        val extras = activity?.intent?.extras
+        if (extras?.getString("token") != null) {
+            token = extras.getString("token").toString()
+        }
+        if (extras?.getString("project_id") != null) {
+            projectId = extras.getString("project_id").toString()
+        }
+        if (extras?.getString("project_name") != null) {
+            projectName = extras.getString("project_name").toString()
+        }
         return inflater.inflate(R.layout.fragment_fixture_kenpin, container, false)
     }
 
@@ -62,8 +74,6 @@ class FixtureKenpinFragment : Fragment() {
 
         requireActivity().checkPermissions()
 
-        //プロジェクト名をここで入れる。
-        kenpin_project_name.text = projectName
 
 
         //ライト光るボタン実装
@@ -93,10 +103,16 @@ class FixtureKenpinFragment : Fragment() {
         }
         try {
             if(token != null && projectId != null && projectName != null) {
+                //プロジェクト名をここで入れる。
+                kenpin_project_name.text = projectName
                 initQRCamera()
+            }else{
+                throw Exception("Failed to receive internal data ")
             }
         }catch (e:Exception){
-
+            kenpin_project_name.text = "内部データの取得に失敗しました。検品を実行できません"
+            val errorMessage = msg.createErrorMessage("getFail")
+            Toast.makeText(activity, errorMessage, toastErrorLen).show()
         }
     }
 

@@ -3,6 +3,7 @@ package com.v3.basis.blas.ui.item.item_search_result
 
 import android.app.AlertDialog
 import android.graphics.Color
+import android.icu.lang.UCharacter
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -30,16 +31,26 @@ import java.lang.Exception
  */
 class ItemSearchResultFragment : Fragment() {
 
-    var token:String? = null
-    var projectId:String? = null
-    var freeWord :String? = ""
-    var fldSize : String? = null
-    var dateTimeCol:String = ""
-    var checkValueCol:String = ""
-    private var normalShow = true
+    //var token:String? = null
+    //var projectId:String? = null
+   // var freeWord :String? = ""
+    //var fldSize : String? = null
+    //var dateTimeCol:String = ""
+    //var checkValueCol:String = ""
     private var endShow = false
     private var progressBarFlg = false
     private lateinit var rootView:View
+    lateinit var token:String
+    lateinit var projectId :String
+    lateinit var freeWord:String
+    lateinit var fldSize : String
+    private var dateTimeCol : String = ""
+    private var checkValueCol:String = ""
+    private var msg = BlasMsg()
+    private val toastErrorLen = Toast.LENGTH_LONG
+    private var toastSuccessLen = Toast.LENGTH_SHORT
+
+    private var chkReceiveData = true
 
     private val findValueMap:MutableMap<String,String?> = mutableMapOf()
     private val fieldMap: MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
@@ -70,41 +81,46 @@ class ItemSearchResultFragment : Fragment() {
         //初期値の取得
         val root = inflater.inflate(R.layout.fragment_item_search_result, container, false)
         rootView = root
-        if(getStringExtra("token") != null){
-            token = getStringExtra("token")
+
+        val extras = activity?.intent?.extras
+        if(extras?.getString("token") != null){
+            token = extras.getString("token").toString()
         }
-        if(getStringExtra("project_id") != null){
-            projectId = getStringExtra("project_id")
+        if(extras?.getString("project_id") != null){
+            projectId = extras.getString("project_id").toString()
         }
-        if(getStringExtra("fldSize")!= null){
-            fldSize = getStringExtra("fldSize")
+        if(extras?.getString("fldSize")!= null){
+            fldSize = extras.getString("fldSize").toString()
         }
-        if(getStringExtra("freeWord")!=null){
-            freeWord = getStringExtra("freeWord")
+        if(extras?.getString("freeWord")!=null){
+            freeWord = extras.getString("freeWord").toString()
             findValueMap.set("freeWord",freeWord)
         }
-        if(getStringExtra("dateTimeCol")!= null){
-            dateTimeCol = getStringExtra("dateTimeCol").toString()
+        if(extras?.getString("dateTimeCol")!= null){
+            dateTimeCol = extras.getString("dateTimeCol").toString()
         }
-        if(getStringExtra("checkValueCol")!= null){
-            checkValueCol = getStringExtra("checkValueCol").toString()
+        if(extras?.getString("checkValueCol")!= null){
+            checkValueCol = extras.getString("checkValueCol").toString()
         }
-        for (idx in 1 .. fldSize!!.toInt()){
-            findValueMap.set("fld${idx}",getStringExtra("fld${idx}"))
+        try {
+            Log.d("ログテスト" ,"fldSize = ${fldSize}")
+            if(fldSize == "null"){
+                throw Exception("Failed to get internal data")
+            }
+            else if(fldSize != null) {
+                for (idx in 1..fldSize.toInt()) {
+                    findValueMap.set("fld${idx}", getStringExtra("fld${idx}"))
+                }
+            }
+        }catch (e:Exception){
+            val errorMessage = msg.createErrorMessage("getFail")
+            Toast.makeText(activity, errorMessage, toastErrorLen).show()
+            chkReceiveData = false
         }
 
-        val normalSwitch = rootView.findViewById<Switch>(R.id.switch_normal_result)
         val endSwitch = rootView.findViewById<Switch>(R.id.switch_end_result)
         val viewBtn = rootView.findViewById<Button>(R.id.button_view_result)
-        normalSwitch.setOnCheckedChangeListener{ _, isChecked->
-            if(isChecked){
-                Log.d("デバック管理","チェックされた。ONになった")
-                normalShow = true
-            }else{
-                Log.d("デバック管理","チェックされた。OFFになった")
-                normalShow = false
-            }
-        }
+
 
         endSwitch.setOnCheckedChangeListener{_ ,isChecked->
             if(isChecked){
@@ -133,24 +149,36 @@ class ItemSearchResultFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.d("lifeCycle", "onViewCreated")
-        try {
-            if(token != null && fldSize != null && findValueMap != null && dateTimeCol != null && checkValueCol != null) {
-                //リサイクラ-viewを取得
-                //基本的にデータはまだ到着していないため、空のアクティビティとadapterだけ設定しておく
-                progressBarFlg = true
+        if(chkReceiveData) {
+            try {
+                Log.d("デバック管理","分岐開始")
+                Log.d("デバック管理","findValueMap => ${findValueMap.isEmpty()}")
+                if (token != null && fldSize != null && findValueMap.isNotEmpty() ) {
+                    //リサイクラ-viewを取得
+                    //基本的にデータはまだ到着していないため、空のアクティビティとadapterだけ設定しておく
+                    Log.d("デバック管理","こっちの処理乗った")
+
+                    progressBarFlg = true
+                    chkProgress(progressBarFlg, rootView)
+                    val recyclerView = recyclerView
+                    recyclerView.setHasFixedSize(true)
+                    recyclerView.layoutManager = LinearLayoutManager(activity)
+                    recyclerView.adapter = adapter
+
+                    //呼ぶタイミングを確定させる！！
+                    val payload2 = mapOf("token" to token, "project_id" to projectId)
+                    BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
+                    BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
+                }else{
+                    throw Exception("Failed to receive internal data ")
+                }
+            } catch (e: Exception) {
+                Log.d("デバック管理","エラー処理${e}")
+                progressBarFlg = false
                 chkProgress(progressBarFlg, rootView)
-                val recyclerView = recyclerView
-                recyclerView.setHasFixedSize(true)
-                recyclerView.layoutManager = LinearLayoutManager(activity)
-                recyclerView.adapter = adapter
-
-                //呼ぶタイミングを確定させる！！
-                val payload2 = mapOf("token" to token, "project_id" to projectId)
-                BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
-                BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
+                val errorMessage = msg.createErrorMessage("getFail")
+                Toast.makeText(activity, errorMessage, toastErrorLen).show()
             }
-        }catch (e:Exception){
-
         }
 
     }
@@ -255,7 +283,6 @@ class ItemSearchResultFragment : Fragment() {
     }
 
     private fun  createCardManager(list:MutableList<MutableMap<String,String?>>,colMax : Int,mode:String){
-        Log.d("デバック処理","ノーマルshowの値=>${normalShow}")
         Log.d("デバック処理","エンドshowの値=>${endShow}")
         if(mode == "New"){
             list.forEach {
@@ -275,7 +302,7 @@ class ItemSearchResultFragment : Fragment() {
             dataList.clear()
 
             //以下はカードを作成する処理。画面上部のスイッチの状態によって処理内容を変更する
-            if (normalShow && endShow) {
+            if (endShow) {
                 list.forEach {
                     val valueFlg = it["endFlg"].toString()
                     val item_id = it["item_id"].toString()
@@ -284,17 +311,7 @@ class ItemSearchResultFragment : Fragment() {
                     createCard(item_id, text,valueFlg)
                 }
 
-            } else if (!normalShow && endShow) {
-                list.forEach {
-                    val valueFlg = it["endFlg"].toString()
-                    if (valueFlg == FieldType.END) {
-                        val item_id = it["item_id"].toString()
-                        var text: String? = ""
-                        text = createCardText(text, it, colMax)
-                        createCard(item_id, text,valueFlg)
-                    }
-                }
-            } else if (normalShow && !endShow) {
+            } else {
                 list.forEach {
                     val valueFlg = it["endFlg"].toString()
                     if (valueFlg == FieldType.NORMAL) {
@@ -304,8 +321,6 @@ class ItemSearchResultFragment : Fragment() {
                         createCard(item_id, text,valueFlg)
                     }
                 }
-
-            } else {
 
             }
             //adapterにリストの内容を変更したことを伝える処理

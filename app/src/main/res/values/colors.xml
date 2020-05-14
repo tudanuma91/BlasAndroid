@@ -6,6 +6,6 @@
     <color name="colorAccent">#D81B60</color>
     <color name="colorMain">#FFEFFF</color>
     <color name="colorText">#000000</color>
-    <color name="colorWhite">#ffffffff</color>
+    <color name="colorWhite">#FFFFFF</color>
 
 </resources>

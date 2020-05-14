@@ -22,34 +22,44 @@ import com.v3.basis.blas.ui.terminal.fixture.project_list_view.RowModel
 import com.v3.basis.blas.ui.terminal.fixture.project_list_view.ViewAdapterAdapter
 import kotlinx.android.synthetic.main.fragment_project.*
 import org.json.JSONObject
+import java.lang.Exception
 
 class FixtureFragment : Fragment() {
 
     private lateinit var fixtureViewModel: FixtureViewModel
-    private var token: String? = null
+    lateinit var token:String
+    private var msg = BlasMsg()
+    private val toastErrorLen = Toast.LENGTH_LONG
+    private var toastSuccessLen = Toast.LENGTH_SHORT
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         fixtureViewModel = ViewModelProviders.of(this).get(FixtureViewModel::class.java)
-        token = getStringExtra("token")
+
+        val extras = activity?.intent?.extras
+        if(extras?.getString("token") != null ) {
+            token = extras.getString("token").toString() //トークンの値を取得
+        }
 
         return inflater.inflate(R.layout.fragment_fixture, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val payload = mapOf("token" to token)
-        BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
-    }
-
-
-    private inner class ItemClickListener : View.OnClickListener{
-        override fun onClick(v: View?) {
-            //ログイン処理開始
-            val intent = Intent(activity, FixtureActivity::class.java)
-            startActivity(intent)
+        try {
+            if(token != null) {
+                val payload = mapOf("token" to token)
+                BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
+            }else{
+                throw Exception("Failed to receive internal data ")
+            }
+        }catch (e:Exception){
+            val errorMessage = msg.createErrorMessage("getFail")
+            Toast.makeText(activity, errorMessage, toastErrorLen).show()
         }
     }
+
+
 
     private fun projectSearchSuccess(result:JSONObject) {
         val newMap = RestHelper().createProjectList(result)
@@ -57,7 +67,6 @@ class FixtureFragment : Fragment() {
         val adapter = ViewAdapterAdapter(projectList,
             object : ViewAdapterAdapter.ListListener {
                 override fun onClickRow(tappedView: View, rowModel: RowModel) {
-                    Toast.makeText(activity, rowModel.title, Toast.LENGTH_LONG).show()
                     Log.d(
                         "DataManagement",
                         "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
@@ -84,8 +93,8 @@ class FixtureFragment : Fragment() {
         var message: String? = null
 
         message = BlasMsg().getMessage(error_code,aplCode)
+        Toast.makeText(activity, message, toastErrorLen).show()
 
-        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
         val intent = Intent(activity, TerminalActivity::class.java)
         //intent.putExtra("token",token)
         startActivity(intent)

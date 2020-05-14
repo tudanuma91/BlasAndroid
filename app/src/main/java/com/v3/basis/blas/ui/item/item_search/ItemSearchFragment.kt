@@ -28,6 +28,8 @@ import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.ext.addTitle
+import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
+import kotlinx.android.synthetic.main.fragment_item_search.*
 import org.json.JSONObject
 import java.lang.Exception
 import java.util.*
@@ -42,6 +44,11 @@ import kotlin.concurrent.timerTask
  * create an instance of this fragment.
  */
 class ItemSearchFragment : Fragment() {
+    private var receiveData : Boolean = true
+    private var msg = BlasMsg()
+    private val toastErrorLen = Toast.LENGTH_LONG
+    private var toastSuccessLen = Toast.LENGTH_SHORT
+
     //文字型またはview型
     private lateinit var token: String
     private lateinit var projectId: String
@@ -80,7 +87,6 @@ class ItemSearchFragment : Fragment() {
         val extras = activity?.intent?.extras
         if (extras?.getString("token") != null) {
             token = extras.getString("token").toString()
-            Log.d("token_item", "${token}")
         }
         if (extras?.getString("project_id") != null) {
             projectId = extras.getString("project_id").toString()
@@ -88,10 +94,15 @@ class ItemSearchFragment : Fragment() {
         try {
             if(token != null && projectId != null && activity != null) {
                 formAction = FormActionDataSearch(token, activity!!)
+            }else{
+                throw java.lang.Exception("Failed to receive internal data ")
             }
         }catch (e:Exception){
-
+            receiveData = false
+            val errorMessage = msg.createErrorMessage("getFail")
+            Toast.makeText(activity, errorMessage, toastErrorLen).show()
         }
+        //ここでもエスケープ処理追加
         val root= inflater.inflate(R.layout.fragment_item_search, container, false)
         return root
     }
@@ -100,24 +111,14 @@ class ItemSearchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         rootView = view.findViewById<LinearLayout>(R.id.item_search_liner)
 
-        try {
-            if (token != null && projectId != null && activity != null) {
-                val space = formAction.createSpace(layoutParamsSpace)
-                val title = formAction.createFreeWordSearchTitle(layoutParams)
-                val freeWordSearch = formAction.createFreeWordSearch(layoutParams)
-                editMap.set(key = "col_${0}", value = freeWordSearch)
-                rootView.addView(space)
-                rootView.addView(title)
-                rootView.addView(freeWordSearch)
-                titleMap.set(key = "freeWord", value = title)
-
-                //レイアウトの設置位置の設定
-                val payload = mapOf("token" to token, "project_id" to projectId)
-                BlasRestField(payload, ::getSuccess, ::getFail).execute()
-            }
-        } catch (e:Exception){
+        if(receiveData){
+            //レイアウトの設置位置の設定
+            val payload = mapOf("token" to token, "project_id" to projectId)
+            BlasRestField(payload, ::getSuccess, ::getFail).execute()
 
         }
+
+        search_scroller.hideKeyboardWhenTouch(this)
     }
 
     private fun getSuccess(result:JSONObject?) {
@@ -125,6 +126,17 @@ class ItemSearchFragment : Fragment() {
         var cnt = 1
         var checkCount = 1
         if (result != null) {
+
+            //一番上。フリーワード検索を表示する処理
+            val space = formAction.createSpace(layoutParamsSpace)
+            val title = formAction.createFreeWordSearchTitle(layoutParams)
+            val freeWordSearch = formAction.createFreeWordSearch(layoutParams)
+            editMap.set(key = "col_${0}", value = freeWordSearch)
+            rootView.addView(space)
+            rootView.addView(title)
+            rootView.addView(freeWordSearch)
+            titleMap.set(key = "freeWord", value = title)
+
             //colによる並び替えが発生しているため、ソートを行う
             val sortFormFieldList = RestHelper().createFormField(result)
             val test = sortFormFieldList.values.sortedBy { it["field_col"] !!.toInt()}
@@ -399,7 +411,6 @@ class ItemSearchFragment : Fragment() {
     private fun setClickDateTime(formPart: EditText): EditText {
         formPart.setOnClickListener{
             val dtp = DatePickerDialog(getContext()!!, DatePickerDialog.OnDateSetListener{ view, y, m, d ->
-                Toast.makeText(activity, "日付を選択しました${y}/${m+1}/${d}", Toast.LENGTH_LONG).show()
                 //フォーマットを作成
                 formPart.setText(String.format("%d/%02d/%02d",y,m+1,d))
             }, year,month,day)
@@ -416,7 +427,6 @@ class ItemSearchFragment : Fragment() {
         formPart.setOnClickListener{
             val tp = TimePickerDialog(context,
                 TimePickerDialog.OnTimeSetListener{ view, hour, minute->
-                    Toast.makeText(activity, "時間を選択しました${hour}:${minute}", Toast.LENGTH_LONG).show()
                     formPart.setText(String.format("%02d:%02d",hour,minute))
                 },hour,minute,true)
             tp.show()

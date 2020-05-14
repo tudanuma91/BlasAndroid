@@ -25,6 +25,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
 import com.v3.basis.blas.blasclass.app.BlasMsg
@@ -84,8 +85,23 @@ class ItemImageFragment : Fragment() {
     private var message:String? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val root = inflater.inflate(R.layout.fragment_item_image, container, false)
+        val button = root.findViewById<FloatingActionButton>(R.id.img_fab)
 
-        return inflater.inflate(R.layout.fragment_item_image, container, false)
+        button.setOnClickListener { view ->
+            //setup2を元に戻してからpushすること
+            viewModel.setup(token, projectId, itemId)
+            AlertDialog.Builder(activity)
+                .setTitle("メッセージ")
+                .setMessage("リロードしました")
+                .setPositiveButton("YES") { dialog, which ->
+                    //TODO YESを押したときの処理
+                }
+                .show()
+        }
+
+
+        return root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -94,6 +110,7 @@ class ItemImageFragment : Fragment() {
 
         viewModel = ViewModelProviders.of(this).get(ItemImageViewModel::class.java)
         viewModel.setup(token, projectId, itemId)
+
 
         viewModel.receiveImageFields
             .observeOn(AndroidSchedulers.mainThread())

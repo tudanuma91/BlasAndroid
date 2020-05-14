@@ -38,6 +38,7 @@ class ItemImageViewModel : ViewModel() {
     private lateinit var images: ItemImageModel
     private var disposable = CompositeDisposable()
 
+
     fun setup(token: String, projectId: String, itemId: String) {
 
         this.token = token
@@ -55,6 +56,7 @@ class ItemImageViewModel : ViewModel() {
 
         fun error(errorCode: Int ,aplCode:Int) {
             errorAPI.onNext(errorCode)
+            Log.d("取得失敗","画像の取得失敗")
         }
 
         val payload2 = mapOf("token" to token, "project_id" to projectId)
