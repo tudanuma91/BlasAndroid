@@ -216,7 +216,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
 
         var paramData: String = ""
         for ((k, v) in payload) {
-            paramData += "${k}=${v}&"
+            paramData += "${k}=${URLEncoder.encode(v,"UTF-8")}&"
         }
         paramData = paramData.substring(0, paramData.length - 1)
 
