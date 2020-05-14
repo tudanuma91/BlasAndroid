@@ -11,6 +11,7 @@ import android.os.Handler
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -37,6 +38,9 @@ import android.widget.RadioGroup
 import androidx.core.app.NavUtils
 import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
+import com.v3.basis.blas.ui.ext.closeSoftKeyboard
+import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
+import kotlinx.android.synthetic.main.fragment_item_create.*
 
 
 /**
@@ -111,7 +115,7 @@ class ItemCreateFragment : Fragment() {
             val errorMessage = msg.createErrorMessage("getFail")
             Toast.makeText(activity, errorMessage, toastErrorLen).show()
         }
-        //この時もう処理しないこと！！
+
         return inflater.inflate(R.layout.fragment_item_create, container, false)
     }
 
@@ -131,6 +135,7 @@ class ItemCreateFragment : Fragment() {
             BlasRestField(payload, ::getSuccess, ::getFail).execute()
             BlasRestUser(payload2, ::userGetSuccess, ::userGetFail).execute()
         }
+        create_scroller.hideKeyboardWhenTouch(this)
     }
 
     private fun getSuccess(result: JSONObject?) {

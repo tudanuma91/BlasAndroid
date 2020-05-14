@@ -8,28 +8,26 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-
+import androidx.fragment.app.Fragment
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.QRActivity
-import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_QUEUE_SAVE
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.BTN_SAVE
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.formaction.FormActionDataEdit
 import com.v3.basis.blas.blasclass.helper.RestHelper
-import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.blasclass.rest.BlasRestUser
 import com.v3.basis.blas.ui.ext.addTitle
+import com.v3.basis.blas.ui.ext.closeSoftKeyboard
+import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
+import kotlinx.android.synthetic.main.fragment_item_edit.*
 import org.json.JSONObject
-import java.lang.Exception
-import java.lang.reflect.Field
 import java.util.*
 
 /**
@@ -150,6 +148,8 @@ class ItemEditFragment : Fragment() {
         }else{
             Log.d("取得失敗","トークンの取得に失敗しました")
         }
+
+        edit_scroller.hideKeyboardWhenTouch(this)
     }
 
     /**

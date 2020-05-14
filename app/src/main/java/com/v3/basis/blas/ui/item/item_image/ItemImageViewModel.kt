@@ -28,6 +28,7 @@ class ItemImageViewModel : ViewModel() {
     val errorAPI: PublishSubject<Int> = PublishSubject.create()
     val receiveImageFields: PublishSubject<ImageFieldModel> = PublishSubject.create()
     val uploadAction: PublishSubject<String> = PublishSubject.create()
+    val deleteAction: PublishSubject<ItemImageCellItem> = PublishSubject.create()
 
     private lateinit var token: String
     private lateinit var projectId: String
@@ -102,7 +103,8 @@ class ItemImageViewModel : ViewModel() {
         BlasRestImage("download", payload, ::success, ::error).execute()
     }
 
-    fun deleteClick(item: ItemImageCellItem) {
+    fun deleteClick(item: ItemImageCellItem) = deleteAction.onNext(item)
+    fun deleteItem(item: ItemImageCellItem) {
 
         item.loading.set(false)
         fun success(json: JSONObject) {

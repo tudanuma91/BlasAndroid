@@ -23,6 +23,8 @@ import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
+import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
+import kotlinx.android.synthetic.main.fragment_fixture_search.*
 import org.json.JSONObject
 import java.lang.Exception
 import java.util.*
@@ -208,7 +210,13 @@ class FixtureSearchFragment : Fragment() {
 
             }
         }
+
         return root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        scrollView.hideKeyboardWhenTouch(this)
     }
 
 

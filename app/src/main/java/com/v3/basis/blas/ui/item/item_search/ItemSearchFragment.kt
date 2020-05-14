@@ -28,6 +28,8 @@ import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.ext.addTitle
+import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
+import kotlinx.android.synthetic.main.fragment_item_search.*
 import org.json.JSONObject
 import java.lang.Exception
 import java.util.*
@@ -115,6 +117,8 @@ class ItemSearchFragment : Fragment() {
             BlasRestField(payload, ::getSuccess, ::getFail).execute()
 
         }
+
+        search_scroller.hideKeyboardWhenTouch(this)
     }
 
     private fun getSuccess(result:JSONObject?) {
