@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.JsonArray
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemImageActivity
+import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
@@ -36,10 +37,13 @@ import org.json.JSONObject
  * A simple [Fragment] subclass.
  */
 class ItemViewFragment : Fragment() {
-    var token:String? = null
-    var projectId:String? = null
+    lateinit var token:String
     private var projectNames:String? = null
-    private var normalShow = true
+    lateinit var projectId :String
+    private var msg = BlasMsg()
+    private val toastErrorLen = Toast.LENGTH_LONG
+    private var toastSuccessLen = Toast.LENGTH_SHORT
+
     private var endShow = false
     private var progressBarFlg = false
     private var parseNum = 10
@@ -73,7 +77,6 @@ class ItemViewFragment : Fragment() {
 
         override fun onClickImage(itemId: String?) {
 
-            Log.d("test","$itemId")
             val context = requireContext()
             val intent = ItemImageActivity.createIntent(context, token, projectId, itemId)
 
@@ -86,24 +89,23 @@ class ItemViewFragment : Fragment() {
 
         val root = inflater.inflate(R.layout.fragment_item_view, container, false)
         rootView = root
-        token = getStringExtra("token")
-        projectId = getStringExtra("project_id")
-        projectNames = getStringExtra("projectName")
+
+        val extras = activity?.intent?.extras
+        if(extras?.getString("token") != null ) {
+            token = extras.getString("token").toString() //トークンの値を取得
+        }
+        if(extras?.getString("project_id") != null ) {
+            projectId = extras.getString("project_id").toString() //トークンの値を取得
+        }
+        if(extras?.getString("projectName") != null ) {
+            projectNames = extras.getString("projectName") //トークンの値を取得
+        }
+
         progressBarFlg = true
         chkProgress(progressBarFlg,root)
 
-        val normalSwitch = rootView.findViewById<Switch>(R.id.switch_normal)
         val endSwitch = rootView.findViewById<Switch>(R.id.switch_end_flg)
         val viewBtn = rootView.findViewById<Button>(R.id.button_view)
-        normalSwitch.setOnCheckedChangeListener{ _, isChecked->
-            if(isChecked){
-                Log.d("デバック管理","チェックされた。ONになった")
-                normalShow = true
-            }else{
-                Log.d("デバック管理","チェックされた。OFFになった")
-                normalShow = false
-            }
-        }
 
         endSwitch.setOnCheckedChangeListener{_ ,isChecked->
             if(isChecked){
@@ -116,11 +118,10 @@ class ItemViewFragment : Fragment() {
         }
 
         viewBtn.setOnClickListener{
-            Log.d("デバック管理","HEllo world")
             if(progressBarFlg){
                 Log.d("デバック管理","処理させない。ぐるぐるしているから")
             }else{
-                Log.d("デバック管理","いいっすよ！！！")
+                Log.d("デバック管理","処理開始")
                 //ぐるぐるを呼ぶ
                 progressBarFlg = true
                 chkProgress(progressBarFlg,rootView)
@@ -210,13 +211,20 @@ class ItemViewFragment : Fragment() {
 
         //呼ぶタイミングを確定させる！！
         try {
-            progressBarFlg = true
-            chkProgress(progressBarFlg, rootView)
-            val payload2 = mapOf("token" to token, "project_id" to projectId)
-            BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
+            Log.d("プロジェクト名","プロジェクト名=>${projectNames}")
+            if(token != null || projectId != null || projectNames != null) {
+                progressBarFlg = true
+                chkProgress(progressBarFlg, rootView)
+                val payload2 = mapOf("token" to token, "project_id" to projectId)
+                BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
+            }else{
+                throw java.lang.Exception("Failed to receive internal data ")
+            }
         }catch (e:Exception){
-            //::TODO:: ここエラー内容分岐すること（可能性としてはtokenの受け渡し失敗等）
-            Log.d("エラー","エラー発生:${e}")
+            progressBarFlg = false
+            chkProgress(progressBarFlg, rootView)
+            val errorMessage = msg.createErrorMessage("getFail")
+            Toast.makeText(activity, errorMessage, toastErrorLen).show()
         }
     }
 
@@ -239,18 +247,6 @@ class ItemViewFragment : Fragment() {
             setAdapter()
         }
     }
-    /*
-    private fun itemRecv(result: JSONObject) {
-        itemListAll.clear()
-        jsonItemList.clear()
-
-        val colMax = fieldMap.size
-        val itemInfo = helper.createItemList(jsonItemList, colMax )
-        itemListAll.addAll(itemInfo)
-
-        setAdapter()
-    }
-     */
 
     /**
      * フィールド取得時
@@ -273,25 +269,14 @@ class ItemViewFragment : Fragment() {
      * フィールド取得失敗時
      */
     private fun fieldRecvError(errorCode: Int , aplCode:Int) {
+        Log.d("itemViewFragment", "カラム取得失敗")
 
         var message:String? = null
 
-        when(errorCode) {
-            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
-                message = getString(R.string.record_not_found)
-            }
-            BlasRestErrCode.NETWORK_ERROR -> {
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, errorCode)
-            }
-        }
+        message = BlasMsg().getMessage(errorCode,aplCode)
 
         handler.post {
-            Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+            Toast.makeText(getActivity(), message, toastErrorLen).show()
         }
         progressBarFlg = false
         chkProgress(progressBarFlg,rootView)
@@ -301,25 +286,14 @@ class ItemViewFragment : Fragment() {
      * データ取得失敗時
      */
     private fun itemRecvError(errorCode: Int , aplCode:Int) {
-        Log.d("aaaaaaa", "失敗")
+        Log.d("itemViewFragment", "データ取得失敗")
 
         var message:String? = null
 
-        when(errorCode) {
-            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
-                message = getString(R.string.record_not_found)
-            }
-            BlasRestErrCode.NETWORK_ERROR -> {
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, errorCode)
-            }
-        }
+        message = BlasMsg().getMessage(errorCode,aplCode)
+
         handler.post {
-            Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+            Toast.makeText(getActivity(), message, toastErrorLen).show()
         }
 
         //エラーのため、データを初期化する
@@ -372,10 +346,10 @@ class ItemViewFragment : Fragment() {
      *
      */
     private fun  createCardManager(list:MutableList<MutableMap<String,String?>>,colMax : Int){
-        Log.d("デバック処理","ノーマルshowの値=>${normalShow}")
         Log.d("デバック処理","エンドshowの値=>${endShow}")
-        if (normalShow && endShow) {
-            Log.d("cardManager","1っつ目")
+
+        if (endShow) {
+            Log.d("cardManager","ゴミ箱非表示")
             list.forEach {
                 val valueFlg = it["endFlg"].toString()
                 val item_id = it["item_id"].toString()
@@ -383,33 +357,19 @@ class ItemViewFragment : Fragment() {
                 text = createCardText(text, it, colMax)
                 createCard(item_id, text,valueFlg)
             }
-
-        } else if (!normalShow && endShow) {
-            Log.d("cardManager","2っつ目")
-            list.forEach {
-                val valueFlg = it["endFlg"].toString()
-                if (valueFlg == FieldType.END) {
-                    val item_id = it["item_id"].toString()
-                    var text: String? = ""
-                    text = createCardText(text, it, colMax)
-                    createCard(item_id, text,valueFlg)
-                }
-            }
-        } else if (normalShow && !endShow) {
-            Log.d("cardManager","3っつ目")
+        } else {
+            Log.d("cardManager","ゴミ箱非表示")
             list.forEach {
                 val valueFlg = it["endFlg"].toString()
                 if (valueFlg == FieldType.NORMAL) {
                     val item_id = it["item_id"].toString()
                     var text: String? = ""
                     text = createCardText(text, it, colMax)
-                    createCard(item_id, text,valueFlg)
+                    createCard(item_id, text, valueFlg)
                 }
             }
-
-        } else {
-
         }
+
     }
 
 
@@ -465,6 +425,7 @@ class ItemViewFragment : Fragment() {
         Log.d("チェック!!","dataListの値 => ${dataList}")
     }
 
+
     /**
      * Jsonをパースする関数。
      */
@@ -509,4 +470,10 @@ class ItemViewFragment : Fragment() {
     }
 
 
+
+    override fun onDestroyView() {
+        recyclerView.adapter = null
+        super.onDestroyView()
+    }
 }
+

@@ -23,14 +23,6 @@
             android:orientation="horizontal">
 
             <Switch
-                android:id="@+id/switch_normal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:checked="true"
-                android:text="@string/switch_normal" />
-
-            <Switch
                 android:id="@+id/switch_end_flg"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -60,7 +52,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:clickable="true"
-        android:src="@android:drawable/ic_menu_rotate"
+        android:src="@drawable/ic_refresh_black_24dp"
         app:layout_constraintBottom_toBottomOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="@+id/linearLayout"
         app:rippleColor="@color/colorWhite"

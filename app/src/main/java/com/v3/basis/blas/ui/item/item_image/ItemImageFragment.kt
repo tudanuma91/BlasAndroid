@@ -3,6 +3,7 @@ package com.v3.basis.blas.ui.item.item_image
 
 import android.Manifest.permission.*
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -24,7 +25,10 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
+import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.ui.item.item_image.adapter.AdapterCellItem
 import com.v3.basis.blas.ui.item.item_image.model.ImageFieldModel
@@ -78,11 +82,26 @@ class ItemImageFragment : Fragment() {
     private var deniedPermission = false
 
     private val disposables: CompositeDisposable = CompositeDisposable()
-    private var message:String = ""
+    private var message:String? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val root = inflater.inflate(R.layout.fragment_item_image, container, false)
+        val button = root.findViewById<FloatingActionButton>(R.id.img_fab)
 
-        return inflater.inflate(R.layout.fragment_item_image, container, false)
+        button.setOnClickListener { view ->
+            //setup2を元に戻してからpushすること
+            viewModel.setup(token, projectId, itemId)
+            AlertDialog.Builder(activity)
+                .setTitle("メッセージ")
+                .setMessage("リロードしました")
+                .setPositiveButton("YES") { dialog, which ->
+                    //TODO YESを押したときの処理
+                }
+                .show()
+        }
+
+
+        return root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -112,19 +131,9 @@ class ItemImageFragment : Fragment() {
         viewModel.errorAPI
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
-                when(it) {
-                    BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
-                        message = getString(R.string.record_not_found)
-                    }
-                    BlasRestErrCode.NETWORK_ERROR -> {
-                        //サーバと通信できません
-                        message = getString(R.string.network_error)
-                    }
-                    else-> {
-                        //サーバでエラーが発生しました(要因コード)
-                        message = getString(R.string.server_error, it)
-                    }
-                }
+
+                message = BlasMsg().getMessage(it,APL_OK)
+
                 Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
                 //Toast.makeText(requireContext(), "API Error ($it)", Toast.LENGTH_LONG).show()
             }
@@ -253,5 +262,10 @@ class ItemImageFragment : Fragment() {
                 viewModel.upload(bmp, mime, item, error)
             }
         }
+    }
+
+    override fun onDestroyView() {
+        recyclerView.adapter = null
+        super.onDestroyView()
     }
 }

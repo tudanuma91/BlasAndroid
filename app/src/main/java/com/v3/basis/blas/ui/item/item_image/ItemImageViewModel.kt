@@ -54,11 +54,15 @@ class ItemImageViewModel : ViewModel() {
 
         fun error(errorCode: Int ,aplCode:Int) {
             errorAPI.onNext(errorCode)
+            Log.d("取得失敗","画像の取得失敗")
         }
 
         val payload2 = mapOf("token" to token, "project_id" to projectId)
         BlasRestImageField(payload2, ::imageFieldSuccess, ::error).execute()
     }
+
+
+
 
     fun fetchImage(item: ItemImageCellItem) {
 

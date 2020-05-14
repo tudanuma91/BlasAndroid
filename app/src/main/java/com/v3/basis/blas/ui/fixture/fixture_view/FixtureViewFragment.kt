@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.canTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.finishInstall
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.notTakeOut
@@ -36,12 +37,14 @@ import java.lang.Exception
  */
 class FixtureViewFragment : Fragment() {
 
-    private var token:String? = null
-    private var project_id:String? = null
+    lateinit var token:String
+    lateinit var project_id:String
     private var dataListAll = mutableListOf<RowModel>()
     private var dataList = mutableListOf<RowModel>()
     private val valueMap : MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
     private var valueSize :Int = 0
+    private var msg = BlasMsg()
+    private val toastErrorLen = Toast.LENGTH_LONG
 
     private var currentIndex: Int = 0
     companion object {
@@ -56,7 +59,6 @@ class FixtureViewFragment : Fragment() {
     private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
         override fun onClickRow(tappedView: View, rowModel: com.v3.basis.blas.ui.fixture.fixture_view.RowModel) {
             //カードタップ時の処理
-            Toast.makeText(activity, rowModel.title, Toast.LENGTH_LONG).show()
             Log.d(
                 "DataManagement",
                 "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
@@ -70,8 +72,13 @@ class FixtureViewFragment : Fragment() {
 
         super.onCreateView(inflater, container, savedInstanceState)
         Log.d("【onCreateView】","呼ばれた")
-        token = getStringExtra("token")
-        project_id = getStringExtra("project_id")
+        val extras = activity?.intent?.extras
+        if (extras?.getString("token") != null) {
+            token = extras.getString("token").toString()
+        }
+        if (extras?.getString("project_id") != null) {
+            project_id = extras.getString("project_id").toString()
+        }
 
         return inflater.inflate(R.layout.fragment_fixture_view, container, false)
     }
@@ -110,8 +117,13 @@ class FixtureViewFragment : Fragment() {
                     ::fixtureGetSuccess,
                     ::fixtureGetError
                 ).execute()
+            }else{
+                throw java.lang.Exception("Failed to receive internal data ")
             }
         }catch (e:Exception){
+            val errorMessage = msg.createErrorMessage("getFail")
+            Toast.makeText(activity, errorMessage, toastErrorLen).show()
+            progressBar.visibility = View.INVISIBLE
 
         }
     }
@@ -172,12 +184,6 @@ class FixtureViewFragment : Fragment() {
         }
         if(valueMap.isNotEmpty()) {
             valueMap.forEach {
-                /*val itemRecord = it
-                val colMax = valueMap.size
-                val item_id = it["item_id"]
-                var text: String? = "String"
-                var loopcnt = 1*/
-                Log.d("aaa","ここまで来たぞー！！")
                 var id = "1"
                 var text= "test"
                 //カラムの定義取得
@@ -209,19 +215,8 @@ class FixtureViewFragment : Fragment() {
     private fun fixtureGetError(errorCode: Int, aplCode:Int) {
 
         var message:String? = null
-        when(errorCode) {
-            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
-                message = getString(R.string.record_not_found)
-            }
-            BlasRestErrCode.NETWORK_ERROR -> {
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, errorCode)
-            }
-        }
+
+        message = BlasMsg().getMessage(errorCode,aplCode)
 
         Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
 
@@ -285,4 +280,8 @@ class FixtureViewFragment : Fragment() {
         }
     }
 
+    override fun onDestroyView() {
+        recyclerView.adapter = null
+        super.onDestroyView()
+    }
 }

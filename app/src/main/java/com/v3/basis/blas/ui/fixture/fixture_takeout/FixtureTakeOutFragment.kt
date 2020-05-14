@@ -122,6 +122,8 @@ class FixtureTakeOutFragment : Fragment() {
                 fragm = activity
                 requireActivity().checkPermissions()
                 initQRCamera()
+            }else{
+                throw java.lang.Exception("Failed to receive internal data ")
             }
         }catch (e:Exception){
 

@@ -42,9 +42,9 @@ class ItemActivity : AppCompatActivity() {
         //タイトルバーの名称を変更する処理
         val appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.navi_item_view,
-                R.id.navi_item_create,
-                R.id.navi_item_seach
+                R.id.navi_item_view, //データ一覧
+                R.id.navi_item_create, //データ新規作成
+                R.id.navi_item_seach //データ検索
                // R.id.navi_item_back
             )
         )
@@ -73,14 +73,19 @@ class ItemActivity : AppCompatActivity() {
                     return true
                 } else {
                     //  ルート以外の画面なら、ルート画面に遷移させる！
-                    val menu = PopupMenu(this, null).menu
-                    menuInflater.inflate(R.menu.bottom_navigation_menu_item, menu)
-                    NavigationUI.onNavDestinationSelected(menu.get(0), navController)
+                    transitionItemListScreen()
                 }
             }
             else -> return super.onOptionsItemSelected(item)
         }
         return true
+    }
+
+    fun transitionItemListScreen() {
+        val navController = findNavController(R.id.nav_host_fragment)
+        val menu = PopupMenu(this, null).menu
+        menuInflater.inflate(R.menu.bottom_navigation_menu_item, menu)
+        NavigationUI.onNavDestinationSelected(menu.get(0), navController)
     }
 
 

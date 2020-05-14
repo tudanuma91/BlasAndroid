@@ -34,7 +34,9 @@ import android.widget.TextView
 import android.widget.CheckBox
 import android.widget.RadioButton
 import android.widget.RadioGroup
-
+import androidx.core.app.NavUtils
+import com.v3.basis.blas.activity.ItemActivity
+import com.v3.basis.blas.blasclass.app.BlasMsg
 
 
 /**
@@ -46,6 +48,7 @@ class ItemCreateFragment : Fragment() {
     private lateinit var projectId: String
     private lateinit var rootView: LinearLayout
     private var parentChk :Boolean = true
+    private val toastErrorLen = Toast.LENGTH_LONG
 
     private var formInfoMap: MutableMap<String, MutableMap<String, String?>> = mutableMapOf()
     private var editMap: MutableMap<String, EditText?> = mutableMapOf()
@@ -63,7 +66,6 @@ class ItemCreateFragment : Fragment() {
     private val parentMap:MutableMap<String,MutableMap<String,String>> = mutableMapOf()
     private val selectValueMap:MutableMap<String,MutableList<String>> = mutableMapOf()
     private val valueIdColMap : MutableMap<String,String> = mutableMapOf()
-    private val helper:RestHelper = RestHelper()
 
     private val calender = Calendar.getInstance()
     private val year = calender.get(Calendar.YEAR)
@@ -75,6 +77,8 @@ class ItemCreateFragment : Fragment() {
     private lateinit var formAction: FormActionDataCreate
     private lateinit var qrCodeView: EditText
     private var handler = Handler()
+    private var msg = BlasMsg()
+    private val helper:RestHelper = RestHelper()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,7 +95,6 @@ class ItemCreateFragment : Fragment() {
         val extras = activity?.intent?.extras
         if (extras?.getString("token") != null) {
             token = extras.getString("token").toString()
-            Log.d("token_item", "${token}")
         }
         if (extras?.getString("project_id") != null) {
             projectId = extras.getString("project_id").toString()
@@ -100,10 +103,13 @@ class ItemCreateFragment : Fragment() {
         try {
             if (token != null && activity != null&& projectId != null) {
                 formAction = FormActionDataCreate(token, activity!!)
+            }else{
+                throw java.lang.Exception("Failed to receive internal data ")
             }
         }catch (e:Exception){
             receiveData = false
-            Log.d("itemCreate_onCreateView_error","内容=>${e}")
+            val errorMessage = msg.createErrorMessage("getFail")
+            Toast.makeText(activity, errorMessage, toastErrorLen).show()
         }
         //この時もう処理しないこと！！
         return inflater.inflate(R.layout.fragment_item_create, container, false)
@@ -124,8 +130,6 @@ class ItemCreateFragment : Fragment() {
             val payload2 = mapOf("token" to token, "my_self" to "1")
             BlasRestField(payload, ::getSuccess, ::getFail).execute()
             BlasRestUser(payload2, ::userGetSuccess, ::userGetFail).execute()
-        }else{
-            //ここにトーストかく
         }
     }
 
@@ -529,20 +533,8 @@ class ItemCreateFragment : Fragment() {
     fun getFail(errorCode: Int ,aplCode :Int) {
     
         var message:String? = null
-        
-        when(errorCode) {
-            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
-                message = getString(R.string.record_not_found)
-            }
-            BlasRestErrCode.NETWORK_ERROR -> {
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, errorCode)
-            }
-        }
+
+        message = BlasMsg().getMessage(errorCode,aplCode)
 
         Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
         //エラーのため、データを初期化する
@@ -556,26 +548,7 @@ class ItemCreateFragment : Fragment() {
         Log.d("sippai ", "失敗")
         var message:String? = null
 
-        when(errorCode) {
-            BlasRestErrCode.DATA_DUPLI_ERROR -> {
-                message = getString(R.string.data_dupli_error)
-            }
-            BlasRestErrCode.NETWORK_ERROR -> {
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, errorCode)
-            }
-        }
-
-        when(aplCode) {
-            BlasDef.APL_QUEUE_SAVE -> {
-                message = message + getString(R.string.apl_queue_save)
-            }
-
-        }
+        message = BlasMsg().getMessage(errorCode,aplCode)
 
         handler.post {
             Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
@@ -587,8 +560,9 @@ class ItemCreateFragment : Fragment() {
      */
     fun createSuccess(result: JSONObject) {
         Log.d("seikou ", "成功")
-        Toast.makeText(activity, getText(R.string.success_data_create), Toast.LENGTH_LONG)
+        Toast.makeText(activity, getText(R.string.success_data_create), Toast.LENGTH_SHORT)
             .show()
+        (requireActivity() as ItemActivity).transitionItemListScreen()
     }
 
     /**
@@ -600,8 +574,6 @@ class ItemCreateFragment : Fragment() {
             val dtp = DatePickerDialog(
                 getContext()!!,
                 DatePickerDialog.OnDateSetListener { view, y, m, d ->
-                    Toast.makeText(activity, "日付を選択しました${y}/${m + 1}/${d}", Toast.LENGTH_LONG)
-                        .show()
                     //フォーマットを作成
                     formPart.setText(String.format("%d/%02d/%02d", y, m + 1, d))
                 },
@@ -623,8 +595,6 @@ class ItemCreateFragment : Fragment() {
             val tp = TimePickerDialog(
                 context,
                 TimePickerDialog.OnTimeSetListener { view, hour, minute ->
-                    Toast.makeText(activity, "時間を選択しました${hour}:${minute}", Toast.LENGTH_LONG)
-                        .show()
                     formPart.setText(String.format("%02d:%02d", hour, minute))
                 }, hour, minute, true
             )

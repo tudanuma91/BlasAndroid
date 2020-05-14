@@ -11,10 +11,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureActivity
+import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.checkPermissions
 import com.v3.basis.blas.ui.ext.permissionChk
@@ -30,13 +32,17 @@ class FixtureReturnFragment : Fragment() {
     companion object {
         const val REQUEST_CAMERA_PERMISSION:Int = 1
     }
-    private var token:String? = null
+    lateinit var token:String
+    lateinit var projectName:String
+    lateinit var projectId:String
     private var McameraManager: CameraManager? = null
     private var McameraID: String? = null
     private var SW: Boolean = false
-    private var projectName:String? =null
-    private var projectId:String? = null
     private var fragm : FragmentActivity? = null
+    lateinit var root :View
+
+    private var msg = BlasMsg()
+    private val toastErrorLen = Toast.LENGTH_LONG
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,25 +57,22 @@ class FixtureReturnFragment : Fragment() {
 
         //トークンとプロジェクトIDの取得
         activity?.intent?.extras?.apply {
-            if(getString("token") != null) {
-                token = getString("token")
-                Log.d("token_fixture","${token}")
+            val extras = activity?.intent?.extras
+
+            if(extras?.getString("token") != null) {
+                token = extras.getString("token").toString()
             }
-            if(getString("project_id") != null) {
-                projectId = getString("project_id")
-                Log.d("project_id","${projectId}")
+            if(extras?.getString("project_id") != null) {
+                projectId = extras.getString("project_id").toString()
             }
-            if(getString("project_name") != null) {
-                projectName = getString("project_name")
-                Log.d("project_name","${projectName}")
+            if(extras?.getString("project_name") != null) {
+                projectName = extras.getString("project_name").toString()
             }
         }
 
 
-        val root = inflater.inflate(R.layout.fragment_fixture_return, container, false)
-        //プロジェクト名をここで入れる。
-        val project_name =root.findViewById<TextView>(R.id.return_project_name)
-        project_name.text = projectName
+        root = inflater.inflate(R.layout.fragment_fixture_return, container, false)
+
 
 
         //ライト光るボタン実装
@@ -108,15 +111,21 @@ class FixtureReturnFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val project_name =root.findViewById<TextView>(R.id.return_project_name)
         try {
             if(token != null && projectId != null && projectName != null) {
+                project_name.text = projectName
                 //許可取ってカメラを起動する
                 fragm = activity
                 requireActivity().checkPermissions()
                 initQRCamera()
+            }else{
+                throw java.lang.Exception("Failed to receive internal data ")
             }
         }catch (e:Exception){
-
+            project_name.text = "内部データの取得に失敗しました。返却を実行できません。"
+            val errorMessage = msg.createErrorMessage("getFail")
+            Toast.makeText(activity, errorMessage, toastErrorLen).show()
         }
     }
 

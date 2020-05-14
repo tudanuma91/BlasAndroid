@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.app.searchAndroid
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.canTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.finishInstall
@@ -32,12 +33,15 @@ import java.lang.Exception
  * A simple [Fragment] subclass.
  */
 class FixtureSearchResultFragment : Fragment() {
-    private var token:String? = null
-    private var project_id:String? = null
-    private var freeWord:String? = null
     private var dataList = mutableListOf<RowModel>()
     private val baseDataList:MutableList<MutableMap<String,String?>> = mutableListOf()
     private var searchValueMap:MutableMap<String,String?> = mutableMapOf()
+
+    private lateinit var token: String
+    private lateinit var project_id: String
+    private lateinit var freeWord: String
+    private var msg = BlasMsg()
+    private val toastErrorLen = Toast.LENGTH_LONG
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +51,6 @@ class FixtureSearchResultFragment : Fragment() {
     private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
         override fun onClickRow(tappedView: View, rowModel: RowModel) {
             //カードタップ時の処理
-            Toast.makeText(activity, rowModel.title, Toast.LENGTH_LONG).show()
             Log.d(
                 "DataManagement",
                 "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
@@ -65,18 +68,15 @@ class FixtureSearchResultFragment : Fragment() {
 
         //トークンの取得
         Log.d("【onCreateView】","呼ばれた")
-        if(getStringExtra("token") != null){
-            token = getStringExtra("token")
+        val extras = activity?.intent?.extras
+        if (extras?.getString("token") != null) {
+            token = extras.getString("token").toString()
         }
-
-        //プロジェクトIDの取得
-        if(getStringExtra("project_id") != null){
-            project_id = getStringExtra("project_id")
+        if (extras?.getString("project_id") != null) {
+            project_id = extras.getString("project_id").toString()
         }
-
-        //検索ワードの取得
-        if(getStringExtra("freeWord") != null){
-            freeWord = getStringExtra("freeWord")
+        if(extras?.getString("freeWord") != null){
+            freeWord = extras.getString("freeWord").toString()
             searchValueMap.set("freeWord",freeWord)
         }
 
@@ -87,7 +87,7 @@ class FixtureSearchResultFragment : Fragment() {
         searchValueMap.set("kenpinDayMin",getStringExtra("kenpinDayMin"))
         searchValueMap.set("kenpinDayMax",getStringExtra("kenpinDayMax"))
         searchValueMap.set("TakeOutOrg",getStringExtra("takeOutOrg"))
-        searchValueMap.set("TakeOUtUser",getStringExtra("takeOutUser"))
+        searchValueMap.set("TakeOutUser",getStringExtra("takeOutUser"))
         searchValueMap.set("takeOutDayMin",getStringExtra("takeOutDayMin"))
         searchValueMap.set("takeOutDayMax",getStringExtra("takeOutDayMax"))
         searchValueMap.set("RtnOrg",getStringExtra("returnOrg"))
@@ -101,29 +101,38 @@ class FixtureSearchResultFragment : Fragment() {
         searchValueMap.set("status",getStringExtra("status"))
 
 
-        Log.d("freewordの値","freeWordの値=>${freeWord}")
 
         return inflater.inflate(R.layout.fragment_fixture_search_result, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        Log.d("テスト","searce.size => ${searchValueMap.size}")
         try {
-            Log.d("lifeCycle", "onViewCreated")
-            //リサイクラ-viewを取得
-            //基本的にデータはまだ到着していないため、空のアクティビティとadapterだけ設定しておく
-            val recyclerView = recyclerView
-            recyclerView.setHasFixedSize(true)
-            recyclerView.layoutManager = LinearLayoutManager(activity)
-            recyclerView.adapter = adapter
+            if(token != null && project_id != null && freeWord != null && searchValueMap.size == 20 ) {
+                Log.d("lifeCycle", "onViewCreated")
+                //リサイクラ-viewを取得
+                //基本的にデータはまだ到着していないため、空のアクティビティとadapterだけ設定しておく
+                val recyclerView = recyclerView
+                recyclerView.setHasFixedSize(true)
+                recyclerView.layoutManager = LinearLayoutManager(activity)
+                recyclerView.adapter = adapter
 
-            //呼ぶタイミングを確定させる！！
-            val payload2 = mapOf("token" to token, "project_id" to project_id)
-            Log.d("testtest", "取得する")
-            BlasRestFixture("search", payload2, ::fixtureGetSuccess, ::fixtureGetError).execute()
+                //呼ぶタイミングを確定させる！！
+                val payload2 = mapOf("token" to token, "project_id" to project_id)
+                Log.d("testtest", "取得する")
+                BlasRestFixture(
+                    "search",
+                    payload2,
+                    ::fixtureGetSuccess,
+                    ::fixtureGetError
+                ).execute()
+            }else{
+                throw Exception("Failed to receive internal data ")
+            }
         }catch (e:Exception){
-
+            val errorMessage = msg.createErrorMessage("getFail")
+            Toast.makeText(activity, errorMessage, toastErrorLen).show()
         }
     }
 
@@ -197,7 +206,9 @@ class FixtureSearchResultFragment : Fragment() {
             baseValueMap.set("create_date",fixture.get("create_date").toString())
             baseValueMap.set("update_date",fixture.get("update_date").toString())
             baseValueMap.set("FixUser",fields.getJSONObject("FixUser").getString("name"))
+
             baseValueMap.set("TakeOutUser",fields.getJSONObject("TakeOutUser").getString("name"))
+
             baseValueMap.set("RtnUser",fields.getJSONObject("RtnUser").getString("name"))
             baseValueMap.set("ItemUser",fields.getJSONObject("ItemUser").getString("name"))
             baseValueMap.set("FixOrg",fields.getJSONObject("FixOrg").getString("name"))
@@ -234,19 +245,7 @@ class FixtureSearchResultFragment : Fragment() {
     
         var message:String? = null
 
-        when(errorCode) {
-            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
-                message = getString(R.string.record_not_found)
-            }
-            BlasRestErrCode.NETWORK_ERROR -> {
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, errorCode)
-            }
-        }
+        message = BlasMsg().getMessage(errorCode,aplCode)
 
         Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
 
@@ -343,6 +342,9 @@ class FixtureSearchResultFragment : Fragment() {
         }
     }
 
-
+    override fun onDestroyView() {
+        recyclerView.adapter = null
+        super.onDestroyView()
+    }
 
 }

@@ -122,6 +122,7 @@ class StatusUnreadFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        recyclerView.adapter = null
         super.onDestroyView()
         Log.d("処理しなおし","ここ通ったよ")
     }

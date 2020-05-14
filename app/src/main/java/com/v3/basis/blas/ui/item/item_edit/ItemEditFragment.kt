@@ -18,6 +18,7 @@ import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.QRActivity
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_QUEUE_SAVE
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.BTN_SAVE
+import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.formaction.FormActionDataEdit
 import com.v3.basis.blas.blasclass.helper.RestHelper
@@ -114,6 +115,8 @@ class ItemEditFragment : Fragment() {
             if (token != null && activity != null && projectId != null && itemId != null&& projectName != null) {
                 formAction = FormActionDataEdit(token, activity!!)
                 Log.d("CL6_0001","トークン等の受け渡し完了")
+            }else{
+                throw java.lang.Exception("Failed to receive internal data ")
             }
         }catch (e:Exception){
             //::TODO:: ここエラー内容分岐すること（可能性としてはtokenの受け渡し失敗等）
@@ -169,20 +172,8 @@ class ItemEditFragment : Fragment() {
     private fun getFail(errorCode: Int, aplCode:Int) {
     
         var message:String? = null
-        
-        when(errorCode) {
-            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
-                message = getString(R.string.record_not_found)
-            }
-            BlasRestErrCode.NETWORK_ERROR -> {
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, errorCode)
-            }
-        }
+
+        message = BlasMsg().getMessage(errorCode,aplCode)
 
         Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
         
@@ -210,19 +201,7 @@ class ItemEditFragment : Fragment() {
 
         var message:String? = null
 
-        when(errorCode) {
-            BlasRestErrCode.DB_NOT_FOUND_RECORD -> {
-                message = getString(R.string.record_not_found)
-            }
-            BlasRestErrCode.NETWORK_ERROR -> {
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, errorCode)
-            }
-        }
+        message = BlasMsg().getMessage(errorCode,aplCode)
 
         Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
 
@@ -653,7 +632,7 @@ class ItemEditFragment : Fragment() {
                                     parentErrorMap.set(cnt.toString(),status)
                                     if(memoValue == ""){
                                         parentChk = false
-                                        Toast.makeText(activity, getText(R.string.check_error), Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(activity, getText(R.string.check_error), Toast.LENGTH_LONG).show()
                                     }
                                 }
                             }
@@ -689,7 +668,7 @@ class ItemEditFragment : Fragment() {
         //更新成功を通知
         if (isAdded()) {
             handler.post {
-                Toast.makeText(activity, getText(R.string.success_data_update), Toast.LENGTH_LONG).show()
+                Toast.makeText(activity, getText(R.string.success_data_update), Toast.LENGTH_SHORT).show()
             }
             requireActivity().finish()
         }
@@ -702,26 +681,7 @@ class ItemEditFragment : Fragment() {
 
         var message:String? = null
 
-        when(errorCode) {
-            BlasRestErrCode.DATA_DUPLI_ERROR -> {
-                message = getString(R.string.data_dupli_error)
-            }
-            BlasRestErrCode.NETWORK_ERROR -> {
-                //サーバと通信できません
-                message = getString(R.string.network_error)
-            }
-            else-> {
-                //サーバでエラーが発生しました(要因コード)
-                message = getString(R.string.server_error, errorCode)
-            }
-        }
-
-        when(aplCode) {
-            APL_QUEUE_SAVE -> {
-                message = message + getString(R.string.apl_queue_save)
-            }
-
-        }
+        message = BlasMsg().getMessage(errorCode,aplCode)
 
         handler.post {
             Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
