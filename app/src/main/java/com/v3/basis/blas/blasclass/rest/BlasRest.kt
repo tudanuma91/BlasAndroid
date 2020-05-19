@@ -59,9 +59,8 @@ open class BlasRest() : AsyncTask<String, String, String>() {
 
     companion object {
 
-        //const val URL = BuildConfig.API_URL
+        const val URL = BuildConfig.API_URL
         //const val URL = "http://192.168.0.104/blas7/api/v1/"
-        const val URL = "https://www.basis-service.com/blas777/api/v1/"
 
         const val CONTEXT_TIME_OUT = 100000
         const val READ_TIME_OUT = 100000
@@ -217,7 +216,7 @@ open class BlasRest() : AsyncTask<String, String, String>() {
 
         var paramData: String = ""
         for ((k, v) in payload) {
-            paramData += "${k}=${v}&"
+            paramData += "${k}=${URLEncoder.encode(v,"UTF-8")}&"
         }
         paramData = paramData.substring(0, paramData.length - 1)
 

@@ -310,7 +310,7 @@ class ItemEditFragment : Fragment() {
                     var selectedValueId: Int = -1
                     //ラジオグループの作成
                     val formGroup = formAction.createRadioGrop(layoutParams, cnt)
-                    if(formInfo.parentFieldId == "0") {
+                    if((formInfo.parentFieldId == "0") or (formInfo.parentFieldId == "null")) {
                         val radioButtonValues = formInfo.choiceValue
                         val colTargetPart:MutableList<String> = mutableListOf()
                         if (radioButtonValues != null) {
