@@ -73,7 +73,6 @@ class FixtureSearchFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         root = inflater.inflate(R.layout.fragment_fixture_search, container, false)
 
         //配列に入力フォームを格納する。
@@ -101,64 +100,49 @@ class FixtureSearchFragment : Fragment() {
         //検品日付最小値タップ処理
         val kenpinDayMin = formMap["kenpinDayMin"]
         if (kenpinDayMin != null) {
-            kenpinDayMin.setOnClickListener {
-                setDateTimeAction(kenpinDayMin)
-            }
+            setDateTimeAction(kenpinDayMin)
         }
         //検品最大値タップ時処理
         val kenpinDayMax = formMap["kenpinDayMax"]
         if (kenpinDayMax != null) {
-            kenpinDayMax.setOnClickListener {
-                setDateTimeAction(kenpinDayMax)
-            }
+            setDateTimeAction(kenpinDayMax)
         }
 
         //持ち出し日付最小値タップ処理
         val takeOutDayMin = formMap["takeOutDayMin"]
         if (takeOutDayMin != null) {
-            takeOutDayMin.setOnClickListener {
-                setDateTimeAction(takeOutDayMin)
-            }
+            setDateTimeAction(takeOutDayMin)
         }
 
         //持ち出し日付最大値タップ処理
         val takeOutDayMax = formMap["takeOutDayMax"]
         if (takeOutDayMax != null) {
-            takeOutDayMax.setOnClickListener {
-                setDateTimeAction(takeOutDayMax)
-            }
+            setDateTimeAction(takeOutDayMax)
         }
 
         //返却最小値タップ処理
         val returnDayMin = formMap["returnDayMin"]
         if (returnDayMin != null) {
-            returnDayMin.setOnClickListener {
-                setDateTimeAction(returnDayMin)
-            }
+            setDateTimeAction(returnDayMin)
         }
 
         //返却最大値タップ処理
         val returnDayMax = formMap["returnDayMax"]
         if (returnDayMax != null) {
-            returnDayMax.setOnClickListener {
-                setDateTimeAction(returnDayMax)
-            }
+            setDateTimeAction(returnDayMax)
+
         }
 
         //最小値
         val ItemDayMin = formMap["itemDayMin"]
         if (ItemDayMin != null) {
-            ItemDayMin.setOnClickListener {
-                setDateTimeAction(ItemDayMin)
-            }
+            setDateTimeAction(ItemDayMin)
         }
 
         //返却最大値タップ処理
         val ItemDayMax = formMap["itemDayMax"]
         if (ItemDayMax != null) {
-            ItemDayMax.setOnClickListener {
-                setDateTimeAction(ItemDayMax)
-            }
+            setDateTimeAction(ItemDayMax)
         }
 
         val btnSearch = root.findViewById<Button>(R.id.fixSerchBtn)
@@ -170,11 +154,7 @@ class FixtureSearchFragment : Fragment() {
 
                     if (errorList.size > 0) {
                         errorList.forEach {
-                            //val text = formAction.test2(it,titleMap)
-                            // titleMap[it]?.setText(text)
-                            //titleMap[it]?.setTextColor(Color.DKGRAY)
                             titleRecover(it)
-                            Log.d("デバック用ログ", "ここの値はこれだぜ=>${it}")
                         }
 
                     }
@@ -183,18 +163,19 @@ class FixtureSearchFragment : Fragment() {
 
                     val errorFlg = checkSearchValueManager()
                     if (errorFlg) {
+                        //エラーケース
                         errorList.forEach {
                             errorTitleCreate(it)
                         }
                     } else {
+                        //正常ケース
                         val freeWordEdit = root.findViewById<EditText>(R.id.fixFreeWordValue)
                         freeWord = freeWordEdit.text.toString()
-                        Log.d("testtest", "取得する")
                         startSearch()
                     }
                 }
             }else{
-                throw java.lang.Exception("Failed to receive internal data ")
+                throw Exception("Failed to receive internal data ")
             }
         }catch (e:Exception){
             val errorMessage = msg.createErrorMessage("getFail")
@@ -268,12 +249,21 @@ class FixtureSearchFragment : Fragment() {
     /**
      * タップ時の処理
      */
-    private fun setDateTimeAction(kenpinDay:EditText){
-        val dtp = DatePickerDialog(getContext()!!, DatePickerDialog.OnDateSetListener{ view, y, m, d ->
-            //フォーマットを作成
-            kenpinDay.setText(String.format("%d/%02d/%02d",y,m+1,d))
-        }, year,month,day)
-        dtp.show()
+    private fun setDateTimeAction(Day:EditText) {
+        Day.setOnClickListener {
+            val dtp =
+                DatePickerDialog(
+                    getContext()!!,
+                    DatePickerDialog.OnDateSetListener { view, y, m, d ->
+                        //フォーマットを作成
+                        Day.setText(String.format("%d-%02d-%02d", y, m + 1, d))
+                    },
+                    year,
+                    month,
+                    day
+                )
+            dtp.show()
+        }
     }
 
 
@@ -298,18 +288,24 @@ class FixtureSearchFragment : Fragment() {
         Log.d("デバック用ログ","値の中身はコレ!!=>${value}")
         loop@ for(idx in 0 until valueLen){
             when(value.get(idx)){
+                //半角
                 '[', ']', '(', ')', '\\', '{', '}',
-                '*', '+', '.', '$', '^', '|', ':', '!'
+                '*', '+', '.', '$', '^', '|', ':', '!',
+                //全角
+                '［','］','（','）','￥','｛','｝',
+                '＊','＋','＿','＄','＾','｜','＝','！'
                 ->{
                     chk = true
                     break@loop
                 }
             }
         }
-        Log.d("結果","処理結果はこの通り=>${chk.toString()}")
         return chk
     }
 
+    /**
+     * 検索に使用不可文字を使っていた場合、タイトルにエラー表示をし、タイトル色を変更する
+     */
     private fun errorTitleCreate(idx:String){
         val title = titlePicker(idx)
         if(title != null) {
@@ -320,6 +316,9 @@ class FixtureSearchFragment : Fragment() {
         }
     }
 
+    /**
+     * 修復するタイトルを取得し、元に戻す
+     */
     private fun titleRecover(idx: String){
         val title = titlePicker(idx)
         if(title != null) {
@@ -330,8 +329,11 @@ class FixtureSearchFragment : Fragment() {
         }
     }
 
+    /**
+     * タイトルを取得する関数
+     */
     private fun titlePicker(idx: String): TextView? {
-        var title :TextView ?
+        val title :TextView ?
         when(idx) {
             "freeWord" -> { title = root.findViewById<TextView>(R.id.fixFreeWord) }
             "serialNumber"->{ title = root.findViewById<TextView>(R.id.fixSerialNumber) }
@@ -348,5 +350,4 @@ class FixtureSearchFragment : Fragment() {
         }
         return title
     }
-
 }

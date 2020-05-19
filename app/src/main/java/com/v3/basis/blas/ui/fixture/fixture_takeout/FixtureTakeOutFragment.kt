@@ -2,6 +2,7 @@ package com.v3.basis.blas.ui.fixture.fixture_takeout
 
 import android.Manifest
 import android.content.Context
+import android.graphics.Color
 import android.hardware.camera2.CameraManager
 import android.media.AudioManager
 import android.media.ToneGenerator
@@ -15,9 +16,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureActivity
+import com.v3.basis.blas.blasclass.app.BlasMsg
+import com.v3.basis.blas.blasclass.app.BlasMsg.Companion.msg
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.checkPermissions
 import com.v3.basis.blas.ui.ext.permissionChk
@@ -40,13 +44,16 @@ class FixtureTakeOutFragment : Fragment() {
     companion object {
         const val REQUEST_CAMERA_PERMISSION:Int = 1
     }
-    private var token:String? = null
+    private val toastErrorLen = Toast.LENGTH_LONG
+    private lateinit var token:String
     private var McameraManager: CameraManager? = null
     private var McameraID: String? = null
     private var SW: Boolean = false
-    private var projectName:String? =null
-    private var projectId:String? = null
+    private lateinit var projectName:String
+    private lateinit var projectId:String
     private var fragm : FragmentActivity? = null
+    private lateinit var root:View
+    private var msg = BlasMsg()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,24 +69,18 @@ class FixtureTakeOutFragment : Fragment() {
         //トークンとプロジェクトIDの取得
         val extras = activity?.intent?.extras
         if(extras?.getString("token") != null) {
-            token = extras?.getString("token")
-            Log.d("token_fixture","${token}")
+            token = extras.getString("token").toString()
         }
         if(extras?.getString("project_id") != null) {
-            projectId = extras?.getString("project_id")
-            Log.d("project_id","${projectId}")
+            projectId = extras.getString("project_id").toString()
         }
         if(extras?.getString("project_name") != null) {
-            projectName = extras?.getString("project_name")
-            Log.d("project_name","${projectName}")
+            projectName = extras.getString("project_name").toString()
         }
 
 
-        val root = inflater.inflate(R.layout.fragment_fixture_takeout, container, false)
+        root = inflater.inflate(R.layout.fragment_fixture_takeout, container, false)
 
-        //プロジェクト名をここで入れる。
-        val project_name =root.findViewById<TextView>(R.id.takeout_project_name)
-        project_name.text = projectName
 
 
         //ライト光るボタン実装
@@ -92,7 +93,7 @@ class FixtureTakeOutFragment : Fragment() {
         //ボタンがタップされたときの処理
         btn_light.setOnClickListener{
             if(McameraID == null){
-                Log.d("null","nullだったよ")
+                Toast.makeText(activity,"ライトがありません",Toast.LENGTH_LONG).show()
             }
             try {
                 if(SW == false){
@@ -117,16 +118,22 @@ class FixtureTakeOutFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         //許可取ってカメラを起動する
+        val project_name =root.findViewById<TextView>(R.id.takeout_project_name)
         try {
             if(token != null && projectId != null && projectName != null) {
                 fragm = activity
+                //プロジェクト名をここで入れる。
+                project_name.text = projectName
                 requireActivity().checkPermissions()
                 initQRCamera()
             }else{
                 throw java.lang.Exception("Failed to receive internal data ")
             }
         }catch (e:Exception){
-
+            takeout_result_text.setTextColor(Color.RED)
+            takeout_result_text.text = "内部データの取得に失敗しました。検品を実行できません"
+            val errorMessage = msg.createErrorMessage("getFail")
+            Toast.makeText(activity, errorMessage, toastErrorLen).show()
         }
     }
 

@@ -9,7 +9,6 @@ import androidx.fragment.app.FragmentTransaction
 import com.v3.basis.blas.R
 import com.v3.basis.blas.ui.ext.showBackKeyForActionBar
 import com.v3.basis.blas.ui.item.item_image.ItemImageFragment
-import com.v3.basis.blas.ui.terminal.TerminalFragment
 
 class ItemImageActivity : AppCompatActivity() {
 

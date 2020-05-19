@@ -125,6 +125,7 @@ class FixtureActivity : AppCompatActivity() {
     ) {
         qr_view.decodeContinuous(object : BarcodeCallback {
             override fun barcodeResult(result: BarcodeResult?) {//QRコードを読み取った時の処理
+                Log.d("CL_0001_4", "画面起動")
                 if(result.toString() != oldResult) {
                     if (result != null) {
                         //初期化と変数宣言
@@ -132,11 +133,13 @@ class FixtureActivity : AppCompatActivity() {
 
                         //読み取りを伝えるバイブレーション
                         if(fragm != null){
+                            Log.d("CL_0001_5", "読み取り時震動")
                             vibrator = fragm.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
                         }
 
                         //Thread.sleep(500)
                         Log.d("QRCode", "処理実行！！")
+                        Log.d("CL_0001_6", "結果を表示")
                         result_text.text = "$result"
 
 
@@ -152,6 +155,7 @@ class FixtureActivity : AppCompatActivity() {
                         //restで更新する処理
                         when(type){
                             "kenpin"->{
+                                Log.d("CL_0001_7", "検品開始")
                                 // onResumeをオーバーライドしたので，手動呼び出しは禁止
                                 // FixtureKenpinFragment().callOnPouse()
                                 BlasRestFixture("kenpin", payload2, ::success, ::error).execute()
@@ -240,6 +244,7 @@ class FixtureActivity : AppCompatActivity() {
         reloard()
     }
 
+    //検索結果から戻った時に走る処理
     fun reloard(){
         val intent = intent
         overridePendingTransition(0, 0)
@@ -249,6 +254,17 @@ class FixtureActivity : AppCompatActivity() {
         overridePendingTransition(0, 0)
         startActivity(intent)
     }
+    /*
+    val intent = intent
+        overridePendingTransition(0, 0)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        //前回の状態をセーブしているから呼び出す！
+        intent.putExtra(BEFORE_FRAGMENT, beforeSelectedNavButton)
+        finish()
+
+        overridePendingTransition(0, 0)
+        startActivity(intent)
+     */
 
 
 }

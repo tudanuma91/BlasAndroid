@@ -193,6 +193,7 @@ object QueueController {
         val url = java.net.URL(reqArray.uri)
         val con = url.openConnection() as HttpURLConnection
 
+        //キューのパラメータ。
         Log.d("【Queue】", "param:${param}")
 
         //タイムアウトとメソッドの設定
@@ -316,8 +317,8 @@ object QueueController {
     }
 
     private fun noticeAdd(reqArray:RestRequestData,aplCode :Int) {
-
         val values = ContentValues()
+        Log.d("reqArrayの中身","${reqArray}")
 
         // 現在日時取得
         val datetime = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")

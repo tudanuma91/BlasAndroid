@@ -123,7 +123,7 @@ class FixtureReturnFragment : Fragment() {
                 throw java.lang.Exception("Failed to receive internal data ")
             }
         }catch (e:Exception){
-            project_name.text = "内部データの取得に失敗しました。返却を実行できません。"
+            return_result_text.text = "内部データの取得に失敗しました。返却を実行できません。"
             val errorMessage = msg.createErrorMessage("getFail")
             Toast.makeText(activity, errorMessage, toastErrorLen).show()
         }
