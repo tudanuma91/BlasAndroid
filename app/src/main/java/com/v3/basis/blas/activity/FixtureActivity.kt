@@ -147,7 +147,7 @@ class FixtureActivity : AppCompatActivity() {
                         //ひとつ前のQRコードをこのQRコードにする。連続読み取りを避けるため。
                         oldResult = result.toString()
 
-                        realTime = true
+                      //  realTime = true
 
                         var payload2 = mapOf(
                             "token" to token,
@@ -189,7 +189,7 @@ class FixtureActivity : AppCompatActivity() {
      *
      */
     fun success(result: JSONObject){
-        if(realTime) {
+        //if(realTime) {
             vibrationEffect =
                 VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
             vibrator.vibrate(vibrationEffect)
@@ -200,7 +200,7 @@ class FixtureActivity : AppCompatActivity() {
             messageText.setTextColor(Color.GREEN)
             messageText.text = "QRコードを読み取りました"
             realTime = false
-        }
+       // }
 
     }
 
@@ -208,7 +208,7 @@ class FixtureActivity : AppCompatActivity() {
      * rest失敗時の処理
      */
     fun error(errorCode: Int, aplCode :Int){
-        if(realTime) {
+       // if(realTime) {
             vibrationEffect =
                 VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
             vibrator.vibrate(vibrationEffect)
@@ -221,8 +221,8 @@ class FixtureActivity : AppCompatActivity() {
             message = BlasMsg().getMessage(errorCode, aplCode)
             messageText.setTextColor(Color.RED)
             messageText.text = message
-            realTime = false
-        }
+          //  realTime = false
+        //}
     }
 
     private fun playTone(mediaFileRawId: Int) {
