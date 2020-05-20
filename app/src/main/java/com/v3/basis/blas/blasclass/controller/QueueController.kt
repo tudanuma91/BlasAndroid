@@ -277,16 +277,13 @@ object QueueController {
         val rtn: RestfulRtn = cakeToAndroid(response, tableName)
         if(rtn == null) {
             noticeAdd(reqArray,APL_QUEUE_ERR)
-            queueFunc.errorFun(BlasRestErrCode.JSON_PARSE_ERROR,APL_QUEUE_ERR)
         }
         else if(rtn.errorCode == 0) {
             noticeAdd(reqArray,APL_OK)
-            queueFunc.successFun(JSONObject(response))
         }
         else {
             Log.e("【queue/error】", "errorCode:${rtn.errorCode}")
             noticeAdd(reqArray,rtn.errorCode)
-            queueFunc.errorFun(rtn.errorCode,APL_QUEUE_ERR)
         }
 
     }
@@ -378,7 +375,6 @@ object QueueController {
         }
 
     }
-
 
     private fun queueRefresh(reqArray:RestRequestData,response :String) {
         val sql = "delete from RequestTable"
