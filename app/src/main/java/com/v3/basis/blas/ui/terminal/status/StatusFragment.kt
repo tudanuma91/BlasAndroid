@@ -59,7 +59,7 @@ class StatusFragment : Fragment() {
                         StatusAlreadyFragment()
                     replaceFragment(secondFragment)
                     alreadyButton.setBackgroundColor(Color.rgb(255,255,255))
-                    unReadButton.setBackgroundColor(Color.rgb(255,239,239))
+                    unReadButton.setBackgroundColor(Color.rgb(255,239,255))
                 }
 
                 val firstFragment =

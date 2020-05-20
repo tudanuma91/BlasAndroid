@@ -44,6 +44,7 @@ class FixtureKenpinFragment : Fragment() {
     private var SW: Boolean = false
     private var oldResult:String? =null
     private var msg = BlasMsg()
+    private val counter = true
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,10 +72,6 @@ class FixtureKenpinFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        requireActivity().checkPermissions()
-
-
 
         //ライト光るボタン実装
         //現在エラーが出ているので使用不可
@@ -104,6 +101,8 @@ class FixtureKenpinFragment : Fragment() {
         try {
             if(token != null && projectId != null && projectName != null) {
                 //プロジェクト名をここで入れる。
+                //requireActivityのパーミッションチェックがエラー原因だった
+                //  requireActivity().checkPermissions()
                 kenpin_project_name.text = projectName
                 initQRCamera()
             }else{
@@ -135,10 +134,13 @@ class FixtureKenpinFragment : Fragment() {
                 kenpin_result_text,
                 kenpin_message)
         } else {//許可取れなかった場合、行う
-            requestPermissions(arrayOf(
-                Manifest.permission.CAMERA,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ), REQUEST_CAMERA_PERMISSION)
+            requestPermissions(
+                arrayOf(
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ), REQUEST_CAMERA_PERMISSION
+            )
+
         }
     }
 

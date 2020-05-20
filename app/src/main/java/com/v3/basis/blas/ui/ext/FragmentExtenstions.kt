@@ -74,3 +74,5 @@ fun Fragment.closeSoftKeyboard() {
     val view: View = requireActivity().window.decorView
     imm.hideSoftInputFromWindow(view.windowToken, 0)
 }
+
+

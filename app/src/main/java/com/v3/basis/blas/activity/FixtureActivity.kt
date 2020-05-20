@@ -44,6 +44,7 @@ class FixtureActivity : AppCompatActivity() {
         VibrationEffect.DEFAULT_AMPLITUDE
     )
     private var tone: ToneGenerator? = null
+    private var realTime = false
 
    /* QRコード読を読み取りました</string>
     <string name="error_create_qr">すでに登録済のQRコードです</string>
@@ -146,6 +147,8 @@ class FixtureActivity : AppCompatActivity() {
                         //ひとつ前のQRコードをこのQRコードにする。連続読み取りを避けるため。
                         oldResult = result.toString()
 
+                        realTime = true
+
                         var payload2 = mapOf(
                             "token" to token,
                             "project_id" to projectId,
@@ -172,7 +175,6 @@ class FixtureActivity : AppCompatActivity() {
                             }
                         }
 
-                        Log.d("OK", "終了")
                         //この時、エラーが帰ってきたら逃がす処理を追加する。
                     }
 
@@ -187,34 +189,40 @@ class FixtureActivity : AppCompatActivity() {
      *
      */
     fun success(result: JSONObject){
-        vibrationEffect = VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
-        vibrator.vibrate(vibrationEffect)
-       // tone.startTone(ToneGenerator.TONE_DTMF_S,200)
-        //tone.startTone(ToneGenerator.TONE_CDMA_ANSWER,200)
-        playTone(ToneGenerator.TONE_CDMA_ANSWER)
-        Log.d("OK","作成完了")
-        messageText.setTextColor(Color.GREEN)
-        messageText.text = "QRコードを読み取りました"
+        if(realTime) {
+            vibrationEffect =
+                VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
+            vibrator.vibrate(vibrationEffect)
+            // tone.startTone(ToneGenerator.TONE_DTMF_S,200)
+            //tone.startTone(ToneGenerator.TONE_CDMA_ANSWER,200)
+            playTone(ToneGenerator.TONE_CDMA_ANSWER)
+            Log.d("OK", "作成完了")
+            messageText.setTextColor(Color.GREEN)
+            messageText.text = "QRコードを読み取りました"
+            realTime = false
+        }
+
     }
 
     /**
      * rest失敗時の処理
      */
     fun error(errorCode: Int, aplCode :Int){
-        vibrationEffect = VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
-        vibrator.vibrate(vibrationEffect)
-       // tone.startTone(ToneGenerator.TONE_CDMA_HIGH_PBX_S_X4,200)
-        playTone(ToneGenerator.TONE_CDMA_HIGH_PBX_S_X4)
-        Log.d("NG","作成失敗")
-        Log.d("errorCorde","${errorCode}")
+        if(realTime) {
+            vibrationEffect =
+                VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
+            vibrator.vibrate(vibrationEffect)
+            // tone.startTone(ToneGenerator.TONE_CDMA_HIGH_PBX_S_X4,200)
+            playTone(ToneGenerator.TONE_CDMA_HIGH_PBX_S_X4)
+            Log.d("NG", "作成失敗")
+            Log.d("errorCorde", "${errorCode}")
+            var message: String? = ""
 
-        var message:String? = ""
-
-        message = BlasMsg().getMessage(errorCode,aplCode)
-
-        messageText.setTextColor(Color.RED)
-        messageText.text = message
-
+            message = BlasMsg().getMessage(errorCode, aplCode)
+            messageText.setTextColor(Color.RED)
+            messageText.text = message
+            realTime = false
+        }
     }
 
     private fun playTone(mediaFileRawId: Int) {

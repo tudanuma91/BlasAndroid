@@ -117,7 +117,8 @@ class FixtureReturnFragment : Fragment() {
                 project_name.text = projectName
                 //許可取ってカメラを起動する
                 fragm = activity
-                requireActivity().checkPermissions()
+                //requireActivityのパーミッションチェックがエラー原因だった
+                //requireActivity().checkPermissions()
                 initQRCamera()
             }else{
                 throw java.lang.Exception("Failed to receive internal data ")
@@ -165,6 +166,7 @@ class FixtureReturnFragment : Fragment() {
         qr_view.pause()    // カメラ停止
         super.onPause()
     }
+
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)

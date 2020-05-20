@@ -2,6 +2,7 @@ package com.v3.basis.blas.ui.fixture.fixture_takeout
 
 import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.hardware.camera2.CameraManager
 import android.media.AudioManager
@@ -17,6 +18,8 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
+import androidx.core.content.PermissionChecker
 import androidx.fragment.app.FragmentActivity
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureActivity
@@ -44,6 +47,13 @@ class FixtureTakeOutFragment : Fragment() {
     companion object {
         const val REQUEST_CAMERA_PERMISSION:Int = 1
     }
+
+
+
+    var aaa =  1
+
+
+
     private val toastErrorLen = Toast.LENGTH_LONG
     private lateinit var token:String
     private var McameraManager: CameraManager? = null
@@ -54,6 +64,7 @@ class FixtureTakeOutFragment : Fragment() {
     private var fragm : FragmentActivity? = null
     private lateinit var root:View
     private var msg = BlasMsg()
+    private var counter = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -124,10 +135,11 @@ class FixtureTakeOutFragment : Fragment() {
                 fragm = activity
                 //プロジェクト名をここで入れる。
                 project_name.text = projectName
-                requireActivity().checkPermissions()
+                //requireActivityのパーミッションチェックがエラー原因だった
+               // requireActivity().checkPermissions()
                 initQRCamera()
             }else{
-                throw java.lang.Exception("Failed to receive internal data ")
+                throw Exception("Failed to receive internal data ")
             }
         }catch (e:Exception){
             takeout_result_text.setTextColor(Color.RED)
@@ -144,23 +156,28 @@ class FixtureTakeOutFragment : Fragment() {
         //権限チェック
         val setPermisson = requireActivity().permissionChk()
 
-        if (setPermisson) {
-            // qr_view.resume()
-            FixtureActivity().openQRCamera(
-                "takeout",
-                qr_view,
-                fragm,
-                token,
-                projectId,
-                takeout_result_text,
-                takeout_message
+        if(counter) {
+            if (setPermisson) {
+                // qr_view.resume()
+                FixtureActivity().openQRCamera(
+                    "takeout",
+                    qr_view,
+                    fragm,
+                    token,
+                    projectId,
+                    takeout_result_text,
+                    takeout_message
                 )
-        } else {
-            requestPermissions(arrayOf(
-                Manifest.permission.CAMERA,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ), FixtureKenpinFragment.REQUEST_CAMERA_PERMISSION
-            )
+            } else {
+                requestPermissions(
+                    arrayOf(
+                        Manifest.permission.CAMERA,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    ),
+                    REQUEST_CAMERA_PERMISSION
+                )
+
+            }
         }
     }
 
@@ -180,6 +197,7 @@ class FixtureTakeOutFragment : Fragment() {
             REQUEST_CAMERA_PERMISSION -> { initQRCamera() }
         }
     }
+
 
     fun callOnPouse(){
         onPause()
