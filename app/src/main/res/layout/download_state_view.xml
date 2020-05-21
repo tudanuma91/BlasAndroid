@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="vm"
+            type="com.v3.basis.blas.ui.terminal.common.DownloadViewModel" />
+
+        <variable
+            name="item"
+            type="com.v3.basis.blas.ui.terminal.common.DownloadItem" />
+    </data>
+    
+    <FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        
+        <ImageView
+            android:id="@+id/download"
+            android:layout_gravity="left|bottom"
+            android:src="@drawable/ic_file_download_black_24dp"
+            android:background="@color/cardview_light_background"
+            android:onClick="@{v -> vm.downloadClick(item)}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="@{item.downloading ? View.INVISIBLE : View.VISIBLE}"
+            />
+        
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="@{item.downloading ? View.VISIBLE : View.INVISIBLE}"
+            />
+        
+        <TextView
+            android:id="@+id/textState"
+            android:layout_gravity="right|bottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{item.downloadingText}"
+            tools:text="ダウンロード中" />
+    
+    </FrameLayout>
+</layout>

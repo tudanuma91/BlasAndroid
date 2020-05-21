@@ -3,6 +3,7 @@ package com.v3.basis.blas.ui.ext
 import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
@@ -12,7 +13,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.work.WorkInfo
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.worker.SampleWorker
+import com.v3.basis.blas.blasclass.worker.WorkerHelper
+import com.v3.basis.blas.ui.terminal.common.DownloadItem
+import com.v3.basis.blas.ui.terminal.common.DownloadViewModel
+import java.util.*
 
 
 fun Fragment.getStringExtra(key: String) : String? {
@@ -73,4 +80,52 @@ fun Fragment.closeSoftKeyboard() {
     val imm: InputMethodManager = requireActivity().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
     val view: View = requireActivity().window.decorView
     imm.hideSoftInputFromWindow(view.windowToken, 0)
+}
+
+fun Fragment.addDownloadTask(vm: DownloadViewModel, item: DownloadItem) {
+
+    var once = true
+    WorkerHelper.addDownloadTask<SampleWorker>(this, item.downloadUrl, item.savePath) { state, progress, id ->
+
+        when (state) {
+            WorkInfo.State.BLOCKED,
+            WorkInfo.State.ENQUEUED -> {
+                vm.preDownloading(item, id)
+            }
+            WorkInfo.State.RUNNING -> {
+                if (once) {
+                    vm.downloading(item)
+                    once = false
+                }
+                Log.d("foreground worker", "running: $id, progress: $progress")
+            }
+            WorkInfo.State.SUCCEEDED -> {
+                vm.setFinishDownloading(item)
+            }
+        }
+    }
+}
+
+fun Fragment.continueDownloadTask(vm: DownloadViewModel, item: DownloadItem) {
+
+    var once = true
+    WorkerHelper.observe(this, UUID.fromString(item.uuid)) { state, progress, id ->
+
+        when (state) {
+            WorkInfo.State.BLOCKED,
+            WorkInfo.State.ENQUEUED -> {
+                vm.preDownloading(item, id)
+            }
+            WorkInfo.State.RUNNING -> {
+                if (once) {
+                    vm.downloading(item)
+                    once = false
+                }
+                Log.d("foreground worker", "running $id, progress: $progress")
+            }
+            WorkInfo.State.SUCCEEDED -> {
+                vm.setFinishDownloading(item)
+            }
+        }
+    }
 }

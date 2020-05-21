@@ -65,19 +65,19 @@ class LoginFragment : Fragment() {
         }
 
         //sample worker
-        workerSample.setOnClickListener {
-            WorkerHelper.startDownload<SampleWorker>(this, "", "") {state, progress ->
-
-                when (state) {
-                    WorkInfo.State.ENQUEUED -> {
-                        Log.d("foreground worker", "enqueued")
-                    }
-                    WorkInfo.State.RUNNING -> {
-                        Log.d("foreground worker", "running, progress: $progress")
-                    }
-                }
-            }
-        }
+//        workerSample.setOnClickListener {
+//            WorkerHelper.startDownload<SampleWorker>(this, "", "") {state, progress ->
+//
+//                when (state) {
+//                    WorkInfo.State.ENQUEUED -> {
+//                        Log.d("foreground worker", "enqueued")
+//                    }
+//                    WorkInfo.State.RUNNING -> {
+//                        Log.d("foreground worker", "running, progress: $progress")
+//                    }
+//                }
+//            }
+//        }
     }
 
     /**

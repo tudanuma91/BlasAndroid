@@ -5,18 +5,26 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.v3.basis.blas.R
+import com.v3.basis.blas.databinding.ListProjectBinding
+import com.v3.basis.blas.ui.terminal.common.DownloadViewModel
 
-class ViewAdapterAdapter(private val list: List<RowModel>, private val listener: ListListener) : RecyclerView.Adapter<HomeViewHolder>() {
+class ViewAdapterAdapter(
+    private val list: List<RowModel>,
+    private val listener: ListListener,
+    private val viewModel: DownloadViewModel) : RecyclerView.Adapter<HomeViewHolder>() {
+
+    private lateinit var bind: ListProjectBinding
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HomeViewHolder {
         Log.d("Life Cycle", "onCreateViewHolder")
-        val rowView: View = LayoutInflater.from(parent.context).inflate(R.layout.list_project, parent, false)
-        return HomeViewHolder(rowView)
+        bind = ListProjectBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        bind.vm = viewModel
+        return HomeViewHolder(bind.root, bind)
     }
 
     override fun onBindViewHolder(holder: HomeViewHolder, position: Int) {
         Log.d("Life Cycle", "onBindViewHolder")
+//        holder.binding.item = list[position].item
         holder.titleView.text = list[position].title
         holder.detailView.text = list[position].detail
         holder.itemView.setOnClickListener {

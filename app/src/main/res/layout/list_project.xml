@@ -1,52 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="horizontal"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+<layout>
 
-    <LinearLayout
+    <data>
+        <import type="android.view.View" />
+        <import type="com.v3.basis.blas.R" />
+        <variable
+            name="vm"
+            type="com.v3.basis.blas.ui.terminal.common.DownloadViewModel" />
+
+        <variable
+            name="item"
+            type="com.v3.basis.blas.ui.terminal.common.DownloadItem" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="horizontal">
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/card_view"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                app:cardBackgroundColor="@color/cardview_light_background"
-                app:cardCornerRadius="10dp"
-                app:cardElevation="4dp"
-                app:contentPadding="16dp">
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
-                <LinearLayout
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/card_view"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:padding="6dp">
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    app:cardBackgroundColor="@{item.doneDownloaded ? @color/colorWhite : @color/colorGray}"
+                    app:cardCornerRadius="10dp"
+                    app:cardElevation="4dp"
+                    app:contentPadding="16dp">
 
-                    <TextView
-                        android:id="@+id/row_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:text="titleです" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:padding="6dp">
 
-                    <TextView
-                        android:id="@+id/row_detail"
-                        android:layout_width="wrap_content"
-                        android:layout_height="0dp"
-                        android:layout_weight="0.3"
-                        tools:text="詳細ですよ詳細ですよ詳細ですよ詳細ですよ詳細ですよ" />
+                        <TextView
+                            android:id="@+id/row_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            tools:text="titleです" />
 
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
+                        <TextView
+                            android:id="@+id/row_detail"
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"
+                            android:layout_weight="0.3"
+                            tools:text="詳細ですよ詳細ですよ詳細ですよ詳細ですよ詳細ですよ" />
+
+                        <include
+                            android:id="@+id/downloadLayout"
+                            layout="@layout/download_state_view"
+                            app:vm="@{vm}"
+                            app:item="@{item}"/>
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

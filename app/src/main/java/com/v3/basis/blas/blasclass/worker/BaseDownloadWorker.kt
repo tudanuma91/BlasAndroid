@@ -14,6 +14,7 @@ abstract class BaseDownloadWorker(context: Context, workerParameters: WorkerPara
         const val UNIQUE_KEY = "download_request"
     }
 
+    //  Runningに変わったら実行される
     override fun doWork(): Result {
 
         val downloadUrl = inputData.getString(KEY_DOWNLOAD)

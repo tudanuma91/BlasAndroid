@@ -15,14 +15,20 @@ import com.v3.basis.blas.activity.FixtureActivity
 import com.v3.basis.blas.activity.TerminalActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.helper.RestHelper
-import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestProject
-import com.v3.basis.blas.ui.ext.getStringExtra
+import com.v3.basis.blas.ui.ext.addDownloadTask
+import com.v3.basis.blas.ui.terminal.adapter.ProjectListCellItem
+import com.v3.basis.blas.ui.terminal.common.DownloadItem
+import com.v3.basis.blas.ui.terminal.common.DownloadViewModel
 import com.v3.basis.blas.ui.terminal.fixture.project_list_view.RowModel
 import com.v3.basis.blas.ui.terminal.fixture.project_list_view.ViewAdapterAdapter
+import com.xwray.groupie.GroupAdapter
+import com.xwray.groupie.databinding.GroupieViewHolder
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
 import kotlinx.android.synthetic.main.fragment_project.*
 import org.json.JSONObject
-import java.lang.Exception
 
 class FixtureFragment : Fragment() {
 
@@ -32,9 +38,13 @@ class FixtureFragment : Fragment() {
     private val toastErrorLen = Toast.LENGTH_LONG
     private var toastSuccessLen = Toast.LENGTH_SHORT
 
+    private lateinit var viewModel: DownloadViewModel
+    private val disposables = CompositeDisposable()
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         fixtureViewModel = ViewModelProviders.of(this).get(FixtureViewModel::class.java)
+        viewModel = ViewModelProviders.of(this).get(DownloadViewModel::class.java)
 
         val extras = activity?.intent?.extras
         if(extras?.getString("token") != null ) {
@@ -57,6 +67,11 @@ class FixtureFragment : Fragment() {
             val errorMessage = msg.createErrorMessage("getFail")
             Toast.makeText(activity, errorMessage, toastErrorLen).show()
         }
+
+        viewModel.startDownload
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { addDownloadTask(viewModel, it) }
+            .addTo(disposables)
     }
 
 
@@ -64,24 +79,27 @@ class FixtureFragment : Fragment() {
     private fun projectSearchSuccess(result:JSONObject) {
         val newMap = RestHelper().createProjectList(result)
         val projectList = createProjectList(newMap)
-        val adapter = ViewAdapterAdapter(projectList,
-            object : ViewAdapterAdapter.ListListener {
-                override fun onClickRow(tappedView: View, rowModel: RowModel) {
-                    Log.d(
-                        "DataManagement",
-                        "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
-                    )
-                    val intent = Intent(activity, FixtureActivity::class.java)
-                    intent.putExtra("token", token)
-                    intent.putExtra("project_id", rowModel.detail)
-                    intent.putExtra("project_name", rowModel.title)
-                    startActivity(intent)
-                }
-            })
+        val listener = object : ViewAdapterAdapter.ListListener {
+            override fun onClickRow(tappedView: View, rowModel: RowModel) {
+                Log.d(
+                    "DataManagement",
+                    "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
+                )
+                val intent = Intent(activity, FixtureActivity::class.java)
+                intent.putExtra("token", token)
+                intent.putExtra("project_id", rowModel.detail)
+                intent.putExtra("project_name", rowModel.title)
+                startActivity(intent)
+            }
+        }
+        projectList.forEach { it.listener = listener }
+
+        val gAdapter = GroupAdapter<GroupieViewHolder<*>>()
+        gAdapter.update(projectList)
 
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(activity)
-        recyclerView.adapter = adapter
+        recyclerView.adapter = gAdapter
     }
 
 
@@ -105,17 +123,15 @@ class FixtureFragment : Fragment() {
      * @param projectのマップ形式のデータ
      * @return プロジェクトのリスト
      */
-    private fun createProjectList(from: MutableMap<String,MutableMap<String, String>>): List<RowModel> {
-        val dataList = mutableListOf<RowModel>()
+    private fun createProjectList(from: MutableMap<String,MutableMap<String, String>>): List<ProjectListCellItem> {
+        val dataList = mutableListOf<ProjectListCellItem>()
 
         from.forEach{
             val project_name = it.value["project_name"].toString()
             val project_id = it.value["project_id"].toString()
-            val data: RowModel =
-                RowModel().also {
-                    it.detail = project_id
-                    it.title = project_name
-                }
+            val item = DownloadItem(project_id, "", "")
+            viewModel.setupItem(this, item)
+            val data = ProjectListCellItem(project_name, project_id, viewModel, item)
             dataList.add(data)
         }
         return dataList

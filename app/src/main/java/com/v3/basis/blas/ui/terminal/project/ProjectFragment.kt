@@ -18,9 +18,15 @@ import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestProject
+import com.v3.basis.blas.ui.ext.addDownloadTask
 import com.v3.basis.blas.ui.ext.getStringExtra
+import com.v3.basis.blas.ui.terminal.common.DownloadViewModel
 import com.v3.basis.blas.ui.terminal.project.project_list_view.RowModel
 import com.v3.basis.blas.ui.terminal.project.project_list_view.ViewAdapterAdapter
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_project.*
 import org.json.JSONObject
 import java.lang.Exception
@@ -37,6 +43,9 @@ class ProjectFragment : Fragment() {
     private val toastErrorLen = Toast.LENGTH_LONG
     private var toastSuccessLen = Toast.LENGTH_SHORT
 
+    private lateinit var viewModel: DownloadViewModel
+    private val disposables = CompositeDisposable()
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -44,6 +53,7 @@ class ProjectFragment : Fragment() {
     ): View? {
 
         homeViewModel = ViewModelProviders.of(this).get(ProjectViewModel::class.java)
+        viewModel = ViewModelProviders.of(this).get(DownloadViewModel::class.java)
 
         val extras = activity?.intent?.extras
         if(extras?.getString("token") != null ) {
@@ -69,6 +79,12 @@ class ProjectFragment : Fragment() {
             Toast.makeText(activity, errorMessage, toastErrorLen).show()
         }
 
+        viewModel.startDownload
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+//                addDownloadTask(it)
+            }
+            .addTo(disposables)
     }
 
     /**
@@ -114,7 +130,7 @@ class ProjectFragment : Fragment() {
                     intent.putExtra("projectName", rowModel.title)
                     startActivity(intent)
                 }
-            })
+            }, viewModel)
 
         recyclerView?.setHasFixedSize(true)
         recyclerView?.layoutManager = LinearLayoutManager(activity)
