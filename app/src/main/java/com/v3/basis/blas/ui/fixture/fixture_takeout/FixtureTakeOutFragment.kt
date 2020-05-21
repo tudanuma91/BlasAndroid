@@ -1,6 +1,7 @@
 package com.v3.basis.blas.ui.fixture.fixture_takeout
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -193,9 +194,20 @@ class FixtureTakeOutFragment : Fragment() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when(requestCode) {
-            REQUEST_CAMERA_PERMISSION -> { initQRCamera() }
+       // Log.d("値チェック", "Hello")
+        var chkPermission = true
+
+        grantResults.forEach {
+            if(it != 0) {
+                chkPermission = false
+            }
         }
+        if(chkPermission){
+            initQRCamera()
+        }else{
+            Toast.makeText(getActivity(), "アクセス権限がありません。QRコード読み取りを実行できません。", Toast.LENGTH_LONG).show()
+        }
+
     }
 
 

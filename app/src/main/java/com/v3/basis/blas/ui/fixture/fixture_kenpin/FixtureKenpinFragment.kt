@@ -2,6 +2,7 @@ package com.v3.basis.blas.ui.fixture.fixture_kenpin
 
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
 import android.hardware.camera2.CameraManager
@@ -158,8 +159,17 @@ class FixtureKenpinFragment : Fragment() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when(requestCode) {
-            REQUEST_CAMERA_PERMISSION -> { initQRCamera() }
+        var chkPermission = true
+
+        grantResults.forEach {
+            if(it != 0) {
+                chkPermission = false
+            }
+        }
+        if(chkPermission){
+            initQRCamera()
+        }else{
+            Toast.makeText(getActivity(), "アクセス権限がありません。QRコード読み取りを実行できません。", Toast.LENGTH_LONG).show()
         }
     }
 }
