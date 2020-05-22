@@ -62,7 +62,7 @@
 
                         <include
                             android:id="@+id/downloadLayout"
-                            layout="@layout/download_state_view"
+                            layout="@layout/view_download_state"
                             app:vm="@{vm}"
                             app:item="@{item}"/>
 

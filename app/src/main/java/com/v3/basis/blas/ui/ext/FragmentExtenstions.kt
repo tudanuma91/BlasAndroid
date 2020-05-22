@@ -82,6 +82,22 @@ fun Fragment.closeSoftKeyboard() {
     imm.hideSoftInputFromWindow(view.windowToken, 0)
 }
 
+/**
+ * バックグラウンドでダウンロードを実行するタスクを、キューに追加します。
+ * [引数]　
+ * vm: DownloadViewModel　ダウンロードステータスが変更になった際に利用。
+ * item: DownloadItem　　ダウンロード対象UIの表示状態を変更。
+ * [ジェネリクス]
+ * [例外]
+ * 明示的なthrowなし。
+ * [戻り値]
+ * なし。
+ * [その他]
+ * [特記事項]
+ * ダウンロードボタンが押されたときに実行することを想定。
+ * [作成者]
+ * fukuda
+ */
 fun Fragment.addDownloadTask(vm: DownloadViewModel, item: DownloadItem) {
 
     var once = true
@@ -106,6 +122,22 @@ fun Fragment.addDownloadTask(vm: DownloadViewModel, item: DownloadItem) {
     }
 }
 
+/**
+ * ダウンロード実行中のタスクの状態を監視します
+ * [引数]　
+ * vm: DownloadViewModel　ダウンロードステータスが変更になった際に利用。
+ * item: DownloadItem　　ダウンロード対象UIの表示状態を変更。
+ * [ジェネリクス]
+ * [例外]
+ * 明示的なthrowなし。
+ * [戻り値]
+ * なし。
+ * [その他]
+ * [特記事項]
+ * ダウンロード状態を表示するListViewが生成されたタイミングで実行することを想定
+ * [作成者]
+ * fukuda
+ */
 fun Fragment.continueDownloadTask(vm: DownloadViewModel, item: DownloadItem) {
 
     var once = true

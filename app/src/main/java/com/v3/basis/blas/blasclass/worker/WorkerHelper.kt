@@ -9,8 +9,33 @@ import java.util.concurrent.TimeUnit
 object WorkerHelper {
 
     /**
-     * return value: Scheduling worker task id
-     *      idはタスクをストップするときに利用します
+     * バックグラウンドでファイルをダウンロードします。
+     * [引数]　
+     * fragment WorkerHelperを呼び出すfragment
+     * downloadUrl ダウンロード先URL
+     * savePath 保存先ファイル名
+     * stateChangedCallBack ダウンロードの状態を受け取るコールバック関数
+     * [ジェネリクス]
+     * reified T: BaseDownloadWorker　BaseDownloadWorkerクラスを継承したクラスを指定する
+     * [例外]
+     * 明示的なthrowなし。
+     * [戻り値]
+     * return Scheduling worker task id。idはタスクをストップするときに利用します
+     * [その他]
+     *     stateChangedCallBack
+     *     [引数]
+     *     state ダウンロードの状態
+     *     progressValue ダウンロードの進捗率
+     *     uuid ダウンロード処理ごとに割り振られたID。uuidはタスクをストップするときに利用します
+     *     [例外]
+     *     明示的な例外なし。
+     *     [戻り値]
+     *     なし
+     * [特記事項]
+     * 稼働条件：ネットワークに接続されている
+     * 逐次実行の動作をするため、タスクが完了してから次のタスクを実行する。
+     * [作成者]
+     * fukuda
      */
     inline fun <reified T: BaseDownloadWorker>
             addDownloadTask(fragment: Fragment,
@@ -55,10 +80,55 @@ object WorkerHelper {
         return downloadWorkRequest.id
     }
 
+    /**
+     * バックグラウンドで実行中のファイルダウンロードを中止します。
+     * [引数]　
+     * context: Context WorkManagerのインスタンを取得するのに必要です
+     * uuid: UUID 停止したいタスクのUUID
+     * [ジェネリクス]
+     * 指定なし。
+     * [例外]
+     * 明示的なthrowなし。
+     * [戻り値]
+     * 無し。
+     * [その他]
+     * なし。
+     * [特記事項]
+     * なし。
+     * [作成者]
+     * fukuda
+     */
     fun stopDownload(context: Context, id: UUID) {
         WorkManager.getInstance(context).cancelWorkById(id)
     }
 
+    /**
+     * 既にキューイングされたダウンロードタスクの状態を定期的に監視します。
+     * [引数]　
+     * fragment WorkerHelperを呼び出すfragment
+     * uuid: UUID 監視したいタスクのID
+     * stateChangedCallBack ダウンロードの状態を受け取るコールバック関数
+     * [ジェネリクス]
+     * reified T: BaseDownloadWorker　BaseDownloadWorkerクラスを継承したクラスを指定する
+     * [例外]
+     * 明示的なthrowなし。
+     * [戻り値]
+     * return Scheduling worker task id。idはタスクをストップするときに利用します
+     * [その他]
+     *     stateChangedCallBack
+     *     [引数]
+     *     state ダウンロードの状態
+     *     progressValue ダウンロードの進捗率
+     *     uuid ダウンロード処理ごとに割り振られたID。uuidはタスクをストップするときに利用します
+     *     [例外]
+     *     明示的な例外なし。
+     *     [戻り値]
+     *     なし
+     * [特記事項]
+     * なし。
+     * [作成者]
+     * fukuda
+     */
     inline fun observe(
         fragment: Fragment,
         id: UUID,

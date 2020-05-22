@@ -5,6 +5,17 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 
+/**
+ * バックグラウンドでDownloadを実行するためのWorkerを継承した抽象クラス。
+ * 継承クラスではdownloadTaskを実装する必要がある。
+ * [引数]　
+ * context: Context　親クラスWorkerのコンストラクタに必要
+ * workerParameters: WorkerParameters　親クラスWorkerのコンストラクタに必要
+ * [特記事項]
+ * コンストラクタの引き数はAPI内部クラスで処理されるため、意識しなくても良い。
+ * [作成者]
+ * fukuda
+ */
 abstract class BaseDownloadWorker(context: Context, workerParameters: WorkerParameters): Worker(context, workerParameters)  {
 
     companion object {
@@ -25,16 +36,62 @@ abstract class BaseDownloadWorker(context: Context, workerParameters: WorkerPara
         return downloadTask(downloadUrl, savePath)
     }
 
+    /**
+     * ダウンロード中のプログレスの値を設定します
+     * [引数]　
+     * value: Int　プログレスの値を設定する。
+     * [ジェネリクス]
+     * 指定なし。
+     * [例外]
+     * 明示的なthrowなし。
+     * [戻り値]
+     * 戻り値なし。
+     * [その他]
+     * [特記事項]
+     * downloadTask関数内で呼び出します。
+     * ダウンロード中のファイルで、ダウンロード完了したサイズバイトなどを指定。
+     * [作成者]
+     * fukuda
+     */
     protected fun setProgressValue(value: Int) {
         val progress = workDataOf(PROGRESS to value)
         setProgressAsync(progress)
     }
 
-    //***********************************************************************************/
-    //  downloadタスクを実装して、Result.success,Result.failure,Result.retryのいずれかを返す /
-    //*********************************************************************************/
+    /**
+     * ダウンロード処理を実行します。
+     * [引数]　
+     * downloadUrl: String　ダウンロード対象URL
+     * savePath: String　ダウンロード完了後にファイル保存するためのパス
+     * [ジェネリクス]
+     * 指定なし。
+     * [例外]
+     * 明示的なthrowなし。
+     * [戻り値]
+     * Result　Resultクラスを使いsuccess, retry, failureの何れかを返却
+     * [その他]
+     * [特記事項]
+     * BaseDownloadWorkerを継承したクラスでオーバライドします。
+     * [作成者]
+     * fukuda
+     */
     abstract fun downloadTask(downloadUrl: String, savePath: String): Result
 
-    //  Progressで進捗状況の管理に使う.ファイルサイズなどを返すように実装する
+    /**
+     * ダウンロード処理を実行します。
+     * [引数]　
+     * なし。
+     * [ジェネリクス]
+     * 指定なし。
+     * [例外]
+     * 明示的なthrowなし。
+     * [戻り値]
+     * Int　プログレスの最大値を設定。
+     * [その他]
+     * [特記事項]
+     *　戻り値はダウンロードファイルのサイズなどを指定。
+     * [作成者]
+     * fukuda
+     */
     open fun getMaxProgressValue(): Int = 0
 }

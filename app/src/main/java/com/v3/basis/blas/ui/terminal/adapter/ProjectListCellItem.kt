@@ -1,10 +1,6 @@
 package com.v3.basis.blas.ui.terminal.adapter
 
-import androidx.core.content.ContextCompat
-import androidx.databinding.Observable
-import androidx.databinding.ObservableBoolean
 import com.v3.basis.blas.R
-import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.databinding.ListProjectBinding
 import com.v3.basis.blas.ui.terminal.common.DownloadItem
 import com.v3.basis.blas.ui.terminal.common.DownloadViewModel
@@ -12,6 +8,21 @@ import com.v3.basis.blas.ui.terminal.fixture.project_list_view.RowModel
 import com.v3.basis.blas.ui.terminal.fixture.project_list_view.ViewAdapterAdapter
 import com.xwray.groupie.databinding.BindableItem
 
+/**
+ * リストビューライブラリのGroupieのBindableItemを継承したクラス。
+ * [ジェネリクス]
+ * ListProjectBindingを指定
+ * [引数]　
+ * title: String　プロジェクトタイトル
+ * detail: String　プロジェクトID
+ * viewModel: DownloadViewModel　list_projectの内部レイアウトに渡すために必要
+ * item: DownloadItem　list_projectの内部レイアウトに渡すために必要
+ * listener: ViewAdapterAdapter.ListListener?　リストビューがクリックされたときのリスナー
+ * [特記事項]
+ * list_project.xmlをもとに自動生成されたListProjectBindingをBindableItemに指定する
+ * [作成者]
+ * fukuda
+ */
 class ProjectListCellItem(
     val title: String,
     val detail: String,
