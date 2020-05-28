@@ -13,6 +13,7 @@ import androidx.core.content.PermissionChecker
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.analytics.BlasLogger
 
 
 fun Fragment.getStringExtra(key: String) : String? {
@@ -74,5 +75,3 @@ fun Fragment.closeSoftKeyboard() {
     val view: View = requireActivity().window.decorView
     imm.hideSoftInputFromWindow(view.windowToken, 0)
 }
-
-
