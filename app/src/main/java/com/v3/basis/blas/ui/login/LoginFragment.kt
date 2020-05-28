@@ -9,13 +9,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.google.firebase.crashlytics.CrashlyticsRegistrar
+import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.firebase.crashlytics.internal.model.CrashlyticsReport
 import com.v3.basis.blas.R
-import com.v3.basis.blas.activity.*
+import com.v3.basis.blas.activity.TerminalActivity
+import com.v3.basis.blas.blasclass.analytics.BlasAnalytics
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.Params
 import com.v3.basis.blas.blasclass.rest.BlasRestAuth
-import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import kotlinx.android.synthetic.main.fragment_login.*
 
 /**
@@ -33,6 +36,7 @@ class LoginFragment : Fragment() {
      * @return フラグメントのUIビューを返す
      */
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+
 
         return inflater.inflate(R.layout.fragment_login,container,false)
     }
@@ -104,6 +108,7 @@ class LoginFragment : Fragment() {
     private fun loginSuccess(token:String) {
         Log.d("BLAS", "Login成功")
 
+        FirebaseCrashlytics.getInstance().setCustomKey("token", token)
 
         val intent = Intent(activity, TerminalActivity::class.java)
         intent.putExtra("token",token)

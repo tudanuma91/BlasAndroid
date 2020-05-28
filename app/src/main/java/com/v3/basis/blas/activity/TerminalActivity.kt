@@ -14,7 +14,9 @@ import androidx.core.view.get
 import androidx.fragment.app.FragmentTransaction
 import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.analytics.BlasAnalytics
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.controller.LocationController
 import com.v3.basis.blas.blasclass.controller.LocationController.getLocation
@@ -48,7 +50,6 @@ class TerminalActivity : AppCompatActivity() {
             // 位置情報のパーミッションを要求 一旦不要な為コメントアウトとする
             // checkPermission()
         }
-
     }
 
 //    fun replaceFragment(fragment: Fragment) {
@@ -123,6 +124,4 @@ class TerminalActivity : AppCompatActivity() {
         overridePendingTransition(0, 0)
         startActivity(intent)
     }
-
-
 }

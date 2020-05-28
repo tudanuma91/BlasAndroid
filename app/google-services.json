@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "700656613948",
+    "firebase_url": "https://blaslog.firebaseio.com",
+    "project_id": "blaslog",
+    "storage_bucket": "blaslog.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:700656613948:android:82c50bfa583ef66c6e6139",
+        "android_client_info": {
+          "package_name": "com.v3.basis.blas"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "700656613948-t2s6gqctosonb00ob0j4hgtjvp0rfnvq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAtqUgFYBtCmYNYJ5-f7S3bZfO3CboyO6I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "700656613948-t2s6gqctosonb00ob0j4hgtjvp0rfnvq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
