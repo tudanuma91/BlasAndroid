@@ -18,6 +18,8 @@ import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.Params
 import com.v3.basis.blas.blasclass.rest.BlasRestAuth
 import com.v3.basis.blas.ui.ext.traceLog
+import io.reactivex.Completable
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_login.*
 
 /**
@@ -108,7 +110,6 @@ class LoginFragment : Fragment() {
 
         FirebaseCrashlytics.getInstance().setCustomKey("token", token)
         BlasApp.token = token
-        traceLog("hoge Hoge !!!")
 
         val intent = Intent(activity, TerminalActivity::class.java)
         intent.putExtra("token",token)
