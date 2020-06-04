@@ -43,6 +43,9 @@ android {
         fukuda {
             buildConfigField 'String', 'API_URL', '"http://192.168.3.6/blas7/api/v1/"'
         }
+        konishi {
+            buildConfigField 'String', 'API_URL', '"http://192.168.1.87/blas7/api/v1/"'
+        }
     }
 
     kotlinOptions {
