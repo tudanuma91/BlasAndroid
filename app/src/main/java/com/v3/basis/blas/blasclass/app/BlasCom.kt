@@ -121,6 +121,7 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
         val result = search.toMutableList()
         val chkList :MutableList<Int> = mutableListOf()
         val removeIdList:MutableList<MutableList<Int>> = mutableListOf()
+        val fld = Regex("fld")
         if(dateTimeCol != "") {
             dateTimeColList.addAll(dateTimeCol.split(","))
         }
@@ -131,7 +132,6 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
 
         for ((condKey, condValue) in cond) {
             //検索条件がフリーワードかつ文字が入力されているとき
-            val fld = Regex("fld")
             if(condKey =="freeWord" && condValue!=""){
                 for (idx in 0 until result.size) {
                     var hitFlg = false
@@ -204,22 +204,27 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
             countRemoveIdList.set(i,0)
         }
 
-        removeIdList.forEach{
-            //削除処理を実行するために、配列に入れる。
-            it.forEach{
-                var value = countRemoveIdList[it]!!.toInt()
-                value += 1
-                countRemoveIdList.set(it,value)
+        if(removeIdList.isNotEmpty()) {
+            removeIdList.forEach {
+                //削除処理を実行するために、配列に入れる。
+                it.forEach {
+                    var value = countRemoveIdList[it]!!.toInt()
+                    value += 1
+                    countRemoveIdList.set(it, value)
+                }
             }
         }
 
-        countRemoveIdList.forEach{
-            //削除処理
-            if(it.value > 0){
-                //削除条件に1件以上合致する時削除処理を実施
-                result.removeAt(it.key)
+        if(countRemoveIdList.isNotEmpty()) {
+            countRemoveIdList.forEach {
+                //削除処理
+                if (it.value > 0) {
+                    //削除条件に1件以上合致する時削除処理を実施
+                    result.removeAt(it.key)
+                }
             }
         }
+
         return result
     }
 
@@ -669,8 +674,7 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
      *  この関数は検索ワードのフォーマットを整える関数です
      */
     public fun searchWordCreate(string:String?): LocalDate? {
-        val time = string!!.replace("/", "-")
-        val result = LocalDate.parse(time)
+        val result = LocalDate.parse(string)
         return result
     }
 

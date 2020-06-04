@@ -1,6 +1,7 @@
 package com.v3.basis.blas.blasclass.helper
 
 import android.util.Log
+import com.google.gson.JsonObject
 import org.json.JSONArray
 import org.json.JSONObject
 import java.lang.Exception
@@ -93,13 +94,9 @@ class RestHelper {
                 }
 
                 rtnMap.add(parseStartNum, valueMap)
-                Log.d("parseJsonから呼ばれた", "valueMap => ${valueMap}")
             }
         }else {
             //スタートとゴールの値が異なる場合
-            Log.d("jsonParse","こちらが呼ばれる！！！!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            Log.d("jsonParse","start => ${parseStartNum} ～ Fin =>${parseFinNum}")
-
             if (resultMap != null) {
                 try {
                     var count = 0
@@ -107,7 +104,6 @@ class RestHelper {
                         Log.d("jsonParse", "idx => ${idx}")
                         val valueMap: MutableMap<String, String?> = mutableMapOf()
                         val jsonField = JSONObject(resultMap.get(idx).toString())
-                        Log.d("jsonParse", "ここまで生きている")
                         val item = jsonField.getJSONObject("Item")
                         val endFlg = item["end_flg"].toString()
                         valueMap.set(key = "item_id", value = item["item_id"].toString())
@@ -137,7 +133,6 @@ class RestHelper {
 
 
     fun createJsonArray(resultMap:JSONObject?): JSONArray? {
-        Log.d("値の取得","resultMap->${resultMap}")
         var rtnList:JSONArray? = null
         if(resultMap != null) {
             rtnList = resultMap.getJSONArray("records")
@@ -158,6 +153,7 @@ class RestHelper {
         val result = resultMap["1"]
         val rtnMap :MutableList<MutableMap<String, String?>> = mutableListOf()
         val itemList = result!!.getJSONArray("records")
+        Log.d("配列の取得","itemList =>${itemList}")
 
         //for (i in 0 until 100件ずつ行う処理の続き){
         for (i in 0 until itemList.length()){
@@ -313,6 +309,40 @@ class RestHelper {
         }
 
         return rtnMap
+    }
+
+    fun createJsonFix(resultMap:JSONArray,
+                              valueMap:MutableMap<Int, MutableMap<String, String?>>,
+                              parseStartNum:Int,
+                              parseFinNum:Int): MutableMap<Int, MutableMap<String, String?>> {
+
+        //resultMap.Sort
+
+        for (i in parseStartNum until parseFinNum) {
+            val fields = JSONObject(resultMap[i].toString())
+            val fixture = fields.getJSONObject("Fixture")
+            val fixtureId = fixture.getInt("fixture_id")
+
+
+            valueMap[fixtureId] = mutableMapOf(
+                "serial_number" to fixture.getString("serial_number"),
+                "status" to fixture.getString("status"),
+                "fix_user" to fields.getJSONObject("FixUser").getString("name"),
+                "takeout_user" to fields.getJSONObject("TakeOutUser").getString("name"),
+                "rtn_user" to fields.getJSONObject("RtnUser").getString("name"),
+                "item_user" to fields.getJSONObject("ItemUser").getString("name"),
+                "fix_org" to fields.getJSONObject("FixOrg").getString("name"),
+                "takeout_org" to fields.getJSONObject("TakeOutOrg").getString("name"),
+                "rtn_org" to fields.getJSONObject("RtnOrg").getString("name"),
+                "item_org" to fields.getJSONObject("ItemOrg").getString("name"),
+                "fix_date" to fixture.getString("fix_date"),
+                "takeout_date" to fixture.getString("takeout_date"),
+                "rtn_date" to fixture.getString("rtn_date"),
+                "item_date" to fixture.getString("item_date")
+            )
+        }
+
+        return valueMap
     }
 
 

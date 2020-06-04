@@ -44,6 +44,7 @@ class FixtureActivity : AppCompatActivity() {
         VibrationEffect.DEFAULT_AMPLITUDE
     )
     private var tone: ToneGenerator? = null
+    private var realTime = false
 
    /* QRコード読を読み取りました</string>
     <string name="error_create_qr">すでに登録済のQRコードです</string>
@@ -125,6 +126,7 @@ class FixtureActivity : AppCompatActivity() {
     ) {
         qr_view.decodeContinuous(object : BarcodeCallback {
             override fun barcodeResult(result: BarcodeResult?) {//QRコードを読み取った時の処理
+                Log.d("CL_0001_4", "画面起動")
                 if(result.toString() != oldResult) {
                     if (result != null) {
                         //初期化と変数宣言
@@ -132,16 +134,20 @@ class FixtureActivity : AppCompatActivity() {
 
                         //読み取りを伝えるバイブレーション
                         if(fragm != null){
+                            Log.d("CL_0001_5", "読み取り時震動")
                             vibrator = fragm.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
                         }
 
                         //Thread.sleep(500)
                         Log.d("QRCode", "処理実行！！")
+                        Log.d("CL_0001_6", "結果を表示")
                         result_text.text = "$result"
 
 
                         //ひとつ前のQRコードをこのQRコードにする。連続読み取りを避けるため。
                         oldResult = result.toString()
+
+                      //  realTime = true
 
                         var payload2 = mapOf(
                             "token" to token,
@@ -152,6 +158,7 @@ class FixtureActivity : AppCompatActivity() {
                         //restで更新する処理
                         when(type){
                             "kenpin"->{
+                                Log.d("CL_0001_7", "検品開始")
                                 // onResumeをオーバーライドしたので，手動呼び出しは禁止
                                 // FixtureKenpinFragment().callOnPouse()
                                 BlasRestFixture("kenpin", payload2, ::success, ::error).execute()
@@ -168,7 +175,6 @@ class FixtureActivity : AppCompatActivity() {
                             }
                         }
 
-                        Log.d("OK", "終了")
                         //この時、エラーが帰ってきたら逃がす処理を追加する。
                     }
 
@@ -183,34 +189,40 @@ class FixtureActivity : AppCompatActivity() {
      *
      */
     fun success(result: JSONObject){
-        vibrationEffect = VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
-        vibrator.vibrate(vibrationEffect)
-       // tone.startTone(ToneGenerator.TONE_DTMF_S,200)
-        //tone.startTone(ToneGenerator.TONE_CDMA_ANSWER,200)
-        playTone(ToneGenerator.TONE_CDMA_ANSWER)
-        Log.d("OK","作成完了")
-        messageText.setTextColor(Color.GREEN)
-        messageText.text = "QRコードを読み取りました"
+        //if(realTime) {
+            vibrationEffect =
+                VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
+            vibrator.vibrate(vibrationEffect)
+            // tone.startTone(ToneGenerator.TONE_DTMF_S,200)
+            //tone.startTone(ToneGenerator.TONE_CDMA_ANSWER,200)
+            playTone(ToneGenerator.TONE_CDMA_ANSWER)
+            Log.d("OK", "作成完了")
+            messageText.setTextColor(Color.GREEN)
+            messageText.text = "QRコードを読み取りました"
+            realTime = false
+       // }
+
     }
 
     /**
      * rest失敗時の処理
      */
     fun error(errorCode: Int, aplCode :Int){
-        vibrationEffect = VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
-        vibrator.vibrate(vibrationEffect)
-       // tone.startTone(ToneGenerator.TONE_CDMA_HIGH_PBX_S_X4,200)
-        playTone(ToneGenerator.TONE_CDMA_HIGH_PBX_S_X4)
-        Log.d("NG","作成失敗")
-        Log.d("errorCorde","${errorCode}")
+       // if(realTime) {
+            vibrationEffect =
+                VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
+            vibrator.vibrate(vibrationEffect)
+            // tone.startTone(ToneGenerator.TONE_CDMA_HIGH_PBX_S_X4,200)
+            playTone(ToneGenerator.TONE_CDMA_HIGH_PBX_S_X4)
+            Log.d("NG", "作成失敗")
+            Log.d("errorCorde", "${errorCode}")
+            var message: String? = ""
 
-        var message:String? = ""
-
-        message = BlasMsg().getMessage(errorCode,aplCode)
-
-        messageText.setTextColor(Color.RED)
-        messageText.text = message
-
+            message = BlasMsg().getMessage(errorCode, aplCode)
+            messageText.setTextColor(Color.RED)
+            messageText.text = message
+          //  realTime = false
+        //}
     }
 
     private fun playTone(mediaFileRawId: Int) {
@@ -240,6 +252,7 @@ class FixtureActivity : AppCompatActivity() {
         reloard()
     }
 
+    //検索結果から戻った時に走る処理
     fun reloard(){
         val intent = intent
         overridePendingTransition(0, 0)
@@ -249,6 +262,17 @@ class FixtureActivity : AppCompatActivity() {
         overridePendingTransition(0, 0)
         startActivity(intent)
     }
+    /*
+    val intent = intent
+        overridePendingTransition(0, 0)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        //前回の状態をセーブしているから呼び出す！
+        intent.putExtra(BEFORE_FRAGMENT, beforeSelectedNavButton)
+        finish()
+
+        overridePendingTransition(0, 0)
+        startActivity(intent)
+     */
 
 
 }

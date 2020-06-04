@@ -45,8 +45,8 @@ class TerminalActivity : AppCompatActivity() {
             transaction.commit()
             val thr = QueueController
             thr.start()
-            // 位置情報のパーミッションを要求
-            checkPermission()
+            // 位置情報のパーミッションを要求 一旦不要な為コメントアウトとする
+            // checkPermission()
         }
 
     }
@@ -116,6 +116,7 @@ class TerminalActivity : AppCompatActivity() {
         val intent = intent
         overridePendingTransition(0, 0)
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        //前回の状態をセーブしているから呼び出す！
         intent.putExtra(BEFORE_FRAGMENT, beforeSelectedNavButton)
         finish()
 

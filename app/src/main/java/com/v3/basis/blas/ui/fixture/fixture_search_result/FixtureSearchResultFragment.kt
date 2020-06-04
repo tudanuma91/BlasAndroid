@@ -26,6 +26,9 @@ import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
 import kotlinx.android.synthetic.main.fragment_fixture_search_result.*
+import kotlinx.android.synthetic.main.fragment_fixture_search_result.progressBar
+import kotlinx.android.synthetic.main.fragment_fixture_search_result.recyclerView
+import kotlinx.android.synthetic.main.fragment_fixture_view.*
 import org.json.JSONObject
 import java.lang.Exception
 
@@ -50,11 +53,6 @@ class FixtureSearchResultFragment : Fragment() {
 
     private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
         override fun onClickRow(tappedView: View, rowModel: RowModel) {
-            //カードタップ時の処理
-            Log.d(
-                "DataManagement",
-                "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
-            )
 
         }
 
@@ -118,6 +116,8 @@ class FixtureSearchResultFragment : Fragment() {
                 recyclerView.layoutManager = LinearLayoutManager(activity)
                 recyclerView.adapter = adapter
 
+                progressBar.visibility = View.VISIBLE
+
                 //呼ぶタイミングを確定させる！！
                 val payload2 = mapOf("token" to token, "project_id" to project_id)
                 Log.d("testtest", "取得する")
@@ -131,6 +131,7 @@ class FixtureSearchResultFragment : Fragment() {
                 throw Exception("Failed to receive internal data ")
             }
         }catch (e:Exception){
+            progressBar.visibility = View.INVISIBLE
             val errorMessage = msg.createErrorMessage("getFail")
             Toast.makeText(activity, errorMessage, toastErrorLen).show()
         }
@@ -184,6 +185,7 @@ class FixtureSearchResultFragment : Fragment() {
         Log.d("konishi", "setAdapter")
         createDataList()
         adapter.notifyItemInserted(0)
+        progressBar.visibility = View.INVISIBLE
     }
 
     /**
@@ -193,6 +195,7 @@ class FixtureSearchResultFragment : Fragment() {
         //カラム順に並べ替える
         val records = result.getJSONArray("records")
         for(i in 0 until records.length()) {
+            //TODO:: この下のパースする処理を段階的に行うようにする
             val fields = JSONObject(records[i].toString())
             val fixture = fields.getJSONObject("Fixture")
 
@@ -222,19 +225,7 @@ class FixtureSearchResultFragment : Fragment() {
             baseDataList.add(baseValueMap)
 
         }
-        /*
-        if(records != null){
-            records.forEach {
-                val id = it["fixture_id"]?.toInt()
-                if(id != null){
-                    valueMap[id] = it
-                }
-            }
-        }
-        Log.d("value_map","${valueMap}")
-        Log.d("value_map","${valueMap.size}")
-        valueSize = valueMap.size
-*/
+
         if(baseDataList.isNotEmpty()) {
             setAdapter()
         }
@@ -297,41 +288,6 @@ class FixtureSearchResultFragment : Fragment() {
         value += setValue(list["item_date"].toString())
 
 
-
-      /*  value = "【${getString(R.string.col_serialnumber)}】"
-        value += "\n  ${list["serial_number"]}"
-        value += "\n\n${getString(R.string.col_status)}"
-        value += when(list["status"]){//config.FixtureTypeにて定義している。
-            canTakeOut -> {"${statusCanTakeOut}"}
-            takeOut -> {"${statusTakeOut}"}
-            finishInstall -> {"${statusFinishInstall}"}
-            notTakeOut -> {"${statusNotTakeOut}"}
-            else -> { }
-        }
-        value += "\n\n\n${getString(R.string.col_kenpin_org)}"
-        value += setValue(list["FixOrg"].toString())
-        value += "\n${getString(R.string.col_kenpin_user)}"
-        value += setValue(list["FixUser"].toString())
-        value += "\n${getString(R.string.col_kenpin_date)}"
-        value += setValue(list["fix_date"].toString())
-        value += "\n\n${getString(R.string.col_takeout_org)}"
-        value += setValue(list["TakeOutOrg"].toString())
-        value += "\n${getString(R.string.col_takeout_user)}"
-        value += setValue(list["TakeOutUser"].toString())
-        value += "\n${getString(R.string.col_takeout_date)}"
-        value += setValue(list["takeout_date"].toString())
-        value += "\n\n${getString(R.string.col_return_org)}"
-        value += setValue(list["RtnOrg"].toString())
-        value += "\n${getString(R.string.col_return_user)}"
-        value += setValue(list["RtnUser"].toString())
-        value += "\n${getString(R.string.col_return_date)}"
-        value += setValue(list["rtn_date"].toString())
-        value += "\n\n${getString(R.string.col_item_org)}"
-        value += setValue(list["ItemOrg"].toString())
-        value += "\n${getString(R.string.col_item_user)}"
-        value += setValue(list["ItemUser"].toString())
-        value += "\n${getString(R.string.col_item_date)}"
-        value += setValue(list["item_date"].toString())*/
         return value
     }
 

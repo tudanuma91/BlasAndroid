@@ -20,6 +20,7 @@ import com.v3.basis.blas.ui.terminal.status.UnRead.AlreadyRowModel
 import com.v3.basis.blas.ui.terminal.status.UnRead.AlreadyViewAdapter
 import com.v3.basis.blas.ui.viewparts.CardRecycler.CardRecyclerStatusAlready
 import org.json.JSONObject
+import java.lang.Exception
 
 /**
  * A simple [Fragment] subclass.
@@ -93,7 +94,11 @@ class StatusAlreadyFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        recyclerView.adapter = null
+        try {
+            recyclerView.adapter = null
+        }catch (e:Exception){
+
+        }
         super.onDestroyView()
     }
 

@@ -2,6 +2,7 @@ package com.v3.basis.blas.ui.fixture.fixture_return
 
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.Context
 import android.hardware.camera2.CameraManager
 import android.os.Bundle
@@ -117,13 +118,14 @@ class FixtureReturnFragment : Fragment() {
                 project_name.text = projectName
                 //許可取ってカメラを起動する
                 fragm = activity
-                requireActivity().checkPermissions()
+                //requireActivityのパーミッションチェックがエラー原因だった
+                //requireActivity().checkPermissions()
                 initQRCamera()
             }else{
                 throw java.lang.Exception("Failed to receive internal data ")
             }
         }catch (e:Exception){
-            project_name.text = "内部データの取得に失敗しました。返却を実行できません。"
+            return_result_text.text = "内部データの取得に失敗しました。返却を実行できません。"
             val errorMessage = msg.createErrorMessage("getFail")
             Toast.makeText(activity, errorMessage, toastErrorLen).show()
         }
@@ -166,10 +168,20 @@ class FixtureReturnFragment : Fragment() {
         super.onPause()
     }
 
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when(requestCode) {
-            REQUEST_CAMERA_PERMISSION -> { initQRCamera() }
+        var chkPermission = true
+
+        grantResults.forEach {
+            if(it != 0) {
+                chkPermission = false
+            }
+        }
+        if(chkPermission){
+            initQRCamera()
+        }else{
+            Toast.makeText(getActivity(), "アクセス権限がありません。QRコード読み取りを実行できません。", Toast.LENGTH_LONG).show()
         }
     }
 

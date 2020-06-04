@@ -2,7 +2,9 @@ package com.v3.basis.blas.ui.fixture.fixture_kenpin
 
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.Context
+import android.graphics.Color
 import android.hardware.camera2.CameraManager
 import android.os.*
 import android.util.Log
@@ -43,6 +45,7 @@ class FixtureKenpinFragment : Fragment() {
     private var SW: Boolean = false
     private var oldResult:String? =null
     private var msg = BlasMsg()
+    private val counter = true
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,7 +58,6 @@ class FixtureKenpinFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
-
         val extras = activity?.intent?.extras
         if (extras?.getString("token") != null) {
             token = extras.getString("token").toString()
@@ -72,10 +74,6 @@ class FixtureKenpinFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        requireActivity().checkPermissions()
-
-
-
         //ライト光るボタン実装
         //現在エラーが出ているので使用不可
         cameraManager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager?
@@ -83,7 +81,7 @@ class FixtureKenpinFragment : Fragment() {
         //ボタンがタップされたときの処理
         kenpinBtnLight.setOnClickListener{
             if(cameraID == null){
-                Log.d("null","nullだったよ")
+                Log.d("null","ライトが存在しない")
             }
             try {
                 if(SW == false){
@@ -104,13 +102,16 @@ class FixtureKenpinFragment : Fragment() {
         try {
             if(token != null && projectId != null && projectName != null) {
                 //プロジェクト名をここで入れる。
+                //requireActivityのパーミッションチェックがエラー原因だった
+                //  requireActivity().checkPermissions()
                 kenpin_project_name.text = projectName
                 initQRCamera()
             }else{
                 throw Exception("Failed to receive internal data ")
             }
         }catch (e:Exception){
-            kenpin_project_name.text = "内部データの取得に失敗しました。検品を実行できません"
+            kenpin_result_text.setTextColor(Color.RED)
+            kenpin_result_text.text = "内部データの取得に失敗しました。検品を実行できません"
             val errorMessage = msg.createErrorMessage("getFail")
             Toast.makeText(activity, errorMessage, toastErrorLen).show()
         }
@@ -134,10 +135,13 @@ class FixtureKenpinFragment : Fragment() {
                 kenpin_result_text,
                 kenpin_message)
         } else {//許可取れなかった場合、行う
-            requestPermissions(arrayOf(
-                Manifest.permission.CAMERA,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ), REQUEST_CAMERA_PERMISSION)
+            requestPermissions(
+                arrayOf(
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ), REQUEST_CAMERA_PERMISSION
+            )
+
         }
     }
 
@@ -152,44 +156,20 @@ class FixtureKenpinFragment : Fragment() {
         super.onPause()
     }
 
-    /*private fun openQRCamera() {
-        qr_view.decodeContinuous(object : BarcodeCallback {
-            override fun barcodeResult(result: BarcodeResult?) {//QRコードを読み取った時の処理
-                if(result.toString() != oldResult) {
-                    if (result != null) {
-                        //読み取りを伝えるバイブレーション
-
-
-                        //Thread.sleep(500)
-                        Log.d("QRCode", "処理実行！！")
-                        kenpin_result_text.text = "$result"
-
-
-                        //ひとつ前のQRコードをこのQRコードにする。連続読み取りを避けるため。
-                        oldResult = result.toString()
-                        onPause()
-
-                        //restで更新する処理
-                        var payload2 = mapOf(
-                            "token" to token,
-                            "project_id" to projectId,
-                            "serial_number" to "${result}"
-                        )
-                        BlasRestFixture("kenpin", payload2, ::success, ::error).execute()
-                        Log.d("OK", "終了")
-                        //この時、エラーが帰ってきたら逃がす処理を追加する。
-                    }
-
-                }
-            }
-            override fun possibleResultPoints(resultPoints: MutableList<ResultPoint>?) { }
-        })
-    }*/
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when(requestCode) {
-            REQUEST_CAMERA_PERMISSION -> { initQRCamera() }
+        var chkPermission = true
+
+        grantResults.forEach {
+            if(it != 0) {
+                chkPermission = false
+            }
+        }
+        if(chkPermission){
+            initQRCamera()
+        }else{
+            Toast.makeText(getActivity(), "アクセス権限がありません。QRコード読み取りを実行できません。", Toast.LENGTH_LONG).show()
         }
     }
 }

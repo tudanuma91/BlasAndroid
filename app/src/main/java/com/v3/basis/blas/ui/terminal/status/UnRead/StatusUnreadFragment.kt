@@ -17,7 +17,7 @@ import com.v3.basis.blas.blasclass.rest.BlasRestProject
 import com.v3.basis.blas.ui.ext.getStringExtra
 import com.v3.basis.blas.ui.viewparts.CardRecycler.CardRecyclerStatusUnread
 import org.json.JSONObject
-
+import java.lang.Exception
 
 
 /**
@@ -122,7 +122,11 @@ class StatusUnreadFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        recyclerView.adapter = null
+        try {
+            recyclerView.adapter = null
+        }catch (e:Exception){
+
+        }
         super.onDestroyView()
         Log.d("処理しなおし","ここ通ったよ")
     }

@@ -42,7 +42,6 @@ class ItemViewFragment : Fragment() {
     lateinit var projectId :String
     private var msg = BlasMsg()
     private val toastErrorLen = Toast.LENGTH_LONG
-    private var toastSuccessLen = Toast.LENGTH_SHORT
 
     private var endShow = false
     private var progressBarFlg = false
@@ -236,13 +235,10 @@ class ItemViewFragment : Fragment() {
         //初期化
         itemListAll.clear()
         jsonParseList = null
-        jsonParseList = null
 
         jsonItemList = result
-        Log.d("値取得","jsonItemList => ${jsonItemList}")
         if(jsonItemList != null) {
             jsonParseList = helper.createJsonArray(jsonItemList)
-            Log.d("デバックログ","jsonParseList =>${jsonParseList}")
             jsonParse(parseStartNum, parseFinNum)
             setAdapter()
         }

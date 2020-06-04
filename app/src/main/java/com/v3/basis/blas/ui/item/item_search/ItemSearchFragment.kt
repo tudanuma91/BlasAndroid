@@ -412,7 +412,7 @@ class ItemSearchFragment : Fragment() {
         formPart.setOnClickListener{
             val dtp = DatePickerDialog(getContext()!!, DatePickerDialog.OnDateSetListener{ view, y, m, d ->
                 //フォーマットを作成
-                formPart.setText(String.format("%d/%02d/%02d",y,m+1,d))
+                formPart.setText(String.format("%d-%02d-%02d",y,m+1,d))
             }, year,month,day)
             dtp.show()
         }

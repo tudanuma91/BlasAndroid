@@ -19,93 +19,76 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="25dp"
+                android:layout_weight="0.7" />
+
+            <TextView
+                android:id="@+id/fixFreeWord"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="0.7"
+                android:text="@string/col_free_word" />
+
+            <EditText
+                android:id="@+id/fixFreeWordValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:ems="10"
+                android:inputType="textPersonName" />
+
+
+            <TextView
+                android:id="@+id/fixSerialNumber"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="0.7"
+                android:text="@string/col_serialnumber" />
+
+            <EditText
+                android:id="@+id/fixSerialNumberSelect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:ems="10"
+                android:inputType="textPersonName" />
+
+            <TextView
+                android:id="@+id/fixDataId"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="0.7"
+                android:text="@string/col_data_id" />
+
+            <EditText
+                android:id="@+id/fixDataIdSelect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:ems="10"
+                android:inputType="text" />
+
+            <TextView
+                android:id="@+id/fixtStatus"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="0.7"
+                android:text="@string/col_status" />
+
+            <Spinner
+                android:id="@+id/fixSelectStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:entries="@array/fixture_status_list" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/fixFreeWord"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.7"
-                    android:gravity="center"
-                    android:text="@string/col_free_word" />
-
-                <EditText
-                    android:id="@+id/fixFreeWordValue"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.3"
-                    android:ems="10"
-                    android:inputType="textPersonName" />
-            </LinearLayout>
-
-
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/fixSerialNumber"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.7"
-                    android:gravity="center"
-                    android:text="@string/col_serialnumber" />
-
-                <EditText
-                    android:id="@+id/fixSerialNumberSelect"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.3"
-                    android:ems="10"
-                    android:inputType="textPersonName" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/fixDataId"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.7"
-                    android:gravity="center"
-                    android:text="@string/col_data_id" />
-
-                <EditText
-                    android:id="@+id/fixDataIdSelect"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.3"
-                    android:ems="10"
-                    android:inputType="text" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/fixtStatus"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.7"
-                    android:gravity="center"
-                    android:text="@string/col_status" />
-
-                <Spinner
-                    android:id="@+id/fixSelectStatus"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.3"
-                    android:entries="@array/fixture_status_list" />
             </LinearLayout>
 
             <Space
@@ -113,63 +96,47 @@
                 android:layout_height="25dp" />
 
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/fixKenpinOrg"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal">
+                android:layout_weight="0.7"
+                android:text="@string/col_kenpin_org" />
 
-                <TextView
-                    android:id="@+id/fixKenpinOrg"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.7"
-                    android:gravity="center"
-                    android:text="@string/col_kenpin_org" />
+            <EditText
+                android:id="@+id/fixKenpinOrgSelect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:ems="10"
+                android:inputType="textPersonName" />
 
-                <EditText
-                    android:id="@+id/fixKenpinOrgSelect"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.3"
-                    android:ems="10"
-                    android:inputType="textPersonName" />
-            </LinearLayout>
-
-            <LinearLayout
+            <TextView
+                android:id="@+id/fixKenpinUser"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal">
+                android:layout_weight="0.7"
+                android:text="@string/col_kenpin_user" />
 
-                <TextView
-                    android:id="@+id/fixKenpinUser"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.7"
-                    android:gravity="center"
-                    android:text="@string/col_kenpin_user" />
+            <EditText
+                android:id="@+id/fixKenpinUserSelect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:ems="10"
+                android:inputType="textPersonName" />
 
-                <EditText
-                    android:id="@+id/fixKenpinUserSelect"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.3"
-                    android:ems="10"
-                    android:inputType="textPersonName" />
-
-            </LinearLayout>
+            <TextView
+                android:id="@+id/fixKenpinDay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="0.7"
+                android:text="@string/col_kenpin_date" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/fixKenpinDay"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.7"
-                    android:gravity="center"
-                    android:text="@string/col_kenpin_date" />
 
                 <EditText
                     android:id="@+id/fixKenpinDayMin"
@@ -202,63 +169,47 @@
             <Space android:layout_width="match_parent"
             android:layout_height="25dip"/>
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/fixTakeoutOrg"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal">
+                android:layout_weight="0.7"
+                android:text="@string/col_takeout_org" />
 
-                <TextView
-                    android:id="@+id/fixTakeoutOrg"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.7"
-                    android:gravity="center"
-                    android:text="@string/col_takeout_org" />
+            <EditText
+                android:id="@+id/fixTakeoutOrgSelect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:ems="10"
+                android:inputType="textPersonName" />
 
-                <EditText
-                    android:id="@+id/fixTakeoutOrgSelect"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.3"
-                    android:ems="10"
-                    android:inputType="textPersonName" />
-            </LinearLayout>
-
-            <LinearLayout
+            <TextView
+                android:id="@+id/fixTakeoutUser"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal">
+                android:layout_weight="0.7"
+                android:text="@string/col_takeout_user" />
 
-                <TextView
-                    android:id="@+id/fixTakeoutUser"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.7"
-                    android:gravity="center"
-                    android:text="@string/col_takeout_user" />
+            <EditText
+                android:id="@+id/fixTakeoutUserSelect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:ems="10"
+                android:inputType="textPersonName" />
 
-                <EditText
-                    android:id="@+id/fixTakeoutUserSelect"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.3"
-                    android:ems="10"
-                    android:inputType="textPersonName" />
-
-            </LinearLayout>
+            <TextView
+                android:id="@+id/fixTakeoutDay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="0.7"
+                android:text="@string/col_takeout_date" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/fixTakeoutDay"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.7"
-                    android:gravity="center"
-                    android:text="@string/col_takeout_date" />
 
                 <EditText
                     android:id="@+id/fixTakeoutDayMin"
@@ -291,63 +242,47 @@
             <Space android:layout_width="match_parent"
                 android:layout_height="25dip"/>
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/fixReturnOrg"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal">
+                android:layout_weight="0.7"
+                android:text="@string/col_return_org" />
 
-                <TextView
-                    android:id="@+id/fixReturnOrg"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.7"
-                    android:gravity="center"
-                    android:text="@string/col_return_org" />
+            <EditText
+                android:id="@+id/fixReturnOrgSelect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:ems="10"
+                android:inputType="textPersonName" />
 
-                <EditText
-                    android:id="@+id/fixReturnOrgSelect"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.3"
-                    android:ems="10"
-                    android:inputType="textPersonName" />
-            </LinearLayout>
-
-            <LinearLayout
+            <TextView
+                android:id="@+id/fixReturnUser"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal">
+                android:layout_weight="0.7"
+                android:text="@string/col_return_user" />
 
-                <TextView
-                    android:id="@+id/fixReturnUser"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.7"
-                    android:gravity="center"
-                    android:text="@string/col_return_user" />
+            <EditText
+                android:id="@+id/fixReturnUserSelect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:ems="10"
+                android:inputType="textPersonName" />
 
-                <EditText
-                    android:id="@+id/fixReturnUserSelect"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.3"
-                    android:ems="10"
-                    android:inputType="textPersonName" />
-
-            </LinearLayout>
+            <TextView
+                android:id="@+id/fixreturnDay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="0.7"
+                android:text="@string/col_return_date" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/fixreturnDay"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.7"
-                    android:gravity="center"
-                    android:text="@string/col_return_date" />
 
                 <EditText
                     android:id="@+id/fixReturnDayMin"
@@ -380,63 +315,47 @@
             <Space android:layout_width="match_parent"
                 android:layout_height="25dip"/>
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/fixItemOrg"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal">
+                android:layout_weight="0.7"
+                android:text="@string/col_item_org" />
 
-                <TextView
-                    android:id="@+id/fixItemOrg"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.7"
-                    android:gravity="center"
-                    android:text="@string/col_item_org" />
+            <EditText
+                android:id="@+id/fixItemOrgSelect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:ems="10"
+                android:inputType="textPersonName" />
 
-                <EditText
-                    android:id="@+id/fixItemOrgSelect"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.3"
-                    android:ems="10"
-                    android:inputType="textPersonName" />
-            </LinearLayout>
-
-            <LinearLayout
+            <TextView
+                android:id="@+id/fixItemUser"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal">
+                android:layout_weight="0.7"
+                android:text="@string/col_item_user" />
 
-                <TextView
-                    android:id="@+id/fixItemUser"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.7"
-                    android:gravity="center"
-                    android:text="@string/col_item_user" />
+            <EditText
+                android:id="@+id/fixItemUserSelect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:ems="10"
+                android:inputType="textPersonName" />
 
-                <EditText
-                    android:id="@+id/fixItemUserSelect"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.3"
-                    android:ems="10"
-                    android:inputType="textPersonName" />
-
-            </LinearLayout>
+            <TextView
+                android:id="@+id/fixItemDay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="0.7"
+                android:text="@string/col_item_date" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/fixItemDay"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.7"
-                    android:gravity="center"
-                    android:text="@string/col_item_date" />
 
                 <EditText
                     android:id="@+id/fixItemDayMin"
