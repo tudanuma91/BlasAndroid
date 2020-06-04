@@ -9,7 +9,6 @@ import android.net.NetworkInfo
 import android.net.Uri
 import android.os.AsyncTask
 import android.util.Log
-import android.widget.Toast
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.app.decrypt
@@ -18,21 +17,14 @@ import com.v3.basis.blas.blasclass.app.getHash
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.database
 import io.reactivex.Completable
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.*
 import java.net.HttpURLConnection
-import java.net.InetAddress
-import java.net.NetworkInterface
 import java.net.URLEncoder
-import java.security.MessageDigest
 import java.util.*
-import javax.crypto.Cipher
-import javax.crypto.CipherOutputStream
-import javax.crypto.spec.SecretKeySpec
 
 
 /**
@@ -59,8 +51,8 @@ open class BlasRest() : AsyncTask<String, String, String>() {
 
     companion object {
 
-        //const val URL = BuildConfig.API_URL
-        const val URL = "https://www.basis-service.com/blas70/api/v1/"
+        const val URL = BuildConfig.API_URL
+//        const val URL = "https://www.basis-service.com/blas70/api/v1/"
 
         const val CONTEXT_TIME_OUT = 100000
         const val READ_TIME_OUT = 100000

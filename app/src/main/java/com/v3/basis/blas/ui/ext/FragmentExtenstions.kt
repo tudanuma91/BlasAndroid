@@ -20,6 +20,7 @@ import com.v3.basis.blas.blasclass.worker.WorkerHelper
 import com.v3.basis.blas.ui.terminal.common.DownloadItem
 import com.v3.basis.blas.ui.terminal.common.DownloadViewModel
 import java.util.*
+import com.v3.basis.blas.blasclass.analytics.BlasLogger
 
 
 fun Fragment.getStringExtra(key: String) : String? {

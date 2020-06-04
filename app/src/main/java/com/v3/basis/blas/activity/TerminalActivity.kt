@@ -48,7 +48,6 @@ class TerminalActivity : AppCompatActivity() {
             // 位置情報のパーミッションを要求 一旦不要な為コメントアウトとする
             // checkPermission()
         }
-
     }
 
 //    fun replaceFragment(fragment: Fragment) {
@@ -123,6 +122,4 @@ class TerminalActivity : AppCompatActivity() {
         overridePendingTransition(0, 0)
         startActivity(intent)
     }
-
-
 }
