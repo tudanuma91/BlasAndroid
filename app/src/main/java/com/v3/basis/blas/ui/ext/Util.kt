@@ -91,17 +91,19 @@ private fun zipFiles(zipOut: ZipOutputStream, sourceFile: File, parentDirPath: S
 }
 
 @Throws(Exception::class)
-fun unzip(zipFilePath: String, unzipAtLocation: String) {
+fun unzip(zipFilePath: String, unzipAtLocation: String): Boolean {
     val archive = File(zipFilePath)
-    try {
+    return try {
         val zipfile = ZipFile(archive)
         val e: Enumeration<*> = zipfile.entries()
         while (e.hasMoreElements()) {
             val entry = e.nextElement() as ZipEntry
             unzipEntry(zipfile, entry, unzipAtLocation)
         }
+        true
     } catch (e: Exception) {
         Log.e("Unzip zip", "Unzip exception", e)
+        false
     }
 }
 
