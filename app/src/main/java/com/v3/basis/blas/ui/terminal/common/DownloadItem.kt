@@ -14,13 +14,14 @@ import androidx.databinding.ObservableField
  * [作成者]
  * fukuda
  */
-class DownloadItem(
-    val id: String,
-    val downloadUrl: String,
-    val savePath: String) {
+data class DownloadItem(val id: String) {
 
     val downloadingText: ObservableField<String> = ObservableField("")
     var doneDownloaded: ObservableBoolean = ObservableBoolean(false)
     val downloading: ObservableBoolean = ObservableBoolean(false)
+    val hasNotDownloadUrl: ObservableBoolean = ObservableBoolean(true)
+    val visibleState: ObservableField<Pair<Boolean, Boolean>> = ObservableField(hasNotDownloadUrl.get() to downloading.get())
     var uuid: String = ""
+    var downloadUrl: String = ""
+    var savePath: String = ""
 }

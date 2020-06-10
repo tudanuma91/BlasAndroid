@@ -129,8 +129,8 @@ class FixtureFragment : Fragment() {
         from.forEach{
             val project_name = it.value["project_name"].toString()
             val project_id = it.value["project_id"].toString()
-            val item = DownloadItem(project_id, "", "")
-            viewModel.setupItem(this, item)
+            val item = DownloadItem(project_id)
+            viewModel.setupItem(this, item, token)
             val data = ProjectListCellItem(project_name, project_id, viewModel, item)
             dataList.add(data)
         }
