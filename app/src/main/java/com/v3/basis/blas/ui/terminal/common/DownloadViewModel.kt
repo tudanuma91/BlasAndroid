@@ -95,7 +95,6 @@ class DownloadViewModel: ViewModel() {
         }
         val funcError:(Int,Int) -> Unit = {errorCode, aplCode ->
             item.downloadUrl = ""
-            item.hasNotDownloadUrl.set(false)
         }
         BlasRestCache("zip", payload, success, funcError).execute()
     }
