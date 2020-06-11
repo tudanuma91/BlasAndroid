@@ -14,13 +14,15 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
 
     override fun downloadTask(downloadUrl: String, savePath: String): Result {
 
-        return try {
-            download(downloadUrl, savePath)
-            Result.success()
-        } catch (e: Exception) {
-            traceLog("Failed to download task, ${e::class.java.name}")
-            Result.failure()
-        }
+//        return try {
+//            download(downloadUrl, savePath)
+//            Result.success()
+//        } catch (e: Exception) {
+//            traceLog("Failed to download task, ${e::class.java.name}")
+//            Result.failure()
+//        }
+        Thread.sleep(20000)
+        return Result.success()
     }
 
     override fun getMaxProgressValue(): Int {
