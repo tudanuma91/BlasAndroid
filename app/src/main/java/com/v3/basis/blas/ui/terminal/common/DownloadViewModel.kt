@@ -89,9 +89,14 @@ class DownloadViewModel: ViewModel() {
         )
         val success: (json: JSONObject) -> Unit = {
             traceLog(it.toString())
-            val model = Gson().fromJson(it.toString(), DownloadUrlModel::class.java)
-            item.downloadUrl = model.url
-            item.hasNotDownloadUrl.set(false)
+            try {
+                val model = Gson().fromJson(it.toString(), DownloadUrlModel::class.java)
+                item.downloadUrl = model.url
+                item.hasNotDownloadUrl.set(false)
+            } catch (e: Exception) {
+                Log.d("parse error", e.toString())
+                traceLog(e.stackTrace.toString())
+            }
         }
         val funcError:(Int,Int) -> Unit = {errorCode, aplCode ->
             item.downloadUrl = ""
