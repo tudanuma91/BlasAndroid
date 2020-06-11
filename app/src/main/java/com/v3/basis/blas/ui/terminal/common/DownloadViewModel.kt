@@ -3,18 +3,21 @@ package com.v3.basis.blas.ui.terminal.common
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
-import com.v3.basis.blas.R
+import com.google.gson.Gson
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.rest.BlasRestCache
 import com.v3.basis.blas.ui.ext.continueDownloadTask
+import com.v3.basis.blas.ui.ext.traceLog
+import com.v3.basis.blas.ui.terminal.fixture.DownloadUrlModel
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.subjects.PublishSubject
+import org.json.JSONObject
 import java.util.*
 
 /**
@@ -27,7 +30,7 @@ import java.util.*
 class DownloadViewModel: ViewModel() {
 
     companion object {
-        const val DOWNLOAD_IDS = "download_ids"
+        const val DOWNLOAD = "download"
         const val COMPLETE = "finish"
     }
 
@@ -52,7 +55,7 @@ class DownloadViewModel: ViewModel() {
      * [作成者]
      * fukuda
      */
-    fun setupItem(fragment:Fragment, item: DownloadItem) {
+    fun setupItem(fragment:Fragment, item: DownloadItem, token: String) {
 
         val single = readAsync {
             //   読み込み！！（仮機能）
@@ -74,6 +77,31 @@ class DownloadViewModel: ViewModel() {
                 }
             }
             .addTo(disposable)
+
+        setDownloadUrl(token, item)
+    }
+
+    private fun setDownloadUrl(token: String, item: DownloadItem) {
+
+        val payload = mapOf(
+            "token" to token,
+            "project_id" to item.id
+        )
+        val success: (json: JSONObject) -> Unit = {
+            traceLog(it.toString())
+            try {
+                val model = Gson().fromJson(it.toString(), DownloadUrlModel::class.java)
+                item.downloadUrl = model.url
+                item.hasNotDownloadUrl.set(false)
+            } catch (e: Exception) {
+                Log.d("parse error", e.toString())
+                traceLog(e.stackTrace.toString())
+            }
+        }
+        val funcError:(Int,Int) -> Unit = {errorCode, aplCode ->
+            item.downloadUrl = ""
+        }
+        BlasRestCache("zip", payload, success, funcError).execute()
     }
 
     /**
@@ -189,7 +217,7 @@ class DownloadViewModel: ViewModel() {
     private fun preferences(): SharedPreferences {
 
         val context = BlasApp.applicationContext()
-        return context.getSharedPreferences(DOWNLOAD_IDS, Context.MODE_PRIVATE)
+        return context.getSharedPreferences(DOWNLOAD, Context.MODE_PRIVATE)
     }
 
     /**

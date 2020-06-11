@@ -15,12 +15,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.work.WorkInfo
 import com.v3.basis.blas.R
-import com.v3.basis.blas.blasclass.worker.SampleWorker
+import com.v3.basis.blas.blasclass.worker.DownloadWorker
 import com.v3.basis.blas.blasclass.worker.WorkerHelper
 import com.v3.basis.blas.ui.terminal.common.DownloadItem
 import com.v3.basis.blas.ui.terminal.common.DownloadViewModel
 import java.util.*
-import com.v3.basis.blas.blasclass.analytics.BlasLogger
 
 
 fun Fragment.getStringExtra(key: String) : String? {
@@ -102,7 +101,7 @@ fun Fragment.closeSoftKeyboard() {
 fun Fragment.addDownloadTask(vm: DownloadViewModel, item: DownloadItem) {
 
     var once = true
-    WorkerHelper.addDownloadTask<SampleWorker>(this, item.downloadUrl, item.savePath) { state, progress, id ->
+    WorkerHelper.addDownloadTask<DownloadWorker>(this, item.downloadUrl, item.savePath) { state, progress, id ->
 
         when (state) {
             WorkInfo.State.BLOCKED,

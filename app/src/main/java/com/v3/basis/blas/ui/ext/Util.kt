@@ -4,7 +4,9 @@ import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.v3.basis.blas.blasclass.analytics.BlasLogger
 import java.io.*
+import java.util.*
 import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
 /**
@@ -85,5 +87,68 @@ private fun zipFiles(zipOut: ZipOutputStream, sourceFile: File, parentDirPath: S
                 zipOut.close()
             }
         }
+    }
+}
+
+@Throws(Exception::class)
+fun unzip(zipFilePath: String, unzipAtLocation: String): Boolean {
+    val archive = File(zipFilePath)
+    return try {
+        val zipfile = ZipFile(archive)
+        val e: Enumeration<*> = zipfile.entries()
+        while (e.hasMoreElements()) {
+            val entry = e.nextElement() as ZipEntry
+            unzipEntry(zipfile, entry, unzipAtLocation)
+        }
+        true
+    } catch (e: Exception) {
+        Log.e("Unzip zip", "Unzip exception", e)
+        false
+    }
+}
+
+@Throws(IOException::class)
+private fun unzipEntry(
+    zipfile: ZipFile,
+    entry: ZipEntry,
+    outputDir: String
+) {
+    if (entry.isDirectory) {
+        createDir(File(outputDir, entry.name))
+        return
+    }
+    val outputFile = File(outputDir, entry.name)
+    val exists = outputFile.parentFile?.exists() ?: false
+    if (exists.not() && outputFile.parentFile != null) {
+        createDir(outputFile.parentFile!!)
+    }
+    Log.v("ZIP E", "Extracting: $entry")
+    val zin: InputStream = zipfile.getInputStream(entry)
+    val inputStream = BufferedInputStream(zin)
+    val outputStream = BufferedOutputStream(FileOutputStream(outputFile))
+    try {
+        //IOUtils.copy(inputStream, outputStream);
+        try {
+            var c = inputStream.read()
+            while (c != -1) {
+                outputStream.write(c)
+                c = inputStream.read()
+            }
+        } finally {
+            outputStream.close()
+        }
+    } finally {
+        outputStream.close()
+        inputStream.close()
+    }
+}
+
+private fun createDir(dir: File) {
+    if (dir.exists()) {
+        return
+    }
+    Log.v("ZIP E", "Creating dir " + dir.name)
+    if (!dir.mkdirs()) {
+        throw RuntimeException("Can not create dir $dir")
     }
 }
