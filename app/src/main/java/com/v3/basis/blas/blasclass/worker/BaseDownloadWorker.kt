@@ -20,7 +20,8 @@ abstract class BaseDownloadWorker(context: Context, workerParameters: WorkerPara
 
     companion object {
         const val KEY_DOWNLOAD = "key_download"
-        const val KEY_SAVE_PATH = "key_download"
+        const val KEY_SAVE_PATH = "key_save_path"
+        const val KEY_UNZIP_PATH = "key_unzip_path"
         const val PROGRESS = "Progress"
         const val UNIQUE_KEY = "download_request"
     }
@@ -32,8 +33,10 @@ abstract class BaseDownloadWorker(context: Context, workerParameters: WorkerPara
             ?: throw IllegalStateException("might be forgot set to download key via with WorkerHelper")
         val savePath = inputData.getString(KEY_SAVE_PATH)
             ?: throw IllegalStateException("might be forgot set to savePath key via with WorkerHelper")
+        val unzipPath = inputData.getString(KEY_UNZIP_PATH)
+            ?: throw IllegalStateException("might be forgot set to savePath key via with WorkerHelper")
 
-        return downloadTask(downloadUrl, savePath)
+        return downloadTask(downloadUrl, savePath, unzipPath)
     }
 
     /**
@@ -75,7 +78,7 @@ abstract class BaseDownloadWorker(context: Context, workerParameters: WorkerPara
      * [作成者]
      * fukuda
      */
-    abstract fun downloadTask(downloadUrl: String, savePath: String): Result
+    abstract fun downloadTask(downloadUrl: String, savePath: String, unZipPath: String): Result
 
     /**
      * ダウンロード処理を実行します。

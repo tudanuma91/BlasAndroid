@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
+import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.rest.BlasRestCache
 import com.v3.basis.blas.ui.ext.continueDownloadTask
@@ -18,6 +19,7 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.subjects.PublishSubject
 import org.json.JSONObject
+import java.io.File
 import java.util.*
 
 /**
@@ -36,6 +38,7 @@ class DownloadViewModel: ViewModel() {
 
     val startDownload: PublishSubject<DownloadItem> = PublishSubject.create()
     private val disposable = CompositeDisposable()
+    private lateinit var token: String
 
     /**
      * DownloadItemを初期化します。
@@ -57,6 +60,7 @@ class DownloadViewModel: ViewModel() {
      */
     fun setupItem(fragment:Fragment, item: DownloadItem, token: String) {
 
+        this.token = token
         val single = readAsync {
             //   読み込み！！（仮機能）
             val pref = preferences()
@@ -77,34 +81,33 @@ class DownloadViewModel: ViewModel() {
                 }
             }
             .addTo(disposable)
-
-        setDownloadUrl(token, item)
     }
 
-    private fun setDownloadUrl(token: String, item: DownloadItem) {
+    private fun setDownloadUrl(item: DownloadItem, callback: () -> Unit) {
 
-        item.downloadUrl = ""
-        item.hasNotDownloadUrl.set(false)
-//        val payload = mapOf(
-//            "token" to token,
-//            "project_id" to item.id
-//        )
-//        val success: (json: JSONObject) -> Unit = {
-//            traceLog(it.toString())
-//            try {
-//                val model = Gson().fromJson(it.toString(), DownloadUrlModel::class.java)
-//                item.downloadUrl = model.url
-//                item.hasNotDownloadUrl.set(false)
-//                //TODO ローカルのパス指定
-//            } catch (e: Exception) {
-//                Log.d("parse error", e.toString())
-//                traceLog(e.stackTrace.toString())
-//            }
-//        }
-//        val funcError:(Int,Int) -> Unit = {errorCode, aplCode ->
-//            item.downloadUrl = ""
-//        }
-//        BlasRestCache("zip", payload, success, funcError).execute()
+//        item.downloadUrl = "https://www.basis-service.com/blas777/item/20200514043512291.zip"
+//        item.hasNotDownloadUrl.set(false)
+        val payload = mapOf(
+            "token" to token,
+            "project_id" to item.id
+        )
+        val success: (json: JSONObject) -> Unit = {
+            traceLog(it.toString())
+            try {
+                val model = Gson().fromJson(it.toString(), DownloadZipModel::class.java)
+                item.downloadUrl = BuildConfig.HOST + model.zip_path
+                item.hasNotDownloadUrl.set(false)
+                callback.invoke()
+            } catch (e: Exception) {
+                Log.d("parse error", e.toString())
+                traceLog(e.stackTrace.toString())
+                item.hasNotDownloadUrl.set(true)
+            }
+        }
+        val funcError:(Int,Int) -> Unit = {errorCode, aplCode ->
+            item.downloadUrl = ""
+        }
+        BlasRestCache("zip", payload, success, funcError).execute()
     }
 
     /**
@@ -125,7 +128,20 @@ class DownloadViewModel: ViewModel() {
      */
     fun downloadClick(item: DownloadItem) {
 
-        startDownload.onNext(item)
+        item.savePath = createZipFile(item.id, item.saveDir)
+        setDownloadUrl(item) {
+            startDownload.onNext(item)
+        }
+    }
+
+    private fun createZipFile(projectId: String, dir: String): String {
+        val filePath = dir + "/" + System.currentTimeMillis() + "_" + projectId + ".zip"
+        File(filePath).apply {
+            if (exists().not()) {
+                createNewFile()
+            }
+        }
+        return filePath
     }
 
     /**

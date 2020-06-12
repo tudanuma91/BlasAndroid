@@ -29,6 +29,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import kotlinx.android.synthetic.main.fragment_project.*
 import org.json.JSONObject
+import java.io.File
 
 class FixtureFragment : Fragment() {
 
@@ -70,7 +71,10 @@ class FixtureFragment : Fragment() {
 
         viewModel.startDownload
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { addDownloadTask(viewModel, it) }
+            .subscribe {
+                val unzipPath = requireContext().filesDir.path + "/databases/" + it.id
+                addDownloadTask(viewModel, it, unzipPath)
+            }
             .addTo(disposables)
     }
 
@@ -126,10 +130,14 @@ class FixtureFragment : Fragment() {
     private fun createProjectList(from: MutableMap<String,MutableMap<String, String>>): List<ProjectListCellItem> {
         val dataList = mutableListOf<ProjectListCellItem>()
 
+        val dir = requireContext().cacheDir.path + "/download_zip"
+        val directory = File(dir)
+        directory.mkdirs()
+
         from.forEach{
             val project_name = it.value["project_name"].toString()
             val project_id = it.value["project_id"].toString()
-            val item = DownloadItem(project_id)
+            val item = DownloadItem(project_id, dir)
             viewModel.setupItem(this, item, token)
             val data = ProjectListCellItem(project_name, project_id, viewModel, item)
             dataList.add(data)

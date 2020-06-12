@@ -12,24 +12,25 @@ import java.net.URLConnection
 
 class DownloadWorker(context: Context, workerParameters: WorkerParameters): BaseDownloadWorker(context, workerParameters) {
 
-    override fun downloadTask(downloadUrl: String, savePath: String): Result {
+    override fun downloadTask(downloadUrl: String, savePath: String, unZipPath: String): Result {
 
-//        return try {
-//            download(downloadUrl, savePath)
-//            Result.success()
-//        } catch (e: Exception) {
-//            traceLog("Failed to download task, ${e::class.java.name}")
-//            Result.failure()
-//        }
-        Thread.sleep(20000)
-        return Result.success()
+        return try {
+
+            download(downloadUrl, savePath, unZipPath)
+            Result.success()
+        } catch (e: Exception) {
+            traceLog("Failed to download task, ${e::class.java.name}")
+            Result.failure()
+        }
+//        Thread.sleep(20000)
+//        return Result.success()
     }
 
     override fun getMaxProgressValue(): Int {
         return 0
     }
 
-    private fun download(textUrl: String, localPath: String) {
+    private fun download(textUrl: String, localPath: String, unZipPath: String) {
 
         val url = URL(textUrl)
         val urlConnection: URLConnection = url.openConnection()
@@ -53,10 +54,9 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
         input.close()
 
         // UnZip
-        val zipPath: String = localPath + "downloadedZip.zip"
-        if (unzip(zipPath, localPath)) {
+        if (unzip(localPath, unZipPath)) {
             //  DeleteZipFile
-            val file = File(zipPath)
+            val file = File(localPath)
             file.delete()
         }
     }
