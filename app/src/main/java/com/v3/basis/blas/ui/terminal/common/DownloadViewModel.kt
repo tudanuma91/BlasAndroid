@@ -85,26 +85,26 @@ class DownloadViewModel: ViewModel() {
 
         item.downloadUrl = ""
         item.hasNotDownloadUrl.set(false)
-//        val payload = mapOf(
-//            "token" to token,
-//            "project_id" to item.id
-//        )
-//        val success: (json: JSONObject) -> Unit = {
-//            traceLog(it.toString())
-//            try {
-//                val model = Gson().fromJson(it.toString(), DownloadUrlModel::class.java)
-//                item.downloadUrl = model.url
-//                item.hasNotDownloadUrl.set(false)
-//                //TODO ローカルのパス指定
-//            } catch (e: Exception) {
-//                Log.d("parse error", e.toString())
-//                traceLog(e.stackTrace.toString())
-//            }
-//        }
-//        val funcError:(Int,Int) -> Unit = {errorCode, aplCode ->
-//            item.downloadUrl = ""
-//        }
-//        BlasRestCache("zip", payload, success, funcError).execute()
+        val payload = mapOf(
+            "token" to token,
+            "project_id" to item.id
+        )
+        val success: (json: JSONObject) -> Unit = {
+            traceLog(it.toString())
+            try {
+                val model = Gson().fromJson(it.toString(), DownloadUrlModel::class.java)
+                item.downloadUrl = model.url
+                item.hasNotDownloadUrl.set(false)
+                //TODO ローカルのパス指定
+            } catch (e: Exception) {
+                Log.d("parse error", e.toString())
+                traceLog(e.stackTrace.toString())
+            }
+        }
+        val funcError:(Int,Int) -> Unit = {errorCode, aplCode ->
+            item.downloadUrl = ""
+        }
+        BlasRestCache("zip", payload, success, funcError).execute()
     }
 
     /**

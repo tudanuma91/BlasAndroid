@@ -15,7 +15,7 @@ import kotlin.reflect.full.memberProperties
  * factory: 使用しない
  * version: 1以上の整数値。バージョン管理に使用する
  */
-class LDBHelper(context: Context, databaseName:String, factory: SQLiteDatabase.CursorFactory?, version: Int) : SQLiteOpenHelper(context, databaseName, factory, version){
+class LDBHelper(context: Context, databaseName:String, factory: SQLiteDatabase.CursorFactory?=null, version: Int=1) : SQLiteOpenHelper(context, databaseName, factory, version){
     override fun onCreate(db: SQLiteDatabase?) {
         TODO("状態管理テーブルを作成する")
     }

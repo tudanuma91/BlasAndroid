@@ -1,9 +1,7 @@
 package com.v3.basis.blas.blasclass.controller
 import android.content.Context
-import com.v3.basis.blas.blasclass.models.LDBFixtureModel
-import com.v3.basis.blas.blasclass.models.LDBFixtureRecord
-import com.v3.basis.blas.blasclass.models.LDBModel
-import com.v3.basis.blas.blasclass.models.LDBRecord
+
+import com.v3.basis.blas.blasclass.ldb.LDBRecord
 import java.lang.Exception
 import kotlin.concurrent.thread
 import kotlin.concurrent.withLock
@@ -30,7 +28,7 @@ interface ViewObserver {
 /**
  * シングルトン。BLASへの通信を制御する。
  */
-object DataController {
+open class DataController {
     private var stop_flg:Boolean = false                                  //スレッド停止フラグ
     private var reqList:MutableList<RestRequestData> = mutableListOf()     // キューリスト
     val lock = java.util.concurrent.locks.ReentrantLock()                   //排他制御
@@ -59,7 +57,7 @@ object DataController {
      * なし
      */
     @Synchronized
-    public fun delete(observer: ViewObserver) {
+    public fun observerDelete(observer: ViewObserver) {
         lock.withLock {
             listenerList.remove(observer)
         }
@@ -82,11 +80,11 @@ object DataController {
         val dbHelper = LDBHelper(context, dbName, null, dbVesion)
        // record.recordStatus = operation
 
-        if(record is LDBFixtureRecord) {
-            val ldb = LDBFixtureModel(dbHelper)
+       /* if(record is LDBFixtureRecord) {
+            val ldb = LDBFixtureTable(dbHelper)
             //ldb.find()
             ldb.save(record)
-        }
+        }*/
         return ret
     }
 

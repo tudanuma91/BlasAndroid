@@ -5,6 +5,9 @@ import com.v3.basis.blas.blasclass.app.BlasDef
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode.Companion.NETWORK_ERROR
 import com.v3.basis.blas.ui.ext.traceLog
 import org.json.JSONObject
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
+import java.net.HttpURLConnection
 
 open class BlasRestCache(val crud:String = "zip",
                          val payload:Map<String, String?>,
@@ -16,6 +19,34 @@ open class BlasRestCache(val crud:String = "zip",
     var aplCode:Int = 0
 
 
+    fun getBinaryFromURL(url: String):ByteArray?{
+        var inputStream : InputStream? = null
+        val url = java.net.URL(url)
+        val con = url.openConnection() as HttpURLConnection
+
+        con.setRequestProperty("Content-Type", "application/octet-stream")
+        con.requestMethod = "GET"
+
+        con.connect()
+
+        if (con.responseCode === HttpURLConnection.HTTP_OK) {
+            inputStream = con.inputStream
+        }
+
+        inputStream?.let {
+            val buffer = ByteArray(1024 * 1024 * 20)
+            val bOut = ByteArrayOutputStream()
+            while (true) {
+                val len = it.read(buffer)
+                if (len < 0) {
+                    break
+                }
+                bOut.write(buffer, 0, len)
+            }
+            return bOut.toByteArray()
+        }
+        return null
+    }
     /**
      * プロジェクトに設定されているフィールドの情報取得要求を行う
      * @param in params 指定なし
@@ -26,17 +57,19 @@ open class BlasRestCache(val crud:String = "zip",
         var errorCode = 0
 
         val url = BlasRest.URL + "cache/search_sqlite/"
-
+       // getBinaryFromURL()
+        /*
         try {
             Log.d("method:", method)
             Log.d("url:", url)
+            super.reqDataSave(payload,method,url,funcSuccess,funcError,"Item")
             response = super.getResponseData(payload, method, url)
 
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)
             traceLog("Failed to search zip files")
-        }
+        }*/
         return response
     }
 
