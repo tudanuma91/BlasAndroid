@@ -93,6 +93,7 @@ private fun zipFiles(zipOut: ZipOutputStream, sourceFile: File, parentDirPath: S
 @Throws(Exception::class)
 fun unzip(zipFilePath: String, unzipAtLocation: String): Boolean {
     val archive = File(zipFilePath)
+    deleteFileIfExists(unzipAtLocation)
     return try {
         val zipfile = ZipFile(archive)
         val e: Enumeration<*> = zipfile.entries()
@@ -104,6 +105,15 @@ fun unzip(zipFilePath: String, unzipAtLocation: String): Boolean {
     } catch (e: Exception) {
         Log.e("Unzip zip", "Unzip exception", e)
         false
+    }
+}
+
+fun deleteFileIfExists(unzipAtLocation: String) {
+
+    File(unzipAtLocation).apply {
+        if (exists()) {
+            delete()
+        }
     }
 }
 
@@ -151,4 +161,25 @@ private fun createDir(dir: File) {
     if (!dir.mkdirs()) {
         throw RuntimeException("Can not create dir $dir")
     }
+}
+
+/**
+ * ファイルの存在を調べて、存在しない場合はファイルを作成する
+ *  [引き数]
+ *  ファイルのパス
+ *  [戻り値]
+ *  ファイルクラスのインスタンス
+ */
+fun checkFileExists(name: String): File {
+
+    val file = File(name)
+    if (!file.exists()) {
+        try {
+            file.createNewFile()
+        } catch (e: IOException) {
+            //Crashlyticsのログに保存する
+            FirebaseCrashlytics.getInstance().recordException(e)
+        }
+    }
+    return file
 }

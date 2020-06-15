@@ -6,6 +6,7 @@ import android.text.format.DateUtils.*
 import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.ui.ext.checkFileExists
 import io.reactivex.Completable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
@@ -168,27 +169,6 @@ object BlasLogger {
 
         val mb = (file.length() / 1024) / 1024
         return mb > FILE_SIZE_LIMIT_MB
-    }
-
-    /**
-     * ファイルの存在を調べて、存在しない場合はファイルを作成する
-     *  [引き数]
-     *  ファイルのパス
-     *  [戻り値]
-     *  ファイルクラスのインスタンス
-     */
-    private fun checkFileExists(name: String): File {
-
-        val file = File(name)
-        if (!file.exists()) {
-            try {
-                file.createNewFile()
-            } catch (e: IOException) {
-                //Crashlyticsのログに保存する
-                FirebaseCrashlytics.getInstance().recordException(e)
-            }
-        }
-        return file
     }
 
     /**

@@ -41,6 +41,7 @@ object WorkerHelper {
             addDownloadTask(fragment: Fragment,
                             downloadUrl: String,
                             savePath: String,
+                            unzipPath: String,
                             crossinline stateChangedCallBack: (
                               state: WorkInfo.State,
                               progressValue: Int?,
@@ -54,14 +55,16 @@ object WorkerHelper {
             .build()
 
         //  BaseDownloadWorkerに変数を渡すための処理、BaseDownloadWorkerでも同じキーを使い変数を読み込む
-        val data = workDataOf(BaseDownloadWorker.KEY_DOWNLOAD to downloadUrl)
-        val path = workDataOf(BaseDownloadWorker.KEY_SAVE_PATH to savePath)
+        val data = workDataOf(
+            BaseDownloadWorker.KEY_DOWNLOAD to downloadUrl,
+            BaseDownloadWorker.KEY_SAVE_PATH to savePath,
+            BaseDownloadWorker.KEY_UNZIP_PATH to unzipPath
+        )
 
         //  OneTimeWorkRequestBuilderは一度だけ実行するリクエストを作成する。
         val downloadWorkRequest = OneTimeWorkRequestBuilder<T>()
             .setConstraints(constraints)
             .setInputData(data)
-            .setInputData(path)
             .setBackoffCriteria(
                 BackoffPolicy.LINEAR,
                 OneTimeWorkRequest.MIN_BACKOFF_MILLIS,

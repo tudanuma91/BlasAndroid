@@ -35,18 +35,23 @@ android {
     productFlavors {
         develop {
             buildConfigField 'String', 'API_URL', '"http://192.168.1.8/blas7/api/v1/"'
+            buildConfigField 'String', 'HOST', '"http://192.168.1.8"'
         }
         production {
             buildConfigField 'String', 'API_URL', '"https://www.basis-service.com/blas70/api/v1/"'
+            buildConfigField 'String', 'HOST', '"https://www.basis-service.com"'
         }
         preproduction {
             buildConfigField 'String', 'API_URL', '"https://www.basis-service.com/blas777/api/v1/"'
+            buildConfigField 'String', 'HOST', '"https://www.basis-service.com"'
         }
         fukuda {
             buildConfigField 'String', 'API_URL', '"http://192.168.3.6/blas7/api/v1/"'
+            buildConfigField 'String', 'HOST', '"http://192.168.3.6"'
         }
         konishi {
             buildConfigField 'String', 'API_URL', '"http://192.168.1.87/blas7/api/v1/"'
+            buildConfigField 'String', 'HOST', '"http://192.168.1.87"'
         }
     }
 
