@@ -22,6 +22,7 @@ abstract class BaseDownloadWorker(context: Context, workerParameters: WorkerPara
         const val KEY_DOWNLOAD = "key_download"
         const val KEY_SAVE_PATH = "key_save_path"
         const val KEY_UNZIP_PATH = "key_unzip_path"
+        const val KEY_SAVE_PATH_KEY_NAME = "key_save_path_kay_name"
         const val PROGRESS = "Progress"
         const val UNIQUE_KEY = "download_request"
     }

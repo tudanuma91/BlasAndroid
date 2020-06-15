@@ -17,7 +17,7 @@ import androidx.work.WorkInfo
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.worker.DownloadWorker
 import com.v3.basis.blas.blasclass.worker.WorkerHelper
-import com.v3.basis.blas.ui.terminal.common.DownloadItem
+import com.v3.basis.blas.ui.terminal.common.DownloadModel
 import com.v3.basis.blas.ui.terminal.common.DownloadViewModel
 import java.util.*
 
@@ -98,25 +98,25 @@ fun Fragment.closeSoftKeyboard() {
  * [作成者]
  * fukuda
  */
-fun Fragment.addDownloadTask(vm: DownloadViewModel, item: DownloadItem, unzipPath: String) {
+fun Fragment.addDownloadTask(vm: DownloadViewModel, model: DownloadModel, unzipPath: String, projectId: String) {
 
     var once = true
-    WorkerHelper.addDownloadTask<DownloadWorker>(this, item.downloadUrl, item.savePath, unzipPath) { state, progress, id ->
+    WorkerHelper.addDownloadTask<DownloadWorker>(this, model.downloadUrl, model.savePath, unzipPath, projectId) { state, progress, id ->
 
         when (state) {
             WorkInfo.State.BLOCKED,
             WorkInfo.State.ENQUEUED -> {
-                vm.preDownloading(item, id)
+                vm.preDownloading(model, id)
             }
             WorkInfo.State.RUNNING -> {
                 if (once) {
-                    vm.downloading(item)
+                    vm.downloading(model)
                     once = false
                 }
                 Log.d("foreground worker", "running: $id, progress: $progress")
             }
             WorkInfo.State.SUCCEEDED -> {
-                vm.setFinishDownloading(item)
+                vm.setFinishDownloading(model)
             }
         }
     }
@@ -138,25 +138,25 @@ fun Fragment.addDownloadTask(vm: DownloadViewModel, item: DownloadItem, unzipPat
  * [作成者]
  * fukuda
  */
-fun Fragment.continueDownloadTask(vm: DownloadViewModel, item: DownloadItem) {
+fun Fragment.continueDownloadTask(vm: DownloadViewModel, model: DownloadModel) {
 
     var once = true
-    WorkerHelper.observe(this, UUID.fromString(item.uuid)) { state, progress, id ->
+    WorkerHelper.observe(this, UUID.fromString(model.uuid)) { state, progress, id ->
 
         when (state) {
             WorkInfo.State.BLOCKED,
             WorkInfo.State.ENQUEUED -> {
-                vm.preDownloading(item, id)
+                vm.preDownloading(model, id)
             }
             WorkInfo.State.RUNNING -> {
                 if (once) {
-                    vm.downloading(item)
+                    vm.downloading(model)
                     once = false
                 }
                 Log.d("foreground worker", "running $id, progress: $progress")
             }
             WorkInfo.State.SUCCEEDED -> {
-                vm.setFinishDownloading(item)
+                vm.setFinishDownloading(model)
             }
         }
     }

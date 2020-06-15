@@ -23,7 +23,7 @@ class ViewAdapterAdapter(
 
     override fun onBindViewHolder(holder: HomeViewHolder, position: Int) {
         Log.d("Life Cycle", "onBindViewHolder")
-        holder.binding.item = list[position].item
+        holder.binding.item = list[position].model
         holder.titleView.text = list[position].title
         holder.detailView.text = list[position].detail
         holder.itemView.setOnClickListener {

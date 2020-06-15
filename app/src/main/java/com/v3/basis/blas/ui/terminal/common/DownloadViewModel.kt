@@ -11,7 +11,6 @@ import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.rest.BlasRestCache
 import com.v3.basis.blas.ui.ext.continueDownloadTask
 import com.v3.basis.blas.ui.ext.traceLog
-import com.v3.basis.blas.ui.terminal.fixture.DownloadUrlModel
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
@@ -36,7 +35,7 @@ class DownloadViewModel: ViewModel() {
         const val COMPLETE = "finish"
     }
 
-    val startDownload: PublishSubject<DownloadItem> = PublishSubject.create()
+    val startDownload: PublishSubject<DownloadModel> = PublishSubject.create()
     private val disposable = CompositeDisposable()
     private lateinit var token: String
 
@@ -58,17 +57,17 @@ class DownloadViewModel: ViewModel() {
      * [作成者]
      * fukuda
      */
-    fun setupItem(fragment:Fragment, item: DownloadItem, token: String) {
+    fun setupItem(fragment:Fragment, model: DownloadModel, token: String) {
 
         this.token = token
         val single = readAsync {
             //   読み込み！！（仮機能）
             val pref = preferences()
-            pref.getString(item.id, "")!!
+            pref.getString(model.id, "")!!
         }
 
         single.subscribeBy {
-                with(item) {
+                with(model) {
                     uuid = it
                     downloading.set(uuid.isNotBlank() && uuid != COMPLETE)
                     doneDownloaded.set(uuid == COMPLETE)
@@ -76,36 +75,36 @@ class DownloadViewModel: ViewModel() {
                         downloadingText.set("ダウンロード済み")
                     } else if (downloading.get()) {
                         downloadingText.set("ダウンロード中")
-                        fragment.continueDownloadTask(this@DownloadViewModel, item)
+                        fragment.continueDownloadTask(this@DownloadViewModel, model)
                     }
                 }
             }
             .addTo(disposable)
     }
 
-    private fun setDownloadUrl(item: DownloadItem, callback: () -> Unit) {
+    private fun setDownloadUrl(model: DownloadModel, callback: () -> Unit) {
 
 //        item.downloadUrl = "https://www.basis-service.com/blas777/item/20200514043512291.zip"
 //        item.hasNotDownloadUrl.set(false)
         val payload = mapOf(
             "token" to token,
-            "project_id" to item.id
+            "project_id" to model.id
         )
         val success: (json: JSONObject) -> Unit = {
             traceLog(it.toString())
             try {
-                val model = Gson().fromJson(it.toString(), DownloadZipModel::class.java)
-                item.downloadUrl = BuildConfig.HOST + model.zip_path
-                item.hasNotDownloadUrl.set(false)
+                val zipModel = Gson().fromJson(it.toString(), DownloadZipModel::class.java)
+                model.downloadUrl = BuildConfig.HOST + zipModel.zip_path
+                model.hasNotDownloadUrl.set(false)
                 callback.invoke()
             } catch (e: Exception) {
                 Log.d("parse error", e.toString())
                 traceLog(e.stackTrace.toString())
-                item.hasNotDownloadUrl.set(true)
+                model.hasNotDownloadUrl.set(true)
             }
         }
         val funcError:(Int,Int) -> Unit = {errorCode, aplCode ->
-            item.downloadUrl = ""
+            model.downloadUrl = ""
         }
         BlasRestCache("zip", payload, success, funcError).execute()
     }
@@ -126,11 +125,11 @@ class DownloadViewModel: ViewModel() {
      * [作成者]
      * fukuda
      */
-    fun downloadClick(item: DownloadItem) {
+    fun downloadClick(model: DownloadModel) {
 
-        item.savePath = createZipFile(item.id, item.saveDir)
-        setDownloadUrl(item) {
-            startDownload.onNext(item)
+        model.savePath = createZipFile(model.id, model.saveDir)
+        setDownloadUrl(model) {
+            startDownload.onNext(model)
         }
     }
 
@@ -161,14 +160,14 @@ class DownloadViewModel: ViewModel() {
      * [作成者]
      * fukuda
      */
-    fun preDownloading(item: DownloadItem, uuid: UUID) {
+    fun preDownloading(model: DownloadModel, uuid: UUID) {
 
-        item.downloadingText.set("ダウンロード待ち")
-        item.downloading.set(true)
+        model.downloadingText.set("ダウンロード待ち")
+        model.downloading.set(true)
         //   仮のセーブ方法！！
         taskAsync {
             val pref = preferences()
-            pref.edit().putString(item.id, uuid.toString()).apply()
+            pref.edit().putString(model.id, uuid.toString()).apply()
         }
     }
 
@@ -187,8 +186,8 @@ class DownloadViewModel: ViewModel() {
      * [作成者]
      * fukuda
      */
-    fun downloading(item: DownloadItem) {
-        item.downloadingText.set("ダウンロード中")
+    fun downloading(model: DownloadModel) {
+        model.downloadingText.set("ダウンロード中")
     }
 
     /**
@@ -207,15 +206,15 @@ class DownloadViewModel: ViewModel() {
      * [作成者]
      * fukuda
      */
-    fun setFinishDownloading(item: DownloadItem) {
+    fun setFinishDownloading(model: DownloadModel) {
 
-        item.downloading.set(false)
-        item.downloadingText.set("ダウンロード済み")
-        item.doneDownloaded.set(true)
+        model.downloading.set(false)
+        model.downloadingText.set("ダウンロード済み")
+        model.doneDownloaded.set(true)
         //   仮のセーブ方法！！
         taskAsync {
             val pref = preferences()
-            pref.edit().putString(item.id, COMPLETE).apply()
+            pref.edit().putString(model.id, COMPLETE).apply()
         }
     }
 

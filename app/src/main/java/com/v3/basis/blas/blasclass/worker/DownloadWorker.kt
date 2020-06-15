@@ -1,8 +1,10 @@
 package com.v3.basis.blas.blasclass.worker
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.work.WorkerParameters
+import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.ui.ext.traceLog
 import com.v3.basis.blas.ui.ext.unzip
 import java.io.*
@@ -11,6 +13,20 @@ import java.net.URLConnection
 
 
 class DownloadWorker(context: Context, workerParameters: WorkerParameters): BaseDownloadWorker(context, workerParameters) {
+
+    companion object {
+        const val COMPLETED_DOWNLOAD: String = "completed_download"
+
+        fun getSavedPath(projectId: String): String? {
+            return preferences().getString(projectId, null)
+        }
+
+        private fun preferences(): SharedPreferences {
+
+            val context = BlasApp.applicationContext()
+            return context.getSharedPreferences(COMPLETED_DOWNLOAD, Context.MODE_PRIVATE)
+        }
+    }
 
     override fun downloadTask(downloadUrl: String, savePath: String, unZipPath: String): Result {
 
@@ -22,8 +38,6 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
             traceLog("Failed to download task, ${e::class.java.name}")
             Result.failure()
         }
-//        Thread.sleep(20000)
-//        return Result.success()
     }
 
     override fun getMaxProgressValue(): Int {
@@ -58,6 +72,11 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
             //  DeleteZipFile
             val file = File(localPath)
             file.delete()
+
+            val name = inputData.getString(KEY_SAVE_PATH_KEY_NAME)
+                ?: throw IllegalStateException("might be forgot set to savePath key via with WorkerHelper")
+            val fileName = File(unZipPath).listFiles()?.get(0)?.path
+            preferences().edit().putString(name, fileName).apply()
         }
     }
 }
