@@ -42,6 +42,7 @@ object WorkerHelper {
                             downloadUrl: String,
                             savePath: String,
                             unzipPath: String,
+                            savePathKeyValue: String,
                             crossinline stateChangedCallBack: (
                               state: WorkInfo.State,
                               progressValue: Int?,
@@ -58,7 +59,8 @@ object WorkerHelper {
         val data = workDataOf(
             BaseDownloadWorker.KEY_DOWNLOAD to downloadUrl,
             BaseDownloadWorker.KEY_SAVE_PATH to savePath,
-            BaseDownloadWorker.KEY_UNZIP_PATH to unzipPath
+            BaseDownloadWorker.KEY_UNZIP_PATH to unzipPath,
+            BaseDownloadWorker.KEY_SAVE_PATH_KEY_NAME to savePathKeyValue
         )
 
         //  OneTimeWorkRequestBuilderは一度だけ実行するリクエストを作成する。

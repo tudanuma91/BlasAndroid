@@ -14,7 +14,7 @@ import androidx.databinding.ObservableField
  * [作成者]
  * fukuda
  */
-data class DownloadItem(val id: String, val saveDir: String) {
+data class DownloadModel(val id: String, val saveDir: String) {
 
     val downloadingText: ObservableField<String> = ObservableField("")
     var doneDownloaded: ObservableBoolean = ObservableBoolean(false)

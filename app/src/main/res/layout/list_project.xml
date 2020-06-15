@@ -10,7 +10,7 @@
 
         <variable
             name="item"
-            type="com.v3.basis.blas.ui.terminal.common.DownloadItem" />
+            type="com.v3.basis.blas.ui.terminal.common.DownloadModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

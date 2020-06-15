@@ -18,7 +18,7 @@ import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestProject
 import com.v3.basis.blas.ui.ext.addDownloadTask
 import com.v3.basis.blas.ui.terminal.adapter.ProjectListCellItem
-import com.v3.basis.blas.ui.terminal.common.DownloadItem
+import com.v3.basis.blas.ui.terminal.common.DownloadModel
 import com.v3.basis.blas.ui.terminal.common.DownloadViewModel
 import com.v3.basis.blas.ui.terminal.fixture.project_list_view.RowModel
 import com.v3.basis.blas.ui.terminal.fixture.project_list_view.ViewAdapterAdapter
@@ -73,7 +73,7 @@ class FixtureFragment : Fragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 val unzipPath = requireContext().filesDir.path + "/databases/" + it.id
-                addDownloadTask(viewModel, it, unzipPath)
+                addDownloadTask(viewModel, it, unzipPath, it.id)
             }
             .addTo(disposables)
     }
@@ -137,7 +137,7 @@ class FixtureFragment : Fragment() {
         from.forEach{
             val project_name = it.value["project_name"].toString()
             val project_id = it.value["project_id"].toString()
-            val item = DownloadItem(project_id, dir)
+            val item = DownloadModel(project_id, dir)
             viewModel.setupItem(this, item, token)
             val data = ProjectListCellItem(project_name, project_id, viewModel, item)
             dataList.add(data)
