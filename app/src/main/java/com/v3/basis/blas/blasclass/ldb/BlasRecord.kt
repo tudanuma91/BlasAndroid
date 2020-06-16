@@ -1,46 +1,48 @@
-package com.v3.basis.blas.blasclass.models
+package com.v3.basis.blas.blasclass.ldb
+import androidx.room.*
+import io.reactivex.Completable
 
 interface LDBRecord {
-    var recordStatus:Int    //仮登録中(新規追加)0、仮登録中(編集)1、仮登録集(削除)2,送信待ち3, 送信完了4
+    var recordStatus:Int    //何も弄ってない0 仮登録中(新規追加)1、仮登録中(編集)2、仮登録集(削除)3,送信待ち4, 送信完了5
     var primary_key:String  //主キーの変数名を文字列で指定する
     var tableName:String    //テーブル名を文字列で指定する
 }
 
-
-data class LDBFixtureRecord(
+@Entity
+data class Fixture(
+    @PrimaryKey(autoGenerate = true)
     var fixture_id: Int = 0,             //主キー
-    var project_id: Int = 0,             //プロジェクトID
-    var fix_org_id: Int = 0,             //検品した会社ID
-    var fix_org_name: String = "",       //検品した会社名
-    var fix_user_id: Int = 0,            //検品したユーザID
-    var fix_user_name: String = "",      //検品したユーザ名
-    var fix_date: String = "",          //検品した日時
-    var takeout_org_id: Int = 0,         //持ち出した会社ID
-    var takeout_org_name: String = "",   //持ち出した会社前伊
-    var takeout_user_id: Int = 0,        //持出者のID
-    var takeout_user_name: String = "",  //持出者の名前
-    var takeout_date: String = "",       //持ち出した日時
-    var rtn_org_id: Int = 0,             //返却した会社ID
-    var rtn_org_name: String = "",       //返却した会社の名前
-    var rtn_user_id: Int = 0,            //返却したユーザＩＤ
-    var rtn_user_name: String = "",      //返却したユーザ名
-    var rtn_date: String = "",           //返却した日時
-    var item_id: Int = 0,                //設置した機器が登録されているデータ管理の外部キー
-    var item_org_id: Int = 0,            //設置した会社のＩＤ
-    var item_org_name: String = "",      //設置した会社の名前
-    var item_user_id: Int = 0,           //設置したユーザのＩＤ
-    var item_user_name: String = "",     //設置したユーザ名
-    var item_date: String = "",          //設置した日時
-    var serial_number: String = "",      //シリアルナンバー
-    var status: Int = 0,                 //0:検品済み(持ち出し可), 1:持ち出し中,2:設置済み, 3:持出不可
-    var create_date: String = "",        //レコード作成日付
-    var update_date: String = "",        //レコード更新日付
-    override var recordStatus:Int = -1,
-    override var primary_key:String = "fixture_id",
-    override var tableName:String = "fixtures"
-): LDBRecord
-/*
-data class ItemRecord(
+    @ColumnInfo(name = "project_id") var project_id: Int = 0,               //プロジェクトID
+    @ColumnInfo(name = "fix_org_id") var fix_org_id: Int = 0,               //検品した会社ID
+    @ColumnInfo(name = "fix_org_name") var fix_org_name: String = "",       //検品した会社名
+    @ColumnInfo(name = "fix_user_id") var fix_user_id: Int = 0,             //検品したユーザID
+    @ColumnInfo(name = "fix_user_name") var fix_user_name: String = "",     //検品したユーザ名
+    @ColumnInfo(name = "fix_date") var fix_date: String = "",               //検品した日時
+    @ColumnInfo(name = "takeout_org_id") var takeout_org_id: Int = 0,       //持ち出した会社ID
+    @ColumnInfo(name = "takeout_org_name") var takeout_org_name: String = "",   //持ち出した会社前伊
+    @ColumnInfo(name = "takeout_user_id") var takeout_user_id: Int = 0,        //持出者のID
+    @ColumnInfo(name = "takeout_user_name") var takeout_user_name: String = "",  //持出者の名前
+    @ColumnInfo(name = "takeout_date") var takeout_date: String = "",       //持ち出した日時
+    @ColumnInfo(name = "rtn_org_id") var rtn_org_id: Int = 0,               //返却した会社ID
+    @ColumnInfo(name = "rtn_org_name") var rtn_org_name: String = "",       //返却した会社の名前
+    @ColumnInfo(name = "rtn_user_id") var rtn_user_id: Int = 0,             //返却したユーザＩＤ
+    @ColumnInfo(name = "rtn_user_name") var rtn_user_name: String = "",     //返却したユーザ名
+    @ColumnInfo(name = "rtn_date") var rtn_date: String = "",               //返却した日時
+    @ColumnInfo(name = "item_id") var item_id: Int = 0,                     //設置した機器が登録されているデータ管理の外部キー
+    @ColumnInfo(name = "item_org_id") var item_org_id: Int = 0,             //設置した会社のＩＤ
+    @ColumnInfo(name = "item_org_name") var item_org_name: String = "",     //設置した会社の名前
+    @ColumnInfo(name = "item_user_id") var item_user_id: Int = 0,           //設置したユーザのＩＤ
+    @ColumnInfo(name = "item_user_name") var item_user_name: String = "",   //設置したユーザ名
+    @ColumnInfo(name = "item_date") var item_date: String = "",             //設置した日時
+    @ColumnInfo(name = "serial_number") var serial_number: String = "",     //シリアルナンバー
+    @ColumnInfo(name = "status") var status: Int = 0,                       //0:検品済み(持ち出し可), 1:持ち出し中,2:設置済み, 3:持出不可
+    @ColumnInfo(name = "create_date") var create_date: String = "",         //レコード作成日付
+    @ColumnInfo(name = "update_date") var update_date: String = "",         //レコード更新日付
+    @ColumnInfo(name = "recordStatus") var recordStatus:Int = -1            //何も弄ってない0 仮登録中(新規追加)1、仮登録中(編集)2、仮登録集(削除)3,送信待ち4, 送信完了5
+)
+
+
+data class LDBItemRecord(
     val item_id:Int,
     val project_id:Int,
     val user_id:Int,
@@ -57,10 +59,13 @@ data class ItemRecord(
     val modify_user:String,
     val create_date:String,
     val update_date:String,
-    override val recordStatus:Int
+    override var recordStatus:Int = -1,
+    override var primary_key:String = "item_id",
+    override var tableName:String = "items"
 ):LDBRecord
 
-data class FieldRecord(
+
+data class LDBFieldRecord(
     val field_id:Int,
     val project_id:Int,
     val col:Int,
@@ -82,10 +87,13 @@ data class FieldRecord(
     val update_date:String,
     val unique_chk:Int,
     val work_day:Int,
-    override val recordStatus:Int
+    override var recordStatus:Int = -1,
+    override var primary_key:String = "field_id",
+    override var tableName:String = "fields"
 ):LDBRecord
 
-data class ProjectImageRecord(
+
+data class LDBProjectImageRecord(
     val project_image_id:Int,       //主キー
     val project_id:Int,             //プロジェクトID
     val name:String,                //ファイル名
@@ -94,10 +102,13 @@ data class ProjectImageRecord(
     val field_id:Int,               //ファイル名に出力する項目
     val create_date:String,         //作成日時
     val update_date:String,         //更新日時
-    override val recordStatus:Int
+    override var recordStatus:Int = -1,
+    override var primary_key:String = "project_image_id",
+    override var tableName:String = "project_images"
 ):LDBRecord
 
-data class ProjectFileRecord(
+
+data class LDBProjectFileRecord(
     val project_file_id:Int,        //主キー
     val project_id:Int,             //プロジェクトID
     val name:String,                //ファイル名
@@ -105,46 +116,13 @@ data class ProjectFileRecord(
     val list:Int,                   //一覧表示する場合1,一覧表示しない場合0
     val create_date:String,         //作成日時
     val update_date:String,         //更新日時
-    override val recordStatus:Int
+    override var recordStatus:Int = -1,
+    override var primary_key:String = "project_file_id",
+    override var tableName:String = "project_files"
 ):LDBRecord
 
 
-data class FixtureRecord(
-    val fixture_id:Int,            //主キー
-    val project_id:Int,            //プロジェクトID
-    val fix_org_id:Int,            //検品した会社ID
-    val fix_org_name:String,       //検品した会社名
-    val fix_user_id:Int,           //検品したユーザID
-    val fix_user_name:String,      //検品したユーザ名
-    val fix_date:String,           //検品した日時
-    val takeout_org_id:Int,        //持ち出した会社ID
-    val takeout_org_name:String,   //持ち出した会社前伊
-    val takeout_user_id:Int,       //持出者のID
-    val takeout_user_name:String,  //持出者の名前
-    val takeout_date:String,       //持ち出した日時
-    val rtn_org_id:Int,            //返却した会社ID
-    val rtn_org_name:String,       //返却した会社の名前
-    val rtn_user_id:Int,           //返却したユーザＩＤ
-    val rtn_user_name:String,      //返却したユーザ名
-    val rtn_date:String,           //返却した日時
-    val item_id:Int,               //設置した機器が登録されているデータ管理の外部キー
-    val item_org_id:Int,           //設置した会社のＩＤ
-    val item_org_name:String,      //設置した会社の名前
-    val item_user_id:Int,          //設置したユーザのＩＤ
-    val item_user_name:String,     //設置したユーザ名
-    val item_date:String,          //設置した日時
-    val serial_number:String,      //シリアルナンバー
-    val status:Int,                //0:検品済み(持ち出し可), 1:持ち出し中,2:設置済み, 3:持出不可
-    val create_date:String,        //レコード作成日付
-    val update_date:String,        //レコード更新日付
-    override val recordStatus:Int
-):LDBRecord{
-    override fun toString(): String {
-        return super.toString()
-    }
-}
-
-data class RmFixtureRecord(
+data class LDBRmFixtureRecord(
     val rm_fixture_id:Int,          //主キー
     val project_id:Int,             //プロジェクトID
     val rm_org_id:Int,              //撤去した会社ID
@@ -169,10 +147,13 @@ data class RmFixtureRecord(
     val item_user_name:String,      //撤去した機器のシリアルナンバーを含むデータ管理のユーザ名
     val serial_number:String,       //シリアルナンバー
     val status:Int,                 //0:未撤去 1:現場撤去 2:一時保管 3:撤去完了
-    override val recordStatus:Int
+    override var recordStatus:Int = -1,
+    override var primary_key:String = "rm_fixture_id",
+    override var tableName:String = "rm_fixtures"
 ):LDBRecord
 
-data class OrgRecord(
+
+data class LDBOrgRecord(
     val org_id:Int,                 //会社ID。主キー
     val name:String,                //会社名
     val kana:String,                //会社名のフリガナ
@@ -199,10 +180,13 @@ data class OrgRecord(
     val create_user_id:Int,         //作成者のID
     val create_date:String,         //作成日
     val update_date:String,         //更新日
-    override val recordStatus:Int
+    override var recordStatus:Int = -1,
+    override var primary_key:String = "org_id",
+    override var tableName:String = "orgs"
 ):LDBRecord
 
-data class UserRecord(
+
+data class LDBUserRecord(
     val user_id:Int,                //主キー
     val username:String,            //ログイン時のユーザ名
     val password:String,            //パスワードのハッシュ値
@@ -225,10 +209,13 @@ data class UserRecord(
     val active_date:String,         //最終ログイン日
     val create_user_id:Int,         //ユーザ登録者
     val seed:String,                //仮登録パスワードのハッシュ値
-    override val recordStatus:Int
+    override var recordStatus:Int = -1,
+    override var primary_key:String = "user_id",
+    override var tableName:String = "users"
 ):LDBRecord
 
-data class DrawingRecord(
+
+data class LDBDrawingRecord(
     val drawing_id:Int,             //主キー
     val project_id:Int,             //プロジェクトID
     val name:String,                //図面名
@@ -247,10 +234,13 @@ data class DrawingRecord(
     val modified:String,            //?
     val drawing_category_id:Int,    //カテゴリID
     val drawing_sub_category_id:Int,//サブカテゴリID
-    override val recordStatus:Int
+    override var recordStatus:Int = -1,
+    override var primary_key:String = "drawing_id",
+    override var tableName:String = "drawings"
 ):LDBRecord
 
-data class DrawingCategoryRecord(
+
+data class LDBDrawingCategoryRecord(
     val drawing_category_id:Int,    //主キー
     val project_id:Int,             //プロジェクトID
     val drawing_id:Int,             //外部キー
@@ -258,10 +248,13 @@ data class DrawingCategoryRecord(
     val rank:String,                //順番
     val create_date:String,         //作成日
     val update_date:String,         //更新日
-    override val recordStatus:Int
+    override var recordStatus:Int = -1,
+    override var primary_key:String = "drawing_category_id",
+    override var tableName:String = "drawing_categories"
 ):LDBRecord
 
-data class DrawingSubCategoryRecord(
+
+data class LDBDrawingSubCategoryRecord(
     val drawing_sub_category_id: Int,   //主キー
     val drawing_category_id:Int,        //カテゴリの外部キー
     val project_id:Int,                 //プロジェクトID
@@ -270,11 +263,13 @@ data class DrawingSubCategoryRecord(
     val rank:Int,                       //表示順序
     val create_date:String,             //作成日
     val update_date:String,             //更新日
-    override val recordStatus:Int
+    override var recordStatus:Int = -1,
+    override var primary_key:String = "drawing_sub_category_id",
+    override var tableName:String = "drawing_sub_categories"
 ):LDBRecord
 
 
-data class DrawingSpotRecord(
+data class LDBDrawingSpotRecord(
     val spot_id:Int,                    //主キー
     val project_id:Int,                 //プロジェクトID
     val item_id:Int,                    //データ管理ID
@@ -290,6 +285,8 @@ data class DrawingSpotRecord(
     val col:Int,                        //?
     val create_date:String,             //作成日
     val update_date:String,             //更新日
-    override val recordStatus:Int
+    override var recordStatus:Int = -1,
+    override var primary_key:String = "spot_id",
+    override var tableName:String = "drawing_spots"
 ):LDBRecord
-*/
+
