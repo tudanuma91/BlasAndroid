@@ -4,8 +4,6 @@ apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-android-extensions'
 
-apply plugin: 'kotlin-kapt'
-
 apply plugin: 'com.google.firebase.crashlytics'
 
 apply plugin: 'com.google.gms.google-services'
@@ -117,6 +115,6 @@ dependencies {
     // Add the Firebase Crashlytics SDK.
     implementation 'com.google.firebase:firebase-crashlytics:17.0.0'
     //オブジェクトマッパー
-    implementation "android.arch.persistence.room:runtime:1.0.0"
-    kapt "android.arch.persistence.room:compiler:1.0.0"
+    implementation "android.arch.persistence.room:runtime:1.1.1"
+    kapt "android.arch.persistence.room:compiler:1.1.1"
 }

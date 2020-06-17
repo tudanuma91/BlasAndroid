@@ -17,6 +17,12 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
     companion object {
         const val COMPLETED_DOWNLOAD: String = "completed_download"
 
+        fun getDbFileName(projectId: String): String? {
+            return getSavedPath(projectId)?.let {
+                File(it).name
+            }
+        }
+
         fun getSavedPath(projectId: String): String? {
             return preferences().getString(projectId, null)
         }

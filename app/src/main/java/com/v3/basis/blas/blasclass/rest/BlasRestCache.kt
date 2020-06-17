@@ -58,7 +58,7 @@ open class BlasRestCache(val crud:String = "zip",
 
         val url = BlasRest.URL + "cache/search_sqlite/"
        // getBinaryFromURL()
-        /*
+
         try {
             Log.d("method:", method)
             Log.d("url:", url)
@@ -69,7 +69,7 @@ open class BlasRestCache(val crud:String = "zip",
         catch(e: Exception) {
             Log.d("blas-log", e.message)
             traceLog("Failed to search zip files")
-        }*/
+        }
         return response
     }
 

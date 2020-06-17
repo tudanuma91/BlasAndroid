@@ -15,10 +15,14 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.work.WorkInfo
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.worker.DownloadWorker
 import com.v3.basis.blas.blasclass.worker.WorkerHelper
 import com.v3.basis.blas.ui.terminal.common.DownloadModel
 import com.v3.basis.blas.ui.terminal.common.DownloadViewModel
+import io.reactivex.Completable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import java.util.*
 
 
@@ -117,6 +121,14 @@ fun Fragment.addDownloadTask(vm: DownloadViewModel, model: DownloadModel, unzipP
             }
             WorkInfo.State.SUCCEEDED -> {
                 vm.setFinishDownloading(model)
+                Completable
+                    .fromAction {
+                        val list = FixtureController(requireContext(), projectId).search()
+                        Log.d("FixtureController", list.toString())
+                    }
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe()
             }
         }
     }
