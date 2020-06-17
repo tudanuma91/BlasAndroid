@@ -121,14 +121,15 @@ fun Fragment.addDownloadTask(vm: DownloadViewModel, model: DownloadModel, unzipP
             }
             WorkInfo.State.SUCCEEDED -> {
                 vm.setFinishDownloading(model)
-                Completable
-                    .fromAction {
-                        val list = FixtureController(requireContext(), projectId).search()
-                        Log.d("FixtureController", list.toString())
-                    }
-                    .subscribeOn(Schedulers.newThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe()
+                //テスト
+//                Completable
+//                    .fromAction {
+//                        val list = FixtureController(requireContext(), projectId).search()
+//                        Log.d("FixtureController", list.toString())
+//                    }
+//                    .subscribeOn(Schedulers.newThread())
+//                    .observeOn(AndroidSchedulers.mainThread())
+//                    .subscribe()
             }
         }
     }
