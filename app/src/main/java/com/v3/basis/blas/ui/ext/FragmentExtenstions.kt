@@ -124,8 +124,11 @@ fun Fragment.addDownloadTask(vm: DownloadViewModel, model: DownloadModel, unzipP
                 //テスト
                 Completable
                     .fromAction {
-                        val list = FixtureController(requireContext(), projectId).search()
-                        Log.d("FixtureController", list.toString())
+                        val ctl = FixtureController(requireContext(), projectId)
+                        val list = ctl.search()
+                        Log.d("FixtureController", "list:" + list.toString())
+                        val join = ctl.joinTest()
+                        Log.d("FixtureController", "list:" + join.first { it.username != null })
                     }
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
