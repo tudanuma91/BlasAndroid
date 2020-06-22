@@ -10,8 +10,8 @@ class FixturesAndUsers {
     lateinit var fixtures: Fixtures
 
     @Embedded
-//    lateinit var users: Users
     lateinit var username: String
+//    lateinit var users: Users
 //    @Relation(parentColumn = "fix_user_id", entityColumn = "user_id")
 //    lateinit var users: List<Users>
 }

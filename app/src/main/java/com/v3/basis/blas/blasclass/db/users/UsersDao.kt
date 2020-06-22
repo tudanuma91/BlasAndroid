@@ -19,4 +19,7 @@ interface UsersDao {
 
     @Delete
     fun delete(user: Users)
+
+    @Query("SELECT u.*, o.org_id as o_id from Users u INNER JOIN Orgs o ON u.org_id = o.org_id")
+    fun joinTest(): List<UsersAndOrgs>
 }

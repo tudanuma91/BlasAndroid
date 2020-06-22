@@ -16,6 +16,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.work.WorkInfo
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
+import com.v3.basis.blas.blasclass.db.users.UsersController
 import com.v3.basis.blas.blasclass.worker.DownloadWorker
 import com.v3.basis.blas.blasclass.worker.WorkerHelper
 import com.v3.basis.blas.ui.terminal.common.DownloadModel
@@ -127,8 +128,10 @@ fun Fragment.addDownloadTask(vm: DownloadViewModel, model: DownloadModel, unzipP
                         val ctl = FixtureController(requireContext(), projectId)
                         val list = ctl.search()
                         Log.d("FixtureController", "list:" + list.toString())
-                        val join = ctl.joinTest()
-                        Log.d("FixtureController", "list:" + join.first { it.username != null })
+//                        val join = ctl.joinTest()
+//                        Log.d("FixtureController", "list:" + join.first { it.username != null })
+                        val join = UsersController(requireContext(), projectId).joinTest()
+                        Log.d("JoinTest", "list:" + join.toString())
                     }
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
