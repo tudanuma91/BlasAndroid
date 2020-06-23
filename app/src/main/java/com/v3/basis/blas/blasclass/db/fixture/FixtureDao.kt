@@ -20,8 +20,6 @@ interface FixtureDao {
     @Delete
     fun delete(fixtures: Fixtures)
 
-    @Query("SELECT Fixtures.*, u.username FROM Fixtures INNER JOIN Users u ON Fixtures.fix_user_id = u.user_id")
-//    @Transaction
-//    @Query("SELECT * FROM Fixtures")
+    @Query("SELECT f.*, u.username as u_username FROM Fixtures f INNER JOIN Users u ON f.fix_user_id = u.user_id")
     fun selectJoinUsers(): List<FixturesAndUsers>
 }

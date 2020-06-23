@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.MenuItem
 import android.widget.PopupMenu
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.get
 import androidx.fragment.app.FragmentActivity
@@ -26,6 +27,7 @@ import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.app.BlasDef
 import com.v3.basis.blas.blasclass.app.BlasMsg
+import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.ui.ext.setBlasCustomView
@@ -161,7 +163,12 @@ class FixtureActivity : AppCompatActivity() {
                                 Log.d("CL_0001_7", "検品開始")
                                 // onResumeをオーバーライドしたので，手動呼び出しは禁止
                                 // FixtureKenpinFragment().callOnPouse()
-                                BlasRestFixture("kenpin", payload2, ::success, ::error).execute()
+                                // ROOMテストインサート
+                                if (FixtureController(this@FixtureActivity, projectId!!).kenpin(result.toString()).not()) {
+                                    Toast.makeText(this@FixtureActivity,
+                                        "ROOMにINSERT失敗。projectId: $projectId, ", Toast.LENGTH_LONG).show()
+                                }
+//                                BlasRestFixture("kenpin", payload2, ::success, ::error).execute()
                             }
                             "takeout"->{
                                 // onResumeをオーバーライドしたので，手動呼び出しは禁止

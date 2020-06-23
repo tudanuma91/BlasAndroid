@@ -128,8 +128,8 @@ fun Fragment.addDownloadTask(vm: DownloadViewModel, model: DownloadModel, unzipP
                         val ctl = FixtureController(requireContext(), projectId)
                         val list = ctl.search()
                         Log.d("FixtureController", "list:" + list.toString())
-//                        val join = ctl.joinTest()
-//                        Log.d("FixtureController", "list:" + join.first { it.username != null })
+                        val _join = ctl.joinTest()
+                        Log.d("FixtureController", "list:" + _join.first { it.username != null })
                         val join = UsersController(requireContext(), projectId).joinTest()
                         Log.d("JoinTest", "list:" + join.toString())
                     }
