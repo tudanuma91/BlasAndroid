@@ -13,12 +13,30 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
     fun search(fixture_id: Int? = null): List<Fixtures> {
 
-        val db = openDatabase()
-        return if (fixture_id != null) {
-            db.fixtureDao().select(fixture_id)
-        } else {
-            db.fixtureDao().selectAll()
+        val db = openSQLiteDatabase()
+        val cursor = db?.rawQuery("select * from fixtures", null)
+        val ret = mutableListOf<Fixtures>()
+        cursor?.also { c ->
+            var notLast = c.moveToFirst()
+            while (notLast) {
+                val r = c.getColumnIndex("serial_number").let {
+                    val serialNumber = cursor.getString(it)
+                    Fixtures(serial_number = serialNumber)
+                }
+                ret.add(r)
+                notLast = c.moveToNext()
+            }
         }
+        cursor?.close()
+
+        return ret
+
+//        val db = openDatabase()
+//        return if (fixture_id != null) {
+//            db.fixtureDao().select(fixture_id)
+//        } else {
+//            db.fixtureDao().selectAll()
+//        }
     }
 
     /*
@@ -42,10 +60,14 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
     fun kenpin(serial_number: String): Boolean {
 
-        val db = openDatabase()
+        val db = openSQLiteDatabase()
+        db ?: return false
 
         return try {
-            db.fixtureDao().insert(Fixtures(serial_number = serial_number))
+            db.beginTransaction()
+            db.execSQL("INSERT into fixtures(serial_number) values (?)", arrayOf(serial_number))
+            db.setTransactionSuccessful()
+            db.endTransaction()
             true
         } catch (e: Exception) {
             //とりあえず例外をキャッチして、Falseを返す？

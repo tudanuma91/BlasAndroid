@@ -21,6 +21,7 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusFinishInst
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusNotTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
+import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
@@ -120,12 +121,14 @@ class FixtureViewFragment : Fragment() {
                 //呼ぶタイミングを確定させる！！
                 val payload2 = mapOf("token" to token, "project_id" to project_id)
                 Log.d("testtest", "取得する")
-                BlasRestFixture(
-                    "search",
-                    payload2,
-                    ::fixtureGetSuccess,
-                    ::fixtureGetError
-                ).execute()
+                val list = FixtureController(requireContext(), project_id).search()
+                Log.d("FixtureViewTest", list.toString())
+//                BlasRestFixture(
+//                    "search",
+//                    payload2,
+//                    ::fixtureGetSuccess,
+//                    ::fixtureGetError
+//                ).execute()
             }else{
                 throw java.lang.Exception("Failed to receive internal data ")
             }
