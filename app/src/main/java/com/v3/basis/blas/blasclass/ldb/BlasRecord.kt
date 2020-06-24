@@ -1,6 +1,7 @@
 package com.v3.basis.blas.blasclass.ldb
 import androidx.room.*
 import io.reactivex.Completable
+import kotlin.reflect.full.memberProperties
 
 interface LDBRecord {
     var recordStatus:Int    //何も弄ってない0 仮登録中(新規追加)1、仮登録中(編集)2、仮登録集(削除)3,送信待ち4, 送信完了5
@@ -40,7 +41,6 @@ data class Fixture(
     @ColumnInfo(name = "update_date") var update_date: String = "",         //レコード更新日付
     @ColumnInfo(name = "recordStatus") var recordStatus:Int = -1            //何も弄ってない0 仮登録中(新規追加)1、仮登録中(編集)2、仮登録集(削除)3,送信待ち4, 送信完了5
 )
-
 
 data class LDBItemRecord(
     val item_id:Int,

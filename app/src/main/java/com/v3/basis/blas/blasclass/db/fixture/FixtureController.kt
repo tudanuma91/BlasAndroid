@@ -1,8 +1,16 @@
 package com.v3.basis.blas.blasclass.db.fixture
 
 import android.content.Context
+import android.util.Log
 import com.v3.basis.blas.blasclass.db.BaseController
+import com.v3.basis.blas.blasclass.ldb.LdbFixtureTest
 import java.lang.Exception
+import kotlin.reflect.KMutableProperty
+import kotlin.reflect.KVisibility
+import kotlin.reflect.full.*
+import kotlin.reflect.jvm.isAccessible
+import kotlin.reflect.jvm.javaField
+import kotlin.reflect.jvm.javaMethod
 
 class FixtureController(context: Context, projectId: String): BaseController(context, projectId) {
 
@@ -12,19 +20,41 @@ class FixtureController(context: Context, projectId: String): BaseController(con
     }
 
     //TODO 三代川さん
-    fun search(fixture_id: Int? = null): List<Fixtures> {
+    fun search(fixture_id: Int? = null): List<LdbFixtureTest> {
 
         val db = openSQLiteDatabase()
         val cursor = db?.rawQuery("select * from fixtures", null)
-        val ret = mutableListOf<Fixtures>()
+        val ret = mutableListOf<LdbFixtureTest>()
         cursor?.also { c ->
             var notLast = c.moveToFirst()
             while (notLast) {
-                val r = c.getColumnIndex("serial_number").let {
-                    val serialNumber = cursor.getString(it)
-                    Fixtures(serial_number = serialNumber)
-                }
-                ret.add(r)
+
+                val fix = LdbFixtureTest()
+
+                fix::class.memberProperties
+                    .filter{ it.visibility == KVisibility.PUBLIC }
+//                    .filter{ it.returnType.isSubtypeOf(String::class.starProjectedType) }
+                    .filterIsInstance<KMutableProperty<*>>()
+                    .forEach { prop ->
+                        Log.d("aaaa","name:" + prop.name)
+                        val value = cursor.getString( c.getColumnIndex(prop.name) )
+                        Log.d("bbbb","value:" + value)
+                        Log.d("cccc","prop field:" + prop.javaField)
+
+                        if( value.isNullOrEmpty() ) {
+                            return@forEach
+                        }
+
+                        if( prop.returnType.isSubtypeOf(String::class.starProjectedType) ) {
+                            prop.setter.call(fix,value)
+                        }
+                        else {
+                            prop.setter.call(fix,value.toInt())
+                        }
+
+                   }
+
+                ret.add(fix)
                 notLast = c.moveToNext()
             }
         }
