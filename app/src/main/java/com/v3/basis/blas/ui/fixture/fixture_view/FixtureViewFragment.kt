@@ -123,12 +123,12 @@ class FixtureViewFragment : Fragment() {
                 Log.d("testtest", "取得する")
                 val list = FixtureController(requireContext(), project_id).search()
                 Log.d("FixtureViewTest", list.toString())
-//                BlasRestFixture(
-//                    "search",
-//                    payload2,
-//                    ::fixtureGetSuccess,
-//                    ::fixtureGetError
-//                ).execute()
+                BlasRestFixture(
+                    "search",
+                    payload2,
+                    ::fixtureGetSuccess,
+                    ::fixtureGetError
+                ).execute()
             }else{
                 throw java.lang.Exception("Failed to receive internal data ")
             }

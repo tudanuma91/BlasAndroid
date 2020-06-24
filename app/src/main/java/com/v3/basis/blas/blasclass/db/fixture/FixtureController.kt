@@ -11,6 +11,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         return db.fixtureDao().selectJoinUsers()
     }
 
+    //TODO 三代川さん
     fun search(fixture_id: Int? = null): List<Fixtures> {
 
         val db = openSQLiteDatabase()
@@ -58,6 +59,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
     }
      */
 
+    //TODO 三代川さん
     fun kenpin(serial_number: String): Boolean {
 
         val db = openSQLiteDatabase()
@@ -76,12 +78,17 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         }
     }
 
+    //TODO 三代川さん
     fun takeout(serial_number: String): Boolean {
 
-        val db = openDatabase()
+        val db = openSQLiteDatabase()
+        db ?: return false
 
         return try {
-            db.fixtureDao().update(Fixtures(serial_number = serial_number))
+            db.beginTransaction()
+            db.execSQL("UPDATE fixtures set status = 1 where serial_number = ?", arrayOf(serial_number))
+            db.setTransactionSuccessful()
+            db.endTransaction()
             true
         } catch (e: Exception) {
             //とりあえず例外をキャッチして、Falseを返す？
@@ -90,12 +97,17 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         }
     }
 
+    //TODO 三代川さん
     fun rtn(serial_number: String): Boolean {
 
-        val db = openDatabase()
+        val db = openSQLiteDatabase()
+        db ?: return false
 
         return try {
-            db.fixtureDao().update(Fixtures(serial_number = serial_number))
+            db.beginTransaction()
+            db.execSQL("UPDATE fixtures set status = 2 where serial_number = ?", arrayOf(serial_number))
+            db.setTransactionSuccessful()
+            db.endTransaction()
             true
         } catch (e: Exception) {
             //とりあえず例外をキャッチして、Falseを返す？

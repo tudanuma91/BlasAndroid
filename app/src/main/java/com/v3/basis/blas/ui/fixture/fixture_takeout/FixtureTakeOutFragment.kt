@@ -1,39 +1,25 @@
 package com.v3.basis.blas.ui.fixture.fixture_takeout
 
 import android.Manifest
-import android.app.AlertDialog
 import android.content.Context
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.hardware.camera2.CameraManager
-import android.media.AudioManager
-import android.media.ToneGenerator
 import android.os.Bundle
-import android.os.VibrationEffect
-import android.os.Vibrator
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.content.ContextCompat
-import androidx.core.content.PermissionChecker
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
-import com.v3.basis.blas.blasclass.app.BlasMsg.Companion.msg
 import com.v3.basis.blas.ui.ext.addTitle
-import com.v3.basis.blas.ui.ext.checkPermissions
 import com.v3.basis.blas.ui.ext.permissionChk
-import com.v3.basis.blas.ui.fixture.fixture_kenpin.FixtureKenpinFragment
-import com.v3.basis.blas.ui.fixture.fixture_return.FixtureReturnFragment
 import kotlinx.android.synthetic.main.fragment_fixture_takeout.*
 import kotlinx.android.synthetic.main.fragment_qr.qr_view
-import java.lang.Exception
 
 
 /**

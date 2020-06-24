@@ -165,20 +165,25 @@ class FixtureActivity : AppCompatActivity() {
                                 // FixtureKenpinFragment().callOnPouse()
                                 // ROOMテストインサート
                                 if (FixtureController(this@FixtureActivity, projectId!!).kenpin(result.toString()).not()) {
-                                    Toast.makeText(this@FixtureActivity,
-                                        "ROOMにINSERT失敗。projectId: $projectId, ", Toast.LENGTH_LONG).show()
+                                    Log.d("FixtureViewText", "INSERT失敗。projectId: $projectId, ")
                                 }
 //                                BlasRestFixture("kenpin", payload2, ::success, ::error).execute()
                             }
                             "takeout"->{
                                 // onResumeをオーバーライドしたので，手動呼び出しは禁止
                                 // FixtureTakeOutFragment().callOnPouse()
-                                BlasRestFixture("takeout",payload2, ::success, ::error).execute()
+                                if (FixtureController(this@FixtureActivity, projectId!!).takeout(result.toString()).not()) {
+                                    Log.d("FixtureViewText", "IUPDATE失敗。projectId: $projectId, ")
+                                }
+//                                BlasRestFixture("takeout",payload2, ::success, ::error).execute()
                             }
                             "return"->{
                                 // onResumeをオーバーライドしたので，手動呼び出しは禁止
                                 // FixtureReturnFragment().callOnPouse()
-                                BlasRestFixture("rtn",payload2, ::success, ::error).execute()
+                                if (FixtureController(this@FixtureActivity, projectId!!).rtn(result.toString()).not()) {
+                                    Log.d("FixtureViewText", "UPDATE失敗。projectId: $projectId, ")
+                                }
+//                                BlasRestFixture("rtn",payload2, ::success, ::error).execute()
                             }
                         }
 
