@@ -49,7 +49,7 @@ class LoginFragment : Fragment() {
      * ログインボタン押下時、BLASに対してログイン要求を非同期で行う。
      * 成功時はloginSuccessメソッドを、失敗時はloginErrorメソッドをコールバックする。
      */
-    private fun setListener(view: View, login: (String)->Unit, error: (Int)->Unit) {
+    private fun setListener(view: View, login: (String,Int)->Unit, error: (Int)->Unit) {
 
         view.setOnClickListener{
             Log.d("【LoginFragment】", "Login開始")
@@ -116,12 +116,14 @@ class LoginFragment : Fragment() {
     /** ログインに成功したときにコールバックされ、
      * 掲示板の画面をキックする
      * @param in token ログインに成功したときのトークン
+     * @param in userId ログインユーザーのID
      */
-    private fun loginSuccess(token:String) {
+    private fun loginSuccess(token:String,userId : Int) {
         Log.d("BLAS", "Login成功")
 
         FirebaseCrashlytics.getInstance().setCustomKey("token", token)
         BlasApp.token = token
+        BlasApp.userId = userId
 
         val intent = Intent(activity, TerminalActivity::class.java)
         intent.putExtra("token",token)
