@@ -1,16 +1,9 @@
 package com.v3.basis.blas.blasclass.db.fixture
 
 import android.content.Context
-import android.util.Log
 import com.v3.basis.blas.blasclass.db.BaseController
-import com.v3.basis.blas.blasclass.ldb.LdbFixtureTest
+import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
 import java.lang.Exception
-import kotlin.reflect.KMutableProperty
-import kotlin.reflect.KVisibility
-import kotlin.reflect.full.*
-import kotlin.reflect.jvm.isAccessible
-import kotlin.reflect.jvm.javaField
-import kotlin.reflect.jvm.javaMethod
 
 class FixtureController(context: Context, projectId: String): BaseController(context, projectId) {
 
@@ -20,54 +13,52 @@ class FixtureController(context: Context, projectId: String): BaseController(con
     }
 
     //TODO 三代川さん
-    fun search(fixture_id: Int? = null): List<LdbFixtureTest> {
+    fun search(fixture_id: Int? = null): List<LdbFixtureRecord> {
 
         val db = openSQLiteDatabase()
-        val cursor = db?.rawQuery("select * from fixtures", null)
-        val ret = mutableListOf<LdbFixtureTest>()
-        cursor?.also { c ->
-            var notLast = c.moveToFirst()
+
+        // Groupチェック
+
+        // Projectチェック
+
+        val cursor = db?.rawQuery(
+            "select "
+                    + "fixtures.*"
+                    + ",o_fix.name as fix_org_name,u_fix.name as fix_user_name "
+                    + ",o_takeout.name as takeout_org_name,u_takeout.name as takeout_user_name"
+                    + ",o_rtn.name as rtn_org_name,u_rtn.name as rtn_user_name"
+                    + ",o_item.name as item_org_name,u_item.name as item_user_name"
+                    + " from fixtures "
+                    + " left join orgs as o_fix"
+                    + " on fixtures.fix_org_id = o_fix.org_id"
+                    + " left join users as u_fix"
+                    + " on fixtures.fix_user_id = u_fix.user_id"
+                    + " left join orgs as o_takeout"
+                    + " on fixtures.takeout_org_id = o_takeout.org_id"
+                    + " left join users as u_takeout"
+                    + " on fixtures.takeout_user_id = u_takeout.user_id"
+                    + " left join orgs as o_rtn"
+                    + " on fixtures.rtn_org_id = o_rtn.org_id"
+                    + " left join users as u_rtn"
+                    + " on fixtures.rtn_user_id = u_rtn.user_id "
+                    + " left join orgs as o_item"
+                    + " on fixtures.item_org_id = o_item.org_id"
+                    + " left join users as u_item"
+                    + " on fixtures.item_user_id = u_item.user_id"
+            , null
+        )
+        val ret = mutableListOf<LdbFixtureRecord>()
+        cursor?.also { c_now ->
+            var notLast = c_now.moveToFirst()
             while (notLast) {
-
-                val fix = LdbFixtureTest()
-
-                fix::class.memberProperties
-                    .filter{ it.visibility == KVisibility.PUBLIC }
-//                    .filter{ it.returnType.isSubtypeOf(String::class.starProjectedType) }
-                    .filterIsInstance<KMutableProperty<*>>()
-                    .forEach { prop ->
-                        Log.d("aaaa","name:" + prop.name)
-                        val value = cursor.getString( c.getColumnIndex(prop.name) )
-                        Log.d("bbbb","value:" + value)
-                        Log.d("cccc","prop field:" + prop.javaField)
-
-                        if( value.isNullOrEmpty() ) {
-                            return@forEach
-                        }
-
-                        if( prop.returnType.isSubtypeOf(String::class.starProjectedType) ) {
-                            prop.setter.call(fix,value)
-                        }
-                        else {
-                            prop.setter.call(fix,value.toInt())
-                        }
-
-                   }
-
+                val fix = setProperty(LdbFixtureRecord() ,c_now)  as  LdbFixtureRecord
                 ret.add(fix)
-                notLast = c.moveToNext()
+                notLast = c_now.moveToNext()
             }
         }
         cursor?.close()
 
         return ret
-
-//        val db = openDatabase()
-//        return if (fixture_id != null) {
-//            db.fixtureDao().select(fixture_id)
-//        } else {
-//            db.fixtureDao().selectAll()
-//        }
     }
 
     /*

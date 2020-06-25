@@ -25,6 +25,7 @@ import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.util.*
+import kotlin.reflect.full.memberProperties
 
 
 fun Fragment.getStringExtra(key: String) : String? {
@@ -126,12 +127,18 @@ fun Fragment.addDownloadTask(vm: DownloadViewModel, model: DownloadModel, unzipP
                 Completable
                     .fromAction {
                         val ctl = FixtureController(requireContext(), projectId)
-                        val list = ctl.search()
-                        Log.d("FixtureController", "list:" + list.toString())
-                        val _join = ctl.joinTest()
-                        Log.d("FixtureController", "list:" + _join.first { it.username != null })
-                        val join = UsersController(requireContext(), projectId).joinTest()
-                        Log.d("JoinTest", "list:" + join.toString())
+                        val records = ctl.search()
+
+                        records.forEach { rec ->
+                            rec::class.memberProperties.forEach {prop ->
+                                Log.d("prop:",prop.name + ":" + prop.call(rec).toString())
+                            }
+                        }
+
+//                        val _join = ctl.joinTest()
+//                        Log.d("FixtureController", "list:" + _join.first { it.username != null })
+//                        val join = UsersController(requireContext(), projectId).joinTest()
+//                        Log.d("JoinTest", "list:" + join.toString())
                     }
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
