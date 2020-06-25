@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -179,4 +180,12 @@ fun Fragment.continueDownloadTask(vm: DownloadViewModel, model: DownloadModel) {
             }
         }
     }
+}
+
+fun Fragment.setBackPressedEvent(action: (callback: OnBackPressedCallback) -> Unit) {
+    requireActivity().onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            action.invoke(this)
+        }
+    })
 }

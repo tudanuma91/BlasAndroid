@@ -8,6 +8,7 @@ import com.v3.basis.blas.ui.terminal.dashboards.DashboardsFragment
 import com.v3.basis.blas.ui.terminal.fixture.FixtureFragment
 import com.v3.basis.blas.ui.terminal.project.ProjectFragment
 import com.v3.basis.blas.ui.terminal.status.StatusFragment
+import com.v3.basis.blas.ui.webview.WebViewFragment
 
 
 class TerminalPagerAdapter(childFragmentManager: FragmentManager) : FragmentPagerAdapter(childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
@@ -25,7 +26,7 @@ class TerminalPagerAdapter(childFragmentManager: FragmentManager) : FragmentPage
             0 -> { DashboardsFragment() }
             1 -> { ProjectFragment() }
             2 -> { FixtureFragment() }
-            3 -> { LogoutFragment() }
+            3 -> { WebViewFragment() }
             4 -> { StatusFragment() }
             else -> { DashboardsFragment() }
         }

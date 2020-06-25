@@ -52,6 +52,8 @@
     <string name="navi_title_fixture_motidasi">機器持ち出し</string>
     <string name="navi_title_fixture_return">機器返却</string>
     <string name="navi_title_fixture_view">機器一覧</string>
+    <!--WebView-->
+    <string name="navi_title_webview">WebView</string>
     <!--共通-->
     <string name="navi_title_back">戻る</string>
 
