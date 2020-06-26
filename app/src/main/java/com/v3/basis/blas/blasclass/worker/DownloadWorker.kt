@@ -81,7 +81,8 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
 
             val name = inputData.getString(KEY_SAVE_PATH_KEY_NAME)
                 ?: throw IllegalStateException("might be forgot set to savePath key via with WorkerHelper")
-            val fileName = File(unZipPath).listFiles()?.get(0)?.path
+            val fileName = File(unZipPath).listFiles()?.last()?.path
+            Log.d("file path test", "$fileName")
             preferences().edit().putString(name, fileName).apply()
         }
     }
