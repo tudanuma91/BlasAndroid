@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import androidx.room.Room
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.worker.DownloadWorker
+import io.reactivex.subjects.PublishSubject
 import java.io.FileNotFoundException
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KVisibility
@@ -14,6 +15,9 @@ import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.starProjectedType
 
 abstract class BaseController(private val context: Context, val projectId: String) {
+
+    // 使うときはerrorMessageEvent.onNext("メッセージ")とする
+    val errorMessageEvent: PublishSubject<String> = PublishSubject.create()
 
     fun openDatabase(): BlasDatabase {
 
