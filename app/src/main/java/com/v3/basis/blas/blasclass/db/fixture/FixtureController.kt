@@ -37,7 +37,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             " left join orgs as o_item on fixtures.item_org_id = o_item.org_id" +
             " left join users as u_item on fixtures.item_user_id = u_item.user_id"
 
-    fun search(fixture_id: Int? = null): List<LdbFixtureRecord> {
+    fun search(fixture_id: Int? = null): List<LdbFixtureDispRecord> {
 
         val db = openSQLiteDatabase()
         val user = getUserInfo(db)

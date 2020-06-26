@@ -22,6 +22,7 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.helper.RestHelper
+import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.ui.ext.addTitle
@@ -289,7 +290,7 @@ class FixtureViewFragment : Fragment() {
     /**
      * 表示する値を作成する
      */
-    private fun createValue(rcd: LdbFixtureRecord): String? {
+    private fun createValue(rcd: LdbFixtureDispRecord): String? {
         var value:String? =null
         try {
             value = "[${getString(R.string.col_serialnumber)}]"
