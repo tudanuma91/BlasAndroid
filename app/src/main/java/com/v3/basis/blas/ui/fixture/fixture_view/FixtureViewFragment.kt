@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -23,12 +22,16 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.helper.RestHelper
-import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
+import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.ui.ext.addTitle
-import com.v3.basis.blas.ui.ext.getStringExtra
+import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_fixture_view.*
-import kotlinx.android.synthetic.main.fragment_item_view.*
 import kotlinx.android.synthetic.main.fragment_item_view.recyclerView
 import org.json.JSONArray
 import org.json.JSONObject
@@ -50,6 +53,8 @@ class FixtureViewFragment : Fragment() {
     private var helper = RestHelper()
 
     private var jsonParseList : JSONArray? = null
+    private lateinit var fixtureController: FixtureController
+    private val disposables = CompositeDisposable()
 
     private var paresUnitNum = 100
     private var parseStartNum = 0
@@ -83,6 +88,17 @@ class FixtureViewFragment : Fragment() {
         if (extras?.getString("project_id") != null) {
             project_id = extras.getString("project_id").toString()
         }
+        fixtureController = FixtureController(requireContext(), project_id)
+        fixtureController.errorMessageEvent
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                //エラーのため、データを初期化する
+                valueMap.clear()
+
+                Log.d("取得失敗","$it")
+                progressBar.visibility = View.INVISIBLE
+            }
+            .addTo(disposables)
 
         return inflater.inflate(R.layout.fragment_fixture_view, container, false)
     }
@@ -119,16 +135,17 @@ class FixtureViewFragment : Fragment() {
                 })
 
                 //呼ぶタイミングを確定させる！！
-                val payload2 = mapOf("token" to token, "project_id" to project_id)
-                Log.d("testtest", "取得する")
-                val list = FixtureController(requireContext(), project_id).search()
-                Log.d("FixtureViewTest", list.toString())
-                BlasRestFixture(
-                    "search",
-                    payload2,
-                    ::fixtureGetSuccess,
-                    ::fixtureGetError
-                ).execute()
+                searchAsync()
+//                val payload2 = mapOf("token" to token, "project_id" to project_id)
+//                Log.d("testtest", "取得する")
+//                val list = FixtureController(requireContext(), project_id).search()
+//                Log.d("FixtureViewTest", list.toString())
+//                BlasRestFixture(
+//                    "search",
+//                    payload2,
+//                    ::fixtureGetSuccess,
+//                    ::fixtureGetError
+//                ).execute()
             }else{
                 throw java.lang.Exception("Failed to receive internal data ")
             }
@@ -144,16 +161,52 @@ class FixtureViewFragment : Fragment() {
         }
     }
 
+    private fun searchAsync() {
+
+        Single.fromCallable { fixtureController.search() }
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .map {
+                val list = mutableListOf<RowModel>()
+                it.forEach {
+                    val value = createValue(it)
+                    val title = it.fixture_id
+                    val rowModel = RowModel().also {
+                        if (title != null) {
+                            it.title = title.toString()
+                        }
+                        if (value != null) {
+                            it.detail = value
+                        }
+                    }
+                    list.add(rowModel)
+                }
+                list
+            }
+            .subscribeBy {
+                dataListAll.addAll(it)
+                setAdapter()
+            }
+            .addTo(disposables)
+    }
+
     private fun createDataList() {
         //データ管理のループ
         Log.d("ここで死んでいる","")
-        if(currentIndex < parseStartNum) {
-            dataList.addAll(dataListAll.filterIndexed { index, mutableMap ->
-                (index >= currentIndex) && (index < currentIndex + CREATE_UNIT)
-            }.toMutableList())
-            dataList.forEach{
-                Log.d("あたいチェック","datalist id =${it.title}")
-            }
+//        if(currentIndex < parseStartNum) {
+//            dataList.addAll(dataListAll.filterIndexed { index, mutableMap ->
+//                (index >= currentIndex) && (index < currentIndex + CREATE_UNIT)
+//            }.toMutableList())
+//            dataList.forEach{
+//                Log.d("あたいチェック","datalist id =${it.title}")
+//            }
+//        }
+        val filteredList = dataListAll.filterIndexed { index, mutableMap ->
+            (index >= currentIndex) && (index < currentIndex + CREATE_UNIT)
+        }
+        dataList.addAll(filteredList.toMutableList())
+        dataList.forEach{
+            Log.d("あたいチェック","datalist id =${it.title}")
         }
         // update
         if (dataList.isNotEmpty()) {
@@ -196,19 +249,19 @@ class FixtureViewFragment : Fragment() {
                     Log.d("配列の中身","key = ${it.key}")
 
                     //カラムの定義取得
-                    val fixture_id = it.key
-                    val fixture_value = it.value
-                    val value = createValue(fixture_value)
-
-                    val rowModel = RowModel().also {
-                        if (fixture_id != null) {
-                            it.title = fixture_id.toString()
-                        }
-                        if (value != null) {
-                            it.detail = value
-                        }
-                    }
-                    dataListAll.add(rowModel)
+//                    val fixture_id = it.key
+//                    val fixture_value = it.value
+//                    val value = createValue(fixture_value)
+//
+//                    val rowModel = RowModel().also {
+//                        if (fixture_id != null) {
+//                            it.title = fixture_id.toString()
+//                        }
+//                        if (value != null) {
+//                            it.detail = value
+//                        }
+//                    }
+//                    dataListAll.add(rowModel)
                 }
                 setAdapter()
             }
@@ -236,52 +289,52 @@ class FixtureViewFragment : Fragment() {
     /**
      * 表示する値を作成する
      */
-    private fun createValue(list: MutableMap<String,String?>): String? {
+    private fun createValue(rcd: LdbFixtureRecord): String? {
         var value:String? =null
         try {
             value = "[${getString(R.string.col_serialnumber)}]"
-            value += "\n${list["serial_number"]}"
+            value += "\n${rcd.serial_number}"
             value += "\n[${getString(R.string.col_status)}]\n"
-            value += when (list["status"]) {//config.FixtureTypeにて定義している。
-                canTakeOut -> {
+            value += when (rcd.status) {//config.FixtureTypeにて定義している。
+                canTakeOut.toInt() -> {
                     "${statusCanTakeOut}"
                 }
-                takeOut -> {
+                takeOut.toInt() -> {
                     "${statusTakeOut}"
                 }
-                finishInstall -> {
+                finishInstall.toInt() -> {
                     "${statusFinishInstall}"
                 }
-                notTakeOut -> {
+                notTakeOut.toInt() -> {
                     "${statusNotTakeOut}"
                 }
                 else -> {
                 }
             }
             value += "\n\n\n[${getString(R.string.col_kenpin_org)}]\n"
-            value += setValue(list["fix_org"].toString())
+            value += setValue(rcd.fix_org_name)
             value += "\n[${getString(R.string.col_kenpin_user)}]\n"
-            value += setValue(list["fix_user"].toString())
+            value += setValue(rcd.fix_user_name)
             value += "\n[${getString(R.string.col_kenpin_date)}]\n"
-            value += setValue(list["fix_date"].toString())
+            value += setValue(rcd.fix_date)
             value += "\n\n\n[${getString(R.string.col_takeout_org)}]\n"
-            value += setValue(list["takeout_org"].toString())
+            value += setValue(rcd.takeout_org_name)
             value += "\n[${getString(R.string.col_takeout_user)}]\n"
-            value += setValue(list["takeout_user"].toString())
+            value += setValue(rcd.takeout_user_name)
             value += "\n[${getString(R.string.col_takeout_date)}]\n"
-            value += setValue(list["takeout_date"].toString())
+            value += setValue(rcd.takeout_date)
             value += "\n\n\n[${getString(R.string.col_return_org)}]\n"
-            value += setValue(list["rtn_org"].toString())
+            value += setValue(rcd.rtn_org_name)
             value += "\n[${getString(R.string.col_return_user)}]\n"
-            value += setValue(list["rtn_user"].toString())
+            value += setValue(rcd.rtn_user_name)
             value += "\n[${getString(R.string.col_return_date)}]\n"
-            value += setValue(list["rtn_date"].toString())
+            value += setValue(rcd.rtn_date)
             value += "\n\n\n[${getString(R.string.col_item_org)}]\n"
-            value += setValue(list["item_org"].toString())
+            value += setValue(rcd.item_org_name)
             value += "\n[${getString(R.string.col_item_user)}]\n"
-            value += setValue(list["item_user"].toString())
+            value += setValue(rcd.item_user_name)
             value += "\n[${getString(R.string.col_item_date)}]\n"
-            value += setValue(list["item_date"].toString())
+            value += setValue(rcd.item_date)
         }catch (e:Exception){
 
         }
