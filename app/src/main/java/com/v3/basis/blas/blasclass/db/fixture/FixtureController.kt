@@ -245,7 +245,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             else {
                 // 検品不可
                 Log.d("kenpin","検品不可です")
-                false
+                errorMessageEvent.onNext("検品不可です")
+
+                return false
             }
         }
 
@@ -255,17 +257,79 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
     }
 
-    //TODO 三代川さん
+
+    private fun checkTakeout(fixture: LdbFixtureRecord?,user: LdbUserRecord?) : Boolean {
+        if( null == fixture ) {
+            Log.d("takeout message!","未登録のシリアルナンバーです")
+            errorMessageEvent.onNext("未登録のシリアルナンバーです")
+
+            return false
+        }
+        // ステータスが検品済み and 同じ会社で検品されているか？
+        if( 0 != fixture?.status ) {
+
+            if( 1 == fixture?.status ) {
+                Log.d("takeout message!","すでに持ち出し中です")
+                errorMessageEvent.onNext("すでに持ち出し中です")
+            }
+            else if( 2 == fixture?.status ) {
+                Log.d("takeout message!","すでに設置済みです")
+                errorMessageEvent.onNext("すでに設置済みです")
+            }
+            else if( 3 == fixture?.status ) {
+                Log.d("takeout message!","持出不可です")
+                errorMessageEvent.onNext("持出不可です")
+            }
+            return false
+        }
+
+        if( fixture?.fix_org_id != user?.org_id ) {
+            Log.d("takeout message!","異なる会社で検品されています")
+            errorMessageEvent.onNext("異なる会社で検品されています")
+            return false
+        }
+
+        return true
+    }
+
     fun takeout(serial_number: String): Boolean {
 
         val db = openSQLiteDatabase()
         db ?: return false
 
+        // 該当シリアルナンバーの機器情報を取得
+        var fixture = getEqualFixtureInfo(db,serial_number)
+        var user : LdbUserRecord? = getUserInfo(db)
+        if(null == user) {
+            user = LdbUserRecord()
+            user.user_id = 1
+            user.org_id = 1
+        }
+
+        if( !checkTakeout(fixture,user) ) {
+            return false
+        }
+
+        fixture!!.takeout_user_id = user.user_id
+        fixture!!.takeout_org_id = user.org_id
+
+        val current = LocalDateTime.now()
+        val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss")
+
+        fixture!!.takeout_date = current.format(formatter)
+        fixture!!.update_date = current.format(formatter)
+        fixture!!.status = 1
+        fixture!!.sync_status = 2
+
+        val cv = createConvertValue(fixture as Any,null)
+
         return try {
             db.beginTransaction()
-            db.execSQL("UPDATE fixtures set status = 1 where serial_number = ?", arrayOf(serial_number))
+            //db.execSQL("UPDATE fixtures set status = 1 where serial_number = ?", arrayOf(serial_number))
+            db.update("fixtures",cv,"serial_number = ?", arrayOf(serial_number))
             db.setTransactionSuccessful()
             db.endTransaction()
+            Log.d("takeout","成功！！！")
             true
         } catch (e: Exception) {
             //とりあえず例外をキャッチして、Falseを返す？
