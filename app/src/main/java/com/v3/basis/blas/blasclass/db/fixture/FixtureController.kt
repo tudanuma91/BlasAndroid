@@ -338,17 +338,85 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         }
     }
 
+
+    // TODO:takeoutと殆ど同じだから工夫しろ！
+    private fun checkuRtn(fixture: LdbFixtureRecord?,user: LdbUserRecord?) : Boolean {
+
+        if( null == fixture ) {
+            Log.d("takeout message!","未登録のシリアルナンバーです")
+            errorMessageEvent.onNext("未登録のシリアルナンバーです")
+
+            return false
+        }
+
+        // ステータスが検品済み and 同じ会社で検品されているか？
+        if( 1 != fixture?.status ) {
+
+            if( 0 == fixture?.status ) {    // TODO:ここだけtakeoutと違う
+                Log.d("takeout message!","持出確認が行われていません")
+                errorMessageEvent.onNext("持出確認が行われていません")
+            }
+            else if( 2 == fixture?.status ) {
+                Log.d("takeout message!","すでに設置済みです")
+                errorMessageEvent.onNext("すでに設置済みです")
+            }
+            else if( 3 == fixture?.status ) {
+                Log.d("takeout message!","持出不可です")
+                errorMessageEvent.onNext("持出不可です")
+            }
+            return false
+        }
+
+        if( fixture?.fix_org_id != user?.org_id ) {
+            Log.d("takeout message!","異なる会社で検品されています")
+            errorMessageEvent.onNext("異なる会社で検品されています")
+            return false
+        }
+
+
+        return true
+    }
+
     //TODO 三代川さん
     fun rtn(serial_number: String): Boolean {
 
         val db = openSQLiteDatabase()
         db ?: return false
 
+        // 該当シリアルナンバーの機器情報を取得
+        var fixture = getEqualFixtureInfo(db,serial_number)
+        var user : LdbUserRecord? = getUserInfo(db)
+        if(null == user) {
+            user = LdbUserRecord()
+            user.user_id = 1
+            user.org_id = 1
+        }
+
+        if( !checkuRtn(fixture,user) ) {
+            return false
+        }
+
+        fixture!!.rtn_user_id = user.user_id
+        fixture!!.rtn_org_id = user.org_id
+
+        val current = LocalDateTime.now()
+        val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss")
+
+        fixture!!.rtn_date = current.format(formatter)
+        fixture!!.update_date = current.format(formatter)
+        fixture!!.status = 0    // だったよね？？
+        fixture!!.sync_status = 2
+
+        val cv = createConvertValue(fixture,null)
+
         return try {
             db.beginTransaction()
-            db.execSQL("UPDATE fixtures set status = 2 where serial_number = ?", arrayOf(serial_number))
+            // db.execSQL("UPDATE fixtures set status = 2 where serial_number = ?", arrayOf(serial_number))
+            db.update("fixtures",cv,"serial_number = ?", arrayOf(serial_number))
+
             db.setTransactionSuccessful()
             db.endTransaction()
+            Log.d("rtn","成功！！！")
             true
         } catch (e: Exception) {
             //とりあえず例外をキャッチして、Falseを返す？
