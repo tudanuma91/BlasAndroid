@@ -38,6 +38,7 @@ import android.widget.RadioGroup
 import androidx.core.app.NavUtils
 import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
+import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.ui.ext.closeSoftKeyboard
 import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
 import kotlinx.android.synthetic.main.fragment_item_create.*
@@ -526,6 +527,8 @@ class ItemCreateFragment : Fragment() {
                 errorCnt = formAction.countNullError(nullChk, textViewMap,formInfoMap)
                 Log.d("デバックログの取得","nullChk => ${nullChk}")
                 if (errorCnt == 0 && parentChk) {
+                    //TODO
+//                    ItemsController(requireContext(), projectId).create()
                     BlasRestItem("create", payload, ::createSuccess, ::createError).execute()
                 }
             }
