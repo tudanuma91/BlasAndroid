@@ -38,10 +38,18 @@ import android.widget.RadioGroup
 import androidx.core.app.NavUtils
 import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
+import com.v3.basis.blas.blasclass.db.data.Items
 import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.ui.ext.closeSoftKeyboard
 import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
+import io.reactivex.Completable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_item_create.*
+import kotlin.reflect.full.memberProperties
 
 
 /**
@@ -372,7 +380,6 @@ class ItemCreateFragment : Fragment() {
                         rootView.addView(view)
 
                     }
-
                 }
 
                 //フォームセクションごとにスペース入れる処理。試しに入れてみた。
@@ -397,7 +404,8 @@ class ItemCreateFragment : Fragment() {
                 val parentErrorMap:MutableMap<String,MutableMap<String,String?>> = mutableMapOf()
 
                 val payload: MutableMap<String, String?> =
-                    mutableMapOf("token" to token, "project_id" to projectId)
+//                    mutableMapOf("token" to token, "project_id" to projectId)
+                    mutableMapOf("project_id" to projectId)
                 var cnt = 1
                 var errorCnt = 0
                 formInfoMap.forEach {
@@ -527,13 +535,21 @@ class ItemCreateFragment : Fragment() {
                 errorCnt = formAction.countNullError(nullChk, textViewMap,formInfoMap)
                 Log.d("デバックログの取得","nullChk => ${nullChk}")
                 if (errorCnt == 0 && parentChk) {
-                    //TODO
-//                    ItemsController(requireContext(), projectId).create()
-                    BlasRestItem("create", payload, ::createSuccess, ::createError).execute()
+                    val d = CompositeDisposable()
+                    Completable.fromAction { ItemsController(requireContext(), projectId).create(payload) }
+                        .subscribeOn(Schedulers.newThread())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doOnError { d.dispose() }
+                        .doOnComplete { d.dispose() }
+                        .subscribe()
+                        .addTo(d)
+//                    BlasRestItem("create", payload, ::createSuccess, ::createError).execute()
                 }
             }
         }
     }
+
+
 
     /**
      * フィールド取得失敗時

@@ -6,7 +6,7 @@ import com.v3.basis.blas.blasclass.db.BaseController
 class ItemsController(context: Context, projectId: String): BaseController(context, projectId) {
 
     //TODO 三代川さん
-    fun search(item_id: Int = 0): List<Items> {
+    fun search(item_id: Int = 0): MutableList<MutableMap<String, String?>> {
 
         val db = openSQLiteDatabase()
         val cursor = if (item_id == 0) {
@@ -14,11 +14,11 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         } else {
             db?.rawQuery("select * from items where item_id = ?", arrayOf(item_id.toString()))
         }
-        val ret = mutableListOf<Items>()
+        val ret = mutableListOf<MutableMap<String, String?>>()
         cursor?.also { c ->
             var notLast = c.moveToFirst()
             while (notLast) {
-                ret.add(Items.makeInstance(c))
+                ret.add(getMapValues(cursor))
                 notLast = c.moveToNext()
             }
         }
@@ -28,10 +28,13 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
     }
 
     //TODO 三代川さん
-    fun create(item: Items): Boolean {
+    fun create(map: MutableMap<String, String?>): Boolean {
 
         val db = openSQLiteDatabase()
         db ?: return false
+
+        val item = Items()
+        setProperty(item, map)
 
         return try {
             db.beginTransaction()
@@ -48,10 +51,13 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
     }
 
     //TODO 三代川さん
-    fun update(item: Items): Boolean {
+    fun update(map: Map<String, String?>): Boolean {
 
         val db = openSQLiteDatabase()
         db ?: return false
+
+        val item = Items()
+        setProperty(item, map)
 
         return try {
             db.beginTransaction()

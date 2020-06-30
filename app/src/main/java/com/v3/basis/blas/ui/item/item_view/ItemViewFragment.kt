@@ -22,12 +22,18 @@ import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemImageActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
+import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
+import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.fragment_item_view.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -54,6 +60,8 @@ class ItemViewFragment : Fragment() {
     private var jsonItemList: JSONObject? = null
     private val dataList = mutableListOf<RowModel>()
     private var jsonParseList :JSONArray? = null
+    private lateinit var itemsController: ItemsController
+    private val disposables = CompositeDisposable()
 
     private lateinit var rootView:View
     private val helper:RestHelper = RestHelper()
@@ -99,6 +107,20 @@ class ItemViewFragment : Fragment() {
         if(extras?.getString("projectName") != null ) {
             projectNames = extras.getString("projectName") //トークンの値を取得
         }
+
+        itemsController = ItemsController(requireContext(), projectId)
+        itemsController.errorMessageEvent
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                Log.d("itemViewFragment", "データ取得失敗")
+                Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
+
+                //エラーのため、データを初期化する
+                fieldMap.clear()
+                progressBarFlg = false
+                chkProgress(progressBarFlg,rootView)
+            }
+            .addTo(disposables)
 
         progressBarFlg = true
         chkProgress(progressBarFlg,root)
@@ -256,9 +278,23 @@ class ItemViewFragment : Fragment() {
             fieldMap[cnt] = it
             cnt +=1
         }
-        val payload2 = mapOf("token" to token, "project_id" to projectId)
-        BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
 
+        Single.fromCallable { itemsController.search() }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                if (it.isNotEmpty()) {
+                    itemListAll.clear()
+                    itemListAll.addAll(it)
+                    setAdapter()
+                } else {
+                    fieldMap.clear()
+                    progressBarFlg = false
+                    chkProgress(progressBarFlg,rootView)
+                }
+            }
+            .addTo(disposables)
+
+//        BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
     }
 
     /**
@@ -347,7 +383,7 @@ class ItemViewFragment : Fragment() {
         if (endShow) {
             Log.d("cardManager","ゴミ箱非表示")
             list.forEach {
-                val valueFlg = it["endFlg"].toString()
+                val valueFlg = it["end_flg"].toString()
                 val item_id = it["item_id"].toString()
                 var text: String? = ""
                 text = createCardText(text, it, colMax)
@@ -356,7 +392,7 @@ class ItemViewFragment : Fragment() {
         } else {
             Log.d("cardManager","ゴミ箱非表示")
             list.forEach {
-                val valueFlg = it["endFlg"].toString()
+                val valueFlg = it["end_flg"].toString()
                 if (valueFlg == FieldType.NORMAL) {
                     val item_id = it["item_id"].toString()
                     var text: String? = ""

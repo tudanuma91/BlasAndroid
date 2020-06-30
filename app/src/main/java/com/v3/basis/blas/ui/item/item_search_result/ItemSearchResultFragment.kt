@@ -168,7 +168,8 @@ class ItemSearchResultFragment : Fragment() {
                     //呼ぶタイミングを確定させる！！
                     val payload2 = mapOf("token" to token, "project_id" to projectId)
                     BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
-                    BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
+
+//                    BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
                 }else{
                     throw Exception("Failed to receive internal data ")
                 }
