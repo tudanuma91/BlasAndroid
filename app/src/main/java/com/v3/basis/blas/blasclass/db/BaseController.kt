@@ -150,4 +150,14 @@ abstract class BaseController(private val context: Context, val projectId: Strin
         return value
     }
 
+    protected fun createTempId() : Int {
+        val unixTime = System.currentTimeMillis()
+        Log.d("UnixTime",unixTime.toString())
+
+        val unxi9 =  unixTime.toString().substring( unixTime.toString().length - 9,  unixTime.toString().length)
+        Log.d("後ろ9桁",unxi9)
+
+        return unxi9.toInt() * (-1)
+    }
+
 }

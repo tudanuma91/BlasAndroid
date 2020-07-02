@@ -140,6 +140,8 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         val current = LocalDateTime.now()
         val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss")
+
+        new_fixture.fixture_id = createTempId()
         new_fixture.fix_date = current.format(formatter)
         new_fixture.serial_number = serial_number
         new_fixture.status = 0
@@ -147,8 +149,8 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         new_fixture.update_date = current.format(formatter)
         new_fixture.sync_status = 1
 
-        val exceptList = listOf("fixture_id")
-        val cv = createConvertValue(new_fixture,exceptList)
+//        val exceptList = listOf("fixture_id")
+        val cv = createConvertValue(new_fixture)
 
         return try {
             db.beginTransaction()
