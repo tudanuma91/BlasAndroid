@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="vm"
+            type="com.v3.basis.blas.ui.item.common.ItemViewModel" />
+        <variable
+            name="model"
+            type="com.v3.basis.blas.ui.item.common.FieldText" />
+    </data>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+        <TextView
+            android:textColor="@color/colorText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@{model.title}"
+            tools:text="TITLE"
+            />
+
+        <!-- TwoWay Bindingで, 入力した値が自動的に変数にも反映されます！ -->
+        <EditText
+            android:inputType="none"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:text="@={model.text}"
+            android:onClick="@{v -> vm.clickDate()}"
+            tools:text="EDIT"
+            />
+
+    </LinearLayout>
+</layout>

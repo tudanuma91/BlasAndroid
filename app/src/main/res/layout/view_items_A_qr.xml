@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="vm"
+            type="com.v3.basis.blas.ui.item.common.ItemViewModel" />
+        <variable
+            name="model"
+            type="com.v3.basis.blas.ui.item.common.FieldText" />
+    </data>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+        <TextView
+            android:textColor="@color/colorText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@{model.title}"
+            tools:text="TITLE"
+            />
+
+        <!-- TwoWay Bindingで, 入力した値が自動的に変数にも反映されます！ -->
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@={model.text}"
+            android:singleLine="true"
+            tools:text="EDIT"
+            />
+
+        <Button
+            android:onClick="@{v -> vm.clickQRCode()}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="QRコードを取得する"
+            />
+
+    </LinearLayout>
+</layout>
