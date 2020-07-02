@@ -4,6 +4,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import com.v3.basis.blas.blasclass.db.BaseController
+import com.v3.basis.blas.blasclass.db.Purser
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
 import com.v3.basis.blas.blasclass.ldb.LdbUserRecord
@@ -55,7 +56,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         if( 0 == fixtureDispRange ) {
             // projectの設定に従う
-            val showData = getShowData(db)
+            val showData = getProjectVlue(db,"show_data")
             if( 1 == showData ) {
                 // 自分の会社分しか見れない
                 //val myOrgId = getUserInfo(db,"org_id")
@@ -218,11 +219,49 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         return fixture
     }
 
-    fun kenpin(serial_number: String): Boolean {
+    fun passPurser( db:SQLiteDatabase, serial_number:String ) : String {
+
+        val purserType = getProjectVlue(db,"purser_type")
+
+        var newSerialNumber:String = ""
+        if( 0 == purserType ) {
+            newSerialNumber = Purser().encode(serial_number)
+        }
+        else if( 1 == purserType ) {
+            // PURSER_CSV
+            newSerialNumber = Purser().encode(serial_number)
+        }
+        else if(2 == purserType) {
+            // PURSER_SPACE
+            //TODO:未実装
+            newSerialNumber = serial_number
+        }
+        else if( 3 == purserType ) {
+            // PURSER_REG
+            //TODO:未実装
+            newSerialNumber = serial_number
+        }
+        else if( 4 == purserType) {
+            // PURSER_CSV_FIRST
+            //TODO:未実装
+            newSerialNumber = serial_number
+
+        }
+        else {
+            throw Exception()
+        }
+
+        return newSerialNumber
+    }
+
+
+    fun kenpin( serial_number: String): Boolean {
         Log.d("kenpin","start")
 
         val db = openSQLiteDatabase()
         db ?: return false
+
+        val serial_number = passPurser( db,serial_number )
 
         // fixtureテーブル 同じserial_numberが存在しないかを確認
         if(  checkExistSerail(db,serial_number) ){
@@ -296,6 +335,8 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         val db = openSQLiteDatabase()
         db ?: return false
+
+        val serial_number = passPurser( db,serial_number )
 
         // 該当シリアルナンバーの機器情報を取得
         var fixture = getEqualFixtureInfo(db,serial_number)
@@ -377,11 +418,12 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         return true
     }
 
-    //TODO 三代川さん
     fun rtn(serial_number: String): Boolean {
 
         val db = openSQLiteDatabase()
         db ?: return false
+
+        val serial_number = passPurser( db,serial_number )
 
         // 該当シリアルナンバーの機器情報を取得
         var fixture = getEqualFixtureInfo(db,serial_number)
