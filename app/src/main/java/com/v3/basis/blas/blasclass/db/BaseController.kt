@@ -61,6 +61,9 @@ abstract class BaseController(private val context: Context, val projectId: Strin
                 if( prop.returnType.isSubtypeOf(String::class.starProjectedType) ) {
                     prop.setter.call(instance,value)
                 }
+                else if (prop.returnType.isSubtypeOf(Long::class.starProjectedType)) {
+                    prop.setter.call(instance,value.toLong())
+                }
                 else {
                     prop.setter.call(instance,value.toInt())
                 }
@@ -150,14 +153,14 @@ abstract class BaseController(private val context: Context, val projectId: Strin
         return value
     }
 
-    protected fun createTempId() : Int {
+    protected fun createTempId() : Long {
         val unixTime = System.currentTimeMillis()
         Log.d("UnixTime",unixTime.toString())
 
-        val unxi9 =  unixTime.toString().substring( unixTime.toString().length - 9,  unixTime.toString().length)
-        Log.d("後ろ9桁",unxi9)
+//        val unxi9 =  unixTime.toString().substring( unixTime.toString().length - 9,  unixTime.toString().length)
+//        Log.d("後ろ9桁",unxi9)
 
-        return unxi9.toInt() * (-1)
+        return unixTime.toLong() * (-1)
     }
 
 }

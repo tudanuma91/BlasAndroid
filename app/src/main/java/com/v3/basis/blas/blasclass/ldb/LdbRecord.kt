@@ -16,7 +16,7 @@ open class LdbSyncBase {
 }
 
 open class LdbFixtureRecord : LdbSyncBase() {
-    var fixture_id: Int = 0             //主キー
+    var fixture_id: Long = 0             //主キー
     var project_id: Int = 0               //プロジェクトID
     var fix_org_id: Int = 0               //検品した会社ID
     var fix_user_id: Int = 0             //検品したユーザID
