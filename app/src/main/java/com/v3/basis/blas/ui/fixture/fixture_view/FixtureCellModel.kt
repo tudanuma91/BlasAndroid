@@ -11,4 +11,5 @@ data class FixtureCellModel(
     val errorMessage: ObservableField<String> = ObservableField()
     val progress: ObservableBoolean = ObservableBoolean(false)
     val status: ObservableField<String> = ObservableField("サーバーに登録待ちです")
+    val syncEnable: ObservableBoolean = ObservableBoolean(true)
 }

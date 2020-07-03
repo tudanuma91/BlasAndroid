@@ -72,10 +72,11 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
-                            android:onClick="@{v -> vm.clickSyncToServer(syncButton,model)}"
+                            android:enabled="@{model.syncEnable}"
+                            android:onClick="@{v -> vm.clickSyncToServer(model)}"
                             app:layout_constraintTop_toBottomOf="@id/progress"
                             app:layout_constraintStart_toStartOf="parent"
-                            tools:text="サーバーに登録"
+                            android:text="サーバーに登録"
                             />
 
                         <Button
@@ -88,7 +89,7 @@
                             android:onClick="@{v -> vm.clickCancel(model)}"
                             app:layout_constraintTop_toBottomOf="@id/progress"
                             app:layout_constraintStart_toEndOf="@id/syncButton"
-                            tools:text="取り消し"
+                            android:text="取り消し"
                             />
 
                         <FrameLayout

@@ -14,25 +14,26 @@ class FixtureListViewModel: ViewModel() {
 
     private val disposableMap: MutableMap<Int, CompositeDisposable> = mutableMapOf()
 
-    fun clickSyncToServer(button: Button, model: FixtureCellModel) {
+    fun clickSyncToServer(model: FixtureCellModel) {
 
-        model.progress.set(false)
-        button.isEnabled = false
+        model.progress.set(true)
+        model.syncEnable.set(false)
 
         val disposables = CompositeDisposable()
         Completable
             .fromAction { syncDB(model) }
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
-            .delay(2, TimeUnit.SECONDS)
+            .delay(5, TimeUnit.SECONDS)
             .subscribeBy(
                 onError = {
-                    button.isEnabled = true
+                    model.syncEnable.set(true)
                     setError("例外が発生しました", model)
                 },
                 onComplete = {
-                    button.isEnabled = true
-                    model.status.set("サーバーに登録待ちです")
+                    model.syncEnable.set(true)
+                    model.progress.set(false)
+                    model.status.set("サーバーに登録成功しました")
                 }
             )
             .addTo(disposables)
@@ -42,6 +43,7 @@ class FixtureListViewModel: ViewModel() {
 
     fun clickCancel(model: FixtureCellModel) {
         model.progress.set(false)
+        model.syncEnable.set(true)
         model.status.set("サーバーに登録待ちです")
 
         //DB同期スレッドをキャンセルする！！
