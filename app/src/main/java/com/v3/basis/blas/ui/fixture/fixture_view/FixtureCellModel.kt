@@ -4,7 +4,7 @@ import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableField
 
 data class FixtureCellModel(
-    val fixture_id: Int,
+    val fixture_id: Long,
     val title: String = "",
     val detail: String = "") {
 
