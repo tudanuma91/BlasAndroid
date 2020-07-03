@@ -135,19 +135,29 @@ abstract class BaseController(private val context: Context, val projectId: Strin
     /**
      * show_dataの値を取得する
      */
-    protected fun getShowData( db:SQLiteDatabase? ) : Int {
+    protected fun getProjectVlue(db:SQLiteDatabase?,columnName:String ) : Int {
 
-        val sql = "select show_data from projects"
+        val sql = "select "+ columnName + " from projects"
         val cursor = db?.rawQuery(sql,null)
 
         var value = 0
         cursor?.also {
             it.moveToFirst()
-            value = it.getInt( it.getColumnIndex("show_data") )
+            value = it.getInt( it.getColumnIndex(columnName) )
         }
         cursor?.close()
 
         return value
+    }
+
+    protected fun createTempId() : Int {
+        val unixTime = System.currentTimeMillis()
+        Log.d("UnixTime",unixTime.toString())
+
+        val unxi9 =  unixTime.toString().substring( unixTime.toString().length - 9,  unixTime.toString().length)
+        Log.d("後ろ9桁",unxi9)
+
+        return unxi9.toInt() * (-1)
     }
 
 }
