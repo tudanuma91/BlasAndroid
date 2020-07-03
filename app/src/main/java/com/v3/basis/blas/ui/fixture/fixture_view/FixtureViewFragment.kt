@@ -24,8 +24,6 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
-import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
-import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.ui.ext.addTitle
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
@@ -173,7 +171,7 @@ class FixtureViewFragment : Fragment() {
 
     private fun searchAsync() {
 
-        Single.fromCallable { fixtureController.search() }
+        Single.fromCallable { fixtureController.searchDisp() }
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .map {
@@ -181,7 +179,8 @@ class FixtureViewFragment : Fragment() {
                 it.forEach {
                     val value = createValue(it) ?: ""
                     val title = it.fixture_id
-                    val model = FixtureCellModel(it.fixture_id, title.toString(), value)
+                    // itを全部渡してもいいような気もするが辞めておく・・・
+                    val model = FixtureCellModel(token,project_id.toInt(),it.fixture_id, title.toString(), value,requireContext())
                     list.add(FixtureListCell(viewModel, model))
                 }
                 list
