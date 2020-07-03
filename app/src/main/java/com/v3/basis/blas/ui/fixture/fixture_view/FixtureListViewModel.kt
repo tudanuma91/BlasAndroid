@@ -24,7 +24,6 @@ class FixtureListViewModel: ViewModel() {
             .fromAction { syncDB(model) }
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
-            .delay(5, TimeUnit.SECONDS)
             .subscribeBy(
                 onError = {
                     model.syncEnable.set(true)
