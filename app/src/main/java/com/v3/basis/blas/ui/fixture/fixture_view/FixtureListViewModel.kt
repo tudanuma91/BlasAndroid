@@ -12,7 +12,8 @@ import java.util.concurrent.TimeUnit
 
 class FixtureListViewModel: ViewModel() {
 
-    private val disposableMap: MutableMap<Int, CompositeDisposable> = mutableMapOf()
+    //private val disposableMap: MutableMap<Int, CompositeDisposable> = mutableMapOf()
+    private val disposableMap: MutableMap<Long, CompositeDisposable> = mutableMapOf()
 
     fun clickSyncToServer(model: FixtureCellModel) {
 
