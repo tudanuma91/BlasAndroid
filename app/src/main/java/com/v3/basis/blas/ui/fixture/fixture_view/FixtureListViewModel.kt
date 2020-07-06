@@ -142,8 +142,8 @@ class FixtureListViewModel: ViewModel() {
 
 
         // TODO:実行するとなぜかどこかに行ってしまうので要調査？？？？
-//        val fixtureController = FixtureController(  model.context, model.project_id.toString())
-//        fixtureController.updateFixtureId(org_fixture_id,new_fixture_id)
+        val fixtureController = FixtureController(  model.context, model.project_id.toString())
+        fixtureController.updateFixtureId(org_fixture_id,new_fixture_id)
 
         playTone(ToneGenerator.TONE_CDMA_ANSWER)
         Log.d("OK", "検品同期完了")

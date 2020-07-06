@@ -511,6 +511,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             db.update("fixtures",cv,"fixture_id = ?", arrayOf(orgFixtureId))
             db.setTransactionSuccessful()
             db.endTransaction()
+            Log.d("update","成功！！")
             true
         }
         catch ( ex : Exception ) {
