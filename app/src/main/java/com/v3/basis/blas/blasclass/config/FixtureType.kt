@@ -7,6 +7,7 @@ class FixtureType {
         val takeOut:String = "1"
         val finishInstall:String = "2"
         val notTakeOut:String = "3"
+        val rtn:String = "4"
 
         //ステータスの日本語訳
         val statusCanTakeOut = "持出可"

@@ -68,7 +68,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             }
         }
 
-        val sql = searchDispFixtureSql + sqlAdition
+        val sql = searchDispFixtureSql + sqlAdition + " order by fixtures.create_date desc"
 
         val cursor = db?.rawQuery(sql, plHolder)
         val ret = mutableListOf<LdbFixtureDispRecord>()
@@ -289,6 +289,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
     fun kenpin( serial_number: String): Boolean {
         Log.d("kenpin","start")
+        var ret = false
 
         val db = openSQLiteDatabase()
         db ?: return false
@@ -311,21 +312,28 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             if( fixture?.fix_org_id != user?.org_id && 0 == fixture?.status ) {
                 Log.d("kenpin","他社検品を異動")
                 // 他社が検品、持ち出し可なら ⇒ 異動
-                return kenpin_update(db,serial_number,fixture,user)
+                ret = kenpin_update(db,serial_number,fixture,user)
+
+                db.close()
+                return ret
             }
             else {
                 // 検品不可
                 Log.d("kenpin","検品不可です")
                 errorMessageEvent.onNext("検品不可です")
 
+                db.close()
                 return false
             }
         }
 
         // なければ新規追加
         Log.d("kenpin","存在しないシリアルなので新規作成する")
-        return kenpin_insert(db,serial_number)
 
+        ret = kenpin_insert(db,serial_number)
+        db.close()
+
+        return ret
     }
 
 
@@ -380,6 +388,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         }
 
         if( !checkTakeout(fixture,user) ) {
+            db.close()
             return false
         }
 
@@ -408,6 +417,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             //とりあえず例外をキャッチして、Falseを返す？
             e.printStackTrace()
             false
+        }
+        finally {
+            db.close()
         }
     }
 
@@ -467,6 +479,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         }
 
         if( !checkuRtn(fixture,user) ) {
+            db.close()
             return false
         }
 
@@ -478,7 +491,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         fixture!!.rtn_date = current.format(formatter)
         fixture!!.update_date = current.format(formatter)
-        fixture!!.status = 0    // だったよね？？
+        fixture!!.status = 4
         fixture!!.sync_status = 2
 
         val cv = createConvertValue(fixture,null)
@@ -497,6 +510,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             e.printStackTrace()
             false
         }
+        finally {
+            db.close()
+        }
     }
 
     fun updateFixtureId( orgFixtureId:String, newFixtureId:String) : Boolean {
@@ -505,6 +521,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         val cv = ContentValues()
         cv.put("fixture_id",newFixtureId)
+        cv.put("sync_status",0)
 
         return try {
             db.beginTransaction()
@@ -518,6 +535,35 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             ex.printStackTrace()
             false
         }
+        finally {
+            db.close()
+        }
+    }
+
+    fun resetSyncStatus( fixtureId:String ) : Boolean {
+
+        val db = openSQLiteDatabase()
+        db ?: return false
+
+        val cv = ContentValues()
+        cv.put("sync_status",0)
+
+        return try {
+            db.beginTransaction()
+            db.update("fixtures",cv,"fixture_id = ?", arrayOf(fixtureId))
+            db.setTransactionSuccessful()
+            db.endTransaction()
+            Log.d("sync_status reset","成功！！")
+            true
+        }
+        catch ( ex : Exception ) {
+            ex.printStackTrace()
+            false
+        }
+        finally {
+            db.close()
+        }
+
     }
 
 }

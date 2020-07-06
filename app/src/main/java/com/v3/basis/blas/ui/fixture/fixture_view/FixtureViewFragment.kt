@@ -16,6 +16,7 @@ import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.canTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.finishInstall
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.notTakeOut
+import com.v3.basis.blas.blasclass.config.FixtureType.Companion.rtn
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusCanTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusFinishInstall
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusNotTakeOut
@@ -299,6 +300,9 @@ class FixtureViewFragment : Fragment() {
             value += "\n[${getString(R.string.col_status)}]\n"
             value += when (rcd.status) {//config.FixtureTypeにて定義している。
                 canTakeOut.toInt() -> {
+                    "${statusCanTakeOut}"
+                }
+                rtn.toInt() -> {
                     "${statusCanTakeOut}"
                 }
                 takeOut.toInt() -> {
