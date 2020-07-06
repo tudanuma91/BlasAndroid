@@ -341,9 +341,16 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         if( null == fixture ) {
             Log.d("takeout message!","未登録のシリアルナンバーです")
             errorMessageEvent.onNext("未登録のシリアルナンバーです")
-
             return false
         }
+
+        if( 0 != fixture.sync_status ) {
+            Log.d("takeout message!","サーバー同期待ちのシリアルナンバーです")
+            errorMessageEvent.onNext("サーバー同期待ちのシリアルナンバーです")
+            return false
+        }
+
+
         // ステータスが検品済み and 同じ会社で検品されているか？
         if( 0 != fixture?.status ) {
 
@@ -431,6 +438,12 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             Log.d("takeout message!","未登録のシリアルナンバーです")
             errorMessageEvent.onNext("未登録のシリアルナンバーです")
 
+            return false
+        }
+
+        if( 0 != fixture.sync_status ) {
+            Log.d("takeout message!","サーバー同期待ちのシリアルナンバーです")
+            errorMessageEvent.onNext("サーバー同期待ちのシリアルナンバーです")
             return false
         }
 
