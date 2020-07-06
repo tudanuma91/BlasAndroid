@@ -23,6 +23,14 @@ import android.content.Intent
 
 
 class ItemActivity : AppCompatActivity() {
+
+    companion object {
+        var reloard: Boolean = false
+        fun setRestartFlag() {
+            reloard = true
+        }
+    }
+
     private val REQUESTCODE_TEST = 1
 
     data class formType(var type: String?,
@@ -98,10 +106,12 @@ class ItemActivity : AppCompatActivity() {
 
     override fun onRestart() {
         super.onRestart()
-        reloard()
+        if (reloard) {
+            reloard()
+        }
     }
 
-    fun reloard(){
+    private fun reloard(){
         val intent = intent
         overridePendingTransition(0, 0)
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)

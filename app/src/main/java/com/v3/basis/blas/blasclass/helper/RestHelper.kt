@@ -261,7 +261,7 @@ class RestHelper {
 
     fun createCheckValue(value:String?): String {
         var newValue = ""
-        if(value != "") {
+        if(value != null && value != "") {
             val jsonValue = JSONObject(value)
             newValue += "${jsonValue["value"]}"
             if (jsonValue["memo"].toString() != "" && !jsonValue.isNull("memo") ) {

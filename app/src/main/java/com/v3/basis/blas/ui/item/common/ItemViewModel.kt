@@ -6,7 +6,7 @@ import io.reactivex.subjects.PublishSubject
 
 class ItemViewModel: ViewModel() {
 
-    val values: MutableList<FieldModel> = mutableListOf()
+    val fields: MutableList<Any?> = mutableListOf()
 
     val dateEvent: PublishSubject<FieldText> = PublishSubject.create()
     val timeEvent: PublishSubject<FieldText> = PublishSubject.create()

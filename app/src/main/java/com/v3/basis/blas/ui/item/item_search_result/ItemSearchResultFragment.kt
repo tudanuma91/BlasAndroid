@@ -200,7 +200,7 @@ class ItemSearchResultFragment : Fragment() {
                 .setTitle(title)
                 .setMessage(text)
                 .setPositiveButton("OK"){ dialog, which ->
-                    activity!!.finish()
+                    requireActivity().finish()
                 }
                 .show()
         }

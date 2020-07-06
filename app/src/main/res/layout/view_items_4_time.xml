@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <import type="android.view.View" />
         <variable
             name="vm"
             type="com.v3.basis.blas.ui.item.common.ItemViewModel" />
@@ -19,6 +20,14 @@
         >
 
         <TextView
+            android:textColor="@color/colorAccent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="@{model.mustInput ? View.VISIBLE : View.INVISIBLE}"
+            android:text="※ 必須入力"
+            />
+
+        <TextView
             android:textColor="@color/colorText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -29,11 +38,12 @@
         <!-- TwoWay Bindingで, 入力した値が自動的に変数にも反映されます！ -->
         <EditText
             android:inputType="none"
+            android:editable="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:text="@={model.text}"
-            android:onClick="@{v -> vm.clickTime()}"
+            android:onClick="@{v -> vm.clickTime(model)}"
             tools:text="EDIT"
             />
 

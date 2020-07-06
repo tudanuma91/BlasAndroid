@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <import type="android.view.View" />
         <variable
             name="vm"
             type="com.v3.basis.blas.ui.item.common.ItemViewModel" />
@@ -17,6 +18,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         >
+
+        <TextView
+            android:textColor="@color/colorAccent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="@{model.mustInput ? View.VISIBLE : View.INVISIBLE}"
+            android:text="※ 必須入力"
+            />
 
         <TextView
             android:textColor="@color/colorText"
@@ -36,7 +45,7 @@
             />
 
         <Button
-            android:onClick="@{v -> vm.clickQRCodeKenpin()}"
+            android:onClick="@{v -> vm.clickQRCodeKenpin(model)}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="QRコードを取得する(検品と連動)"

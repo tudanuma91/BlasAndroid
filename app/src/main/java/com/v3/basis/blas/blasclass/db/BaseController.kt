@@ -103,7 +103,7 @@ abstract class BaseController(private val context: Context, val projectId: Strin
         val map = mutableMapOf<String, String?>()
         cursor.columnNames.forEach { name ->
             val value = cursor.getString( cursor.getColumnIndex(name) )
-            map[name] = value
+            map[name] = value ?: ""
         }
         return map
     }
