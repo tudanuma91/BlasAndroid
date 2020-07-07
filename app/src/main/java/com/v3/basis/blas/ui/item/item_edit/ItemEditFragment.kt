@@ -18,6 +18,7 @@ import com.v3.basis.blas.activity.QRActivity
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.BTN_SAVE
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
+import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.formaction.FormActionDataEdit
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestField
@@ -26,6 +27,11 @@ import com.v3.basis.blas.blasclass.rest.BlasRestUser
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.closeSoftKeyboard
 import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
+import io.reactivex.Completable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_item_edit.*
 import org.json.JSONObject
 import java.util.*
@@ -533,7 +539,8 @@ class ItemEditFragment : Fragment() {
             val parentErrorMap:MutableMap<String,MutableMap<String,String?>> = mutableMapOf()
 
             val payload: MutableMap<String, String?> =
-                mutableMapOf("token" to token, "project_id" to projectId, "item_id" to itemId)
+//                mutableMapOf("token" to token, "project_id" to projectId, "item_id" to itemId)
+                mutableMapOf("project_id" to projectId, "item_id" to itemId)
             nullChk.clear()
             var cnt = 1
             var errorCnt: Int = 0
@@ -655,7 +662,15 @@ class ItemEditFragment : Fragment() {
             //エラーチェック
             errorCnt = formAction.countNullError(nullChk, textViewMap,formInfoMap)
             if (errorCnt == 0 && parentChk) {
-                BlasRestItem("update", payload, ::updateSuccess, ::updateError).execute()
+                val d = CompositeDisposable()
+                Completable.fromAction { ItemsController(requireContext(), projectId).update(payload) }
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnError { d.dispose() }
+                    .doOnComplete { d.dispose() }
+                    .subscribe()
+                    .addTo(d)
+//                BlasRestItem("update", payload, ::updateSuccess, ::updateError).execute()
             }
         }
     }

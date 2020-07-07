@@ -1,12 +1,13 @@
 package com.v3.basis.blas.blasclass.formaction
 
-import android.widget.EditText
+import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import com.v3.basis.blas.blasclass.config.FieldType
 
 class FormActionDataCreate(setToken: String, setActivity: FragmentActivity):FormActionDataBasic(setToken, setActivity) {
+
     var setToken = super.token
     var setActivity = super.baseActivity
     var payloard = super.payload
@@ -18,6 +19,7 @@ class FormActionDataCreate(setToken: String, setActivity: FragmentActivity):Form
             }
         }
 
+    var root: View? = null
 
     override fun createFormSectionTitle(
         params: LinearLayout.LayoutParams?,

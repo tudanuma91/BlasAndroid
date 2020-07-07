@@ -32,6 +32,8 @@ class QRActivity : AppCompatActivity() {
 
     companion object {
         const val QR_CODE = 1001
+        const val QR_CODE_KENPIN = 1002
+        const val QR_CODE_TEKKYO = 1003
     }
 
     private var messageText:TextView? = null

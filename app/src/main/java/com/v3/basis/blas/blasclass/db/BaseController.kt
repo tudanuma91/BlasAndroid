@@ -94,6 +94,51 @@ abstract class BaseController(private val context: Context, val projectId: Strin
     }
 
     /**
+     * ClassのプロパティにMapの値を格納する
+     * @param in instance データを格納するクラスのインスタンス
+     * @param in map MutableMap
+     */
+    protected fun setProperty(instance : Any, map : Map<String, String?>) : Any {
+
+        instance::class.memberProperties
+            .filter{ it.visibility == KVisibility.PUBLIC }
+            //.filter{ it.returnType.isSubtypeOf(String::class.starProjectedType) }
+            .filterIsInstance<KMutableProperty<*>>()
+            .forEach { prop ->
+                val value = map[prop.name]
+
+                if( value.isNullOrEmpty() ) {
+                    return@forEach
+                }
+
+                if( prop.returnType.isSubtypeOf(String::class.starProjectedType) ) {
+                    prop.setter.call(instance,value)
+                } else if (prop.returnType.isSubtypeOf(Float::class.starProjectedType)) {
+                    prop.setter.call(instance,value.toFloat())
+                } else {
+                    prop.setter.call(instance,value.toInt())
+                }
+            }
+
+        return instance
+    }
+
+    /**
+     * ClassのプロパティにMapの値を格納する
+     * @param in instance データを格納するクラスのインスタンス
+     * @param in cursor DBのカーソル
+     */
+    protected fun getMapValues(cursor: Cursor) : MutableMap<String, String?> {
+
+        val map = mutableMapOf<String, String?>()
+        cursor.columnNames.forEach { name ->
+            val value = cursor.getString( cursor.getColumnIndex(name) )
+            map[name] = value ?: ""
+        }
+        return map
+    }
+
+    /**
      * ユーザーテーブルから指定したカラムの値を取得する
      * user_idはログインユーザーに固定される
      */
