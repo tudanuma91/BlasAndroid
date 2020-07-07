@@ -262,7 +262,10 @@ class RestHelper {
     fun createCheckValue(value:String?): String {
         var newValue = ""
         if(value != null && value != "") {
-            val jsonValue = JSONObject(value)
+            val tmp = if (value.contains("\\")) {
+                value.replace("\\", "")
+            } else value
+            val jsonValue = JSONObject(tmp)
             newValue += "${jsonValue["value"]}"
             if (jsonValue["memo"].toString() != "" && !jsonValue.isNull("memo") ) {
                 newValue += "(備考)${jsonValue["memo"]}"

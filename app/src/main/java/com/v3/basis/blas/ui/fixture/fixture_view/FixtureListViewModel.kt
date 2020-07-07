@@ -80,6 +80,7 @@ class FixtureListViewModel: ViewModel() {
 
         // TODO:0の時はボタンを表示しないようにしましょう！
         if( 0 ==  rec.sync_status ) {
+            model.syncVisible.set(false)
             return
         }
 

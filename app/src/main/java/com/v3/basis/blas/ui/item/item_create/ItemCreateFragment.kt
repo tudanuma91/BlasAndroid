@@ -20,6 +20,7 @@ import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.QRActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
+import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.formaction.FormActionDataCreate
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestField
@@ -82,6 +83,7 @@ class ItemCreateFragment : Fragment() {
     private lateinit var bind: ViewItems0FormBinding
     private var fields: MutableList<FieldDataModel> = mutableListOf()
     private val disposables = CompositeDisposable()
+    private lateinit var itemsController: ItemsController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,10 +98,22 @@ class ItemCreateFragment : Fragment() {
         super.onCreateView(inflater, container, savedInstanceState)
         initializeData()
 
-        bind = DataBindingUtil.inflate(inflater, R.layout.view_items_0_form, container, false)
         viewModel = ViewModelProviders.of(this).get(ItemViewModel::class.java)
+        bind = DataBindingUtil.inflate(inflater, R.layout.view_items_0_form, container, false)
+        bind.vm = viewModel
 
         bind.scrollView.hideKeyboardWhenTouch(this)
+
+        itemsController = ItemsController(requireContext(), projectId)
+        viewModel.itemsController = itemsController
+        viewModel.projectId = projectId
+
+        viewModel.completeSave
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                (requireActivity() as ItemActivity).transitionItemListScreen()
+            }
+            .addTo(disposables)
 
         observeFormEvent()
 
@@ -150,7 +164,7 @@ class ItemCreateFragment : Fragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
                 //QRコードの処理
-                val extra = "colNumber" to it.cellNumber.toString()
+                val extra = "colNumber" to it.fieldNumber.toString()
                 startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
                     val qr = r.data?.getStringExtra("qr_code")
                     it.text.set(qr)
@@ -161,10 +175,11 @@ class ItemCreateFragment : Fragment() {
         viewModel.qrKenpinEvent
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
-                val extra = "colNumber" to it.cellNumber.toString()
+                val extra = "colNumber" to it.fieldNumber.toString()
                 startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE_KENPIN, extra) { r ->
                     val qr = r.data?.getStringExtra("qr_code")
                     it.text.set(qr)
+                    //TODO 三代川さん　検品と連動
                 }
             }
             .addTo(disposables)
@@ -172,10 +187,11 @@ class ItemCreateFragment : Fragment() {
         viewModel.qrTekkyoEvent
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
-                val extra = "colNumber" to it.cellNumber.toString()
+                val extra = "colNumber" to it.fieldNumber.toString()
                 startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE_TEKKYO, extra) { r ->
                     val qr = r.data?.getStringExtra("qr_code")
                     it.text.set(qr)
+                    //TODO 三代川さん　撤去と連動
                 }
             }
             .addTo(disposables)
@@ -318,12 +334,12 @@ class ItemCreateFragment : Fragment() {
                 l.vm = viewModel
                 l.root to l.model
             }
-//            FieldType.CHECK_VALUE -> {
-//                val l: ViewItems =
-//                    DataBindingUtil.inflate(layoutInflater, R.layout.view_items_, null, false)
-//                l.model = FieldText(field.field_id!!, field.name!!)
-//                l.root to l.model
-//			}
+            FieldType.CHECK_VALUE -> {
+                val l: CellCheckvalueBinding =
+                    DataBindingUtil.inflate(layoutInflater, R.layout.cell_checkvalue, null, false)
+                l.model = FieldCheckText(id, name, mustInput)
+                l.root to l.model
+			}
             else -> { null }
         }
         view?.also {
@@ -340,8 +356,8 @@ class ItemCreateFragment : Fragment() {
                 val layout = DataBindingUtil.inflate<ViewItemsRadioBinding>(inflater, R.layout.view_items_radio, null, false)
                 layout.idx = index
                 layout.model = model
-                layout.radio.text = s
-                this.addView(layout.root)
+                layout.text = s
+                this.addView(layout.root, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             }
         }
     }
