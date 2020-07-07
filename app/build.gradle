@@ -12,7 +12,7 @@ apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 29
-    buildToolsVersion "29.0.2"
+    buildToolsVersion "29.0.3"
     defaultConfig {
         applicationId "com.v3.basis.blas"
         minSdkVersion 26
@@ -50,6 +50,10 @@ android {
         konishi {
             buildConfigField 'String', 'API_URL', '"http://192.168.1.87/blas7/api/v1/"'
             buildConfigField 'String', 'HOST', '"http://192.168.1.87"'
+        }
+        miyokawa {
+            buildConfigField 'String', 'API_URL', '"http://192.168.11.3:8080/blas7/api/v1/"'
+            buildConfigField 'String', 'HOST', '"http://192.168.11.3:8080"'
         }
     }
 

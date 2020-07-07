@@ -22,7 +22,6 @@ import androidx.work.WorkInfo
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.QRActivity
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
-import com.v3.basis.blas.blasclass.db.users.UsersController
 import com.v3.basis.blas.blasclass.worker.DownloadWorker
 import com.v3.basis.blas.blasclass.worker.WorkerHelper
 import com.v3.basis.blas.ui.terminal.common.DownloadModel
@@ -133,7 +132,7 @@ fun Fragment.addDownloadTask(vm: DownloadViewModel, model: DownloadModel, unzipP
                 Completable
                     .fromAction {
                         val ctl = FixtureController(requireContext(), projectId)
-                        val records = ctl.search()
+                        val records = ctl.searchDisp()
 
                         records.forEach { rec ->
                             rec::class.memberProperties.forEach {prop ->

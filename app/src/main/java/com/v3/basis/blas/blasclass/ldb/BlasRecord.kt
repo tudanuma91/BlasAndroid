@@ -185,7 +185,7 @@ data class LDBOrgRecord(
     override var tableName:String = "orgs"
 ):LDBRecord
 
-
+/*
 data class LDBUserRecord(
     val user_id:Int,                //主キー
     val username:String,            //ログイン時のユーザ名
@@ -213,7 +213,7 @@ data class LDBUserRecord(
     override var primary_key:String = "user_id",
     override var tableName:String = "users"
 ):LDBRecord
-
+*/
 
 data class LDBDrawingRecord(
     val drawing_id:Int,             //主キー

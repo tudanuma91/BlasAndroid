@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.R
@@ -15,6 +16,7 @@ import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.canTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.finishInstall
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.notTakeOut
+import com.v3.basis.blas.blasclass.config.FixtureType.Companion.rtn
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusCanTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusFinishInstall
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusNotTakeOut
@@ -22,9 +24,10 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.helper.RestHelper
-import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
-import com.v3.basis.blas.blasclass.rest.BlasRestFixture
+import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
 import com.v3.basis.blas.ui.ext.addTitle
+import com.xwray.groupie.GroupAdapter
+import com.xwray.groupie.databinding.GroupieViewHolder
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -45,8 +48,8 @@ class FixtureViewFragment : Fragment() {
 
     lateinit var token:String
     lateinit var project_id:String
-    private var dataListAll = mutableListOf<RowModel>()
-    private var dataList = mutableListOf<RowModel>()
+    private var dataListAll = mutableListOf<FixtureListCell>()
+    private var dataList = mutableListOf<FixtureListCell>()
     private var valueMap : MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
     private var msg = BlasMsg()
     private val toastErrorLen = Toast.LENGTH_LONG
@@ -65,17 +68,21 @@ class FixtureViewFragment : Fragment() {
         const val CREATE_UNIT = 20
     }
 
+    private lateinit var viewModel: FixtureListViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         addTitle("project_name")
     }
 
-    private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
-        override fun onClickRow(tappedView: View, rowModel: com.v3.basis.blas.ui.fixture.fixture_view.RowModel) {
-            //カードタップ時の処理
-        }
+    private val groupAdapter = GroupAdapter<GroupieViewHolder<*>>()
 
-    })
+//    private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
+//        override fun onClickRow(tappedView: View, rowModel: com.v3.basis.blas.ui.fixture.fixture_view.RowModel) {
+//            //カードタップ時の処理
+//        }
+//
+//    })
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -100,6 +107,8 @@ class FixtureViewFragment : Fragment() {
             }
             .addTo(disposables)
 
+        viewModel = ViewModelProviders.of(this).get(FixtureListViewModel::class.java)
+
         return inflater.inflate(R.layout.fragment_fixture_view, container, false)
     }
 
@@ -113,7 +122,7 @@ class FixtureViewFragment : Fragment() {
                 val recyclerView = recyclerView
                 recyclerView.setHasFixedSize(true)
                 recyclerView.layoutManager = LinearLayoutManager(activity)
-                recyclerView.adapter = adapter
+                recyclerView.adapter = groupAdapter
                 recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
                     override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
@@ -163,23 +172,17 @@ class FixtureViewFragment : Fragment() {
 
     private fun searchAsync() {
 
-        Single.fromCallable { fixtureController.search() }
+        Single.fromCallable { fixtureController.searchDisp() }
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .map {
-                val list = mutableListOf<RowModel>()
+                val list = mutableListOf<FixtureListCell>()
                 it.forEach {
-                    val value = createValue(it)
+                    val value = createValue(it) ?: ""
                     val title = it.fixture_id
-                    val rowModel = RowModel().also {
-                        if (title != null) {
-                            it.title = title.toString()
-                        }
-                        if (value != null) {
-                            it.detail = value
-                        }
-                    }
-                    list.add(rowModel)
+                    // itを全部渡してもいいような気もするが辞めておく・・・
+                    val model = FixtureCellModel(token,project_id.toInt(),it.fixture_id, title.toString(), value,requireContext())
+                    list.add(FixtureListCell(viewModel, model))
                 }
                 list
             }
@@ -206,7 +209,7 @@ class FixtureViewFragment : Fragment() {
         }
         dataList.addAll(filteredList.toMutableList())
         dataList.forEach{
-            Log.d("あたいチェック","datalist id =${it.title}")
+            Log.d("あたいチェック","datalist id =${it.model.fixture_id}")
         }
         // update
         if (dataList.isNotEmpty()) {
@@ -219,7 +222,7 @@ class FixtureViewFragment : Fragment() {
      */
     private fun setAdapter() {
         createDataList()
-        adapter.notifyDataSetChanged()
+        groupAdapter.update(dataList)
         try {
             progressBar.visibility = View.INVISIBLE
         }catch (e:Exception){
@@ -289,7 +292,7 @@ class FixtureViewFragment : Fragment() {
     /**
      * 表示する値を作成する
      */
-    private fun createValue(rcd: LdbFixtureRecord): String? {
+    private fun createValue(rcd: LdbFixtureDispRecord): String? {
         var value:String? =null
         try {
             value = "[${getString(R.string.col_serialnumber)}]"
@@ -297,6 +300,9 @@ class FixtureViewFragment : Fragment() {
             value += "\n[${getString(R.string.col_status)}]\n"
             value += when (rcd.status) {//config.FixtureTypeにて定義している。
                 canTakeOut.toInt() -> {
+                    "${statusCanTakeOut}"
+                }
+                rtn.toInt() -> {
                     "${statusCanTakeOut}"
                 }
                 takeOut.toInt() -> {

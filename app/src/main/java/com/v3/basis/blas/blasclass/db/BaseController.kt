@@ -1,10 +1,13 @@
 package com.v3.basis.blas.blasclass.db
 
+import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.util.Log
 import androidx.room.Room
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.ldb.LdbUserRecord
 import com.v3.basis.blas.blasclass.worker.DownloadWorker
 import io.reactivex.subjects.PublishSubject
 import java.io.FileNotFoundException
@@ -31,6 +34,8 @@ abstract class BaseController(private val context: Context, val projectId: Strin
 
         val path = DownloadWorker.getSavedPath(projectId)
         val helper = path?.let { SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.OPEN_READWRITE) }
+
+        Log.d("SqliteDB Path:",path.toString())
         return helper
     }
 
@@ -47,6 +52,7 @@ abstract class BaseController(private val context: Context, val projectId: Strin
             .filterIsInstance<KMutableProperty<*>>()
             .forEach { prop ->
                 val value = cursor.getString( cursor.getColumnIndex(prop.name) )
+                Log.d("setProperty()","propName:" + prop.name + "  value:" + value)
 
                 if( value.isNullOrEmpty() ) {
                     return@forEach
@@ -55,12 +61,36 @@ abstract class BaseController(private val context: Context, val projectId: Strin
                 if( prop.returnType.isSubtypeOf(String::class.starProjectedType) ) {
                     prop.setter.call(instance,value)
                 }
+                else if (prop.returnType.isSubtypeOf(Long::class.starProjectedType)) {
+                    prop.setter.call(instance,value.toLong())
+                }
                 else {
                     prop.setter.call(instance,value.toInt())
                 }
             }
 
         return instance
+    }
+
+
+    // [参考]https://www.javadrive.jp/android/sqlite_data/index6.html
+    protected fun createConvertValue(  instance : Any ,exceptList : List<String>? = null) : ContentValues {
+        Log.d("createConvertValue()","start")
+
+        val cv = ContentValues()
+        instance::class.memberProperties.forEach {
+
+            Log.d(it.name,it.getter.call(instance).toString())
+
+            if( null != exceptList ) {
+                if( exceptList.contains(it.name) ) {
+                    return@forEach
+                }
+            }
+
+            cv.put(it.name,it.getter.call(instance).toString())
+        }
+        return cv
     }
 
     /**
@@ -112,29 +142,30 @@ abstract class BaseController(private val context: Context, val projectId: Strin
      * ユーザーテーブルから指定したカラムの値を取得する
      * user_idはログインユーザーに固定される
      */
-    protected fun getUsersValue(db : SQLiteDatabase? ,columnName:String) : Int {
+    protected fun getUserInfo(db : SQLiteDatabase?) : LdbUserRecord? {
 
-        val sql = "select $columnName from users where user_id = ?"
+        val sql = "select * from users where user_id = ?"
         val cursor = db?.rawQuery(sql, arrayOf( BlasApp.userId.toString() ))
 
         if( 0 == cursor?.count ) {
-            return 0
+            return null
         }
 
+        var user : LdbUserRecord? = null
         var value : Int = 0
         cursor?.also {
             it.moveToFirst()
-            value = it.getInt(  it.getColumnIndex(columnName) )
+            user = setProperty( LdbUserRecord(),it ) as LdbUserRecord
         }
         cursor?.close()
 
-        return value
+        return user
     }
 
     /**
      * グループテーブルから指定したグループIDの指定カラムの値を取得する
      */
-    protected  fun getGroupsValue(db:SQLiteDatabase?, groupId:Int, columnName:String) : Int {
+    protected  fun getGroupsValue(db:SQLiteDatabase?, groupId:Int?, columnName:String) : Int {
 
         val sql = "select $columnName from groups where group_id = ?"
         val cursor = db?.rawQuery(sql, arrayOf(groupId.toString()))
@@ -152,19 +183,29 @@ abstract class BaseController(private val context: Context, val projectId: Strin
     /**
      * show_dataの値を取得する
      */
-    protected fun getShowData( db:SQLiteDatabase? ) : Int {
+    protected fun getProjectVlue(db:SQLiteDatabase?,columnName:String ) : Int {
 
-        val sql = "select show_data from projects"
+        val sql = "select "+ columnName + " from projects"
         val cursor = db?.rawQuery(sql,null)
 
         var value = 0
         cursor?.also {
             it.moveToFirst()
-            value = it.getInt( it.getColumnIndex("show_data") )
+            value = it.getInt( it.getColumnIndex(columnName) )
         }
         cursor?.close()
 
         return value
+    }
+
+    protected fun createTempId() : Long {
+        val unixTime = System.currentTimeMillis()
+        Log.d("UnixTime",unixTime.toString())
+
+//        val unxi9 =  unixTime.toString().substring( unixTime.toString().length - 9,  unixTime.toString().length)
+//        Log.d("後ろ9桁",unxi9)
+
+        return unixTime.toLong() * (-1)
     }
 
 }
