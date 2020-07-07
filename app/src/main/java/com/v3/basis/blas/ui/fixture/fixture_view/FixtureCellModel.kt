@@ -1,12 +1,17 @@
 package com.v3.basis.blas.ui.fixture.fixture_view
 
+import android.content.Context
 import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableField
 
 data class FixtureCellModel(
-    val fixture_id: Int,
+    val token : String,
+    val project_id : Int,
+    val fixture_id: Long,
     val title: String = "",
-    val detail: String = "") {
+    val detail: String = "",
+    val context : Context
+) {
 
     val errorMessage: ObservableField<String> = ObservableField()
     val progress: ObservableBoolean = ObservableBoolean(false)

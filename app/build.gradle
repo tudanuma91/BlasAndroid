@@ -51,6 +51,10 @@ android {
             buildConfigField 'String', 'API_URL', '"http://192.168.1.87/blas7/api/v1/"'
             buildConfigField 'String', 'HOST', '"http://192.168.1.87"'
         }
+        miyokawa {
+            buildConfigField 'String', 'API_URL', '"http://192.168.11.3:8080/blas7/api/v1/"'
+            buildConfigField 'String', 'HOST', '"http://192.168.11.3:8080"'
+        }
     }
 
     kotlinOptions {
