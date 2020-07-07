@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.R
@@ -26,6 +27,8 @@ import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.ui.ext.addTitle
+import com.xwray.groupie.GroupAdapter
+import com.xwray.groupie.databinding.GroupieViewHolder
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -46,8 +49,8 @@ class FixtureViewFragment : Fragment() {
 
     lateinit var token:String
     lateinit var project_id:String
-    private var dataListAll = mutableListOf<RowModel>()
-    private var dataList = mutableListOf<RowModel>()
+    private var dataListAll = mutableListOf<FixtureListCell>()
+    private var dataList = mutableListOf<FixtureListCell>()
     private var valueMap : MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
     private var msg = BlasMsg()
     private val toastErrorLen = Toast.LENGTH_LONG
@@ -66,17 +69,21 @@ class FixtureViewFragment : Fragment() {
         const val CREATE_UNIT = 20
     }
 
+    private lateinit var viewModel: FixtureListViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         addTitle("project_name")
     }
 
-    private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
-        override fun onClickRow(tappedView: View, rowModel: com.v3.basis.blas.ui.fixture.fixture_view.RowModel) {
-            //カードタップ時の処理
-        }
+    private val groupAdapter = GroupAdapter<GroupieViewHolder<*>>()
 
-    })
+//    private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
+//        override fun onClickRow(tappedView: View, rowModel: com.v3.basis.blas.ui.fixture.fixture_view.RowModel) {
+//            //カードタップ時の処理
+//        }
+//
+//    })
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -101,6 +108,8 @@ class FixtureViewFragment : Fragment() {
             }
             .addTo(disposables)
 
+        viewModel = ViewModelProviders.of(this).get(FixtureListViewModel::class.java)
+
         return inflater.inflate(R.layout.fragment_fixture_view, container, false)
     }
 
@@ -114,7 +123,7 @@ class FixtureViewFragment : Fragment() {
                 val recyclerView = recyclerView
                 recyclerView.setHasFixedSize(true)
                 recyclerView.layoutManager = LinearLayoutManager(activity)
-                recyclerView.adapter = adapter
+                recyclerView.adapter = groupAdapter
                 recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
                     override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
@@ -168,19 +177,12 @@ class FixtureViewFragment : Fragment() {
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .map {
-                val list = mutableListOf<RowModel>()
+                val list = mutableListOf<FixtureListCell>()
                 it.forEach {
-                    val value = createValue(it)
+                    val value = createValue(it) ?: ""
                     val title = it.fixture_id
-                    val rowModel = RowModel().also {
-                        if (title != null) {
-                            it.title = title.toString()
-                        }
-                        if (value != null) {
-                            it.detail = value
-                        }
-                    }
-                    list.add(rowModel)
+                    val model = FixtureCellModel(it.fixture_id, title.toString(), value)
+                    list.add(FixtureListCell(viewModel, model))
                 }
                 list
             }
@@ -207,7 +209,7 @@ class FixtureViewFragment : Fragment() {
         }
         dataList.addAll(filteredList.toMutableList())
         dataList.forEach{
-            Log.d("あたいチェック","datalist id =${it.title}")
+            Log.d("あたいチェック","datalist id =${it.model.fixture_id}")
         }
         // update
         if (dataList.isNotEmpty()) {
@@ -220,7 +222,7 @@ class FixtureViewFragment : Fragment() {
      */
     private fun setAdapter() {
         createDataList()
-        adapter.notifyDataSetChanged()
+        groupAdapter.update(dataList)
         try {
             progressBar.visibility = View.INVISIBLE
         }catch (e:Exception){
