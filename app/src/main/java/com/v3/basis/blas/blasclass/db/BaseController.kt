@@ -111,6 +111,7 @@ abstract class BaseController(private val context: Context, val projectId: Strin
                     return@forEach
                 }
                 val value = map[prop.name]
+
                 if( value.isNullOrEmpty() ) {
                     return@forEach
                 }
@@ -123,11 +124,9 @@ abstract class BaseController(private val context: Context, val projectId: Strin
                     or prop.returnType.isSupertypeOf(Float::class.starProjectedType)
                 ) {
                     prop.setter.call(instance,value.toFloat())
-                }else if(prop.returnType.isSubtypeOf(Long::class.starProjectedType)
-                    or prop.returnType.isSupertypeOf(Long::class.starProjectedType)
-                ) {
-                    prop.setter.call(instance,value.toLong())
-                }else {
+                } else if (prop.returnType.isSubtypeOf(Int::class.starProjectedType)
+                    or prop.returnType.isSupertypeOf(Int::class.starProjectedType)
+                ){
                     prop.setter.call(instance,value.toInt())
                 }
             }
