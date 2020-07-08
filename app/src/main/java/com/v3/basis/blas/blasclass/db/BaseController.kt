@@ -115,7 +115,7 @@ abstract class BaseController(private val context: Context, val projectId: Strin
                     prop.setter.call(instance,value)
                 } else if (prop.returnType.isSubtypeOf(Float::class.starProjectedType)) {
                     prop.setter.call(instance,value.toFloat())
-                } else {
+                } else if (prop.returnType.isSubtypeOf(Int::class.starProjectedType)){
                     prop.setter.call(instance,value.toInt())
                 }
             }

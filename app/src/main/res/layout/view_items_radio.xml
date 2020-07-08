@@ -8,12 +8,15 @@
             name="idx"
             type="Integer" />
         <variable
+            name="text"
+            type="String" />
+        <variable
             name="model"
             type="com.v3.basis.blas.ui.item.common.FieldSingleSelect" />
     </data>
 
     <RadioButton
-        android:id="@+id/radio"
+        android:text="@{text}"
         android:onClick="@{v -> model.selected(idx)}"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
