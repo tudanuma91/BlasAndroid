@@ -34,7 +34,9 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         val db = openSQLiteDatabase()
         db ?: return false
 
+        // todo 一時的に設定
         map.set("item_id", (System.currentTimeMillis()/1000L).toString())
+        map.set("end_flg", "0")
 //        val item = Items()
 //        setProperty(item, map)
         val columns = map.keys.joinToString(separator = ",")
