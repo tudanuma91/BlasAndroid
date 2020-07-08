@@ -3,7 +3,7 @@ package com.v3.basis.blas.blasclass.db.data
 import android.database.Cursor
 
 data class Items(
-    var item_id: Int? = 0,
+    var item_id: Long? = 0,
     var project_id: Int? = 0,
     var org_id: Int? = 0,
     var user_id: Int? = 0,
@@ -174,7 +174,7 @@ data class Items(
     companion object {
         fun makeInstance(c: Cursor): Items {
             val items = Items(
-                item_id = c.getInt(0),
+                item_id = c.getLong(0),
                 project_id = c.getInt(1),
                 org_id = c.getInt(2),
                 user_id = c.getInt(3),
