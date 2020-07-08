@@ -27,7 +27,7 @@ open class LdbFixtureRecord : LdbSyncBase() {
     var rtn_org_id: Int = 0               //返却した会社ID
     var rtn_user_id: Int = 0             //返却したユーザＩＤ
     var rtn_date: String = ""               //返却した日時
-    var item_id: Int = 0                     //設置した機器が登録されているデータ管理の外部キー
+    var item_id: Long = 0                     //設置した機器が登録されているデータ管理の外部キー
     var item_org_id: Int = 0             //設置した会社のＩＤ
     var item_user_id: Int = 0           //設置したユーザのＩＤ
     var item_date: String = ""             //設置した日時
@@ -239,3 +239,33 @@ class LdbItemRecord : LdbSyncBase() {
     var update_date: String = ""
 }
 */
+
+
+
+data class LDBRmFixtureRecord(
+    var rm_fixture_id:Int? =0,          //主キー
+    var project_id:Int? =0,             //プロジェクトID
+    var rm_org_id:Int? = 0,              //撤去した会社ID
+    var rm_org_name:String? = null,         //撤去した会社の名前
+    var rm_user_id:Int? = 0,             //撤去したユーザID
+    var rm_user_name:String? = null,        //撤去したユーザ名
+    var rm_date:String? = null,             //撤去した日時
+    var rm_tmp_org_id:Int? = 0,          //一時保管した会社ID
+    var rm_tmp_org_name:String? = null,     //一時保管した会社名
+    var rm_tmp_user_id:Int? = 0,         //一時保管したユーザID
+    var rm_tmp_user_name:String? = null,    //一時保管したユーザ名
+    var rm_tmp_date:String? = null,         //一時保管した日付
+    var rm_comp_org_id:Int? = 0,         //撤去完了した会社ID
+    var rm_comp_org_name:String? = null,    //撤去完了した会社名
+    var rm_comp_user_id:Int? = 0,        //撤去完了したユーザID
+    var rm_comp_user_name:String? = null,   //撤去完了したユーザ名
+    var rm_comp_date:String? = null,        //撤去完了した日時
+    var item_id:Long? = 0,                //撤去した機器のシリアルナンバーを含むデータ管理のレコード(外部キー)
+    var item_org_id:Int? = 0,            //撤去した機器のシリアルナンバーを含むデータ管理の会社ID
+    var item_org_name:String? = null,       //撤去した機器のシリアルナンバーを含むデータ管理の会社名
+    var item_user_id:Int? = 0,           //撤去した機器のシリアルナンバーを含むデータ管理のユーザID
+    var item_user_name:String? = null,      //撤去した機器のシリアルナンバーを含むデータ管理のユーザ名
+    var serial_number:String? = null,       //シリアルナンバー
+    var status:Int? = 0,                 //0:未撤去 1:現場撤去 2:一時保管 3:撤去完了
+    var sync_status:Int? = 0
+)

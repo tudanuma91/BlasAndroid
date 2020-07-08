@@ -5,9 +5,10 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import com.v3.basis.blas.blasclass.db.BaseController
+import com.v3.basis.blas.blasclass.ldb.LDBRmFixtureRecord
+import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.random.Random
 
 class ItemsController(context: Context, projectId: String): BaseController(context, projectId) {
 
@@ -16,7 +17,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
         val db = openSQLiteDatabase()
         val cursor = if (item_id == 0) {
-            db?.rawQuery("select * from items", null)
+            db?.rawQuery("select * from items order by create_date desc", null)
         } else {
             db?.rawQuery("select * from items where item_id = ?", arrayOf(item_id.toString()))
         }
@@ -41,32 +42,43 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         db ?: return false
 
         // todo 一時的に設定
-        map.set("item_id", (System.currentTimeMillis()/1000L).toString())
-        map.set("end_flg", "0")
+//        map.set("item_id", (System.currentTimeMillis()/1000L).toString())
+//        map.set("end_flg", "0")
 
-/*
+
+        val item = Items()
+        setProperty(item, map)
+
+        item.item_id = createTempId()
+        item.project_id = projectId.toInt()
+
+        val user = getUserInfo(db)
+        if( null != user ) {
+            item.user_id = user?.user_id
+            item.org_id = user?.org_id
+        }
+        else {
+            item.user_id = 1
+            item.org_id = 1
+        }
+
         val current = LocalDateTime.now()
         val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss")
 
-        item.item_id = createTempId()
         item.create_date = current.format(formatter)
         item.update_date = current.format(formatter)
-*/
+        item.sync_status = 1
 
-//        val item = Items()
-//        setProperty(item, map)
-//        val cv = createConvertValue(item)
-
-
-        val columns = map.keys.joinToString(separator = ",")
-        val values = map.values.map { "?" }.joinToString(",")
-        val sql = "INSERT into items($columns) values ($values)"
-        map.values.map { if (it?.isBlank() == true) { null } else { it } }
-        val arr = map.values.toTypedArray()
+        val cv = createConvertValue(item)
 
         return try {
             db.beginTransaction()
-            db.execSQL(sql, arr)
+
+            // itemテーブルに追加
+            db.insert("items",null,cv)
+            // fixture(rm_fixture)を更新
+           updateFixture(db,item,map)
+
             db.setTransactionSuccessful()
             db.endTransaction()
             true
@@ -92,33 +104,31 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
          val item = Items()
         setProperty(item, map)
 
-        val inspections = getFieldCols( db,8 )
-        val rms = getFieldCols(db,11)
+        val user = getUserInfo(db)
+        if( null != user ) {
+            item.user_id = user?.user_id
+            item.org_id = user?.org_id
+        }
+        else {
+            item.user_id = 1
+            item.org_id = 1
+        }
+
+        val current = LocalDateTime.now()
+        val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss")
+        item.update_date = current.format(formatter)
+        item.sync_status = 2
 
         // けどまたmap…
         val cv = createConvertValue(item,null)
 
         return try {
             db.beginTransaction()
-//            db.execSQL("UPDATE items set fld1 = 'test' where item_id = ?", arrayOf(item.item_id))
+
+            // itmeテーブルを更新
             db.update("items",cv,"item_id = ?", arrayOf(item.item_id.toString()))
-
-            inspections.forEach{
-                // TODO:約束事ではmapからではなくitemから取得する
-//                val test = item::class.java.getField("fld" + it.toString())
-//                Log.d("test",test.toString())
-
-                if( map.containsKey("fld" + it.toString()) ) {
-                    updateFixture(db,item.item_id,map.get("fld" + it.toString()).toString() ,8)
-                }
-            }
-
-            rms.forEach{
-                if( map.containsKey("fld" + it.toString()) ) {
-                    updateFixture(db,item.item_id,map.get("fld" + it.toString()).toString() ,11)
-                }
-            }
-
+            // fixture(rm_fixture)を更新
+            updateFixture(db,item,map)
 
             db.setTransactionSuccessful()
             db.endTransaction()
@@ -152,22 +162,82 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
     }
 
 
-    private fun updateFixture(db : SQLiteDatabase?,item_id:Long?,serialNumber:String,type:Int ) {
-        Log.d("item_id",item_id.toString())
-        Log.d("serial number",serialNumber)
+    private fun updateFixture(db : SQLiteDatabase?, item :Items, map: Map<String, String?> ) {
+        val inspections = getFieldCols( db,8 )
+        val rms = getFieldCols(db,11)
+
+        inspections.forEach{
+            // TODO:約束事ではmapからではなくitemから取得する ⇒ うまくいかないのでとりあえずmapから取得
+//                val test = item::class.java.getField("fld" + it.toString())
+//                Log.d("test",test.toString())
+
+            if( map.containsKey("fld" + it.toString()) ) {
+                updateFixtureExec(db,item,map.get("fld" + it.toString()).toString() ,8)
+            }
+        }
+
+        rms.forEach{
+            if( map.containsKey("fld" + it.toString()) ) {
+                updateFixtureExec(db,item,map.get("fld" + it.toString()).toString() ,11)
+            }
+        }
+
+    }
+
+
+    private fun updateFixtureExec(db : SQLiteDatabase?, item:Items, serialNumber:String, type:Int ) {
 
         if(serialNumber.isEmpty()) {
             Log.d("serial number","空なのでreturn")
             return
         }
 
-        val cv = ContentValues()
-        cv.put("item_id",item_id)
+        var table:String
+//        var cv : ContentValues
+        var cv = ContentValues()
 
-        var table = "fixtures"
-        if( 11 == type ) {
+        if(type == 11) {
+            // 撤去の時
             table = "rm_fixtures"
+            /*
+            val rmFixture = LDBRmFixtureRecord()
+            rmFixture.item_id = item.item_id
+            rmFixture.rm_org_id = item.org_id
+            rmFixture.rm_user_id = item.user_id
+            rmFixture.rm_date = item.update_date
+            rmFixture.status = 5    // 現場撤去
+            rmFixture.sync_status = 2
+            cv = createConvertValue(rmFixture)
+             */
+            // TODO:とりあえず・・・　data clessでやると設定してないところが全部０とかnullにupdateされる！！！
+            cv.put("item_id",item.item_id)
+            cv.put("rm_org_id",item.org_id)
+            cv.put("rm_user_id",item.user_id)
+            cv.put("rm_date",item.update_date)
+            cv.put("status",5)  // 現場撤去
+            cv.put("sync_status",2)
         }
+        else {
+            // 設置の時
+            table = "fixtures"
+            /*
+            val fixture = LdbFixtureRecord()
+            fixture.item_id = item.item_id!!
+            fixture.item_org_id = item.org_id!!
+            fixture.item_user_id = item.user_id!!
+            fixture.item_date = item.update_date!!
+            fixture.sync_status = 2
+            cv = createConvertValue(fixture)
+             */
+            cv.put("item_id",item.item_id)
+            cv.put("item_org_id",item.org_id)
+            cv.put("item_user_id",item.user_id)
+            cv.put("item_date",item.update_date)
+            cv.put("status",2)  // 設置済み
+            cv.put("sync_status",2)
+
+        }
+
         db?.update(table,cv,"serial_number = ?", arrayOf(serialNumber))
 
         Log.d("updateFixture()",table + "を更新完了")
