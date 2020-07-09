@@ -5,8 +5,8 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import com.v3.basis.blas.blasclass.db.BaseController
-import com.v3.basis.blas.blasclass.ldb.LDBRmFixtureRecord
-import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
+import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkFixture
+import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkRmFixture
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -163,24 +163,41 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
 
     private fun updateFixture(db : SQLiteDatabase?, item :Items, map: Map<String, String?> ) {
-        val inspections = getFieldCols( db,8 )
+        val inst = getFieldCols( db,8 )
         val rms = getFieldCols(db,11)
 
-        inspections.forEach{
+        // 設置
+        inst.forEach{
             // TODO:約束事ではmapからではなくitemから取得する ⇒ うまくいかないのでとりあえずmapから取得
 //                val test = item::class.java.getField("fld" + it.toString())
 //                Log.d("test",test.toString())
 
             if( map.containsKey("fld" + it.toString()) ) {
-                updateFixtureExec(db,item,map.get("fld" + it.toString()).toString() ,8)
+                //updateFixtureExec(db,item,map.get("fld" + it.toString()).toString() ,8)
+                LinkFixture(db,item,map.get("fld" + it.toString()).toString()).exec()
             }
         }
 
+        // 撤去
         rms.forEach{
             if( map.containsKey("fld" + it.toString()) ) {
-                updateFixtureExec(db,item,map.get("fld" + it.toString()).toString() ,11)
+                //updateFixtureExec(db,item,map.get("fld" + it.toString()).toString() ,11)
+                LinkRmFixture(db,item,map.get("fld" + it.toString()).toString()).exec()
             }
         }
+
+    }
+
+    /**
+     * 設置できるかを確認
+     */
+    private fun checkInst() {
+
+        // TODO:検品されている機器か？
+        // TODO:持出者と同じ設置者か？
+        // TODO:持出できない機器ではないか？
+        // TODO:持出確認が行われているか？
+        // TODO:既に設置されていないか？
 
     }
 

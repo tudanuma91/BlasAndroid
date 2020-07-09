@@ -1,0 +1,32 @@
+package com.v3.basis.blas.blasclass.db.data.linkFixtures
+
+import android.content.ContentValues
+import android.database.sqlite.SQLiteDatabase
+import com.v3.basis.blas.blasclass.db.data.Items
+
+class LinkRmFixture(db : SQLiteDatabase?, item: Items, serialNumber:String)
+    : LinkBase(db,item,serialNumber)
+{
+
+    override val table = "rm_fixtures"
+
+    override fun check(): Boolean {
+        TODO("Not yet implemented")
+        return true
+    }
+
+    override fun createCV(): ContentValues {
+        var cv = ContentValues()
+
+        cv.put("item_id",item.item_id)
+        cv.put("rm_org_id",item.org_id)
+        cv.put("rm_user_id",item.user_id)
+        cv.put("rm_date",item.update_date)
+        cv.put("status",5)  // 現場撤去
+        cv.put("sync_status",2)
+
+        return cv
+    }
+
+
+}
