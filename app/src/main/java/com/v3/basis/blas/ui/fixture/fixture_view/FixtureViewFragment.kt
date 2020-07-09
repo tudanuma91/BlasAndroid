@@ -181,7 +181,7 @@ class FixtureViewFragment : Fragment() {
                     val value = createValue(it) ?: ""
                     val title = it.fixture_id
                     // itを全部渡してもいいような気もするが辞めておく・・・
-                    val model = FixtureCellModel(token,project_id.toInt(),it.fixture_id, title.toString(), value,requireContext())
+                    val model = FixtureCellModel(token,project_id.toInt(),it.fixture_id, title.toString(), value, it.sync_status, requireContext())
                     list.add(FixtureListCell(viewModel, model))
                 }
                 list
