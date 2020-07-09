@@ -17,6 +17,7 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import org.json.JSONObject
+import java.lang.Exception
 
 class FixtureListViewModel: ServerSyncViewModel() {
 
@@ -30,11 +31,12 @@ class FixtureListViewModel: ServerSyncViewModel() {
         Log.d("project_id",model.project_id.toString())
         Log.d("fixture_id",model.fixture_id.toString())
 
-        val fixtureController = FixtureController(  model.context, model.project_id.toString())
+        val fixtureController = FixtureController( model.context, model.project_id.toString())
         val records = fixtureController.search( model.fixture_id )
+
         if( 0 == records.count() ) {
-            Log.d("getRecord","Record Nothing!!!")
-            return
+            Log.d("getRecord","該当レコードが存在しません!!!")
+            throw Exception("DB Sync error!! 該当レコードが存在しません")
         }
         val rec = records[0]
 

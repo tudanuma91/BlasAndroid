@@ -13,10 +13,9 @@ import java.time.format.DateTimeFormatter
 class ItemsController(context: Context, projectId: String): BaseController(context, projectId) {
 
     //TODO 三代川さん
-    fun search(item_id: Int = 0): MutableList<MutableMap<String, String?>> {
+    fun search(item_id: Long = 0L ): MutableList<MutableMap<String, String?>> {
 
-        val db = openSQLiteDatabase()
-        val cursor = if (item_id == 0) {
+        val cursor = if (item_id == 0L) {
             db?.rawQuery("select * from items order by create_date desc", null)
         } else {
             db?.rawQuery("select * from items where item_id = ?", arrayOf(item_id.toString()))
@@ -25,7 +24,10 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         cursor?.also { c ->
             var notLast = c.moveToFirst()
             while (notLast) {
-                ret.add(getMapValues(cursor))
+                val value = getMapValues(cursor)
+                if( null != value ) {
+                    ret.add(getMapValues(cursor))
+                }
                 notLast = c.moveToNext()
             }
         }
@@ -38,9 +40,6 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
     fun create(map: MutableMap<String, String?>): Boolean {
         Log.d("insert()","start")
 
-        val db = openSQLiteDatabase()
-        db ?: return false
-
         // todo 一時的に設定
 //        map.set("item_id", (System.currentTimeMillis()/1000L).toString())
 //        map.set("end_flg", "0")
@@ -52,7 +51,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         item.item_id = createTempId()
         item.project_id = projectId.toInt()
 
-        val user = getUserInfo(db)
+        val user = getUserInfo()
         if( null != user ) {
             item.user_id = user?.user_id
             item.org_id = user?.org_id
@@ -72,24 +71,22 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         val cv = createConvertValue(item)
 
         return try {
-            db.beginTransaction()
+            db?.beginTransaction()
 
             // itemテーブルに追加
-            db.insert("items",null,cv)
+            db?.insert("items",null,cv)
             // fixture(rm_fixture)を更新
-           updateFixture(db,item,map)
+           updateFixture(item,map)
 
-            db.setTransactionSuccessful()
-            db.endTransaction()
+            db?.setTransactionSuccessful()
             true
         } catch (e: Exception) {
             //とりあえず例外をキャッチして、Falseを返す？
             e.printStackTrace()
             false
-        } finally {
-            if (db.inTransaction()) {
-                db.endTransaction()
-            }
+        }
+        finally {
+            db?.endTransaction()
         }
     }
 
@@ -97,14 +94,11 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
     fun update(map: Map<String, String?>): Boolean {
         Log.d("update()","start")
 
-        val db = openSQLiteDatabase()
-        db ?: return false
-
         // mapで来たのをclass入れる
          val item = Items()
         setProperty(item, map)
 
-        val user = getUserInfo(db)
+        val user = getUserInfo()
         if( null != user ) {
             item.user_id = user?.user_id
             item.org_id = user?.org_id
@@ -123,15 +117,14 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         val cv = createConvertValue(item,null)
 
         return try {
-            db.beginTransaction()
+            db?.beginTransaction()
 
             // itmeテーブルを更新
-            db.update("items",cv,"item_id = ?", arrayOf(item.item_id.toString()))
+            db?.update("items",cv,"item_id = ?", arrayOf(item.item_id.toString()))
             // fixture(rm_fixture)を更新
-            updateFixture(db,item,map)
+            updateFixture(item,map)
 
-            db.setTransactionSuccessful()
-            db.endTransaction()
+            db?.setTransactionSuccessful()
 
             Log.d("item update","仮登録完了！！")
             true
@@ -140,10 +133,13 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             e.printStackTrace()
             false
         }
+        finally {
+            db?.endTransaction()
+        }
     }
 
 
-    private fun getFieldCols(db : SQLiteDatabase?, type:Int) : List<Int> {
+    private fun getFieldCols(type:Int) : List<Int> {
         val ret = mutableListOf<Int>()
 
         val sql = "select * from fields where type = ?"
@@ -162,9 +158,9 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
     }
 
 
-    private fun updateFixture(db : SQLiteDatabase?, item :Items, map: Map<String, String?> ) {
-        val inst = getFieldCols( db,8 )
-        val rms = getFieldCols(db,11)
+    private fun updateFixture(item :Items, map: Map<String, String?> ) {
+        val inst = getFieldCols( 8 )
+        val rms = getFieldCols(11)
 
         // 設置
         inst.forEach{

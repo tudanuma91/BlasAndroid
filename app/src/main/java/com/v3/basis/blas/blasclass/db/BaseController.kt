@@ -18,10 +18,20 @@ import kotlin.reflect.full.isSupertypeOf
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.starProjectedType
 
-abstract class BaseController(private val context: Context, val projectId: String) {
+abstract class BaseController(
+    private val context: Context
+    ,val projectId: String
+) {
 
     // 使うときはerrorMessageEvent.onNext("メッセージ")とする
     val errorMessageEvent: PublishSubject<String> = PublishSubject.create()
+
+    var db:SQLiteDatabase?
+
+    init {
+        db = openSQLiteDatabase()
+    }
+
 
     fun openDatabase(): BlasDatabase {
 
@@ -89,7 +99,9 @@ abstract class BaseController(private val context: Context, val projectId: Strin
                 }
             }
 
-            cv.put(it.name,it.getter.call(instance).toString())
+            if( null != it.getter.call(instance) ) {
+                cv.put(it.name,it.getter.call(instance).toString())
+            }
         }
         return cv
     }
@@ -99,7 +111,7 @@ abstract class BaseController(private val context: Context, val projectId: Strin
      * @param in instance データを格納するクラスのインスタンス
      * @param in map MutableMap
      */
-    protected fun setProperty(instance : Any, map : Map<String, String?>) : Any {
+    fun setProperty(instance : Any, map : Map<String, String?>) : Any {
 
         instance::class.memberProperties
             .filter{ it.visibility == KVisibility.PUBLIC }
@@ -153,7 +165,7 @@ abstract class BaseController(private val context: Context, val projectId: Strin
      * ユーザーテーブルから指定したカラムの値を取得する
      * user_idはログインユーザーに固定される
      */
-    protected fun getUserInfo(db : SQLiteDatabase?) : LdbUserRecord? {
+    protected fun getUserInfo() : LdbUserRecord? {
 
         val sql = "select * from users where user_id = ?"
         val cursor = db?.rawQuery(sql, arrayOf( BlasApp.userId.toString() ))
@@ -176,7 +188,7 @@ abstract class BaseController(private val context: Context, val projectId: Strin
     /**
      * グループテーブルから指定したグループIDの指定カラムの値を取得する
      */
-    protected  fun getGroupsValue(db:SQLiteDatabase?, groupId:Int?, columnName:String) : Int {
+    protected  fun getGroupsValue(groupId:Int?, columnName:String) : Int {
 
         val sql = "select $columnName from groups where group_id = ?"
         val cursor = db?.rawQuery(sql, arrayOf(groupId.toString()))
@@ -194,7 +206,7 @@ abstract class BaseController(private val context: Context, val projectId: Strin
     /**
      * show_dataの値を取得する
      */
-    protected fun getProjectVlue(db:SQLiteDatabase?,columnName:String ) : Int {
+    protected fun getProjectVlue(columnName:String ) : Int {
 
         val sql = "select "+ columnName + " from projects"
         val cursor = db?.rawQuery(sql,null)
