@@ -11,7 +11,13 @@ class LinkFixture(db : SQLiteDatabase?,item: Items, serialNumber:String)
     override val table = "fixtures"
 
     override fun check(): Boolean {
-        TODO("Not yet implemented")
+
+        // TODO:ここでチェックと思ったけど、ItemViewModelの中でやらないと、元の画面に戻れんか・・・
+        // TODO:検品されている機器か？
+        // TODO:持出者と同じ設置者か？
+        // TODO:持出できない機器ではないか？
+        // TODO:持出確認が行われているか？
+        // TODO:既に設置されていないか？
 
         return true
     }

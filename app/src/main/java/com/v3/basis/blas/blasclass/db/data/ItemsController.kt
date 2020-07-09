@@ -173,7 +173,6 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 //                Log.d("test",test.toString())
 
             if( map.containsKey("fld" + it.toString()) ) {
-                //updateFixtureExec(db,item,map.get("fld" + it.toString()).toString() ,8)
                 LinkFixture(db,item,map.get("fld" + it.toString()).toString()).exec()
             }
         }
@@ -181,85 +180,11 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         // 撤去
         rms.forEach{
             if( map.containsKey("fld" + it.toString()) ) {
-                //updateFixtureExec(db,item,map.get("fld" + it.toString()).toString() ,11)
                 LinkRmFixture(db,item,map.get("fld" + it.toString()).toString()).exec()
             }
         }
 
     }
-
-    /**
-     * 設置できるかを確認
-     */
-    private fun checkInst() {
-
-        // TODO:検品されている機器か？
-        // TODO:持出者と同じ設置者か？
-        // TODO:持出できない機器ではないか？
-        // TODO:持出確認が行われているか？
-        // TODO:既に設置されていないか？
-
-    }
-
-
-    private fun updateFixtureExec(db : SQLiteDatabase?, item:Items, serialNumber:String, type:Int ) {
-
-        if(serialNumber.isEmpty()) {
-            Log.d("serial number","空なのでreturn")
-            return
-        }
-
-        var table:String
-//        var cv : ContentValues
-        var cv = ContentValues()
-
-        if(type == 11) {
-            // 撤去の時
-            table = "rm_fixtures"
-            /*
-            val rmFixture = LDBRmFixtureRecord()
-            rmFixture.item_id = item.item_id
-            rmFixture.rm_org_id = item.org_id
-            rmFixture.rm_user_id = item.user_id
-            rmFixture.rm_date = item.update_date
-            rmFixture.status = 5    // 現場撤去
-            rmFixture.sync_status = 2
-            cv = createConvertValue(rmFixture)
-             */
-            // TODO:とりあえず・・・　data clessでやると設定してないところが全部０とかnullにupdateされる！！！
-            cv.put("item_id",item.item_id)
-            cv.put("rm_org_id",item.org_id)
-            cv.put("rm_user_id",item.user_id)
-            cv.put("rm_date",item.update_date)
-            cv.put("status",5)  // 現場撤去
-            cv.put("sync_status",2)
-        }
-        else {
-            // 設置の時
-            table = "fixtures"
-            /*
-            val fixture = LdbFixtureRecord()
-            fixture.item_id = item.item_id!!
-            fixture.item_org_id = item.org_id!!
-            fixture.item_user_id = item.user_id!!
-            fixture.item_date = item.update_date!!
-            fixture.sync_status = 2
-            cv = createConvertValue(fixture)
-             */
-            cv.put("item_id",item.item_id)
-            cv.put("item_org_id",item.org_id)
-            cv.put("item_user_id",item.user_id)
-            cv.put("item_date",item.update_date)
-            cv.put("status",2)  // 設置済み
-            cv.put("sync_status",2)
-
-        }
-
-        db?.update(table,cv,"serial_number = ?", arrayOf(serialNumber))
-
-        Log.d("updateFixture()",table + "を更新完了")
-    }
-
 
     //TODO 三代川さん
     //アプリからDELETEは実行されていない。

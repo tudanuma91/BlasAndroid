@@ -11,7 +11,10 @@ class LinkRmFixture(db : SQLiteDatabase?, item: Items, serialNumber:String)
     override val table = "rm_fixtures"
 
     override fun check(): Boolean {
-        TODO("Not yet implemented")
+
+        // TODO:該当レコードがあるか？
+        // TODO:未撤去機器か？(=撤去済みではないか？)
+
         return true
     }
 
