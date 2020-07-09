@@ -42,6 +42,7 @@ data class Fixture(
     @ColumnInfo(name = "recordStatus") var recordStatus:Int = -1            //何も弄ってない0 仮登録中(新規追加)1、仮登録中(編集)2、仮登録集(削除)3,送信待ち4, 送信完了5
 )
 
+/*
 data class LDBItemRecord(
     val item_id:Int,
     val project_id:Int,
@@ -63,8 +64,9 @@ data class LDBItemRecord(
     override var primary_key:String = "item_id",
     override var tableName:String = "items"
 ):LDBRecord
+*/
 
-
+/*
 data class LDBFieldRecord(
     val field_id:Int,
     val project_id:Int,
@@ -91,8 +93,9 @@ data class LDBFieldRecord(
     override var primary_key:String = "field_id",
     override var tableName:String = "fields"
 ):LDBRecord
+*/
 
-
+/*
 data class LDBProjectImageRecord(
     val project_image_id:Int,       //主キー
     val project_id:Int,             //プロジェクトID
@@ -106,8 +109,9 @@ data class LDBProjectImageRecord(
     override var primary_key:String = "project_image_id",
     override var tableName:String = "project_images"
 ):LDBRecord
+*/
 
-
+/*
 data class LDBProjectFileRecord(
     val project_file_id:Int,        //主キー
     val project_id:Int,             //プロジェクトID
@@ -120,8 +124,9 @@ data class LDBProjectFileRecord(
     override var primary_key:String = "project_file_id",
     override var tableName:String = "project_files"
 ):LDBRecord
+*/
 
-
+/*
 data class LDBRmFixtureRecord(
     val rm_fixture_id:Int,          //主キー
     val project_id:Int,             //プロジェクトID
@@ -151,8 +156,9 @@ data class LDBRmFixtureRecord(
     override var primary_key:String = "rm_fixture_id",
     override var tableName:String = "rm_fixtures"
 ):LDBRecord
+*/
 
-
+/*
 data class LDBOrgRecord(
     val org_id:Int,                 //会社ID。主キー
     val name:String,                //会社名
@@ -184,6 +190,7 @@ data class LDBOrgRecord(
     override var primary_key:String = "org_id",
     override var tableName:String = "orgs"
 ):LDBRecord
+*/
 
 /*
 data class LDBUserRecord(
@@ -215,6 +222,7 @@ data class LDBUserRecord(
 ):LDBRecord
 */
 
+/*
 data class LDBDrawingRecord(
     val drawing_id:Int,             //主キー
     val project_id:Int,             //プロジェクトID
@@ -238,8 +246,9 @@ data class LDBDrawingRecord(
     override var primary_key:String = "drawing_id",
     override var tableName:String = "drawings"
 ):LDBRecord
+*/
 
-
+/*
 data class LDBDrawingCategoryRecord(
     val drawing_category_id:Int,    //主キー
     val project_id:Int,             //プロジェクトID
@@ -252,8 +261,9 @@ data class LDBDrawingCategoryRecord(
     override var primary_key:String = "drawing_category_id",
     override var tableName:String = "drawing_categories"
 ):LDBRecord
+*/
 
-
+/*
 data class LDBDrawingSubCategoryRecord(
     val drawing_sub_category_id: Int,   //主キー
     val drawing_category_id:Int,        //カテゴリの外部キー
@@ -267,8 +277,9 @@ data class LDBDrawingSubCategoryRecord(
     override var primary_key:String = "drawing_sub_category_id",
     override var tableName:String = "drawing_sub_categories"
 ):LDBRecord
+*/
 
-
+/*
 data class LDBDrawingSpotRecord(
     val spot_id:Int,                    //主キー
     val project_id:Int,                 //プロジェクトID
@@ -289,4 +300,4 @@ data class LDBDrawingSpotRecord(
     override var primary_key:String = "spot_id",
     override var tableName:String = "drawing_spots"
 ):LDBRecord
-
+*/

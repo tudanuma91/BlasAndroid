@@ -14,6 +14,7 @@ import java.io.FileNotFoundException
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.isSubtypeOf
+import kotlin.reflect.full.isSupertypeOf
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.starProjectedType
 
@@ -105,17 +106,27 @@ abstract class BaseController(private val context: Context, val projectId: Strin
             //.filter{ it.returnType.isSubtypeOf(String::class.starProjectedType) }
             .filterIsInstance<KMutableProperty<*>>()
             .forEach { prop ->
+
+                if( !map.containsKey(prop.name) ) {
+                    return@forEach
+                }
                 val value = map[prop.name]
 
                 if( value.isNullOrEmpty() ) {
                     return@forEach
                 }
 
-                if( prop.returnType.isSubtypeOf(String::class.starProjectedType) ) {
+                if( prop.returnType.isSubtypeOf(String::class.starProjectedType)
+                    or prop.returnType.isSupertypeOf(String::class.starProjectedType)
+                ) {
                     prop.setter.call(instance,value)
-                } else if (prop.returnType.isSubtypeOf(Float::class.starProjectedType)) {
+                } else if (prop.returnType.isSubtypeOf(Float::class.starProjectedType)
+                    or prop.returnType.isSupertypeOf(Float::class.starProjectedType)
+                ) {
                     prop.setter.call(instance,value.toFloat())
-                } else if (prop.returnType.isSubtypeOf(Int::class.starProjectedType)){
+                } else if (prop.returnType.isSubtypeOf(Int::class.starProjectedType)
+                    or prop.returnType.isSupertypeOf(Int::class.starProjectedType)
+                ){
                     prop.setter.call(instance,value.toInt())
                 }
             }
