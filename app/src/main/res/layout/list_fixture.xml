@@ -16,7 +16,6 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:visibility="@{model.syncVisible ? View.VISIBLE : View.GONE}"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -47,60 +46,12 @@
                         android:padding="6dp"
                         >
 
-                        <ProgressBar
-                            android:id="@+id/progress"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:visibility="@{model.progress ? View.VISIBLE : View.INVISIBLE}"
+                        <include
+                            android:id="@+id/syncView"
+                            app:vm="@{vm}"
+                            app:model="@{model}"
+                            layout="@layout/view_sync_server"
                             app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            />
-
-                        <TextView
-                            android:id="@+id/status"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="10dp"
-                            android:textColor="@color/colorText"
-                            android:text="@{model.status}"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintStart_toEndOf="@id/progress"
-                            app:layout_constraintBottom_toBottomOf="@id/progress"
-                            tools:text="サーバーに登録中です" />
-
-                        <Button
-                            android:id="@+id/syncButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:enabled="@{model.syncEnable}"
-                            android:onClick="@{v -> vm.clickSyncToServer(model)}"
-                            app:layout_constraintTop_toBottomOf="@id/progress"
-                            app:layout_constraintStart_toStartOf="parent"
-                            android:text="サーバーに登録"
-                            />
-
-                        <Button
-                            android:id="@+id/cancelButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:paddingStart="20dp"
-                            android:paddingEnd="20dp"
-                            android:onClick="@{v -> vm.clickCancel(model)}"
-                            app:layout_constraintTop_toBottomOf="@id/progress"
-                            app:layout_constraintStart_toEndOf="@id/syncButton"
-                            android:text="取り消し"
-                            />
-
-                        <FrameLayout
-                            android:id="@+id/divider"
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:layout_marginTop="10dp"
-                            android:background="@color/colorText"
-                            app:layout_constraintTop_toBottomOf="@id/syncButton"
-                            app:layout_constraintStart_toStartOf="parent"
                             />
 
                         <TextView
@@ -109,7 +60,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:text="@{model.title}"
-                            app:layout_constraintTop_toBottomOf="@id/divider"
+                            app:layout_constraintTop_toBottomOf="@id/syncView"
                             app:layout_constraintStart_toStartOf="parent"
                             tools:text="titleです" />
 

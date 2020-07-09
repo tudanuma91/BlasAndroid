@@ -1,6 +1,7 @@
 package com.v3.basis.blas.ui.item.item_view
 
 
+import android.content.Intent
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.Bundle
@@ -15,10 +16,12 @@ import android.widget.ProgressBar
 import android.widget.Switch
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.JsonArray
 import com.v3.basis.blas.R
+import com.v3.basis.blas.activity.ItemEditActivity
 import com.v3.basis.blas.activity.ItemImageActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
@@ -29,6 +32,8 @@ import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
+import com.xwray.groupie.GroupAdapter
+import com.xwray.groupie.databinding.GroupieViewHolder
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -57,11 +62,13 @@ class ItemViewFragment : Fragment() {
 
     private val fieldMap: MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
     private val itemListAll: MutableList<MutableMap<String, String?>> = mutableListOf()
+    private val itemList: MutableList<MutableMap<String, String?>> = mutableListOf()
     private var jsonItemList: JSONObject? = null
-    private val dataList = mutableListOf<RowModel>()
+    private val dataList = mutableListOf<ItemsListCell>()
     private var jsonParseList :JSONArray? = null
     private lateinit var itemsController: ItemsController
     private val disposables = CompositeDisposable()
+    private lateinit var viewModel: ItemsListViewModel
 
     private lateinit var rootView:View
     private val helper:RestHelper = RestHelper()
@@ -76,26 +83,49 @@ class ItemViewFragment : Fragment() {
         addTitle("projectName")
     }
 
-    private val adapter:ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
-
-        override fun onClickRow(tappedView: View, rowModel: RowModel) {
-            //カードタップ時の処理
-        }
-
-        override fun onClickImage(itemId: String?) {
-
-            val context = requireContext()
-            val intent = ItemImageActivity.createIntent(context, token, projectId, itemId)
-
-            context.startActivity(intent)
-        }
-    })
+    private val groupAdapter = GroupAdapter<GroupieViewHolder<*>>()
+//    private val adapter:ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
+//
+//        override fun onClickRow(tappedView: View, rowModel: RowModel) {
+//            //カードタップ時の処理
+//        }
+//
+//        override fun onClickImage(itemId: String?) {
+//
+//            val context = requireContext()
+//            val intent = ItemImageActivity.createIntent(context, token, projectId, itemId)
+//
+//            context.startActivity(intent)
+//        }
+//    })
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         super.onCreateView(inflater, container, savedInstanceState)
 
         val root = inflater.inflate(R.layout.fragment_item_view, container, false)
         rootView = root
+
+        viewModel = ViewModelProviders.of(this).get(ItemsListViewModel::class.java)
+
+        viewModel.transitionItemEdit
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                val intent = Intent(requireContext(), ItemEditActivity::class.java)
+                intent.putExtra("item_id", "${it.item_id}")
+                intent.putExtra("token", token)
+                intent.putExtra("project_id", projectId)
+                intent.putExtra("value_list", it.valueList)
+                requireActivity().startActivity(intent)
+            }
+            .addTo(disposables)
+
+        viewModel.transitionItemImage
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                val intent = Intent(requireContext(), ItemImageActivity::class.java)
+                requireContext().startActivity(intent)
+            }
+            .addTo(disposables)
 
         val extras = activity?.intent?.extras
         if(extras?.getString("token") != null ) {
@@ -149,7 +179,7 @@ class ItemViewFragment : Fragment() {
 
                 //値の初期化
                 dataList.clear()
-                adapter.notifyDataSetChanged()
+                groupAdapter.notifyDataSetChanged()
                 currentIndex = 0
                 parseStartNum = 0
                 parseFinNum = parseNum
@@ -185,7 +215,7 @@ class ItemViewFragment : Fragment() {
         val recyclerView = recyclerView
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.adapter = adapter
+        recyclerView.adapter = groupAdapter
 
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
@@ -340,7 +370,7 @@ class ItemViewFragment : Fragment() {
     private fun setAdapter() {
         Log.d("konishi", "setAdapter")
         createCardView()
-        adapter.notifyDataSetChanged()
+        groupAdapter.update(dataList)
         progressBarFlg = false
         chkProgress(progressBarFlg,rootView)
     }
@@ -362,12 +392,13 @@ class ItemViewFragment : Fragment() {
             }.toMutableList())
         }
 
-
-
-        createCardManager(list,colMax)
         if (list.isNotEmpty()) {
             currentIndex += CREATE_UNIT
+            itemList.clear()
+            itemList.addAll(list)
         }
+
+        createCardManager(list,colMax)
     }
 
 
@@ -385,9 +416,10 @@ class ItemViewFragment : Fragment() {
             list.forEach {
                 val valueFlg = it["end_flg"].toString()
                 val item_id = it["item_id"].toString()
+                val syncStatus = it["sync_status"]?.toInt() ?: 0
                 var text: String? = ""
                 text = createCardText(text, it, colMax)
-                createCard(item_id, text,valueFlg)
+                createCard(item_id, text,valueFlg, syncStatus)
             }
         } else {
             Log.d("cardManager","ゴミ箱非表示")
@@ -395,9 +427,10 @@ class ItemViewFragment : Fragment() {
                 val valueFlg = it["end_flg"].toString()
                 if (valueFlg == FieldType.NORMAL) {
                     val item_id = it["item_id"].toString()
+                    val syncStatus = it["sync_status"]?.toInt() ?: 0
                     var text: String? = ""
                     text = createCardText(text, it, colMax)
-                    createCard(item_id, text, valueFlg)
+                    createCard(item_id, text, valueFlg, syncStatus)
                 }
             }
         }
@@ -436,7 +469,7 @@ class ItemViewFragment : Fragment() {
     /**
      * カードビューを作成する関数
      */
-    fun createCard(item_id:String,text: String?,valueFlg : String){
+    fun createCard(item_id:String,text: String?,valueFlg : String, syncStatus: Int){
         val rowModel = RowModel().also {
             if(valueFlg == FieldType.END) {
                 it.title = "${item_id}${FieldType.ENDTEXT}"
@@ -453,7 +486,30 @@ class ItemViewFragment : Fragment() {
             it.projectNames = projectNames
         }
 
-        dataList.add(rowModel)
+        val valueList = itemList.filter { it["item_id"] == rowModel.itemId }.first().let {
+            val list = arrayListOf<String?>()
+            for (col in 1..fieldMap.size) {
+                val name = "fld${col}"
+                if (fieldMap[col]!!["type"] == FieldType.CHECK_VALUE) {
+                    val newValue = helper.createCheckValue(it[name].toString())
+                    list.add(newValue)
+                } else {
+                    list.add(it[name])
+                }
+            }
+            list
+        }
+        val model = ItemsCellModel(
+            token,
+            projectId.toInt(),
+            rowModel.itemId?.toLong() ?: 0,
+            rowModel.title,
+            rowModel.detail,
+            valueList,
+            syncStatus,
+            requireContext()
+        )
+        dataList.add(ItemsListCell(viewModel, model))
         Log.d("チェック!!","dataListの値 => ${dataList}")
     }
 
