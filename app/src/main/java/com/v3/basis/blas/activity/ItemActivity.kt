@@ -107,6 +107,7 @@ class ItemActivity : AppCompatActivity() {
     override fun onRestart() {
         super.onRestart()
         if (reloard) {
+            reloard = false
             reloard()
         }
     }

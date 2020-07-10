@@ -30,10 +30,12 @@ import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
 import com.v3.basis.blas.ui.ext.startActivityWithResult
 import com.v3.basis.blas.ui.item.common.*
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
 import org.json.JSONObject
 import java.util.*
 
@@ -42,12 +44,40 @@ import java.util.*
  * A simple [Fragment] subclass.
  */
 class ItemCreateFragment : Fragment() {
+
     private var receiveData : Boolean = true
     private lateinit var token: String
     private lateinit var projectId: String
+    private var itemId: String? = null
+    private val isUpdateMode: Boolean
+        get() = itemId?.toInt() != 0
+    private var userMap :MutableMap<String,String?> = mutableMapOf()
+    private val fieldValues: MutableMap<String, String?> = mutableMapOf()
+
+    private val calender = Calendar.getInstance()
+    private val year = calender.get(Calendar.YEAR)
+    private val month = calender.get(Calendar.MONTH)
+    private val day = calender.get(Calendar.DAY_OF_MONTH)
+    private val hour = calender.get(Calendar.YEAR)
+    private val minute = calender.get(Calendar.MONTH)
+
+    private lateinit var formAction: FormActionDataCreate
+    private var handler = Handler()
+    private var msg = BlasMsg()
+    private val helper:RestHelper = RestHelper()
+
+    private lateinit var viewModel: ItemViewModel
+    private lateinit var bind: ViewItems0FormBinding
+    private var fields: MutableList<FieldDataModel> = mutableListOf()
+    private val disposables = CompositeDisposable()
+    private lateinit var itemsController: ItemsController
+
+    /**
     private lateinit var rootView: LinearLayout
     private var parentChk :Boolean = true
     private val toastErrorLen = Toast.LENGTH_LONG
+
+    private lateinit var qrCodeView: EditText
 
     private var formInfoMap: MutableMap<String, MutableMap<String, String?>> = mutableMapOf()
     private var editMap: MutableMap<String, EditText?> = mutableMapOf()
@@ -58,7 +88,7 @@ class ItemCreateFragment : Fragment() {
     private var layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
     private var layoutParamsSpace = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 50)
     private var memoMap:MutableMap<String,EditText> = mutableMapOf()
-    private var userMap :MutableMap<String,String?> = mutableMapOf()
+
     private val nullChk: MutableMap<Int, MutableMap<String, String>> = mutableMapOf()
 
     private val idMap:MutableMap<String,String?> = mutableMapOf()
@@ -66,24 +96,9 @@ class ItemCreateFragment : Fragment() {
     private val selectValueMap:MutableMap<String,MutableList<String>> = mutableMapOf()
     private val valueIdColMap : MutableMap<String,String> = mutableMapOf()
 
-    private val calender = Calendar.getInstance()
-    private val year = calender.get(Calendar.YEAR)
-    private val month = calender.get(Calendar.MONTH)
-    private val day = calender.get(Calendar.DAY_OF_MONTH)
-    private val hour = calender.get(Calendar.YEAR)
-    private val minute = calender.get(Calendar.MONTH)
+    **/
 
-    private lateinit var formAction: FormActionDataCreate
-    private lateinit var qrCodeView: EditText
-    private var handler = Handler()
-    private var msg = BlasMsg()
-    private val helper:RestHelper = RestHelper()
 
-    private lateinit var viewModel: ItemViewModel
-    private lateinit var bind: ViewItems0FormBinding
-    private var fields: MutableList<FieldDataModel> = mutableListOf()
-    private val disposables = CompositeDisposable()
-    private lateinit var itemsController: ItemsController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -107,6 +122,9 @@ class ItemCreateFragment : Fragment() {
         itemsController = ItemsController(requireContext(), projectId)
         viewModel.itemsController = itemsController
         viewModel.projectId = projectId
+        if (isUpdateMode) {
+            viewModel.setupUpdateMode(itemId?.toInt() ?: 0)
+        }
 
         viewModel.completeSave
             .observeOn(AndroidSchedulers.mainThread())
@@ -115,7 +133,15 @@ class ItemCreateFragment : Fragment() {
             }
             .addTo(disposables)
 
-        observeFormEvent()
+        viewModel.completeUpdate
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                ItemActivity.setRestartFlag()
+                requireActivity().finish()
+            }
+            .addTo(disposables)
+
+        subscribeFormEvent()
 
         return bind.root
     }
@@ -130,6 +156,9 @@ class ItemCreateFragment : Fragment() {
         if (extras?.getString("project_id") != null) {
             projectId = extras.getString("project_id").toString()
         }
+        if (extras?.getString("item_id") != null) {
+            itemId = extras.getString("item_id").toString()
+        }
 
         try {
             if (token != null && activity != null&& projectId != null) {
@@ -140,11 +169,11 @@ class ItemCreateFragment : Fragment() {
         }catch (e:Exception){
             receiveData = false
             val errorMessage = msg.createErrorMessage("getFail")
-            Toast.makeText(activity, errorMessage, toastErrorLen).show()
+            Toast.makeText(activity, errorMessage, Toast.LENGTH_LONG).show()
         }
     }
 
-    private fun observeFormEvent() {
+    private fun subscribeFormEvent() {
 
         viewModel.dateEvent
             .observeOn(AndroidSchedulers.mainThread())
@@ -214,6 +243,7 @@ class ItemCreateFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        /**
 //        //コンテンツを配置するLinearLayoutを取得
 //        rootView = view.findViewById<LinearLayout>(R.id.item_create_liner)
 //
@@ -221,6 +251,7 @@ class ItemCreateFragment : Fragment() {
 //        val space = Space(activity)
 //        space.setLayoutParams(layoutParamsSpace)
 //        rootView.addView(space)
+**/
 
         //レイアウトの設置位置の設定
         if(receiveData) {
@@ -229,22 +260,39 @@ class ItemCreateFragment : Fragment() {
             BlasRestField(payload, ::getSuccess, ::getFail).execute()
             BlasRestUser(payload2, ::userGetSuccess, ::userGetFail).execute()
         }
-//        create_scroller.hideKeyboardWhenTouch(this)
     }
 
     private fun getSuccess(result: JSONObject?) {
         result?.also {
+
             val fields = GsonBuilder().serializeNulls().create().fromJson(result.toString(), FieldsModel::class.java)
-            fields.records.sortedBy { it.Field.col }.map{ it.Field }.toMutableList().also {
+            fields.records.sortedBy { it.Field.col }.map { it.Field }.toMutableList().also {
                 this.fields.addAll(it)
             }
-            this.fields.forEach { addField(it) }
+            this.fields.forEachIndexed { index, fieldDataModel ->
+                addField(fieldDataModel, index)
+            }
+            itemId?.also { id ->
+                Single
+                    .fromCallable { itemsController.search(id.toInt()) }
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeBy {
+                        fieldValues.putAll(it.first())
+                        viewModel.fields.forEachIndexed { index, any ->
+                            val field = (any as FieldModel)
+                            val columnName = "fld${index + 1}"
+                            val value = fieldValues[columnName]
+                            field.setValue(value)
+                        }
+                    }
+                    .addTo(disposables)
+            }
         }
     }
 
-    private fun addField(field: FieldDataModel) {
+    private fun addField(field: FieldDataModel, cellNumber: Int) {
 
-        val id = field.field_id!!
         val name = field.name!!
         val mustInput = field.essential == 1
 
@@ -252,33 +300,33 @@ class ItemCreateFragment : Fragment() {
             FieldType.TEXT_FIELD -> {
                 val l: ViewItems1TextSingleLineBindingImpl =
                     DataBindingUtil.inflate(layoutInflater, R.layout.view_items_1_text_single_line, null, false)
-                l.model = FieldText(id, name, mustInput)
+                l.model = FieldText(cellNumber, name, mustInput)
                 l.root to l.model
             }
             FieldType.TEXT_AREA -> {
                 val l: ViewItems2TextMultiLineBinding =
                     DataBindingUtil.inflate(layoutInflater, R.layout.view_items_2_text_multi_line, null, false)
-                l.model = FieldText(id, name, mustInput)
+                l.model = FieldText(cellNumber, name, mustInput)
                 l.root to l.model
             }
             FieldType.DATE_TIME -> {
                 val l: ViewItems3DateBinding =
                     DataBindingUtil.inflate(layoutInflater, R.layout.view_items_3_date, null, false)
-                l.model = FieldText(id, name, mustInput)
+                l.model = FieldText(cellNumber, name, mustInput)
                 l.vm = viewModel
                 l.root to l.model
             }
             FieldType.TIME -> {
                 val l: ViewItems4TimeBinding =
                     DataBindingUtil.inflate(layoutInflater, R.layout.view_items_4_time, null, false)
-                l.model = FieldText(id, name, mustInput)
+                l.model = FieldText(cellNumber, name, mustInput)
                 l.vm = viewModel
                 l.root to l.model
             }
             FieldType.SINGLE_SELECTION -> {
                 val l: ViewItems5SelectBinding =
                     DataBindingUtil.inflate(layoutInflater, R.layout.view_items_5_select, null, false)
-                val model = FieldSingleSelect(id, name, mustInput)
+                val model = FieldSingleSelect(cellNumber, name, mustInput)
                 l.model = model
                 l.vm = viewModel
                 l.radioGroup.createChildren(layoutInflater, field.choice, model)
@@ -287,7 +335,7 @@ class ItemCreateFragment : Fragment() {
             FieldType.MULTIPLE_SELECTION -> {
                 val l: ViewItems6SelectMultiBinding =
                     DataBindingUtil.inflate(layoutInflater, R.layout.view_items_6_select_multi, null, false)
-                val model = FieldMultiSelect(id, name, mustInput)
+                val model = FieldMultiSelect(cellNumber, name, mustInput)
                 l.model = model
                 l.vm = viewModel
                 l.checkBoxGroup.createChildren(layoutInflater, field.choice, model)
@@ -296,48 +344,48 @@ class ItemCreateFragment : Fragment() {
             FieldType.LOCATION -> {
                 val l: ViewItems7LocationBinding =
                     DataBindingUtil.inflate(layoutInflater, R.layout.view_items_7_location, null, false)
-                l.model = FieldText(id, name, mustInput)
+                l.model = FieldText(cellNumber, name, mustInput)
                 l.vm = viewModel
                 l.root to l.model
             }
             FieldType.KENPIN_RENDOU_QR -> {
                 val l: ViewItems8QrKenpinBinding =
                     DataBindingUtil.inflate(layoutInflater, R.layout.view_items_8_qr_kenpin, null, false)
-                l.model = FieldText(id, name, mustInput)
+                l.model = FieldText(cellNumber, name, mustInput)
                 l.vm = viewModel
                 l.root to l.model
             }
             FieldType.SIG_FOX -> {
                 val l: ViewItems9SigfoxBinding =
                     DataBindingUtil.inflate(layoutInflater, R.layout.view_items_9_sigfox, null, false)
-                l.model = FieldSigFox(id, name, mustInput)
+                l.model = FieldSigFox(cellNumber, name, mustInput)
                 l.root to l.model
             }
             FieldType.QR_CODE -> {
                 val l: ViewItemsAQrBinding =
                     DataBindingUtil.inflate(layoutInflater, R.layout.view_items_a_qr, null, false)
-                l.model = FieldText(id, name, mustInput)
+                l.model = FieldText(cellNumber, name, mustInput)
                 l.vm = viewModel
                 l.root to l.model
             }
             FieldType.TEKKILYO_RENDOU_QR -> {
                 val l: ViewItemsBQrTekkyoBinding =
                     DataBindingUtil.inflate(layoutInflater, R.layout.view_items_b_qr_tekkyo, null, false)
-                l.model = FieldText(id, name, mustInput)
+                l.model = FieldText(cellNumber, name, mustInput)
                 l.vm = viewModel
                 l.root to l.model
             }
             FieldType.ACOUNT_NAME -> {
                 val l: ViewItemsCAccountBinding =
                     DataBindingUtil.inflate(layoutInflater, R.layout.view_items_c_account, null, false)
-                l.model = FieldText(id, name, mustInput)
+                l.model = FieldText(cellNumber, name, mustInput)
                 l.vm = viewModel
                 l.root to l.model
             }
             FieldType.CHECK_VALUE -> {
                 val l: CellCheckvalueBinding =
                     DataBindingUtil.inflate(layoutInflater, R.layout.cell_checkvalue, null, false)
-                l.model = FieldCheckText(id, name, mustInput)
+                l.model = FieldCheckText(cellNumber, name, mustInput)
                 l.root to l.model
 			}
             else -> { null }
@@ -378,6 +426,7 @@ class ItemCreateFragment : Fragment() {
         }
     }
 
+    /**
 //    private fun getSuccess(result: JSONObject?) {
 //        if (result != null) {
 //
@@ -788,7 +837,7 @@ class ItemCreateFragment : Fragment() {
 //        }
 //    }
 
-
+**/
 
     /**
      * フィールド取得失敗時

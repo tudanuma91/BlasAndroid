@@ -3,6 +3,8 @@ package com.v3.basis.blas.ui.item.common
 import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableField
 import androidx.databinding.ObservableInt
+import org.json.JSONObject
+import java.lang.StringBuilder
 
 data class FieldText(
 	override val fieldNumber: Int,
@@ -13,6 +15,10 @@ data class FieldText(
 
 	override fun convertToString(): String? {
 		return text.get()
+	}
+
+	override fun setValue(value: String?) {
+		value?.also { text.set(it) }
 	}
 }
 
@@ -30,6 +36,15 @@ data class FieldSingleSelect(
 	override fun convertToString(): String? {
 		val idx = selectedIndex.get()
 		return if (idx == -1) { null } else { values.get(idx) }
+	}
+
+	override fun setValue(value: String?) {
+		values.forEachIndexed { index, s ->
+			if (s == value) {
+				selectedIndex.set(index)
+				return
+			}
+		}
 	}
 }
 
@@ -49,13 +64,24 @@ data class FieldMultiSelect(
 		return if (selectedIndexes.isEmpty()) {
 			null
 		} else {
-			val text = ""
-			selectedIndexes.toList().forEach {
-				if (it.second.get()) {
-					text.plus(values.get(it.first))
+			val list = mutableListOf<String>()
+			selectedIndexes.forEach {
+				if (it.value.get()) {
+					list.add(values.get(it.key))
 				}
 			}
-			text
+			list.joinToString(",")
+		}
+	}
+
+	override fun setValue(value: String?) {
+		val vals = value?.split(",")
+		vals?.forEachIndexed { index, s ->
+			values.forEachIndexed { valuesIndex, valuesS ->
+				if (s == valuesS) {
+					selectedIndexes.get(valuesIndex)?.set(true)
+				}
+			}
 		}
 	}
 }
@@ -66,6 +92,7 @@ data class FieldSigFox(
 	override val mustInput: Boolean): FieldModel {
 
 	override fun convertToString(): String? = null
+	override fun setValue(value: String?) {}
 }
 
 data class FieldCheckText(
@@ -78,7 +105,20 @@ data class FieldCheckText(
 
 	override fun convertToString(): String? {
 		return if (text.get().isNullOrBlank().not() && memo.get().isNullOrBlank().not()) {
-			return text.get() + "(備考)" + memo.get()
+			"{\"value\":\"${text.get()}\",\"memo\":\"${memo.get()}\"}"
 		} else null
+	}
+
+	override fun setValue(value: String?) {
+		//		この形式で来る
+		//		{\"value\":\"aaa\",\"memo\":\"aaaaa\"}
+		val json = value?.replace("\\", "")
+		if (json != null && json.isNotBlank()) {
+			val obj = JSONObject(json)
+			val value1 = obj.get("value")
+			val value2 = obj.get("memo")
+			text.set(value1.toString())
+			memo.set(value2.toString())
+		}
 	}
 }

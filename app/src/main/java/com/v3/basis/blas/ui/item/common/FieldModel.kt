@@ -6,4 +6,5 @@ interface FieldModel {
     val mustInput: Boolean
 
     fun convertToString(): String?
+    fun setValue(value: String?)
 }

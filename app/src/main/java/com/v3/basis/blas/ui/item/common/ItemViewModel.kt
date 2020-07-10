@@ -23,15 +23,22 @@ class ItemViewModel: ViewModel() {
     val locationEvent: PublishSubject<FieldText> = PublishSubject.create()
     val accountNameEvent: PublishSubject<FieldText> = PublishSubject.create()
     val completeSave: PublishSubject<Unit> = PublishSubject.create()
+    val completeUpdate: PublishSubject<Unit> = PublishSubject.create()
 
     val disposable = CompositeDisposable()
 
     var itemsController: ItemsController? = null
     var projectId: String = ""
+    var itemId: Int = 0
+
+    fun setupUpdateMode(itemId: Int = 0) {
+        this.itemId = itemId
+    }
 
     fun clickSave(container: LinearLayout) {
 
         Completable.fromAction {
+
             val map = mutableMapOf<String, String?>()
             map.set("project_id", projectId)
             itemsController?.also {
@@ -39,12 +46,22 @@ class ItemViewModel: ViewModel() {
                     val field = (f as FieldModel)
                     map.set("fld${index + 1}", field.convertToString())
                 }
-                it.create(map)
+
+                if (itemId == 0) {
+                    it.create(map)
+                } else {
+                    map.set("item_id", itemId.toString())
+                    it.update(map)
+                }
             }
         }.subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
-                completeSave.onNext(Unit)
+                if (itemId == 0) {
+                    completeSave.onNext(Unit)
+                } else {
+                    completeUpdate.onNext(Unit)
+                }
             }
             .addTo(disposable)
     }

@@ -10,7 +10,7 @@ data class FieldDataModel(
     val col: Int?,
     val name: String?,
     val type: Int?,
-    val choice: String??,
+    val choice: String?,
     val alnum: Int?,
     val notify: Int?,
     val essential: Int?,
