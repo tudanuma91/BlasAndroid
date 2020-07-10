@@ -37,6 +37,8 @@ class ItemViewModel: ViewModel() {
 
     fun clickSave(container: LinearLayout) {
 
+        // TODO:QRコードのバリデート処理
+
         Completable.fromAction {
 
             val map = mutableMapOf<String, String?>()

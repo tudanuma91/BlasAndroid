@@ -15,11 +15,6 @@ import kotlin.Exception
 
 class FixtureController(context: Context, projectId: String): BaseController(context, projectId) {
 
-    fun joinTest(): List<FixturesAndUsers> {
-        val db = openDatabase()
-        return db.fixtureDao().selectJoinUsers()
-    }
-
     /**
      * 機器一覧を表示するためのSQL
      */
@@ -42,15 +37,14 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
     fun searchDisp(): List<LdbFixtureDispRecord> {
 
-        val db = openSQLiteDatabase()
-        val user = getUserInfo(db)
+        val user = getUserInfo()
         var groupId = 1
 
         if( null != user  ) {
             groupId = user.group_id
         }
         Log.d("group_id取得！！！",groupId.toString())
-        val fixtureDispRange = getGroupsValue(db,groupId,"fixture_disp_range")
+        val fixtureDispRange = getGroupsValue(groupId,"fixture_disp_range")
         Log.d("fixtureDispRange",fixtureDispRange.toString())
 
         var sqlAdition = ""
@@ -58,7 +52,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         if( 0 == fixtureDispRange ) {
             // projectの設定に従う
-            val showData = getProjectVlue(db,"show_data")
+            val showData = getProjectVlue("show_data")
             if( 1 == showData ) {
                 // 自分の会社分しか見れない
                 //val myOrgId = getUserInfo(db,"org_id")
@@ -86,8 +80,6 @@ class FixtureController(context: Context, projectId: String): BaseController(con
     }
 
     fun search( fixture_id : Long? = null  ) : List<LdbFixtureRecord> {
-
-        val db = openSQLiteDatabase()
 
         var sqlAddition = ""
         var plHolder  = arrayOf<String>()
@@ -132,7 +124,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
     }
      */
 
-    private fun checkExistSerail( db: SQLiteDatabase, serial_number:String ) : Boolean {
+    private fun checkExistSerail( serial_number:String ) : Boolean {
 
         var ret = false
         val sql = "select count(*) as count from fixtures where serial_number = ?"
@@ -143,7 +135,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             it.moveToFirst()
             count = it.getInt( it.getColumnIndex("count") )
         }
-        cursor.close()
+        cursor?.close()
 
         if( count > 0 ) {
             ret = true
@@ -152,9 +144,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         return ret
     }
 
-    private fun kenpin_insert( db:SQLiteDatabase ,serial_number: String) : Boolean {
+    private fun kenpin_insert( serial_number: String) : Boolean {
         // user情報を取得する
-        val user = getUserInfo(db)
+        val user = getUserInfo()
 
         val new_fixture = LdbFixtureRecord()
         new_fixture.project_id = projectId.toInt()
@@ -183,12 +175,11 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         val cv = createConvertValue(new_fixture)
 
         return try {
-            db.beginTransaction()
+            db?.beginTransaction()
             //db.execSQL("INSERT into fixtures(serial_number) values (?)", arrayOf(serial_number))
-            db.insert("fixtures",null,cv)
+            db?.insert("fixtures",null,cv)
 
-            db.setTransactionSuccessful()
-            db.endTransaction()
+            db?.setTransactionSuccessful()
             Log.d("kenpin","insert 成功！！")
             true
         } catch (e: Exception) {
@@ -197,10 +188,13 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             e.printStackTrace()
             false
         }
+        finally {
+            db?.endTransaction()
+        }
 
     }
 
-    private fun kenpin_update( db:SQLiteDatabase,serial_number: String,fixture:LdbFixtureRecord,user:LdbUserRecord ) : Boolean {
+    private fun kenpin_update( serial_number: String,fixture:LdbFixtureRecord,user:LdbUserRecord ) : Boolean {
 
         if( null != user?.user_id )
             fixture.fix_user_id = user.user_id
@@ -217,22 +211,24 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         val cv = createConvertValue(fixture,null)
 
         return try {
-            db.beginTransaction()
-            db.update("fixtures",cv,"serial_number = ?", arrayOf(serial_number))
-            db.setTransactionSuccessful()
-            db.endTransaction()
+            db?.beginTransaction()
+            db?.update("fixtures",cv,"serial_number = ?", arrayOf(serial_number))
+            db?.setTransactionSuccessful()
             Log.d("kenpin","update 成功！！")
             true
         }
         catch ( ex : Exception) {
             false
         }
+        finally {
+            db?.endTransaction()
+        }
 
     }
 
 
 
-    private fun getEqualFixtureInfo(db:SQLiteDatabase, serial_number: String )  : LdbFixtureRecord? {
+    private fun getEqualFixtureInfo(serial_number: String )  : LdbFixtureRecord? {
 
         val sql = "select * from fixtures where serial_number = ?"
         val cursor = db?.rawQuery(sql, arrayOf(serial_number))
@@ -251,9 +247,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         return fixture
     }
 
-    fun passPurser( db:SQLiteDatabase, serial_number:String ) : String {
+    fun passPurser( serial_number:String ) : String {
 
-        val purserType = getProjectVlue(db,"purser_type")
+        val purserType = getProjectVlue("purser_type")
 
         var newSerialNumber:String = ""
         if( 0 == purserType ) {
@@ -291,30 +287,26 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         Log.d("kenpin","start")
         var ret = false
 
-        val db = openSQLiteDatabase()
-        db ?: return false
-
-        val serial_number = passPurser( db,serial_number )
+        val serial_number = passPurser( serial_number )
 
         // fixtureテーブル 同じserial_numberが存在しないかを確認
-        if(  checkExistSerail(db,serial_number) ){
+        if(  checkExistSerail(serial_number) ){
             // ある場合
             Log.d("kenpin","同一シリアルが登録済み")
-            var user : LdbUserRecord? = getUserInfo(db)
+            var user : LdbUserRecord? = getUserInfo()
             if(null == user) {
                 user = LdbUserRecord()
                 user.user_id = 1
                 user.org_id = 1
             }
 
-            var fixture = getEqualFixtureInfo(db,serial_number)
+            var fixture = getEqualFixtureInfo(serial_number)
 
             if( fixture?.fix_org_id != user?.org_id && 0 == fixture?.status ) {
                 Log.d("kenpin","他社検品を異動")
                 // 他社が検品、持ち出し可なら ⇒ 異動
-                ret = kenpin_update(db,serial_number,fixture,user)
+                ret = kenpin_update(serial_number,fixture,user)
 
-                db.close()
                 return ret
             }
             else {
@@ -322,7 +314,6 @@ class FixtureController(context: Context, projectId: String): BaseController(con
                 Log.d("kenpin","検品不可です")
                 errorMessageEvent.onNext("検品不可です")
 
-                db.close()
                 return false
             }
         }
@@ -330,8 +321,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         // なければ新規追加
         Log.d("kenpin","存在しないシリアルなので新規作成する")
 
-        ret = kenpin_insert(db,serial_number)
-        db.close()
+        ret = kenpin_insert(serial_number)
 
         return ret
     }
@@ -380,14 +370,11 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
     fun takeout(serial_number: String): Boolean {
 
-        val db = openSQLiteDatabase()
-        db ?: return false
-
-        val serial_number = passPurser( db,serial_number )
+        val serial_number = passPurser( serial_number )
 
         // 該当シリアルナンバーの機器情報を取得
-        var fixture = getEqualFixtureInfo(db,serial_number)
-        var user : LdbUserRecord? = getUserInfo(db)
+        var fixture = getEqualFixtureInfo(serial_number)
+        var user : LdbUserRecord? = getUserInfo()
         if(null == user) {
             user = LdbUserRecord()
             user.user_id = 1
@@ -395,7 +382,6 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         }
 
         if( !checkTakeout(fixture,user) ) {
-            db.close()
             return false
         }
 
@@ -413,11 +399,10 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         val cv = createConvertValue(fixture as Any,null)
 
         return try {
-            db.beginTransaction()
+            db?.beginTransaction()
             //db.execSQL("UPDATE fixtures set status = 1 where serial_number = ?", arrayOf(serial_number))
-            db.update("fixtures",cv,"serial_number = ?", arrayOf(serial_number))
-            db.setTransactionSuccessful()
-            db.endTransaction()
+            db?.update("fixtures",cv,"serial_number = ?", arrayOf(serial_number))
+            db?.setTransactionSuccessful()
             Log.d("takeout","成功！！！")
             true
         } catch (e: Exception) {
@@ -426,7 +411,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             false
         }
         finally {
-            db.close()
+            db?.endTransaction()
         }
     }
 
@@ -477,14 +462,11 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
     fun rtn(serial_number: String): Boolean {
 
-        val db = openSQLiteDatabase()
-        db ?: return false
-
-        val serial_number = passPurser( db,serial_number )
+        val serial_number = passPurser( serial_number )
 
         // 該当シリアルナンバーの機器情報を取得
-        var fixture = getEqualFixtureInfo(db,serial_number)
-        var user : LdbUserRecord? = getUserInfo(db)
+        var fixture = getEqualFixtureInfo(serial_number)
+        var user : LdbUserRecord? = getUserInfo()
         if(null == user) {
             user = LdbUserRecord()
             user.user_id = 1
@@ -492,7 +474,6 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         }
 
         if( !checkuRtn(fixture,user) ) {
-            db.close()
             return false
         }
 
@@ -510,12 +491,11 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         val cv = createConvertValue(fixture,null)
 
         return try {
-            db.beginTransaction()
+            db?.beginTransaction()
             // db.execSQL("UPDATE fixtures set status = 2 where serial_number = ?", arrayOf(serial_number))
-            db.update("fixtures",cv,"serial_number = ?", arrayOf(serial_number))
+            db?.update("fixtures",cv,"serial_number = ?", arrayOf(serial_number))
 
-            db.setTransactionSuccessful()
-            db.endTransaction()
+            db?.setTransactionSuccessful()
             Log.d("rtn","成功！！！")
             true
         } catch (e: Exception) {
@@ -524,23 +504,21 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             false
         }
         finally {
-            db.close()
+            db?.endTransaction()
         }
     }
 
     fun updateFixtureId( orgFixtureId:String, newFixtureId:String) : Boolean {
-        val db = openSQLiteDatabase()
-        db ?: return false
 
         val cv = ContentValues()
         cv.put("fixture_id",newFixtureId)
         cv.put("sync_status",0)
 
         return try {
-            db.beginTransaction()
-            db.update("fixtures",cv,"fixture_id = ?", arrayOf(orgFixtureId))
-            db.setTransactionSuccessful()
-            db.endTransaction()
+            db?.beginTransaction()
+            db?.update("fixtures",cv,"fixture_id = ?", arrayOf(orgFixtureId))
+            db?.setTransactionSuccessful()
+            db?.endTransaction()
             Log.d("update","成功！！")
             true
         }
@@ -548,33 +526,24 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             ex.printStackTrace()
             false
         }
-        finally {
-            db.close()
-        }
     }
 
     fun resetSyncStatus( fixtureId:String ) : Boolean {
-
-        val db = openSQLiteDatabase()
-        db ?: return false
 
         val cv = ContentValues()
         cv.put("sync_status",0)
 
         return try {
-            db.beginTransaction()
-            db.update("fixtures",cv,"fixture_id = ?", arrayOf(fixtureId))
-            db.setTransactionSuccessful()
-            db.endTransaction()
+            db?.beginTransaction()
+            db?.update("fixtures",cv,"fixture_id = ?", arrayOf(fixtureId))
+            db?.setTransactionSuccessful()
+            db?.endTransaction()
             Log.d("sync_status reset","成功！！")
             true
         }
         catch ( ex : Exception ) {
             ex.printStackTrace()
             false
-        }
-        finally {
-            db.close()
         }
 
     }
