@@ -17,7 +17,7 @@ class ItemsListViewModel: ServerSyncViewModel() {
 
     lateinit var model:ItemsCellModel
 
-//    lateinit var mapItem : MutableMap<String, String?>
+    lateinit var mapItem : MutableMap<String, String?>
     lateinit var item : Items
 
     override fun syncDB(serverModel: ServerSyncModel) {
@@ -37,7 +37,7 @@ class ItemsListViewModel: ServerSyncViewModel() {
             throw Exception("DB Sync error!! 該当レコードが存在しません")
         }
 
-        val mapItem = records[0]
+        mapItem = records[0]
         item = ctl.setProperty(Items(),mapItem) as Items
 
         var payload2 = mutableMapOf<String,String>()
@@ -56,28 +56,25 @@ class ItemsListViewModel: ServerSyncViewModel() {
     fun success(result: JSONObject) {
         Log.d("success()","start   result ====> " + result.toString())
 
+        val ctl = ItemsController(model.context,model.project_id.toString())
+
         if( 1 == item.sync_status ) {
             val records = result.getJSONObject("records")
-            Log.d("records" ,records.toString())
 
             val new_item_id = records.getString("new_item_id")
             val org_item_id = records.getString("temp_item_id")
-            Log.d("item_id","new:" + new_item_id + "   org:" + org_item_id)
 
-            val ctl = ItemsController(model.context,model.project_id.toString())
-            ctl.updateItemId( org_item_id,new_item_id )
-
+            ctl.updateItemId4Insert( org_item_id,new_item_id )
         }
-
-
-
-
+        else {
+            ctl.updateItemId4Update(item.item_id.toString(),item,mapItem)
+        }
 
         Log.d("success()","end")
     }
 
     fun error(errorCode: Int, aplCode :Int) {
-
+        Log.d("error","error!!!!!!!")
     }
 
     fun clickImageButton(model: ItemsCellModel) {

@@ -30,7 +30,7 @@ class LinkFixture(db : SQLiteDatabase?,item: Items, serialNumber:String)
         cv.put("item_user_id",item.user_id)
         cv.put("item_date",item.update_date)
         cv.put("status",2)  // 設置済み
-        cv.put("sync_status",2)
+//        cv.put("sync_status",2)
 
         return cv
     }

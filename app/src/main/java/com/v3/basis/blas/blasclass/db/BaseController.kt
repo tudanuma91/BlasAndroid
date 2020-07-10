@@ -6,6 +6,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import androidx.room.Room
+import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.ldb.LdbUserRecord
 import com.v3.basis.blas.blasclass.worker.DownloadWorker
@@ -69,15 +70,7 @@ abstract class BaseController(
                     return@forEach
                 }
 
-                if( prop.returnType.isSubtypeOf(String::class.starProjectedType) ) {
-                    prop.setter.call(instance,value)
-                }
-                else if (prop.returnType.isSubtypeOf(Long::class.starProjectedType)) {
-                    prop.setter.call(instance,value.toLong())
-                }
-                else {
-                    prop.setter.call(instance,value.toInt())
-                }
+                setPropExec(instance,prop,value)
             }
 
         return instance
@@ -128,22 +121,33 @@ abstract class BaseController(
                     return@forEach
                 }
 
-                if( prop.returnType.isSubtypeOf(String::class.starProjectedType)
-                    or prop.returnType.isSupertypeOf(String::class.starProjectedType)
-                ) {
-                    prop.setter.call(instance,value)
-                } else if (prop.returnType.isSubtypeOf(Float::class.starProjectedType)
-                    or prop.returnType.isSupertypeOf(Float::class.starProjectedType)
-                ) {
-                    prop.setter.call(instance,value.toFloat())
-                } else if (prop.returnType.isSubtypeOf(Int::class.starProjectedType)
-                    or prop.returnType.isSupertypeOf(Int::class.starProjectedType)
-                ){
-                    prop.setter.call(instance,value.toInt())
-                }
+                setPropExec(instance,prop,value)
             }
 
         return instance
+    }
+
+
+    fun setPropExec(instance : Any,prop: KMutableProperty<*>,value:String) {
+
+        if( prop.returnType.isSubtypeOf(String::class.starProjectedType)
+            or prop.returnType.isSupertypeOf(String::class.starProjectedType)
+        ) {
+            prop.setter.call(instance,value)
+        } else if (prop.returnType.isSubtypeOf(Float::class.starProjectedType)
+            or prop.returnType.isSupertypeOf(Float::class.starProjectedType)
+        ) {
+            prop.setter.call(instance,value.toFloat())
+        } else if (prop.returnType.isSubtypeOf(Long::class.starProjectedType)
+            or prop.returnType.isSupertypeOf(Long::class.starProjectedType)
+        ){
+            prop.setter.call(instance,value.toLong())
+        } else if (prop.returnType.isSubtypeOf(Int::class.starProjectedType)
+            or prop.returnType.isSupertypeOf(Int::class.starProjectedType)
+        ){
+            prop.setter.call(instance,value.toInt())
+        }
+
     }
 
     /**

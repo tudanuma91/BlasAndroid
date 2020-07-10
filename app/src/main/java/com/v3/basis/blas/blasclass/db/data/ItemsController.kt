@@ -75,7 +75,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             // itemテーブルに追加
             db?.insert("items",null,cv)
             // fixture(rm_fixture)を更新
-           updateFixtureTemp(item,map)
+           updateFixture(item,map)
 
             db?.setTransactionSuccessful()
             true
@@ -121,7 +121,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             // itmeテーブルを更新
             db?.update("items",cv,"item_id = ?", arrayOf(item.item_id.toString()))
             // fixture(rm_fixture)を更新
-            updateFixtureTemp(item,map)
+            updateFixture(item,map)
 
             db?.setTransactionSuccessful()
 
@@ -134,6 +134,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         }
         finally {
             db?.endTransaction()
+            Log.d("item update","終了！")
         }
     }
 
@@ -160,7 +161,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
     /**
      * fixtureテーブルに仮登録
      */
-    private fun updateFixtureTemp(item :Items, map: Map<String, String?> ) {
+    private fun updateFixture(item :Items, map: Map<String, String?> ) {
         val inst = getFieldCols( 8 )
         val rms = getFieldCols(11)
 
@@ -184,7 +185,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
     }
 
-    fun updateItemId( org_item_id:String,new_item_id:String ) {
+    fun updateItemId4Insert(org_item_id:String, new_item_id:String ) {
         Log.d("updateItemId()","start")
 
         val cv = ContentValues()
@@ -208,6 +209,30 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             db?.endTransaction()
         }
 
+    }
+
+    fun updateItemId4Update( item_id:String,item : Items,mapItem : MutableMap<String, String?> ) {
+        Log.d("updateItemId()","start")
+
+        val cv = ContentValues()
+        cv.put("sync_status",0)
+
+        return try {
+            db?.beginTransaction()
+
+            db?.update("items",cv,"item_id = ?", arrayOf(item_id))
+            // fixture,rm_fixtureを更新
+            updateFixture(item,mapItem)
+
+            db?.setTransactionSuccessful()!!
+        }
+        catch (e:Exception) {
+            e.printStackTrace()
+            throw e
+        }
+        finally {
+            db?.endTransaction()
+        }
     }
 
     //TODO 三代川さん
