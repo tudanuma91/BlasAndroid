@@ -2,7 +2,6 @@ package com.v3.basis.blas.blasclass.db.data
 
 import android.content.ContentValues
 import android.content.Context
-import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkFixture
@@ -76,7 +75,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             // itemテーブルに追加
             db?.insert("items",null,cv)
             // fixture(rm_fixture)を更新
-           updateFixture(item,map)
+           updateFixtureTemp(item,map)
 
             db?.setTransactionSuccessful()
             true
@@ -122,7 +121,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             // itmeテーブルを更新
             db?.update("items",cv,"item_id = ?", arrayOf(item.item_id.toString()))
             // fixture(rm_fixture)を更新
-            updateFixture(item,map)
+            updateFixtureTemp(item,map)
 
             db?.setTransactionSuccessful()
 
@@ -158,7 +157,10 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
     }
 
 
-    private fun updateFixture(item :Items, map: Map<String, String?> ) {
+    /**
+     * fixtureテーブルに仮登録
+     */
+    private fun updateFixtureTemp(item :Items, map: Map<String, String?> ) {
         val inst = getFieldCols( 8 )
         val rms = getFieldCols(11)
 
@@ -178,6 +180,32 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             if( map.containsKey("fld" + it.toString()) ) {
                 LinkRmFixture(db,item,map.get("fld" + it.toString()).toString()).exec()
             }
+        }
+
+    }
+
+    fun updateItemId( org_item_id:String,new_item_id:String ) {
+        Log.d("updateItemId()","start")
+
+        val cv = ContentValues()
+        cv.put("item_id",new_item_id)
+        cv.put("sync_status",0)
+
+        return try {
+            db?.beginTransaction()
+
+            db?.update("items",cv,"item_id = ?", arrayOf(org_item_id))
+            db?.update("fixtures",cv,"item_id = ?", arrayOf(org_item_id))
+            db?.update("rm_fixtures",cv,"item_id = ?", arrayOf(org_item_id))
+
+            db?.setTransactionSuccessful()!!
+        }
+        catch (e:Exception) {
+            e.printStackTrace()
+            throw e
+        }
+        finally {
+            db?.endTransaction()
         }
 
     }
