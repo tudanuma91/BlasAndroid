@@ -72,8 +72,8 @@ class FixtureFragment : Fragment() {
         viewModel.startDownload
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
-                val unzipPath = requireContext().dataDir.path + "/databases/" + it.id
-                addDownloadTask(viewModel, it, unzipPath, it.id)
+                val unzipPath = requireContext().dataDir.path + "/databases/" + it.projectId
+                addDownloadTask(viewModel, it, unzipPath, it.projectId, token)
             }
             .addTo(disposables)
     }

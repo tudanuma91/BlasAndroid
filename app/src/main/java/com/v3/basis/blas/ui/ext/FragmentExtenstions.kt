@@ -109,10 +109,10 @@ fun Fragment.closeSoftKeyboard() {
  * [作成者]
  * fukuda
  */
-fun Fragment.addDownloadTask(vm: DownloadViewModel, model: DownloadModel, unzipPath: String, projectId: String) {
+fun Fragment.addDownloadTask(vm: DownloadViewModel, model: DownloadModel, unzipPath: String, token: String, projectId: String) {
 
     var once = true
-    WorkerHelper.addDownloadTask<DownloadWorker>(this, model.downloadUrl, model.savePath, unzipPath, projectId) { state, progress, id ->
+    WorkerHelper.addDownloadTask<DownloadWorker>(this, token, projectId, model.savePath, unzipPath, projectId) { state, progress, id ->
 
         when (state) {
             WorkInfo.State.BLOCKED,
