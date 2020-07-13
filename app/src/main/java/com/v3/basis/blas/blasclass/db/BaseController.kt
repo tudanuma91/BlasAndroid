@@ -128,7 +128,7 @@ abstract class BaseController(
     }
 
 
-    fun setPropExec(instance : Any,prop: KMutableProperty<*>,value:String) {
+    private fun setPropExec(instance : Any, prop: KMutableProperty<*>, value:String) {
 
         if( prop.returnType.isSubtypeOf(String::class.starProjectedType)
             or prop.returnType.isSupertypeOf(String::class.starProjectedType)

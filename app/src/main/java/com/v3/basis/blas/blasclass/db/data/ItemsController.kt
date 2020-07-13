@@ -138,7 +138,9 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         }
     }
 
-
+    /**
+     * 指定されたタイプのFieldのColを返す
+     */
     private fun getFieldCols(type:Int) : List<Int> {
         val ret = mutableListOf<Int>()
 
@@ -159,7 +161,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
 
     /**
-     * fixtureテーブルに仮登録
+     * fixtureローカルテーブルの更新
      */
     private fun updateFixture(item :Items, map: Map<String, String?> ) {
         val inst = getFieldCols( 8 )
@@ -185,6 +187,9 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
     }
 
+    /**
+     * ItemIdを新しいものに置き換える(新規作成の時)
+     */
     fun updateItemId4Insert(org_item_id:String, new_item_id:String ) {
         Log.d("updateItemId()","start")
 
@@ -211,6 +216,12 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
     }
 
+    /**
+     * 編集の時のローカル変更<br>
+     * ・sync_statusを0に戻す<br>
+     * ・Fixtureの設置情報を更新する
+     */
+    // TODO:名前が変？ItemIdは変更しない
     fun updateItemId4Update( item_id:String,item : Items,mapItem : MutableMap<String, String?> ) {
         Log.d("updateItemId()","start")
 

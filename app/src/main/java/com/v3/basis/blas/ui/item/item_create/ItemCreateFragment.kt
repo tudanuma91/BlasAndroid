@@ -274,7 +274,7 @@ class ItemCreateFragment : Fragment() {
             }
             itemId?.also { id ->
                 Single
-                    .fromCallable { itemsController.search(id.toInt()) }
+                    .fromCallable { itemsController.search(id.toLong()) }
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy {
