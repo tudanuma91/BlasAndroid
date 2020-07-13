@@ -79,7 +79,8 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         return ret
     }
 
-    fun search( fixture_id : Long? = null  ) : List<LdbFixtureRecord> {
+    //TODO 三代川さん　paging
+    fun search( fixture_id : Long? = null,  offset: Int = 0, paging: Int = 20) : List<LdbFixtureRecord> {
 
         var sqlAddition = ""
         var plHolder  = arrayOf<String>()
