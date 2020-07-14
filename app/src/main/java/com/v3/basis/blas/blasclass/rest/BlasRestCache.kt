@@ -47,6 +47,7 @@ open class BlasRestCache(val crud:String = "zip",
         }
         return null
     }
+
     /**
      * プロジェクトに設定されているフィールドの情報取得要求を行う
      * @param in params 指定なし
@@ -65,6 +66,23 @@ open class BlasRestCache(val crud:String = "zip",
             super.reqDataSave(payload,method,url,funcSuccess,funcError,"Item")
             response = super.getResponseData(payload, method, url)
 
+        }
+        catch(e: Exception) {
+            Log.d("blas-log", e.message)
+            traceLog("Failed to search zip files")
+        }
+        return response
+    }
+
+    fun getResponse(): String? {
+        var response:String? = null
+
+        val url = URL + "cache/search_sqlite/"
+
+        try {
+            Log.d("method:", method)
+            Log.d("url:", url)
+            response = super.getResponseData(payload, method, url)
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)

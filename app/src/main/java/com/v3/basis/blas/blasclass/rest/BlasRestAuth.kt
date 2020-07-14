@@ -14,7 +14,7 @@ import java.net.HttpURLConnection
 /**
  * restfulの認証APIクラス
  */
-open class BlasRestAuth(val payload:Map<String, String?>, val loginSuccess:(String,Int)->Unit, val loginError:(Int)->Unit) : BlasRest() {
+open class BlasRestAuth(val payload:Map<String, String?>, val loginSuccess:(JSONObject)->Unit, val loginError:(Int)->Unit) : BlasRest() {
     companion object {
         private val LOGIN_URL = BlasRest.URL + "auth/login/"
     }
@@ -60,13 +60,11 @@ open class BlasRestAuth(val payload:Map<String, String?>, val loginSuccess:(Stri
         if(error_code == 0) {
             Log.d("値のチェック","${json}")
             val records_json = json.getJSONObject("records")
-            val token = records_json.getString("token")
-            val user_id = records_json.getInt("user_id")
 
             userNameRest = payload["name"]
             passwordRest = payload["password"]
 
-            loginSuccess(token,user_id)
+            loginSuccess(json)
         }
         else {
             loginError(error_code)

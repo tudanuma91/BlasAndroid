@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter
 class ItemsController(context: Context, projectId: String): BaseController(context, projectId) {
 
     //TODO 三代川さん
-    fun search(item_id: Long = 0L ): MutableList<MutableMap<String, String?>> {
+    fun search(item_id: Long = 0L, offset: Int = 0, paging: Int = 20): MutableList<MutableMap<String, String?>> {
 
         val cursor = if (item_id == 0L) {
             db?.rawQuery("select * from items order by create_date desc", null)

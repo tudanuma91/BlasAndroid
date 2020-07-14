@@ -28,8 +28,7 @@
             android:onClick="@{v -> vm.downloadClick(item)}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:hasNotUrl="@{item.hasNotDownloadUrl}"
-            app:nowDownloading="@{item.downloading}"
+            android:visibility="@{item.downloading == false ? View.VISIBLE : View.INVISIBLE}"
             />
         
         <ProgressBar

@@ -63,7 +63,7 @@ class DownloadViewModel: ViewModel() {
         val single = readAsync {
             //   読み込み！！（仮機能）
             val pref = preferences()
-            pref.getString(model.id, "")!!
+            pref.getString(model.projectId, "")!!
         }
 
         single.subscribeBy {
@@ -82,32 +82,32 @@ class DownloadViewModel: ViewModel() {
             .addTo(disposable)
     }
 
-    private fun setDownloadUrl(model: DownloadModel, callback: () -> Unit) {
-
-//        item.downloadUrl = "https://www.basis-service.com/blas777/item/20200514043512291.zip"
-//        item.hasNotDownloadUrl.set(false)
-        val payload = mapOf(
-            "token" to token,
-            "project_id" to model.id
-        )
-        val success: (json: JSONObject) -> Unit = {
-            traceLog(it.toString())
-            try {
-                val zipModel = Gson().fromJson(it.toString(), DownloadZipModel::class.java)
-                model.downloadUrl = BuildConfig.HOST + zipModel.zip_path
-                model.hasNotDownloadUrl.set(false)
-                callback.invoke()
-            } catch (e: Exception) {
-                Log.d("parse error", e.toString())
-                traceLog(e.stackTrace.toString())
-                model.hasNotDownloadUrl.set(true)
-            }
-        }
-        val funcError:(Int,Int) -> Unit = {errorCode, aplCode ->
-            model.downloadUrl = ""
-        }
-        BlasRestCache("zip", payload, success, funcError).execute()
-    }
+//    private fun setDownloadUrl(model: DownloadModel, callback: () -> Unit) {
+//
+////        item.downloadUrl = "https://www.basis-service.com/blas777/item/20200514043512291.zip"
+////        item.hasNotDownloadUrl.set(false)
+//        val payload = mapOf(
+//            "token" to token,
+//            "project_id" to model.projectId
+//        )
+//        val success: (json: JSONObject) -> Unit = {
+//            traceLog(it.toString())
+//            try {
+//                val zipModel = Gson().fromJson(it.toString(), DownloadZipModel::class.java)
+//                model.downloadUrl = BuildConfig.HOST + zipModel.zip_path
+//                model.hasNotDownloadUrl.set(false)
+//                callback.invoke()
+//            } catch (e: Exception) {
+//                Log.d("parse error", e.toString())
+//                traceLog(e.stackTrace.toString())
+//                model.hasNotDownloadUrl.set(true)
+//            }
+//        }
+//        val funcError:(Int,Int) -> Unit = {errorCode, aplCode ->
+//            model.downloadUrl = ""
+//        }
+//        BlasRestCache("zip", payload, success, funcError).execute()
+//    }
 
     /**
      * ダウンロードボタンがクリックされたとき、呼び出し側にそれを通知します。
@@ -127,10 +127,9 @@ class DownloadViewModel: ViewModel() {
      */
     fun downloadClick(model: DownloadModel) {
 
-        model.savePath = createZipFile(model.id, model.saveDir)
-        setDownloadUrl(model) {
-            startDownload.onNext(model)
-        }
+        model.savePath = createZipFile(model.projectId, model.saveDir)
+        model.downloading.set(true)
+        startDownload.onNext(model)
     }
 
     private fun createZipFile(projectId: String, dir: String): String {
@@ -167,7 +166,7 @@ class DownloadViewModel: ViewModel() {
         //   仮のセーブ方法！！
         taskAsync {
             val pref = preferences()
-            pref.edit().putString(model.id, uuid.toString()).apply()
+            pref.edit().putString(model.projectId, uuid.toString()).apply()
         }
     }
 
@@ -214,7 +213,7 @@ class DownloadViewModel: ViewModel() {
         //   仮のセーブ方法！！
         taskAsync {
             val pref = preferences()
-            pref.edit().putString(model.id, COMPLETE).apply()
+            pref.edit().putString(model.projectId, COMPLETE).apply()
         }
     }
 

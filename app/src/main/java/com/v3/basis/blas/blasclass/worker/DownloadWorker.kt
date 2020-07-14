@@ -4,9 +4,15 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.work.WorkerParameters
+import com.google.gson.Gson
+import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.rest.BlasRestCache
 import com.v3.basis.blas.ui.ext.traceLog
 import com.v3.basis.blas.ui.ext.unzip
+import com.v3.basis.blas.ui.terminal.common.DownloadModel
+import com.v3.basis.blas.ui.terminal.common.DownloadZipModel
+import org.json.JSONObject
 import java.io.*
 import java.net.URL
 import java.net.URLConnection
@@ -34,16 +40,30 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
         }
     }
 
-    override fun downloadTask(downloadUrl: String, savePath: String, unZipPath: String): Result {
+    override fun downloadTask(token: String, projectId: String, savePath: String, unZipPath: String): Result {
 
         return try {
 
-            download(downloadUrl, savePath, unZipPath)
+            val url = getDownloadUrl(token, projectId)
+            download(url, savePath, unZipPath)
             Result.success()
         } catch (e: Exception) {
             traceLog("Failed to download task, ${e::class.java.name}")
             Result.failure()
         }
+    }
+
+    private fun getDownloadUrl(token: String, projectId: String): String {
+
+        val payload = mapOf(
+            "token" to token,
+            "project_id" to projectId
+        )
+        val success: (json: JSONObject) -> Unit = {}
+        val funcError:(Int,Int) -> Unit = {errorCode, aplCode -> }
+        val response = BlasRestCache("zip", payload, success, funcError).getResponse()
+        val zipModel = Gson().fromJson(response, DownloadZipModel::class.java)
+        return BuildConfig.HOST + zipModel.zip_path
     }
 
     override fun getMaxProgressValue(): Int {

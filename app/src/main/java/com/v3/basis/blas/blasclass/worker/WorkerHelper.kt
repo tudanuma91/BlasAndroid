@@ -39,7 +39,8 @@ object WorkerHelper {
      */
     inline fun <reified T: BaseDownloadWorker>
             addDownloadTask(fragment: Fragment,
-                            downloadUrl: String,
+                            token: String,
+                            projectId: String,
                             savePath: String,
                             unzipPath: String,
                             savePathKeyValue: String,
@@ -57,7 +58,8 @@ object WorkerHelper {
 
         //  BaseDownloadWorkerに変数を渡すための処理、BaseDownloadWorkerでも同じキーを使い変数を読み込む
         val data = workDataOf(
-            BaseDownloadWorker.KEY_DOWNLOAD to downloadUrl,
+            BaseDownloadWorker.KEY_TOKEN to token,
+            BaseDownloadWorker.KEY_PROJECT_ID to projectId,
             BaseDownloadWorker.KEY_SAVE_PATH to savePath,
             BaseDownloadWorker.KEY_UNZIP_PATH to unzipPath,
             BaseDownloadWorker.KEY_SAVE_PATH_KEY_NAME to savePathKeyValue
