@@ -187,8 +187,9 @@ class LoginFragment : Fragment() {
                 .setView(editText)
                 .setPositiveButton("送信") { dialog, which ->
 
-                    if (editText.getText().toString().length == 0) {
-                        dialog.dismiss();
+                    if (editText.getText().toString().equals( "" )) {
+                        Toast.makeText(getActivity(), R.string.twoauth_null, Toast.LENGTH_LONG).show()
+                        return@setPositiveButton
                     }
 
                     val payload = mapOf("name" to username, "password" to pass, "sms" to editText.getText().toString())
