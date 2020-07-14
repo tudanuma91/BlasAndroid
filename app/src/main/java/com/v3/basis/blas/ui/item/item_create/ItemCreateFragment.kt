@@ -298,7 +298,7 @@ class ItemCreateFragment : Fragment() {
 
         val view = when (field.type.toString()) {
             FieldType.TEXT_FIELD -> {
-                val l: ViewItems1TextSingleLineBindingImpl =
+                val l: ViewItems1TextSingleLineBinding =
                     DataBindingUtil.inflate(layoutInflater, R.layout.view_items_1_text_single_line, null, false)
                 l.model = FieldText(cellNumber, name, mustInput)
                 l.root to l.model
