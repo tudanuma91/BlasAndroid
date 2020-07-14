@@ -34,8 +34,8 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             " left join orgs as o_item on fixtures.item_org_id = o_item.org_id" +
             " left join users as u_item on fixtures.item_user_id = u_item.user_id"
 
-
-    fun searchDisp(): List<LdbFixtureDispRecord> {
+    fun searchDisp( offset: Int = 0, paging: Int = 20): List<LdbFixtureDispRecord> {
+        Log.d("search","start!!!!!!!!!!!!!!!!!!!!!!!")
 
         val user = getUserInfo()
         var groupId = 1
@@ -62,7 +62,10 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             }
         }
 
-        val sql = searchDispFixtureSql + sqlAdition + " order by fixtures.create_date desc"
+        plHolder += paging.toString()
+        plHolder += offset.toString()
+
+        val sql = searchDispFixtureSql + sqlAdition  + " order by fixtures.create_date desc limit ? offset ? "
 
         val cursor = db?.rawQuery(sql, plHolder)
         val ret = mutableListOf<LdbFixtureDispRecord>()
@@ -79,8 +82,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         return ret
     }
 
-    //TODO 三代川さん　paging
-    fun search( fixture_id : Long? = null,  offset: Int = 0, paging: Int = 20) : List<LdbFixtureRecord> {
+    fun search( fixture_id : Long? = null) : List<LdbFixtureRecord> {
 
         var sqlAddition = ""
         var plHolder  = arrayOf<String>()
@@ -90,6 +92,8 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         }
 
         val sql = "select * from fixtures " + sqlAddition
+
+        Log.d("search sql",sql)
 
         val cursor = db?.rawQuery(sql, plHolder)
         val ret = mutableListOf<LdbFixtureRecord>()

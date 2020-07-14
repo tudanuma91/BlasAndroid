@@ -21,7 +21,6 @@ class ItemsListViewModel: ServerSyncViewModel() {
     lateinit var item : Items
 
     override fun syncDB(serverModel: ServerSyncModel) {
-        //TODO 三代川さん
         Log.d("syncDB()","start")
 
         model = serverModel as ItemsCellModel
@@ -48,7 +47,6 @@ class ItemsListViewModel: ServerSyncViewModel() {
         payload2["token"] = model.token
 
         BlasRestItem("create_sync",payload2,::success,::error).execute()
-
 
         Log.d("syncDB()","end")
     }
