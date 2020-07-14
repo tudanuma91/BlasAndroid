@@ -63,7 +63,7 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
         val funcError:(Int,Int) -> Unit = {errorCode, aplCode -> }
         val response = BlasRestCache("zip", payload, success, funcError).getResponse()
         val zipModel = Gson().fromJson(response, DownloadZipModel::class.java)
-        return zipModel.zip_path
+        return BuildConfig.HOST + zipModel.zip_path
     }
 
     override fun getMaxProgressValue(): Int {

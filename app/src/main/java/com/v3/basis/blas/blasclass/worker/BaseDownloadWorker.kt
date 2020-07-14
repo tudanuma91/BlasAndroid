@@ -20,7 +20,7 @@ abstract class BaseDownloadWorker(context: Context, workerParameters: WorkerPara
 
     companion object {
         const val KEY_TOKEN = "key_token"
-        const val KEY_PROJECT_ID = "key_token"
+        const val KEY_PROJECT_ID = "key_project_id"
         const val KEY_SAVE_PATH = "key_save_path"
         const val KEY_UNZIP_PATH = "key_unzip_path"
         const val KEY_SAVE_PATH_KEY_NAME = "key_save_path_kay_name"
@@ -40,7 +40,7 @@ abstract class BaseDownloadWorker(context: Context, workerParameters: WorkerPara
         val unzipPath = inputData.getString(KEY_UNZIP_PATH)
             ?: throw IllegalStateException("might be forgot set to savePath key via with WorkerHelper")
 
-        return downloadTask(projectId, token, savePath, unzipPath)
+        return downloadTask(token, projectId, savePath, unzipPath)
     }
 
     /**
