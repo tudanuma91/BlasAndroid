@@ -7,11 +7,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureActivity
+import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.TerminalActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.helper.RestHelper
@@ -31,7 +35,7 @@ import kotlinx.android.synthetic.main.fragment_project.*
 import org.json.JSONObject
 import java.io.File
 
-class FixtureFragment : Fragment() {
+open class FixtureFragment : Fragment() {
 
     private lateinit var fixtureViewModel: FixtureViewModel
     lateinit var token:String
@@ -39,13 +43,13 @@ class FixtureFragment : Fragment() {
     private val toastErrorLen = Toast.LENGTH_LONG
     private var toastSuccessLen = Toast.LENGTH_SHORT
 
-    private lateinit var viewModel: DownloadViewModel
+    private val viewModel: DownloadViewModel by activityViewModels()
     private val disposables = CompositeDisposable()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         fixtureViewModel = ViewModelProviders.of(this).get(FixtureViewModel::class.java)
-        viewModel = ViewModelProviders.of(this).get(DownloadViewModel::class.java)
+//        viewModel = ViewModelProviders.of(this).get(DownloadViewModel::class.java)
 
         val extras = activity?.intent?.extras
         if(extras?.getString("token") != null ) {
@@ -78,22 +82,39 @@ class FixtureFragment : Fragment() {
             .addTo(disposables)
     }
 
+    open fun clickCell(rowModel: RowModel) {
 
+        val title = (requireActivity() as AppCompatActivity).supportActionBar?.title
+        val title2 = requireContext().resources.getString(R.string.navi_title_terminal_item)
+        if (title == title2) {
+            Log.d(
+                "DataManagement",
+                "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
+            )
+            val intent = Intent(activity, ItemActivity::class.java)
+            intent.putExtra("token", token)
+            intent.putExtra("project_id", rowModel.detail)
+            intent.putExtra("projectName", rowModel.title)
+            startActivity(intent)
+        } else {
+            Log.d(
+                "DataManagement",
+                "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
+            )
+            val intent = Intent(activity, FixtureActivity::class.java)
+            intent.putExtra("token", token)
+            intent.putExtra("project_id", rowModel.detail)
+            intent.putExtra("project_name", rowModel.title)
+            startActivity(intent)
+        }
+    }
 
     private fun projectSearchSuccess(result:JSONObject) {
         val newMap = RestHelper().createProjectList(result)
         val projectList = createProjectList(newMap)
         val listener = object : ViewAdapterAdapter.ListListener {
             override fun onClickRow(tappedView: View, rowModel: RowModel) {
-                Log.d(
-                    "DataManagement",
-                    "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
-                )
-                val intent = Intent(activity, FixtureActivity::class.java)
-                intent.putExtra("token", token)
-                intent.putExtra("project_id", rowModel.detail)
-                intent.putExtra("project_name", rowModel.title)
-                startActivity(intent)
+                clickCell(rowModel)
             }
         }
         projectList.forEach { it.listener = listener }

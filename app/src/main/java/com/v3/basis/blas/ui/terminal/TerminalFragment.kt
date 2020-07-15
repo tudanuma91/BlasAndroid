@@ -23,17 +23,30 @@ class TerminalFragment : Fragment() {
 
         vm = ViewModelProviders.of(this).get(TerminalViewModel::class.java)
         val view = inflater.inflate(R.layout.fragment_terminal, container, false)
-        view.pager.adapter = TerminalPagerAdapter(requireFragmentManager()) // childFragmentManager?
+        view.pager.adapter = TerminalPagerAdapter(childFragmentManager) // childFragmentManager?
         view.pager.offscreenPageLimit = 5
         view.pager.setCurrentItem(0, false)
 
         view.pager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+            var disable = false
             override fun onPageScrollStateChanged(state: Int) {}
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
             override fun onPageSelected(position: Int) {
                 BottomNavButton.find(position).apply {
-                    nav_view.menu.findItem( this.id ).isChecked = true
-                    setTitle(this)
+                    if (disable.not()) {
+                        //  データ管理の場合、機器管理とスワップする
+                        if (this == BottomNavButton.DATA_MANAGE) {
+                            disable = true
+                            switchScreen(BottomNavButton.EQUIPMENT_MANAGE)
+                            (requireActivity() as TerminalActivity).beforeSelectedNavButton = BottomNavButton.DATA_MANAGE
+                            nav_view.menu.findItem( BottomNavButton.DATA_MANAGE.id ).isChecked = true
+                        } else {
+                            nav_view.menu.findItem( this.id ).isChecked = true
+                        }
+                        setTitle(this.title)
+                    } else {
+                        disable = false
+                    }
                 }
             }
         })
@@ -64,15 +77,23 @@ class TerminalFragment : Fragment() {
         switchScreen(act.beforeSelectedNavButton)
     }
 
-    private fun switchScreen(item: BottomNavButton) {
-        pager.setCurrentItem(item.ordinal, false)
-        setTitle(item)
+    private fun switchScreen(_item: BottomNavButton) {
+
+        val item = if (_item == BottomNavButton.DATA_MANAGE) {
+            BottomNavButton.EQUIPMENT_MANAGE to BottomNavButton.DATA_MANAGE.title
+        } else _item to _item.title
+
+        pager.setCurrentItem(item.first.ordinal, false)
+        setTitle(item.second)
 
         val act = requireActivity() as TerminalActivity
-        act.beforeSelectedNavButton = item
+        act.beforeSelectedNavButton = if (_item == BottomNavButton.DATA_MANAGE) {
+            nav_view.menu.findItem( BottomNavButton.DATA_MANAGE.id ).isChecked = true
+            BottomNavButton.DATA_MANAGE
+        } else item.first
     }
 
-    private fun setTitle(item: BottomNavButton) {
-        (requireActivity() as AppCompatActivity).setActionBarTitle(item.title)
+    private fun setTitle(title: Int) {
+        (requireActivity() as AppCompatActivity).setActionBarTitle(title)
     }
 }
