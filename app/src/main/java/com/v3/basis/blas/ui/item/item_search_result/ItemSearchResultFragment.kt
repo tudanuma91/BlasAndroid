@@ -147,6 +147,8 @@ class ItemSearchResultFragment : Fragment() {
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Log.d("ItemSearchResultFragment.onViewCreated()","start")
+
         super.onViewCreated(view, savedInstanceState)
         Log.d("lifeCycle", "onViewCreated")
         if(chkReceiveData) {
@@ -235,6 +237,8 @@ class ItemSearchResultFragment : Fragment() {
      * フィールド取得時
      */
     private fun fieldRecv(result: JSONObject) {
+        Log.d("ItemSearchResultFragment.filedRecv()","start")
+
         //カラム順に並べ替える
         fieldMap.clear()
         val fieldList = helper.createFieldList(result)

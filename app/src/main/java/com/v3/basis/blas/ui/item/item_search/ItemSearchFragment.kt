@@ -114,6 +114,8 @@ class ItemSearchFragment : Fragment() {
         if(receiveData){
             //レイアウトの設置位置の設定
             val payload = mapOf("token" to token, "project_id" to projectId)
+
+            // TODO:三代川 sqliteから取得する！！
             BlasRestField(payload, ::getSuccess, ::getFail).execute()
 
         }

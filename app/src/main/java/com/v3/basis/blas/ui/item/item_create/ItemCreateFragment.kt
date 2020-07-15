@@ -253,6 +253,7 @@ class ItemCreateFragment : Fragment() {
 //        rootView.addView(space)
 **/
 
+        // TODO:↓↓↓↓でfield/userを取得しているがjsonから取得している
         //レイアウトの設置位置の設定
         if(receiveData) {
             val payload = mapOf("token" to token, "project_id" to projectId)

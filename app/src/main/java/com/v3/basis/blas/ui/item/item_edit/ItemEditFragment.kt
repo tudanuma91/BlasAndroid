@@ -147,6 +147,7 @@ class ItemEditFragment : Fragment() {
             val payloadItem = mapOf("token" to token, "project_id" to projectId)
             val payload2 = mapOf("token" to token, "my_self" to "1")
 
+            // TODO:三代川 sqliteから取得する
             BlasRestField(payload, ::getSuccess, ::getFail).execute()
             BlasRestUser(payload2, ::userGetSuccess, ::userGetFail).execute()
             BlasRestItem("search", payloadItem, ::itemRecv, ::itemRecvError).execute()

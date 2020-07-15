@@ -1,5 +1,6 @@
 package com.v3.basis.blas.ui.item.common
 
+import android.util.Log
 import android.widget.LinearLayout
 import androidx.lifecycle.ViewModel
 import com.v3.basis.blas.blasclass.db.data.ItemsController
@@ -10,6 +11,7 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
+import java.lang.Exception
 
 class ItemViewModel: ViewModel() {
 
@@ -36,8 +38,7 @@ class ItemViewModel: ViewModel() {
     }
 
     fun clickSave(container: LinearLayout) {
-
-        // TODO:QRコードのバリデート処理
+        Log.d("clickSave()","start")
 
         Completable.fromAction {
 
@@ -48,6 +49,8 @@ class ItemViewModel: ViewModel() {
                     val field = (f as FieldModel)
                     map.set("fld${index + 1}", field.convertToString())
                 }
+
+                // TODO:バリデートチェック
 
                 if (itemId == 0) {
                     it.create(map)

@@ -25,8 +25,10 @@ import com.v3.basis.blas.activity.ItemEditActivity
 import com.v3.basis.blas.activity.ItemImageActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
+import com.v3.basis.blas.blasclass.db.Field.FieldController
 import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.helper.RestHelper
+import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
@@ -56,11 +58,13 @@ class ItemViewFragment : Fragment() {
 
     private var endShow = false
     private var progressBarFlg = false
-    private var parseNum = 10
+    private var parseNum = 20
     private var parseStartNum = 0
     private var parseFinNum = parseNum
 
-    private val fieldMap: MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
+//    private val fieldMap: MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
+    private var fields:List<LdbFieldRecord> = mutableListOf()
+
     private val itemListAll: MutableList<MutableMap<String, String?>> = mutableListOf()
     private val itemList: MutableList<MutableMap<String, String?>> = mutableListOf()
     private var jsonItemList: JSONObject? = null
@@ -146,7 +150,8 @@ class ItemViewFragment : Fragment() {
                 Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
 
                 //エラーのため、データを初期化する
-                fieldMap.clear()
+                //fieldMap.clear()
+                fields = mutableListOf()
                 progressBarFlg = false
                 chkProgress(progressBarFlg,rootView)
             }
@@ -173,6 +178,7 @@ class ItemViewFragment : Fragment() {
                 Log.d("デバック管理","処理させない。ぐるぐるしているから")
             }else{
                 Log.d("デバック管理","処理開始")
+
                 //ぐるぐるを呼ぶ
                 progressBarFlg = true
                 chkProgress(progressBarFlg,rootView)
@@ -186,7 +192,8 @@ class ItemViewFragment : Fragment() {
                 itemListAll.clear()
 
                 //カードの再作成
-                jsonParse(parseStartNum, parseFinNum)
+                //jsonParse(parseStartNum, parseFinNum)
+                reload(parseStartNum, parseFinNum)
                 setAdapter()
                 progressBarFlg = false
                 chkProgress(progressBarFlg,rootView)
@@ -220,6 +227,8 @@ class ItemViewFragment : Fragment() {
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                Log.d("ItemViewFragment.onScrollStateChanged()","start")
+
                 super.onScrollStateChanged(recyclerView, newState)
                 if (itemListAll.isNotEmpty()) {
 
@@ -266,8 +275,44 @@ class ItemViewFragment : Fragment() {
             if(token != null || projectId != null || projectNames != null) {
                 progressBarFlg = true
                 chkProgress(progressBarFlg, rootView)
-                val payload2 = mapOf("token" to token, "project_id" to projectId)
-                BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
+
+                Single.fromCallable { FieldController(requireContext(),projectId).searchDisp() }
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeBy {
+                        if( it.isNotEmpty() ) {
+                            fields = it
+                        }
+                        else {
+                            //fieldMap.clear()
+                            fields = mutableListOf()
+                            // TODO:これでよい???
+                            progressBarFlg = false
+                            chkProgress(progressBarFlg,rootView)
+                        }
+                    }
+                    .addTo(disposables)
+
+                Single.fromCallable { itemsController.search() }
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeBy {
+                        if (it.isNotEmpty()) {
+                            itemListAll.clear()
+                            itemListAll.addAll(it)
+                            setAdapter()
+                        } else {
+                            //fieldMap.clear()
+                            fields = mutableListOf()
+                            progressBarFlg = false
+                            chkProgress(progressBarFlg,rootView)
+                        }
+                    }
+                    .addTo(disposables)
+
+
+
+                // TODO:三代川 sqliteから取得すること 1
+//                val payload2 = mapOf("token" to token, "project_id" to projectId)
+//                BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
             }else{
                 throw java.lang.Exception("Failed to receive internal data ")
             }
@@ -279,10 +324,14 @@ class ItemViewFragment : Fragment() {
         }
     }
 
+    private fun disp() {
+
+    }
 
     /**
      * データ取得時
      */
+/*
     private fun itemRecv(result: JSONObject) {
         //初期化
         itemListAll.clear()
@@ -295,11 +344,14 @@ class ItemViewFragment : Fragment() {
             setAdapter()
         }
     }
-
+*/
     /**
      * フィールド取得時
      */
+    // TODO:廃止予定
+/*
     private fun fieldRecv(result: JSONObject) {
+        Log.d("ItemViewFragment.filedRecv()","start")
         //カラム順に並べ替える
         fieldMap.clear()
         val fieldList = helper.createFieldList(result)
@@ -326,6 +378,7 @@ class ItemViewFragment : Fragment() {
 
 //        BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
     }
+*/
 
     /**
      * フィールド取得失敗時
@@ -347,6 +400,7 @@ class ItemViewFragment : Fragment() {
     /**
      * データ取得失敗時
      */
+/*
     private fun itemRecvError(errorCode: Int , aplCode:Int) {
         Log.d("itemViewFragment", "データ取得失敗")
 
@@ -363,7 +417,7 @@ class ItemViewFragment : Fragment() {
         progressBarFlg = false
         chkProgress(progressBarFlg,rootView)
     }
-
+*/
     /**
      *  データ登録
      */
@@ -378,7 +432,8 @@ class ItemViewFragment : Fragment() {
 
     private fun createCardView() {
 
-        val colMax = fieldMap.size
+//        val colMax = fieldMap.size
+        val colMax = fields.size
         val list = mutableListOf<MutableMap<String, String?>>()
         //ここでItemListAllの追加処理を入れる
 
@@ -448,12 +503,15 @@ class ItemViewFragment : Fragment() {
             val fldName = "fld${col}"
             //レコードの定義取得
             if (loopcnt == 1) {
-                text = "[${fieldMap[col]!!["field_name"]}]\n"
+//                text = "[${fieldMap[col]!!["field_name"]}]\n"
+                text = "[${fields[col - 1].name}]\n"
                 text += "${it[fldName]}\n"
             } else {
-                text += "[${fieldMap[col]!!["field_name"]}]\n"
+//                text += "[${fieldMap[col]!!["field_name"]}]\n"
+                text += "[${fields[col - 1].name}]\n"
 
-                if (fieldMap[col]!!["type"] == FieldType.CHECK_VALUE) {
+//                if (fieldMap[col]!!["type"] == FieldType.CHECK_VALUE) {
+                if (fields[col - 1].type.toString() == FieldType.CHECK_VALUE) {
                     val newValue = helper.createCheckValue(it[fldName].toString())
                     text += "${newValue}\n"
                 } else {
@@ -488,15 +546,19 @@ class ItemViewFragment : Fragment() {
 
         val valueList = itemList.filter { it["item_id"] == rowModel.itemId }.first().let {
             val list = arrayListOf<String?>()
-            for (col in 1..fieldMap.size) {
-                val name = "fld${col}"
-                if (fieldMap[col]!!["type"] == FieldType.CHECK_VALUE) {
+
+            fields.forEach{ rec->
+                val name = "fld${rec.col}"
+                if( rec.type.toString() == FieldType.CHECK_VALUE ) {
                     val newValue = helper.createCheckValue(it[name].toString())
                     list.add(newValue)
-                } else {
+                }
+                else {
                     list.add(it[name])
                 }
+
             }
+
             list
         }
         val model = ItemsCellModel(
@@ -518,8 +580,10 @@ class ItemViewFragment : Fragment() {
      * Jsonをパースする関数。
      */
     fun jsonParse(parseStartNum:Int,parseFinNum:Int){
-        val colMax = fieldMap.size
-        Log.d("jsonParse","fildMap.size =>${fieldMap.size}")
+        //val colMax = fieldMap.size
+        val colMax = fields.size
+
+        Log.d("jsonParse","fildMap.size =>${fields.size}")
         try {
             if(jsonParseList != null) {
                 val totalRecordNum = jsonParseList!!.length()
@@ -548,6 +612,33 @@ class ItemViewFragment : Fragment() {
 
         }
     }
+
+
+    fun reload(parseStartNum:Int,parseFinNum:Int){
+        //val colMax = fieldMap.size
+
+        Single.fromCallable { itemsController.search(0L,parseStartNum,parseFinNum,endShow) }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                if (it.isNotEmpty()) {
+                    itemListAll.clear()
+                    itemListAll.addAll(it)
+                    setAdapter()
+                } else {
+                    //fieldMap.clear()
+                    fields = mutableListOf()
+                    progressBarFlg = false
+                    chkProgress(progressBarFlg,rootView)
+                }
+            }
+            .addTo(disposables)
+
+
+
+
+    }
+
+
 
     /**
      * パースした件数と次に行う件数を記録する

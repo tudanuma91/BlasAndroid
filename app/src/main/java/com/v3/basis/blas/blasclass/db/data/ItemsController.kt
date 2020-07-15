@@ -11,11 +11,17 @@ import java.time.format.DateTimeFormatter
 
 class ItemsController(context: Context, projectId: String): BaseController(context, projectId) {
 
-    fun search(item_id: Long = 0L, offset: Int = 0, paging: Int = 20): MutableList<MutableMap<String, String?>> {
+    fun search(item_id: Long = 0L, offset: Int = 0, paging: Int = 20,endShow:Boolean = false): MutableList<MutableMap<String, String?>> {
 
         val cursor = if (item_id == 0L) {
-            db?.rawQuery("select * from items order by create_date desc limit ? offset ?"
-                , arrayOf(paging.toString(),offset.toString()))
+            var addition = ""
+            if( !endShow ) {
+                addition += " where end_flg = 0 "
+            }
+
+            val sql = "select * from items "+ addition + " order by create_date desc limit ? offset ?"
+
+            db?.rawQuery(sql, arrayOf(paging.toString(),offset.toString()))
         } else {
             db?.rawQuery("select * from items where item_id = ?", arrayOf(item_id.toString()))
         }
