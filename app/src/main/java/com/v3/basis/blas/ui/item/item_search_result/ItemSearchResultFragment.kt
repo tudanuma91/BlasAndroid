@@ -146,6 +146,7 @@ class ItemSearchResultFragment : Fragment() {
     }
 
 
+    // 検索ボタンを押すと呼ばれる
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         Log.d("ItemSearchResultFragment.onViewCreated()","start")
 
@@ -167,6 +168,7 @@ class ItemSearchResultFragment : Fragment() {
                     recyclerView.layoutManager = LinearLayoutManager(activity)
                     recyclerView.adapter = adapter
 
+                    // TODO:三代川
                     //呼ぶタイミングを確定させる！！
                     val payload2 = mapOf("token" to token, "project_id" to projectId)
                     BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
