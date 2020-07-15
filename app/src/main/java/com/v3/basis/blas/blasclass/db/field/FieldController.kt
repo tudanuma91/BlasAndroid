@@ -1,10 +1,9 @@
-package com.v3.basis.blas.blasclass.db.Field
+package com.v3.basis.blas.blasclass.db.field
 
 import android.content.Context
 import android.util.Log
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
-import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
 
 class FieldController(context: Context, projectId: String) : BaseController(context, projectId){
 

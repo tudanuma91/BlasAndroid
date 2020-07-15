@@ -2,11 +2,8 @@ package com.v3.basis.blas.ui.item.item_view
 
 
 import android.content.Intent
-import android.media.AudioManager
-import android.media.ToneGenerator
 import android.os.Bundle
 import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -19,21 +16,16 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.gson.JsonArray
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemEditActivity
 import com.v3.basis.blas.activity.ItemImageActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
-import com.v3.basis.blas.blasclass.db.Field.FieldController
+import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
-import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
-import com.v3.basis.blas.blasclass.rest.BlasRestField
-import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.ext.addTitle
-import com.v3.basis.blas.ui.ext.getStringExtra
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
 import io.reactivex.Single
