@@ -15,6 +15,9 @@
     <string name="password_null">パスワードが指定されていません</string>
     <string name="user_name_too_long">ユーザ名が長すぎます</string>
     <string name="password_too_long">パスワードが長すぎます</string>
+    <string name="twoauth_null">認証コードが指定されていません</string>
+    <string name="twoauth_wrong">認証コードが誤っています</string>
+    <string name="twoauth_time_over">認証コードの時間切れです。再度ログインして下さい</string>
 
 
     <!-- データ系 -->

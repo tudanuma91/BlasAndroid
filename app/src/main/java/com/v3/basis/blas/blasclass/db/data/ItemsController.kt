@@ -11,11 +11,11 @@ import java.time.format.DateTimeFormatter
 
 class ItemsController(context: Context, projectId: String): BaseController(context, projectId) {
 
-    //TODO 三代川さん
     fun search(item_id: Long = 0L, offset: Int = 0, paging: Int = 20): MutableList<MutableMap<String, String?>> {
 
         val cursor = if (item_id == 0L) {
-            db?.rawQuery("select * from items order by create_date desc", null)
+            db?.rawQuery("select * from items order by create_date desc limit ? offset ?"
+                , arrayOf(paging.toString(),offset.toString()))
         } else {
             db?.rawQuery("select * from items where item_id = ?", arrayOf(item_id.toString()))
         }
@@ -35,14 +35,9 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         return ret
     }
 
-    //TODO 三代川さん
+
     fun create(map: MutableMap<String, String?>): Boolean {
         Log.d("insert()","start")
-
-        // todo 一時的に設定
-//        map.set("item_id", (System.currentTimeMillis()/1000L).toString())
-//        map.set("end_flg", "0")
-
 
         val item = Items()
         setProperty(item, map)
@@ -89,7 +84,6 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         }
     }
 
-    //TODO 三代川さん
     fun update(map: Map<String, String?>): Boolean {
         Log.d("update()","start")
 
@@ -246,7 +240,6 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         }
     }
 
-    //TODO 三代川さん
     //アプリからDELETEは実行されていない。
 //    fun delete(item: Items): Boolean {
 //        val db = openSQLiteDatabase()
