@@ -91,6 +91,7 @@
     <string name="col_takeout_date">持出した日</string>
     <string name="col_return_date">返却した日</string>
     <string name="col_item_date">設置した日</string>
+    <string name="col_item_id">itemId</string>
     <string name="col_datetime">時間</string>
     <string name="col_day">日付</string>
     <string name="col_account">アカウント名を入力する</string>

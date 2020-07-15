@@ -108,6 +108,10 @@ class FixtureViewFragment : Fragment() {
             .addTo(disposables)
 
         viewModel = ViewModelProviders.of(this).get(FixtureListViewModel::class.java)
+        viewModel.errorEvent
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy { Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show() }
+            .addTo(disposables)
 
         return inflater.inflate(R.layout.fragment_fixture_view, container, false)
     }
@@ -349,6 +353,8 @@ class FixtureViewFragment : Fragment() {
             value += setValue(rcd.item_user_name)
             value += "\n[${getString(R.string.col_item_date)}]\n"
             value += setValue(rcd.item_date)
+            value += "\n[${getString(R.string.col_item_id)}]\n"
+            value += setValue(rcd.item_id.toString())
         }catch (e:Exception){
 
         }
