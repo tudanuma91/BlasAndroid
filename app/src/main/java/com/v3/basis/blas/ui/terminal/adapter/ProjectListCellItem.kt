@@ -38,7 +38,7 @@ class ProjectListCellItem(
         viewBinding.rowTitle.text = title
         viewBinding.rowDetail.text = detail
         viewBinding.root.setOnClickListener {
-            listener?.onClickRow(it, RowModel().apply {
+            listener?.onClickRow(it, model, RowModel().apply {
                 this.detail = this@ProjectListCellItem.detail
                 this.title = this@ProjectListCellItem.title
             })

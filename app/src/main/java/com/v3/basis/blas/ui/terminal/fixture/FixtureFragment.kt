@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.ObservableBoolean
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -82,30 +83,34 @@ open class FixtureFragment : Fragment() {
             .addTo(disposables)
     }
 
-    open fun clickCell(rowModel: RowModel) {
+    open fun clickCell(rowModel: RowModel, model: DownloadModel) {
 
-        val title = (requireActivity() as AppCompatActivity).supportActionBar?.title
-        val title2 = requireContext().resources.getString(R.string.navi_title_terminal_item)
-        if (title == title2) {
-            Log.d(
-                "DataManagement",
-                "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
-            )
-            val intent = Intent(activity, ItemActivity::class.java)
-            intent.putExtra("token", token)
-            intent.putExtra("project_id", rowModel.detail)
-            intent.putExtra("projectName", rowModel.title)
-            startActivity(intent)
+        if (model.doneDownloaded.get()) {
+            val title = (requireActivity() as AppCompatActivity).supportActionBar?.title
+            val title2 = requireContext().resources.getString(R.string.navi_title_terminal_item)
+            if (title == title2) {
+                Log.d(
+                    "DataManagement",
+                    "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
+                )
+                val intent = Intent(activity, ItemActivity::class.java)
+                intent.putExtra("token", token)
+                intent.putExtra("project_id", rowModel.detail)
+                intent.putExtra("projectName", rowModel.title)
+                startActivity(intent)
+            } else {
+                Log.d(
+                    "DataManagement",
+                    "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
+                )
+                val intent = Intent(activity, FixtureActivity::class.java)
+                intent.putExtra("token", token)
+                intent.putExtra("project_id", rowModel.detail)
+                intent.putExtra("project_name", rowModel.title)
+                startActivity(intent)
+            }
         } else {
-            Log.d(
-                "DataManagement",
-                "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
-            )
-            val intent = Intent(activity, FixtureActivity::class.java)
-            intent.putExtra("token", token)
-            intent.putExtra("project_id", rowModel.detail)
-            intent.putExtra("project_name", rowModel.title)
-            startActivity(intent)
+            viewModel.clickDownload(model)
         }
     }
 
@@ -113,8 +118,8 @@ open class FixtureFragment : Fragment() {
         val newMap = RestHelper().createProjectList(result)
         val projectList = createProjectList(newMap)
         val listener = object : ViewAdapterAdapter.ListListener {
-            override fun onClickRow(tappedView: View, rowModel: RowModel) {
-                clickCell(rowModel)
+            override fun onClickRow(tappedView: View, model: DownloadModel, rowModel: RowModel) {
+                clickCell(rowModel, model)
             }
         }
         projectList.forEach { it.listener = listener }

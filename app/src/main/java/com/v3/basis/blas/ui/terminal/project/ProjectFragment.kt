@@ -37,19 +37,6 @@ import java.lang.Exception
  */
 class ProjectFragment : FixtureFragment() {
 
-    override fun clickCell(rowModel: com.v3.basis.blas.ui.terminal.fixture.project_list_view.RowModel) {
-
-        Log.d(
-            "DataManagement",
-            "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
-        )
-        val intent = Intent(activity, ItemActivity::class.java)
-        intent.putExtra("token", token)
-        intent.putExtra("project_id", rowModel.detail)
-        intent.putExtra("projectName", rowModel.title)
-        startActivity(intent)
-    }
-
 /*
     private lateinit var homeViewModel: ProjectViewModel
     private var handler = Handler()

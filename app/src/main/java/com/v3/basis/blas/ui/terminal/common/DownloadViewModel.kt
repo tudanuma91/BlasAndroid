@@ -125,7 +125,7 @@ class DownloadViewModel: ViewModel() {
      * [作成者]
      * fukuda
      */
-    fun downloadClick(model: DownloadModel) {
+    fun clickDownload(model: DownloadModel) {
 
         model.savePath = createZipFile(model.projectId, model.saveDir)
         model.downloading.set(true)

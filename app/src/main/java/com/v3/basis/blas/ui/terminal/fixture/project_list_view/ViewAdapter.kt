@@ -4,8 +4,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.databinding.ObservableBoolean
 import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.databinding.ListProjectBinding
+import com.v3.basis.blas.ui.terminal.common.DownloadModel
 import com.v3.basis.blas.ui.terminal.common.DownloadViewModel
 
 class ViewAdapterAdapter(
@@ -28,7 +30,7 @@ class ViewAdapterAdapter(
         holder.titleView.text = list[position].title
         holder.detailView.text = list[position].detail
         holder.itemView.setOnClickListener {
-            listener.onClickRow(it, list[position])
+//            listener.onClickRow(it, , list[position])//使ってない。
         }
     }
 
@@ -38,6 +40,6 @@ class ViewAdapterAdapter(
     }
 
     interface ListListener {
-        fun onClickRow(tappedView: View, rowModel: RowModel)
+        fun onClickRow(tappedView: View, model: DownloadModel, rowModel: RowModel)
     }
 }
