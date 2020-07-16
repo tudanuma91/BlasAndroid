@@ -292,6 +292,7 @@ data class LdbFieldRecord(
     var create_date:String? = null,
     var update_date:String? = null,
     var unique_chk:Int? = 0,
-    var work_day:Int? = 0
+    var work_day:Int? = 0,
+    var edit_id:Int? = 0
 )
 
