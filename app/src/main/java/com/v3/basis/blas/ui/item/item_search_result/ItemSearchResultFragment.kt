@@ -16,12 +16,19 @@ import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.app.searchAndroid
 import com.v3.basis.blas.blasclass.config.FieldType
+import com.v3.basis.blas.blasclass.db.data.ItemsController
+import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
+import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.fragment_item_search_result.*
 import org.json.JSONObject
 import java.lang.Exception
@@ -59,6 +66,7 @@ class ItemSearchResultFragment : Fragment() {
     private val dataList = mutableListOf<RowModel>()
     private var baseList :MutableList<MutableMap<String,String?>> = mutableListOf()
     private val helper:RestHelper = RestHelper()
+    private val disposables = CompositeDisposable()
 
     private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
         override fun onClickRow(tappedView: View, rowModel: RowModel) {
@@ -170,8 +178,29 @@ class ItemSearchResultFragment : Fragment() {
 
                     // TODO:三代川
                     //呼ぶタイミングを確定させる！！
-                    val payload2 = mapOf("token" to token, "project_id" to projectId)
-                    BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
+                    Single.fromCallable { FieldController(requireContext(),projectId).searchDisp() }
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeBy {fieldList ->
+
+                            //カラム順に並べ替える
+                            fieldMap.clear()
+                            val fieldMapList = helper.createFieldList2(fieldList)
+                            var cnt = 1
+                            fieldMapList.forEach {
+                                fieldMap[cnt] = it
+                                cnt += 1
+                            }
+
+                            getItem()
+
+                        }
+                        .addTo(disposables)
+
+
+
+
+//                    val payload2 = mapOf("token" to token, "project_id" to projectId)
+//                    BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
 
 //                    BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
                 }else{
@@ -185,6 +214,33 @@ class ItemSearchResultFragment : Fragment() {
                 Toast.makeText(activity, errorMessage, toastErrorLen).show()
             }
         }
+
+    }
+
+
+    private fun getItem() {
+
+        val itemsController = ItemsController(requireContext(),projectId)
+
+        // TODO:findValueMapから検索条件を作る
+        Single.fromCallable { itemsController.search() }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                if (it.isNotEmpty()) {
+
+                    // TODO:なにすればよい？
+                    itemList.clear()
+                    jsonItemList.clear()
+                    //jsonItemList.set("1",result)
+
+                    setAdapter()
+                } else {
+                    throw Exception()
+                }
+            }
+            .addTo(disposables)
+
+
 
     }
 
@@ -250,6 +306,7 @@ class ItemSearchResultFragment : Fragment() {
             cnt +=1
         }
 
+        // TODO:現在jsonItemList取得されない
         if(jsonItemList.isNotEmpty() && fieldMap.isNotEmpty()) {
             setAdapter()
         }

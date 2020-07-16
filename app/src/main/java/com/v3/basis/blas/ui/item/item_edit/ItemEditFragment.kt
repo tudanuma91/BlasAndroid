@@ -19,18 +19,21 @@ import com.v3.basis.blas.blasclass.app.BlasDef.Companion.BTN_SAVE
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.db.data.ItemsController
+import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.formaction.FormActionDataEdit
 import com.v3.basis.blas.blasclass.helper.RestHelper
+import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import com.v3.basis.blas.blasclass.rest.BlasRestField
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.blasclass.rest.BlasRestUser
 import com.v3.basis.blas.ui.ext.addTitle
-import com.v3.basis.blas.ui.ext.closeSoftKeyboard
 import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
 import io.reactivex.Completable
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_item_edit.*
 import org.json.JSONObject
@@ -89,6 +92,7 @@ class ItemEditFragment : Fragment() {
     private val helper:RestHelper = RestHelper()
     private lateinit var qrCodeView: EditText
     private var handler = Handler()
+    private val disposables = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -117,7 +121,7 @@ class ItemEditFragment : Fragment() {
         }
         try {
             if (token != null && activity != null && projectId != null && itemId != null&& projectName != null) {
-                formAction = FormActionDataEdit(token, activity!!)
+                formAction = FormActionDataEdit(token, requireActivity())
                 Log.d("CL6_0001","トークン等の受け渡し完了")
             }else{
                 throw java.lang.Exception("Failed to receive internal data ")
@@ -147,7 +151,8 @@ class ItemEditFragment : Fragment() {
             val payloadItem = mapOf("token" to token, "project_id" to projectId)
             val payload2 = mapOf("token" to token, "my_self" to "1")
 
-            // TODO:三代川 sqliteから取得する
+            // 三代川 sqliteから取得する
+            // ここ使ってない！！！！
             BlasRestField(payload, ::getSuccess, ::getFail).execute()
             BlasRestUser(payload2, ::userGetSuccess, ::userGetFail).execute()
             BlasRestItem("search", payloadItem, ::itemRecv, ::itemRecvError).execute()
@@ -158,6 +163,7 @@ class ItemEditFragment : Fragment() {
 
         edit_scroller.hideKeyboardWhenTouch(this)
     }
+
 
     /**
      * フィールドを取得
@@ -713,7 +719,7 @@ class ItemEditFragment : Fragment() {
         Log.d("CL6_0001","日付タップ時の処理を書き加える")
         formPart.setOnClickListener {
             val dtp = DatePickerDialog(
-                getContext()!!,
+                requireContext(),
                 DatePickerDialog.OnDateSetListener { view, y, m, d ->
                     //フォーマットを作成
                     formPart.setText(String.format("%d/%02d/%02d", y, m + 1, d))

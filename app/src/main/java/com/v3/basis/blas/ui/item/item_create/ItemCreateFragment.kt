@@ -254,7 +254,6 @@ class ItemCreateFragment : Fragment() {
 //        rootView.addView(space)
 **/
 
-        // TODO:↓↓↓↓でfield/userを取得しているがjsonから取得している
         //レイアウトの設置位置の設定
         if(receiveData) {
 
@@ -282,7 +281,6 @@ class ItemCreateFragment : Fragment() {
         }
     }
 
-    // TODO:新規だと必要ない？？
     private fun readItem() {
         Log.d("readItem()","start")
 
@@ -442,6 +440,7 @@ class ItemCreateFragment : Fragment() {
     }
 */
 
+    // TODO:これどうにかならんか？？
     private fun addField2(field: LdbFieldRecord, cellNumber: Int) {
 
         val name = field.name!!

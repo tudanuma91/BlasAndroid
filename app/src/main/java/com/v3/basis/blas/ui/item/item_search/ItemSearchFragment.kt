@@ -399,6 +399,8 @@ class ItemSearchFragment : Fragment() {
                 for (idx in 1..searchValue.size - 1) {
                     intent.putExtra("fld${idx}", searchValue["fld${idx}"])
                 }
+
+                Log.d("ItemSearchFragment.setDisplay()","startActivity")
                 startActivity(intent)
             }
 
