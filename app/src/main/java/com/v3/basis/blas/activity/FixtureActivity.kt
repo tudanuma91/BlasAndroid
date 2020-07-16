@@ -35,6 +35,10 @@ import com.v3.basis.blas.ui.ext.showBackKeyForActionBar
 import com.v3.basis.blas.ui.fixture.fixture_kenpin.FixtureKenpinFragment
 import com.v3.basis.blas.ui.fixture.fixture_return.FixtureReturnFragment
 import com.v3.basis.blas.ui.fixture.fixture_takeout.FixtureTakeOutFragment
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.activity_fixture.*
 import org.json.JSONObject
 
@@ -47,6 +51,8 @@ class FixtureActivity : AppCompatActivity() {
     )
     private var tone: ToneGenerator? = null
     private var realTime = false
+
+    private val disposable = CompositeDisposable()
 
    /* QRコード読を読み取りました</string>
     <string name="error_create_qr">すでに登録済のQRコードです</string>
@@ -157,36 +163,7 @@ class FixtureActivity : AppCompatActivity() {
                             "serial_number" to "${result}"
                         )
 
-                        //restで更新する処理
-                        when(type){
-                            "kenpin"->{
-                                Log.d("CL_0001_7", "検品開始")
-                                // onResumeをオーバーライドしたので，手動呼び出しは禁止
-                                // FixtureKenpinFragment().callOnPouse()
-                                // ROOMテストインサート
-                                if (FixtureController(this@FixtureActivity, projectId!!).kenpin(result.toString()).not()) {
-                                    Log.d("FixtureViewText", "INSERT失敗。projectId: $projectId, ")
-                                }
-//                                BlasRestFixture("kenpin", payload2, ::success, ::error).execute()
-                            }
-                            "takeout"->{
-                                // onResumeをオーバーライドしたので，手動呼び出しは禁止
-                                // FixtureTakeOutFragment().callOnPouse()
-                                if (FixtureController(this@FixtureActivity, projectId!!).takeout(result.toString()).not()) {
-                                    Log.d("FixtureViewText", "IUPDATE失敗。projectId: $projectId, ")
-                                }
-//                                BlasRestFixture("takeout",payload2, ::success, ::error).execute()
-                            }
-                            "return"->{
-                                // onResumeをオーバーライドしたので，手動呼び出しは禁止
-                                // FixtureReturnFragment().callOnPouse()
-                                if (FixtureController(this@FixtureActivity, projectId!!).rtn(result.toString()).not()) {
-                                    Log.d("FixtureViewText", "UPDATE失敗。projectId: $projectId, ")
-                                }
-//                                BlasRestFixture("rtn",payload2, ::success, ::error).execute()
-                            }
-                        }
-
+                        saveLocalDB(payload2, result.toString(), type, projectId)
                         //この時、エラーが帰ってきたら逃がす処理を追加する。
                     }
 
@@ -194,6 +171,45 @@ class FixtureActivity : AppCompatActivity() {
             }
             override fun possibleResultPoints(resultPoints: MutableList<ResultPoint>?) { }
         })
+    }
+
+    private fun saveLocalDB(payload: Map<String, String?>, qrCode: String, type: String, projectId: String?) {
+
+        val controller = FixtureController(this@FixtureActivity, projectId!!)
+        controller.errorMessageEvent
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                errorForLocalDB(it)
+            }
+            .addTo(disposable)
+        when(type){
+            "kenpin"->{
+                Log.d("CL_0001_7", "検品開始")
+                // onResumeをオーバーライドしたので，手動呼び出しは禁止
+                // FixtureKenpinFragment().callOnPouse()
+                // ROOMテストインサート
+                if (controller.kenpin(qrCode).not()) {
+                    Log.d("FixtureViewText", "INSERT失敗。projectId: $projectId, ")
+                }
+//                                BlasRestFixture("kenpin", payload2, ::success, ::error).execute()
+            }
+            "takeout"->{
+                // onResumeをオーバーライドしたので，手動呼び出しは禁止
+                // FixtureTakeOutFragment().callOnPouse()
+                if (controller.takeout(qrCode).not()) {
+                    Log.d("FixtureViewText", "IUPDATE失敗。projectId: $projectId, ")
+                }
+//                                BlasRestFixture("takeout",payload2, ::success, ::error).execute()
+            }
+            "return"->{
+                // onResumeをオーバーライドしたので，手動呼び出しは禁止
+                // FixtureReturnFragment().callOnPouse()
+                if (controller.rtn(qrCode).not()) {
+                    Log.d("FixtureViewText", "UPDATE失敗。projectId: $projectId, ")
+                }
+//                                BlasRestFixture("rtn",payload2, ::success, ::error).execute()
+            }
+        }
     }
 
     /**
@@ -234,6 +250,20 @@ class FixtureActivity : AppCompatActivity() {
             messageText.setTextColor(Color.RED)
             messageText.text = message
           //  realTime = false
+        //}
+    }
+
+    fun errorForLocalDB(message: String){
+        // if(realTime) {
+        vibrationEffect =
+            VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
+        vibrator.vibrate(vibrationEffect)
+        // tone.startTone(ToneGenerator.TONE_CDMA_HIGH_PBX_S_X4,200)
+        playTone(ToneGenerator.TONE_CDMA_HIGH_PBX_S_X4)
+        Log.d("NG", "作成失敗")
+        messageText.setTextColor(Color.RED)
+        messageText.text = message
+        //  realTime = false
         //}
     }
 

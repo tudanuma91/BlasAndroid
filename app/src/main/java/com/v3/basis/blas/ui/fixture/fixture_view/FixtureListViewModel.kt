@@ -16,12 +16,15 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.PublishSubject
 import org.json.JSONObject
 import java.lang.Exception
 
 class FixtureListViewModel: ServerSyncViewModel() {
 
     private lateinit var model: FixtureCellModel
+    val errorEvent: PublishSubject<String> = PublishSubject.create()
+    private val disposable = CompositeDisposable()
 
     override fun syncDB(serverModel: ServerSyncModel) {
 
@@ -32,6 +35,11 @@ class FixtureListViewModel: ServerSyncViewModel() {
         Log.d("fixture_id",model.fixture_id.toString())
 
         val fixtureController = FixtureController( model.context, model.project_id.toString())
+        fixtureController
+            .errorMessageEvent
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy { errorEvent.onNext(it) }
+            .addTo(disposable)
         val records = fixtureController.search( model.fixture_id )
 
         if( 0 == records.count() ) {

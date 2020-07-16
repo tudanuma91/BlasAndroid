@@ -108,10 +108,10 @@ class FixtureViewFragment : Fragment() {
             .addTo(disposables)
 
         viewModel = ViewModelProviders.of(this).get(FixtureListViewModel::class.java)
-//        viewModel.errorEvent
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribeBy { Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show() }
-//            .addTo(disposables)
+        viewModel.errorEvent
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy { Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show() }
+            .addTo(disposables)
 
         return inflater.inflate(R.layout.fragment_fixture_view, container, false)
     }
