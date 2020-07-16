@@ -51,7 +51,7 @@ class ItemCreateFragment : Fragment() {
     private lateinit var projectId: String
     private var itemId: String? = null
     private val isUpdateMode: Boolean
-        get() = itemId?.toInt() != 0
+        get() = itemId?.toLong() != 0L
     private var userMap :MutableMap<String,String?> = mutableMapOf()
     private val fieldValues: MutableMap<String, String?> = mutableMapOf()
 
@@ -124,7 +124,7 @@ class ItemCreateFragment : Fragment() {
         viewModel.itemsController = itemsController
         viewModel.projectId = projectId
         if (isUpdateMode) {
-            viewModel.setupUpdateMode(itemId?.toInt() ?: 0)
+            viewModel.setupUpdateMode(itemId?.toLong() ?: 0L)
         }
 
         viewModel.completeSave
@@ -208,8 +208,17 @@ class ItemCreateFragment : Fragment() {
                 val extra = "colNumber" to it.fieldNumber.toString()
                 startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE_KENPIN, extra) { r ->
                     val qr = r.data?.getStringExtra("qr_code")
-                    it.text.set(qr)
+
                     //TODO 三代川さん　検品と連動
+                    val ret = itemsController.qrCodeCheck( qr )
+
+                    if(0 == ret) {
+                        it.text.set(qr)
+                    }
+                    else {
+                        // TODO:カメラ画面にエラー事由を表示して続行させたい
+                    }
+
                 }
             }
             .addTo(disposables)

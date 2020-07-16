@@ -31,9 +31,9 @@ class ItemViewModel: ViewModel() {
 
     var itemsController: ItemsController? = null
     var projectId: String = ""
-    var itemId: Int = 0
+    var itemId: Long = 0L
 
-    fun setupUpdateMode(itemId: Int = 0) {
+    fun setupUpdateMode(itemId: Long = 0L) {
         this.itemId = itemId
     }
 
@@ -50,9 +50,11 @@ class ItemViewModel: ViewModel() {
                     map.set("fld${index + 1}", field.convertToString())
                 }
 
-                // TODO:バリデートチェック
+                // TODO:三代川 バリデートチェック
 
-                if (itemId == 0) {
+
+
+                if (itemId == 0L) {
                     it.create(map)
                 } else {
                     map.set("item_id", itemId.toString())
@@ -62,7 +64,7 @@ class ItemViewModel: ViewModel() {
         }.subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
-                if (itemId == 0) {
+                if (itemId == 0L) {
                     completeSave.onNext(Unit)
                 } else {
                     completeUpdate.onNext(Unit)

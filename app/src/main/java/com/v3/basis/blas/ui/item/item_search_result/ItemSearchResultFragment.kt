@@ -176,7 +176,7 @@ class ItemSearchResultFragment : Fragment() {
                     recyclerView.layoutManager = LinearLayoutManager(activity)
                     recyclerView.adapter = adapter
 
-                    // TODO:三代川
+
                     //呼ぶタイミングを確定させる！！
                     Single.fromCallable { FieldController(requireContext(),projectId).searchDisp() }
                         .observeOn(AndroidSchedulers.mainThread())
@@ -228,7 +228,7 @@ class ItemSearchResultFragment : Fragment() {
             .subscribeBy {
                 if (it.isNotEmpty()) {
 
-                    // TODO:なにすればよい？
+                    // TODO:一覧画面を表示したい。なにすればよい？
                     itemList.clear()
                     jsonItemList.clear()
                     //jsonItemList.set("1",result)

@@ -6,6 +6,7 @@ import android.util.Log
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkFixture
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkRmFixture
+import com.v3.basis.blas.blasclass.db.fixture.Fixtures
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -263,4 +264,43 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 //            false
 //        }
 //    }
+
+    fun qrCodeCheck( serialNumber:String? ) : Int {
+
+        var ret = 0
+        val sql = "select * from fixtures where serial_number = ?"
+        val cursor = db?.rawQuery(sql, arrayOf(serialNumber))
+
+        if( null == cursor ) {
+            throw Exception("sqlite error!!!!")
+        }
+
+        val  count = cursor.count
+        if( 0 == count ) {
+            Log.d("qrCodeCheck","検品されていないシリアル番号です")
+            ret = -1
+        }
+        else {
+
+            cursor.moveToFirst()
+            val fixture = setProperty(Fixtures(),cursor) as Fixtures
+
+            if( 0 == fixture.status || 4 == fixture.status ) {
+                Log.d("sqCodeCheck","持ち出されていないシリアル番号です")
+                ret = -2
+            }
+            else if( 2 == fixture.status ){
+                Log.d("sqCodeCheck","設置済みのシリアル番号です")
+                ret = -3
+            }
+            else if( 3 == fixture.status ) {
+                Log.d("sqCodeCheck","持出不可のシリアル番号です")
+                ret = -4
+            }
+        }
+
+        return ret
+    }
+
+
 }
