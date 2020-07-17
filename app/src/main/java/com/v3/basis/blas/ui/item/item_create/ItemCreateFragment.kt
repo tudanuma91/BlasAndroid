@@ -25,6 +25,7 @@ import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.formaction.FormActionDataCreate
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
+import com.v3.basis.blas.blasclass.rest.BlasRest
 import com.v3.basis.blas.blasclass.rest.BlasRestUser
 import com.v3.basis.blas.databinding.*
 import com.v3.basis.blas.ui.ext.addTitle
@@ -112,6 +113,7 @@ class ItemCreateFragment : Fragment() {
     ): View? {
 
         super.onCreateView(inflater, container, savedInstanceState)
+        Log.d("ItemCreateFragment.onCreateView()","start")
         initializeData()
 
         viewModel = ViewModelProviders.of(this).get(ItemViewModel::class.java)
@@ -144,6 +146,7 @@ class ItemCreateFragment : Fragment() {
 
         subscribeFormEvent()
 
+        Log.d("ItemCreateFragment.onCreateView()","end")
         return bind.root
     }
 
@@ -209,14 +212,13 @@ class ItemCreateFragment : Fragment() {
                 startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE_KENPIN, extra) { r ->
                     val qr = r.data?.getStringExtra("qr_code")
 
-                    //TODO 三代川さん　検品と連動
-                    val ret = itemsController.qrCodeCheck( qr )
-
-                    if(0 == ret) {
+                    try {
+                        itemsController.qrCodeCheck( qr )
                         it.text.set(qr)
                     }
-                    else {
-                        // TODO:カメラ画面にエラー事由を表示して続行させたい
+                    catch ( ex : ItemsController.ItemCheckException ) {
+                        // 設置不可の時
+                        Toast.makeText(BlasRest.context, ex.message, Toast.LENGTH_LONG).show()
                     }
 
                 }
@@ -229,8 +231,16 @@ class ItemCreateFragment : Fragment() {
                 val extra = "colNumber" to it.fieldNumber.toString()
                 startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE_TEKKYO, extra) { r ->
                     val qr = r.data?.getStringExtra("qr_code")
-                    it.text.set(qr)
-                    //TODO 三代川さん　撤去と連動
+
+                    try {
+                        itemsController.rmQrCodeCheck( qr )
+                        it.text.set(qr)
+                    }
+                    catch ( ex : ItemsController.ItemCheckException ) {
+                        // 撤去不可の時
+                        Toast.makeText(BlasRest.context, ex.message, Toast.LENGTH_LONG).show()
+                    }
+
                 }
             }
             .addTo(disposables)
@@ -252,6 +262,7 @@ class ItemCreateFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d("ItemCreateFragment.onViewCreated()","start")
 
         /**
 //        //コンテンツを配置するLinearLayoutを取得

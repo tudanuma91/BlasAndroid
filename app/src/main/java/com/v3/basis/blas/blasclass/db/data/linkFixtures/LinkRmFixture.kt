@@ -2,6 +2,7 @@ package com.v3.basis.blas.blasclass.db.data.linkFixtures
 
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
+import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.Items
 
 class LinkRmFixture(db : SQLiteDatabase?, item: Items, serialNumber:String)
@@ -25,8 +26,9 @@ class LinkRmFixture(db : SQLiteDatabase?, item: Items, serialNumber:String)
         cv.put("rm_org_id",item.org_id)
         cv.put("rm_user_id",item.user_id)
         cv.put("rm_date",item.update_date)
-        cv.put("status",5)  // 現場撤去
-        cv.put("sync_status",2)
+        cv.put("status", BaseController.REMOVE)  // 現場撤去
+        cv.put("sync_status", BaseController.SYNC_STATUS_EDIT )
+
 
         return cv
     }
