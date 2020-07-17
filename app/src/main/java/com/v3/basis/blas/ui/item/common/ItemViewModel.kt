@@ -2,8 +2,10 @@ package com.v3.basis.blas.ui.item.common
 
 import android.util.Log
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import com.v3.basis.blas.blasclass.db.data.ItemsController
+import com.v3.basis.blas.blasclass.rest.BlasRest
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -11,7 +13,7 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
-import java.lang.Exception
+import kotlin.Exception
 
 class ItemViewModel: ViewModel() {
 
@@ -50,16 +52,22 @@ class ItemViewModel: ViewModel() {
                     map.set("fld${index + 1}", field.convertToString())
                 }
 
-                // TODO:三代川 バリデートチェック
-
-
-
-                if (itemId == 0L) {
-                    it.create(map)
-                } else {
-                    map.set("item_id", itemId.toString())
-                    it.update(map)
+                try {
+                    if (itemId == 0L) {
+                        it.create(map)
+                    } else {
+                        map.set("item_id", itemId.toString())
+                        it.update(map)
+                    }
                 }
+                catch ( ex : ItemsController.ItemCheckException ) {
+                    // バリデートエラー
+                    Log.d("item save validate error!!!",ex.message)
+                    Toast.makeText(BlasRest.context, ex.message, Toast.LENGTH_LONG).show()
+
+                    throw Exception()       // TODO:??????
+                }
+
             }
         }.subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
