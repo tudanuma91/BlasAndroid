@@ -1,5 +1,6 @@
 package com.v3.basis.blas.ui.item.common
 
+import android.util.Log
 import android.widget.LinearLayout
 import androidx.lifecycle.ViewModel
 import com.v3.basis.blas.blasclass.db.data.ItemsController
@@ -10,6 +11,7 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
+import java.lang.Exception
 
 class ItemViewModel: ViewModel() {
 
@@ -29,15 +31,14 @@ class ItemViewModel: ViewModel() {
 
     var itemsController: ItemsController? = null
     var projectId: String = ""
-    var itemId: Int = 0
+    var itemId: Long = 0L
 
-    fun setupUpdateMode(itemId: Int = 0) {
+    fun setupUpdateMode(itemId: Long = 0L) {
         this.itemId = itemId
     }
 
     fun clickSave(container: LinearLayout) {
-
-        // TODO:QRコードのバリデート処理
+        Log.d("clickSave()","start")
 
         Completable.fromAction {
 
@@ -49,7 +50,11 @@ class ItemViewModel: ViewModel() {
                     map.set("fld${index + 1}", field.convertToString())
                 }
 
-                if (itemId == 0) {
+                // TODO:三代川 バリデートチェック
+
+
+
+                if (itemId == 0L) {
                     it.create(map)
                 } else {
                     map.set("item_id", itemId.toString())
@@ -59,7 +64,7 @@ class ItemViewModel: ViewModel() {
         }.subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
-                if (itemId == 0) {
+                if (itemId == 0L) {
                     completeSave.onNext(Unit)
                 } else {
                     completeUpdate.onNext(Unit)

@@ -269,3 +269,30 @@ data class LDBRmFixtureRecord(
     var status:Int? = 0,                 //0:未撤去 1:現場撤去 2:一時保管 3:撤去完了
     var sync_status:Int? = 0
 )
+
+
+data class LdbFieldRecord(
+    var field_id:Int? = 0,
+    var project_id:Int? = 0,
+    var col:Int? = 0,
+    var name:String? = null,
+    var type:Int? = 0,
+    var choice:String? = null,
+    var alnum:Int? = 0,
+    var notify:Int? = 0,
+    var essential:Int? = 0,
+    var input:Int? = 0,
+    var export:Int? = 0,
+    var other:Int? = 0,
+    var map:Int? = 0,
+    var address:Int? = 0,
+    var filename:Int? = 0,
+    var parent_field_id:Int? = 0,
+    var summary:Int? = 0,
+    var create_date:String? = null,
+    var update_date:String? = null,
+    var unique_chk:Int? = 0,
+    var work_day:Int? = 0,
+    var edit_id:Int? = 0
+)
+
