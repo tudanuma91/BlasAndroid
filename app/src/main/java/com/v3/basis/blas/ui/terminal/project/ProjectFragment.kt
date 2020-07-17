@@ -21,6 +21,7 @@ import com.v3.basis.blas.blasclass.rest.BlasRestProject
 import com.v3.basis.blas.ui.ext.addDownloadTask
 import com.v3.basis.blas.ui.ext.getStringExtra
 import com.v3.basis.blas.ui.terminal.common.DownloadViewModel
+import com.v3.basis.blas.ui.terminal.fixture.FixtureFragment
 import com.v3.basis.blas.ui.terminal.project.project_list_view.RowModel
 import com.v3.basis.blas.ui.terminal.project.project_list_view.ViewAdapterAdapter
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -34,8 +35,22 @@ import java.lang.Exception
 /**
  * 表示・遷移などデータ管理画面にかかわる処理を行う。
  */
-class ProjectFragment : Fragment() {
+class ProjectFragment : FixtureFragment() {
 
+    override fun clickCell(rowModel: com.v3.basis.blas.ui.terminal.fixture.project_list_view.RowModel) {
+
+        Log.d(
+            "DataManagement",
+            "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
+        )
+        val intent = Intent(activity, ItemActivity::class.java)
+        intent.putExtra("token", token)
+        intent.putExtra("project_id", rowModel.detail)
+        intent.putExtra("projectName", rowModel.title)
+        startActivity(intent)
+    }
+
+/*
     private lateinit var homeViewModel: ProjectViewModel
     private var handler = Handler()
     lateinit var token:String
@@ -159,7 +174,7 @@ class ProjectFragment : Fragment() {
         recyclerView.adapter = null
         super.onDestroyView()
     }
-
+*/
 }
 
 
