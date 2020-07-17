@@ -50,9 +50,36 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         return ret
     }
 
+    private fun validQr( map: Map<String, String?> ,orgItemMap : MutableMap<String, String?>? = null ) {
+        val inst = getFieldCols( FIELD_TYPE_QRCODE_INT_INSPECTION )
+        val rms = getFieldCols(FIELD_TYPE_QRCODE_INT_RM)
+
+        // QRコード(検品連動バリデートチェック)
+        inst.forEach{
+            if(map.contains("fld" + it.toString()) && map["fld" + it.toString()]?.isNotEmpty()!!) {
+                if( null != orgItemMap && map["fld" + it.toString()] == orgItemMap["fld" + it.toString()] ) {
+                    return@forEach
+                }
+                qrCodeCheck( map["fld" + it.toString()] )
+            }
+        }
+        // QRコード(撤去連動バリデートチェック)
+        rms.forEach {
+            if( map.contains("fld" + it.toString()) && map["fld" + it.toString()]?.isNotEmpty()!!) {
+                if( null != orgItemMap && map["fld" + it.toString()] == orgItemMap["fld" + it.toString()] ) {
+                    return@forEach
+                }
+                rmQrCodeCheck( map["fld" + it.toString()] )
+            }
+        }
+
+    }
 
     fun create(map: MutableMap<String, String?>): Boolean {
         Log.d("insert()","start")
+
+        // QRコードバリデート処理
+        validQr(map)
 
         val item = Items()
         setProperty(item, map)
@@ -101,6 +128,10 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
     fun update(map: Map<String, String?>): Boolean {
         Log.d("update()","start")
+
+        // QRコードバリデート処理
+        val orgItemMap = map["item_id"]?.toLong()?.let { search(it) }
+        orgItemMap?.get(0)?.let { validQr(map, it) }
 
         // mapで来たのをclass入れる
          val item = Items()
