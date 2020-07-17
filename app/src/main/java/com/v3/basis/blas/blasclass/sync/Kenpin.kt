@@ -1,6 +1,8 @@
 package com.v3.basis.blas.blasclass.sync
 
 import android.util.Log
+import com.v3.basis.blas.blasclass.db.BaseController
+import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
 import com.v3.basis.blas.ui.fixture.fixture_view.FixtureCellModel
@@ -22,7 +24,7 @@ class Kenpin( model: FixtureCellModel ,fixture : LdbFixtureRecord ) : SyncFixtur
             "update_date" to fixture.update_date,
             "sync_status" to fixture.sync_status.toString()
         )
-        if( 1 == fixture.sync_status ) {
+        if( BaseController.SYNC_STATUS_NEW  == fixture.sync_status ) {
             payload2["create_date"] = fixture.create_date
         }
 
@@ -32,7 +34,7 @@ class Kenpin( model: FixtureCellModel ,fixture : LdbFixtureRecord ) : SyncFixtur
     override fun success(result: JSONObject){
         Log.d("result",result.toString())
 
-        if( 1 == fixture.sync_status ) {
+        if( BaseController.SYNC_STATUS_NEW == fixture.sync_status ) {
             val records = result.getJSONObject("records")
             Log.d("records",records.toString())
 

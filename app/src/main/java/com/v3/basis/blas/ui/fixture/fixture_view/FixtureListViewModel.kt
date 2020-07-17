@@ -3,6 +3,7 @@ package com.v3.basis.blas.ui.fixture.fixture_view
 import android.os.VibrationEffect
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.sync.Kenpin
 import com.v3.basis.blas.blasclass.sync.Rtn
@@ -40,20 +41,20 @@ class FixtureListViewModel: ServerSyncViewModel() {
         }
         val rec = records[0]
 
-        if( 0 ==  rec.sync_status ) {
+        if( BaseController.SYNC_STATUS_SYNC ==  rec.sync_status ) {
             return
         }
 
         var cync:SyncFixtureBase
-        if( 0 == rec.status ) {
+        if( BaseController.KENPIN_FIN == rec.status ) {
             // 検品
             cync = Kenpin( model,rec )
         }
-        else if( 1 == rec.status ) {
+        else if( BaseController.TAKING_OUT == rec.status ) {
             // 持出
             cync = Takeout( model,rec )
         }
-        else if( 4 == rec.status ) {
+        else if( BaseController.RTN == rec.status ) {
             // 持出
             cync = Rtn( model,rec )
         }

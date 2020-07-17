@@ -24,7 +24,25 @@ abstract class BaseController(
     ,val projectId: String
 ) {
 
-    // 使うときはerrorMessageEvent.onNext("メッセージ")とする
+    companion object {
+        const val SYNC_STATUS_SYNC = 0      // 同期済み
+        const val SYNC_STATUS_NEW = 1       // 仮新規追加
+        const val SYNC_STATUS_EDIT = 2      // 仮編集
+        const val SYNC_STATUS_DEL = 3       // 仮削除
+        const val SYNC_STATUS_SEND_WAIT = 4       // 送信待ち
+        const val SYNC_STATUS_SEND_FIN = 5       // 送信完了
+
+        const val KENPIN_FIN = 0
+        const val TAKING_OUT = 1
+        const val SET_FIN = 2
+        const val DONT_TAKE_OUT = 3
+        const val RTN = 4
+        const val REMOVE = 5
+
+    }
+
+
+        // 使うときはerrorMessageEvent.onNext("メッセージ")とする
     val errorMessageEvent: PublishSubject<String> = PublishSubject.create()
 
     var db:SQLiteDatabase?

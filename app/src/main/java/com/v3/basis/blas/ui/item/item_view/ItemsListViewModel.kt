@@ -1,6 +1,7 @@
 package com.v3.basis.blas.ui.item.item_view
 
 import android.util.Log
+import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.Items
 import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
@@ -56,7 +57,7 @@ class ItemsListViewModel: ServerSyncViewModel() {
 
         val ctl = ItemsController(model.context,model.project_id.toString())
 
-        if( 1 == item.sync_status ) {
+        if( BaseController.SYNC_STATUS_NEW == item.sync_status ) {
             val records = result.getJSONObject("records")
 
             val new_item_id = records.getString("new_item_id")

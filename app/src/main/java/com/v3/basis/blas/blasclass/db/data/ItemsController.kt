@@ -7,10 +7,18 @@ import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkFixture
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkRmFixture
 import com.v3.basis.blas.blasclass.db.fixture.Fixtures
+import com.v3.basis.blas.blasclass.ldb.LDBRmFixtureRecord
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class ItemsController(context: Context, projectId: String): BaseController(context, projectId) {
+
+    companion object {
+
+        const val FIELD_TYPE_QRCODE_INT_INSPECTION = 8
+        const val FIELD_TYPE_QRCODE_INT_RM = 11
+
+    }
 
     fun search(item_id: Long = 0L, offset: Int = 0, paging: Int = 20,endShow:Boolean = false): MutableList<MutableMap<String, String?>> {
 
@@ -67,7 +75,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
         item.create_date = current.format(formatter)
         item.update_date = current.format(formatter)
-        item.sync_status = 1
+        item.sync_status = SYNC_STATUS_NEW
 
         val cv = createConvertValue(item)
 
@@ -111,7 +119,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         val current = LocalDateTime.now()
         val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss")
         item.update_date = current.format(formatter)
-        item.sync_status = 2
+        item.sync_status = SYNC_STATUS_EDIT
 
         // けどまたmap…
         val cv = createConvertValue(item,null)
@@ -165,8 +173,8 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
      * fixtureローカルテーブルの更新
      */
     private fun updateFixture(item :Items, map: Map<String, String?> ) {
-        val inst = getFieldCols( 8 )
-        val rms = getFieldCols(11)
+        val inst = getFieldCols( FIELD_TYPE_QRCODE_INT_INSPECTION )
+        val rms = getFieldCols(FIELD_TYPE_QRCODE_INT_RM)
 
         // 設置
         inst.forEach{
@@ -196,7 +204,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
         val cv = ContentValues()
         cv.put("item_id",new_item_id)
-        cv.put("sync_status",0)
+        cv.put("sync_status", SYNC_STATUS_SYNC)
 
         return try {
             db?.beginTransaction()
@@ -227,7 +235,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         Log.d("updateItemId()","start")
 
         val cv = ContentValues()
-        cv.put("sync_status",0)
+        cv.put("sync_status", SYNC_STATUS_SYNC)
 
         return try {
             db?.beginTransaction()
@@ -265,9 +273,13 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 //        }
 //    }
 
-    fun qrCodeCheck( serialNumber:String? ) : Int {
+    class ItemCheckException(message: String) : Exception(message) {}
 
-        var ret = 0
+    /**
+     * 検品連動QRコード読込み後のチェック
+     */
+    fun qrCodeCheck( serialNumber:String? ) {
+
         val sql = "select * from fixtures where serial_number = ?"
         val cursor = db?.rawQuery(sql, arrayOf(serialNumber))
 
@@ -277,30 +289,53 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
         val  count = cursor.count
         if( 0 == count ) {
-            Log.d("qrCodeCheck","検品されていないシリアル番号です")
-            ret = -1
+            cursor.close()
+            throw ItemCheckException("検品されていないシリアル番号です")
         }
         else {
 
             cursor.moveToFirst()
             val fixture = setProperty(Fixtures(),cursor) as Fixtures
+            cursor.close()
 
-            if( 0 == fixture.status || 4 == fixture.status ) {
-                Log.d("sqCodeCheck","持ち出されていないシリアル番号です")
-                ret = -2
+            if( KENPIN_FIN == fixture.status || RTN == fixture.status ) {
+                throw ItemCheckException("持ち出されていないシリアル番号です")
             }
-            else if( 2 == fixture.status ){
-                Log.d("sqCodeCheck","設置済みのシリアル番号です")
-                ret = -3
+            else if( SET_FIN == fixture.status ){
+                throw ItemCheckException("設置済みのシリアル番号です")
             }
-            else if( 3 == fixture.status ) {
-                Log.d("sqCodeCheck","持出不可のシリアル番号です")
-                ret = -4
+            else if( DONT_TAKE_OUT == fixture.status ) {
+                throw ItemCheckException("持出不可のシリアル番号です")
             }
         }
 
-        return ret
     }
 
+    fun rmQrCodeCheck( serialNumber:String? ) {
+
+        val sql = "select * from rm_fixtures where serial_number = ?"
+        val cursor = db?.rawQuery(sql, arrayOf(serialNumber))
+
+        if( null == cursor ) {
+            throw Exception("sqlite error!!!!")
+        }
+
+        val  count = cursor.count
+        if( 0 == count ) {
+            cursor.close()
+            throw ItemCheckException("撤去登録されていないシリアル番号です")
+        }
+        else {
+
+            cursor.moveToFirst()
+            val rm_fixture = setProperty(Fixtures(),cursor) as LDBRmFixtureRecord
+            cursor.close()
+
+            // TODO:既存では特にこれ以上のチェックなし？？？
+        }
+
+    }
 
 }
+
+

@@ -171,10 +171,10 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         new_fixture.fixture_id = createTempId()
         new_fixture.fix_date = current.format(formatter)
         new_fixture.serial_number = serial_number
-        new_fixture.status = 0
+        new_fixture.status = KENPIN_FIN
         new_fixture.create_date = current.format(formatter)
         new_fixture.update_date = current.format(formatter)
-        new_fixture.sync_status = 1
+        new_fixture.sync_status = SYNC_STATUS_NEW
 
 //        val exceptList = listOf("fixture_id")
         val cv = createConvertValue(new_fixture)
@@ -211,7 +211,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         fixture.fix_date = current.format(formatter)
         fixture.update_date = current.format(formatter)
-        fixture.sync_status = 2
+        fixture.sync_status = SYNC_STATUS_EDIT
 
         val cv = createConvertValue(fixture,null)
 
@@ -339,7 +339,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             return false
         }
 
-        if( 0 != fixture.sync_status ) {
+        if( SYNC_STATUS_SYNC != fixture.sync_status ) {
             Log.d("takeout message!","サーバー同期待ちのシリアルナンバーです")
             errorMessageEvent.onNext("サーバー同期待ちのシリアルナンバーです")
             return false
@@ -347,7 +347,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
 
         // ステータスが検品済み and 同じ会社で検品されているか？
-        if( 0 != fixture?.status ) {
+        if( KENPIN_FIN != fixture?.status ) {
 
             if( 1 == fixture?.status ) {
                 Log.d("takeout message!","すでに持ち出し中です")
@@ -398,8 +398,8 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         fixture!!.takeout_date = current.format(formatter)
         fixture!!.update_date = current.format(formatter)
-        fixture!!.status = 1
-        fixture!!.sync_status = 2
+        fixture!!.status = TAKING_OUT
+        fixture!!.sync_status = SYNC_STATUS_EDIT
 
         val cv = createConvertValue(fixture as Any,null)
 
@@ -431,24 +431,24 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             return false
         }
 
-        if( 0 != fixture.sync_status ) {
+        if(  SYNC_STATUS_SYNC != fixture.sync_status ) {
             Log.d("takeout message!","サーバー同期待ちのシリアルナンバーです")
             errorMessageEvent.onNext("サーバー同期待ちのシリアルナンバーです")
             return false
         }
 
         // ステータスが検品済み and 同じ会社で検品されているか？
-        if( 1 != fixture?.status ) {
+        if( TAKING_OUT != fixture?.status ) {
 
-            if( 0 == fixture?.status ) {    // TODO:ここだけtakeoutと違う
+            if( KENPIN_FIN == fixture?.status ) {    // TODO:ここだけtakeoutと違う
                 Log.d("takeout message!","持出確認が行われていません")
                 errorMessageEvent.onNext("持出確認が行われていません")
             }
-            else if( 2 == fixture?.status ) {
+            else if( SET_FIN == fixture?.status ) {
                 Log.d("takeout message!","すでに設置済みです")
                 errorMessageEvent.onNext("すでに設置済みです")
             }
-            else if( 3 == fixture?.status ) {
+            else if( DONT_TAKE_OUT == fixture?.status ) {
                 Log.d("takeout message!","持出不可です")
                 errorMessageEvent.onNext("持出不可です")
             }
@@ -490,8 +490,8 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         fixture!!.rtn_date = current.format(formatter)
         fixture!!.update_date = current.format(formatter)
-        fixture!!.status = 4
-        fixture!!.sync_status = 2
+        fixture!!.status = RTN
+        fixture!!.sync_status = SYNC_STATUS_EDIT
 
         val cv = createConvertValue(fixture,null)
 
@@ -517,7 +517,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         val cv = ContentValues()
         cv.put("fixture_id",newFixtureId)
-        cv.put("sync_status",0)
+        cv.put("sync_status", SYNC_STATUS_SYNC)
 
         return try {
             db?.beginTransaction()
@@ -536,7 +536,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
     fun resetSyncStatus( fixtureId:String ) : Boolean {
 
         val cv = ContentValues()
-        cv.put("sync_status",0)
+        cv.put("sync_status", SYNC_STATUS_SYNC)
 
         return try {
             db?.beginTransaction()

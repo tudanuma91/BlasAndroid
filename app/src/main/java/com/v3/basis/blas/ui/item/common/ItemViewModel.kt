@@ -90,6 +90,7 @@ class ItemViewModel: ViewModel() {
     }
 
     fun clickQRCodeKenpin(field: FieldText) {
+        Log.d("ItemViewModel.clickQRCodeKenpin()","start")
         qrKenpinEvent.onNext(field)
     }
 
