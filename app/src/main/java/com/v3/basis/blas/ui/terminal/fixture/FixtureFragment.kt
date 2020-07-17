@@ -110,7 +110,9 @@ open class FixtureFragment : Fragment() {
                 startActivity(intent)
             }
         } else {
-            viewModel.clickDownload(model)
+            if (model.downloading.get().not()) {
+                viewModel.clickDownload(model)
+            }
         }
     }
 

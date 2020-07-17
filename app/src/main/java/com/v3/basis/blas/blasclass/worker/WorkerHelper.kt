@@ -148,8 +148,8 @@ object WorkerHelper {
                     when (it.state) {
                         WorkInfo.State.BLOCKED,
                         WorkInfo.State.CANCELLED,
-                        WorkInfo.State.FAILED,
                         WorkInfo.State.ENQUEUED,
+                        WorkInfo.State.FAILED,
                         WorkInfo.State.SUCCEEDED -> {
                             stateChangedCallBack.invoke(it.state, null, id)
                         }

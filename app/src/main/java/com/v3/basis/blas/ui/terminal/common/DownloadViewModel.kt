@@ -60,13 +60,12 @@ class DownloadViewModel: ViewModel() {
     fun setupItem(fragment:Fragment, model: DownloadModel, token: String) {
 
         this.token = token
-        val single = readAsync {
+
+        readAsync {
             //   読み込み！！（仮機能）
             val pref = preferences()
             pref.getString(model.projectId, "")!!
-        }
-
-        single.subscribeBy {
+        }.subscribeBy {
                 with(model) {
                     uuid = it
                     downloading.set(uuid.isNotBlank() && uuid != COMPLETE)
@@ -129,6 +128,7 @@ class DownloadViewModel: ViewModel() {
 
         model.savePath = createZipFile(model.projectId, model.saveDir)
         model.downloading.set(true)
+        model.downloadingText.set("ダウンロード待ち")
         startDownload.onNext(model)
     }
 
@@ -161,12 +161,22 @@ class DownloadViewModel: ViewModel() {
      */
     fun preDownloading(model: DownloadModel, uuid: UUID) {
 
-        model.downloadingText.set("ダウンロード待ち")
         model.downloading.set(true)
+        model.downloadingText.set("ダウンロード待ち")
         //   仮のセーブ方法！！
         taskAsync {
             val pref = preferences()
             pref.edit().putString(model.projectId, uuid.toString()).apply()
+        }
+    }
+
+    fun cancelDownloading(model: DownloadModel, uuid: UUID) {
+
+        model.downloading.set(false)
+        model.downloadingText.set("ダウンロードに失敗")
+        taskAsync {
+            val pref = preferences()
+            pref.edit().putString(model.projectId, "").apply()
         }
     }
 

@@ -128,6 +128,7 @@ fun Fragment.addDownloadTask(vm: DownloadViewModel, model: DownloadModel, unzipP
             }
             WorkInfo.State.SUCCEEDED -> {
                 vm.setFinishDownloading(model)
+                /**
                 //テスト
                 Completable
                     .fromAction {
@@ -148,6 +149,11 @@ fun Fragment.addDownloadTask(vm: DownloadViewModel, model: DownloadModel, unzipP
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe()
+                **/
+            }
+            WorkInfo.State.FAILED -> {
+                WorkerHelper.stopDownload(requireContext(), id)
+                vm.cancelDownloading(model, id)
             }
         }
     }

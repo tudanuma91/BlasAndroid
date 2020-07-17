@@ -45,6 +45,9 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
         return try {
 
             val url = getDownloadUrl(token, projectId)
+            if (url.isBlank()) {
+                return Result.failure()
+            }
             download(url, savePath, unZipPath)
             Result.success()
         } catch (e: Exception) {
@@ -100,7 +103,7 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
             file.delete()
 
             val name = inputData.getString(KEY_SAVE_PATH_KEY_NAME)
-                ?: throw IllegalStateException("might be forgot set to savePath key via with WorkerHelper")
+                ?: throw IllegalStateException("セーブPATHが設定されていません")
             val fileName = File(unZipPath).listFiles()?.last()?.path
             Log.d("file path test", "$fileName")
             preferences().edit().putString(name, fileName).apply()

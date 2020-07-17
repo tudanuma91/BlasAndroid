@@ -34,10 +34,11 @@ import java.lang.Exception
 
 /**
  * 表示・遷移などデータ管理画面にかかわる処理を行う。
+ *      注意：現在は使ってないため、コメントアウト
  */
-class ProjectFragment : FixtureFragment() {
+class ProjectFragment : Fragment() {
 
-/*
+    /*
     private lateinit var homeViewModel: ProjectViewModel
     private var handler = Handler()
     lateinit var token:String
@@ -161,7 +162,7 @@ class ProjectFragment : FixtureFragment() {
         recyclerView.adapter = null
         super.onDestroyView()
     }
-*/
+     */
 }
 
 
