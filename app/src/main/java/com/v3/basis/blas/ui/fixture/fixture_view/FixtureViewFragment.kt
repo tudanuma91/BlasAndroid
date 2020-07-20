@@ -64,6 +64,8 @@ class FixtureViewFragment : Fragment() {
     private var parseFinNum = paresUnitNum
 
     private var currentIndex: Int = 0
+    private var offset: Int = 0
+
     companion object {
         const val CREATE_UNIT = 20
     }
@@ -131,19 +133,22 @@ class FixtureViewFragment : Fragment() {
 
                     override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                         super.onScrollStateChanged(recyclerView, newState)
-                        if (valueMap.isNotEmpty()) {
-                            val notOverSize = currentIndex < dataListAll.size
+//                        if (valueMap.isNotEmpty()) {
+//                            val notOverSize = currentIndex < dataListAll.size
                             //100件のみ表示処理。
                             //val notOverSize = currentIndex <= dataListAll.size
-                            if (!recyclerView.canScrollVertically(1) && notOverSize) {
+                            if (!recyclerView.canScrollVertically(1) && progressBar.visibility == View.INVISIBLE) {
                                 progressBar.visibility = View.VISIBLE
+                                offset += CREATE_UNIT
+
                                 /*100件のみ表示の処理。
                                 if(currentIndex % paresUnitNum == 0){
                                     parseJson()
                                 }*/
-                                setAdapter()
+                                searchAsync()
+//                                setAdapter()
                             }
-                        }
+//                        }
                     }
                 })
 
@@ -176,7 +181,7 @@ class FixtureViewFragment : Fragment() {
 
     private fun searchAsync() {
 
-        Single.fromCallable { fixtureController.searchDisp() }
+        Single.fromCallable { fixtureController.searchDisp(offset = offset) }
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .map {

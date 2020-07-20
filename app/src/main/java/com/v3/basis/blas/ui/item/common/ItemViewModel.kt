@@ -63,21 +63,25 @@ class ItemViewModel: ViewModel() {
                 catch ( ex : ItemsController.ItemCheckException ) {
                     // バリデートエラー
                     Log.d("item save validate error!!!",ex.message)
-                    Toast.makeText(BlasRest.context, ex.message, Toast.LENGTH_LONG).show()
 
-                    throw Exception()       // TODO:??????
+                    throw Exception(ex.message)       // TODO:??????
                 }
 
             }
         }.subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                if (itemId == 0L) {
-                    completeSave.onNext(Unit)
-                } else {
-                    completeUpdate.onNext(Unit)
+            .subscribeBy(
+                onError = {
+                    Toast.makeText(BlasRest.context, it.message, Toast.LENGTH_LONG).show()
+                },
+                onComplete = {
+                    if (itemId == 0L) {
+                        completeSave.onNext(Unit)
+                    } else {
+                        completeUpdate.onNext(Unit)
+                    }
                 }
-            }
+            )
             .addTo(disposable)
     }
 

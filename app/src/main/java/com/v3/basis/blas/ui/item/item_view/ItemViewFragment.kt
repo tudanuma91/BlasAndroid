@@ -28,11 +28,14 @@ import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import com.v3.basis.blas.ui.ext.addTitle
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
+import io.reactivex.Scheduler
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
+import io.reactivex.schedulers.Schedulers.newThread
 import kotlinx.android.synthetic.main.fragment_item_view.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -70,8 +73,9 @@ class ItemViewFragment : Fragment() {
     private val helper:RestHelper = RestHelper()
     private var handler = Handler()
     private var currentIndex: Int = 0
+    private var offset: Int = 0
     companion object {
-        const val CREATE_UNIT = 5
+        const val CREATE_UNIT = 20
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -224,10 +228,13 @@ class ItemViewFragment : Fragment() {
                 super.onScrollStateChanged(recyclerView, newState)
                 if (itemListAll.isNotEmpty()) {
 
-                    val notOverSize = currentIndex  <= itemListAll.size
-                    if (!recyclerView.canScrollVertically(1) && notOverSize) {
+//                    val notOverSize = currentIndex  <= itemListAll.size
+                    if (!recyclerView.canScrollVertically(1) && progressBarFlg.not()) {
                         progressBarFlg = true
                         chkProgress(true, rootView)
+
+                        offset += CREATE_UNIT
+                        searchASync()
 
                         //下追加分
                         /*
@@ -250,12 +257,13 @@ class ItemViewFragment : Fragment() {
 
 
                         */
-                        if(currentIndex%parseNum  == 0) {
-                            nextParseNum()
-                            jsonParse(parseStartNum, parseFinNum)
-                        }
+//                        if(currentIndex%parseNum  == 0) {
+//                            nextParseNum()
+//                            jsonParse(parseStartNum, parseFinNum)
+//                        }
 
-                        setAdapter()
+
+//                        setAdapter()
                     }
                 }
             }
@@ -269,10 +277,12 @@ class ItemViewFragment : Fragment() {
                 chkProgress(progressBarFlg, rootView)
 
                 Single.fromCallable { FieldController(requireContext(),projectId).searchDisp() }
+                    .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy {
                         if( it.isNotEmpty() ) {
                             fields = it
+                            searchASync()
                         }
                         else {
                             //fieldMap.clear()
@@ -283,23 +293,6 @@ class ItemViewFragment : Fragment() {
                         }
                     }
                     .addTo(disposables)
-
-                Single.fromCallable { itemsController.search() }
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeBy {
-                        if (it.isNotEmpty()) {
-                            itemListAll.clear()
-                            itemListAll.addAll(it)
-                            setAdapter()
-                        } else {
-                            //fieldMap.clear()
-                            fields = mutableListOf()
-                            progressBarFlg = false
-                            chkProgress(progressBarFlg,rootView)
-                        }
-                    }
-                    .addTo(disposables)
-
 
 
                 // TODO:三代川 sqliteから取得すること 1
@@ -314,6 +307,26 @@ class ItemViewFragment : Fragment() {
             val errorMessage = msg.createErrorMessage("getFail")
             Toast.makeText(activity, errorMessage, toastErrorLen).show()
         }
+    }
+
+    private fun searchASync() {
+
+        Single.fromCallable { itemsController.search(offset = offset, paging = CREATE_UNIT) }
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                if (it.isNotEmpty()) {
+//                    itemListAll.clear()
+                    itemListAll.addAll(it)
+                    setAdapter()
+                } else {
+                    //fieldMap.clear()
+                    fields = mutableListOf()
+                    progressBarFlg = false
+                    chkProgress(progressBarFlg,rootView)
+                }
+            }
+            .addTo(disposables)
     }
 
     private fun disp() {
