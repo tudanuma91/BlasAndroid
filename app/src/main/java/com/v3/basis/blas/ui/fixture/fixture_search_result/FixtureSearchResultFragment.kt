@@ -156,10 +156,14 @@ class FixtureSearchResultFragment : Fragment() {
                 val rowModel = RowModel().also {
                     //モデル作成
 
-//                    if (fixture_id != null) {
-//                        it.title = fixture_id.toString()
-//                    }
-                    it.title = ""   // 空白を設定
+                    if (fixture_id != null) {
+                        if( 0L < fixture_id.toLong()) {
+                            it.title = "（仮登録中)"
+                        }
+                        else {
+                            it.title = fixture_id.toString()
+                        }
+                    }
 
                     if (value != null) {
                         it.detail = value

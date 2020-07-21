@@ -537,7 +537,12 @@ class ItemViewFragment : Fragment() {
             if(valueFlg == FieldType.END) {
                 it.title = "${item_id}${FieldType.ENDTEXT}"
             }else{
-                it.title = item_id
+                if( item_id.toLong() < 0L ) {
+                    it.title = "(仮登録中)"
+                }
+                else {
+                    it.title = item_id
+                }
             }
             it.itemId = item_id
             Log.d("testtst","${item_id}")
