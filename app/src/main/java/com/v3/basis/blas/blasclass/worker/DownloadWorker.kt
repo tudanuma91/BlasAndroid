@@ -36,6 +36,8 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
         private fun preferences(): SharedPreferences {
 
             val context = BlasApp.applicationContext()
+            //getSharedPreferencesはクッキーみたいなもの。
+            //値は本クラスのdownload関数内でセットしている。
             return context.getSharedPreferences(COMPLETED_DOWNLOAD, Context.MODE_PRIVATE)
         }
     }
@@ -104,7 +106,8 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
 
             val name = inputData.getString(KEY_SAVE_PATH_KEY_NAME)
                 ?: throw IllegalStateException("セーブPATHが設定されていません")
-            val fileName = File(unZipPath).listFiles()?.last()?.path
+            //val fileName = File(unZipPath).listFiles()?.last()?.path
+            val fileName = File(unZipPath).listFiles().filter({it.name.endsWith(".db")}).last().path
             Log.d("file path test", "$fileName")
             preferences().edit().putString(name, fileName).apply()
         }

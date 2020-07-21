@@ -36,6 +36,10 @@ import kotlinx.android.synthetic.main.fragment_project.*
 import org.json.JSONObject
 import java.io.File
 
+/**
+ * [説明]
+ * データ管理・機器管理のプロジェクトダウンロードに関する画面
+ */
 open class FixtureFragment : Fragment() {
 
     private lateinit var fixtureViewModel: FixtureViewModel
