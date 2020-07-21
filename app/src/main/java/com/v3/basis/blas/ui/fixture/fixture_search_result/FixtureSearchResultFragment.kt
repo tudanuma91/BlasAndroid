@@ -155,9 +155,12 @@ class FixtureSearchResultFragment : Fragment() {
                 val value = createValue(it)
                 val rowModel = RowModel().also {
                     //モデル作成
-                    if (fixture_id != null) {
-                        it.title = fixture_id.toString()
-                    }
+
+//                    if (fixture_id != null) {
+//                        it.title = fixture_id.toString()
+//                    }
+                    it.title = ""   // 空白を設定
+
                     if (value != null) {
                         it.detail = value
                     }
@@ -172,7 +175,7 @@ class FixtureSearchResultFragment : Fragment() {
                 .setTitle(title)
                 .setMessage(text)
                 .setPositiveButton("OK"){ dialog, which ->
-                    activity!!.finish()
+                    requireActivity().finish()
                 }
                 .show()
         }

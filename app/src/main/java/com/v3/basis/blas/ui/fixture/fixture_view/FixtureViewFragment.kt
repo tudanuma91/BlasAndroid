@@ -188,7 +188,9 @@ class FixtureViewFragment : Fragment() {
                 val list = mutableListOf<FixtureListCell>()
                 it.forEach {
                     val value = createValue(it) ?: ""
-                    val title = it.fixture_id
+                    //val title = it.fixture_id
+                    val title = ""      // 空白に変更
+
                     // itを全部渡してもいいような気もするが辞めておく・・・
                     val model = FixtureCellModel(
                         token
