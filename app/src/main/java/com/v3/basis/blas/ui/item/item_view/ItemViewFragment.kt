@@ -25,6 +25,7 @@ import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
+import com.v3.basis.blas.blasclass.sync.Lump
 import com.v3.basis.blas.ui.ext.addTitle
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
@@ -221,6 +222,8 @@ class ItemViewFragment : Fragment() {
         //TODO　fukuda 未送信件数の設定がまだ未実装
         allSyncButton.setOnClickListener {
             //TODO 三代川さん
+            Log.d("フローティングボタン Item","Click!!!!")
+            Lump(requireContext(),projectId,token).exec()
         }
 
         //リサイクラ-viewを取得

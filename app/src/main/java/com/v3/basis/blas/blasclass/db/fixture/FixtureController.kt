@@ -82,13 +82,29 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         return ret
     }
 
-    fun search( fixture_id : Long? = null) : List<LdbFixtureRecord> {
+    fun search( fixture_id : Long? = null,syncFlg : Boolean = false) : List<LdbFixtureRecord> {
 
+        val addList = mutableListOf<String>()
         var sqlAddition = ""
         var plHolder  = arrayOf<String>()
+
         if( null != fixture_id ) {
-            sqlAddition = "where fixture_id = ?"
+            addList += " fixture_id = ? "
             plHolder += fixture_id.toString()
+        }
+        if( syncFlg ) {
+            addList += " sync_status > 0 "
+        }
+        if( addList.count() > 0 ) {
+            var first = true
+            sqlAddition += " where "
+            addList.forEach {
+                if( !first ) {
+                    sqlAddition += " and "
+                }
+                sqlAddition += it
+                first = true
+            }
         }
 
         val sql = "select * from fixtures " + sqlAddition
