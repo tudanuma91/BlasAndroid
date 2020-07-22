@@ -120,6 +120,13 @@ class FixtureViewFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        //全て同期のボタン
+        //TODO　fukuda 未送信件数の設定がまだ未実装
+        allSyncButton.setOnClickListener {
+            //TODO 三代川さん
+        }
+
         try {
             if(token != null && project_id != null) {
                 Log.d("lifeCycle", "onViewCreated")

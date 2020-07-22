@@ -22,6 +22,8 @@ import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestProject
 import com.v3.basis.blas.ui.ext.addDownloadTask
+import com.v3.basis.blas.ui.ext.getCustomActionTitle
+import com.v3.basis.blas.ui.terminal.TerminalViewModel
 import com.v3.basis.blas.ui.terminal.adapter.ProjectListCellItem
 import com.v3.basis.blas.ui.terminal.common.DownloadModel
 import com.v3.basis.blas.ui.terminal.common.DownloadViewModel
@@ -49,7 +51,11 @@ open class FixtureFragment : Fragment() {
     private var toastSuccessLen = Toast.LENGTH_SHORT
 
     private val viewModel: DownloadViewModel by activityViewModels()
+    private val terminalViewModel: TerminalViewModel by activityViewModels()
     private val disposables = CompositeDisposable()
+
+    private var filterWord: String = ""
+    private var beforeFilterWord: String = ""
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -68,8 +74,7 @@ open class FixtureFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         try {
             if(token != null) {
-                val payload = mapOf("token" to token)
-                BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
+                makeProjectList()
             }else{
                 throw Exception("Failed to receive internal data ")
             }
@@ -85,12 +90,33 @@ open class FixtureFragment : Fragment() {
                 addDownloadTask(viewModel, it, unzipPath, token, it.projectId)
             }
             .addTo(disposables)
+
+        terminalViewModel.filterEvent
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                filterWord = it
+                makeProjectList(true)
+            }
+            .addTo(disposables)
+    }
+
+    private fun makeProjectList(update: Boolean = false) {
+        if (update) {
+            if (beforeFilterWord != filterWord) {
+                beforeFilterWord = filterWord
+                val payload = mapOf("token" to token)
+                BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
+            }
+        } else {
+            val payload = mapOf("token" to token)
+            BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
+        }
     }
 
     open fun clickCell(rowModel: RowModel, model: DownloadModel) {
 
         if (model.doneDownloaded.get()) {
-            val title = (requireActivity() as AppCompatActivity).supportActionBar?.title
+            val title = getCustomActionTitle()
             val title2 = requireContext().resources.getString(R.string.navi_title_terminal_item)
             if (title == title2) {
                 Log.d(
@@ -168,11 +194,13 @@ open class FixtureFragment : Fragment() {
 
         from.forEach{
             val project_name = it.value["project_name"].toString()
-            val project_id = it.value["project_id"].toString()
-            val item = DownloadModel(project_id, dir)
-            viewModel.setupItem(this, item, token)
-            val data = ProjectListCellItem(project_name, project_id, viewModel, item)
-            dataList.add(data)
+            if (filterWord.isBlank() || project_name.contains(filterWord)) {
+                val project_id = it.value["project_id"].toString()
+                val item = DownloadModel(project_id, dir)
+                viewModel.setupItem(this, item, token)
+                val data = ProjectListCellItem(project_name, project_id, viewModel, item)
+                dataList.add(data)
+            }
         }
         return dataList
     }

@@ -19,6 +19,7 @@ import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.controller.LocationController
 import com.v3.basis.blas.blasclass.controller.LocationController.getLocation
 import com.v3.basis.blas.blasclass.controller.QueueController
+import com.v3.basis.blas.ui.ext.setBlasCustomView
 import com.v3.basis.blas.ui.terminal.BottomNavButton
 import com.v3.basis.blas.ui.terminal.TerminalFragment
 
@@ -48,6 +49,8 @@ class TerminalActivity : AppCompatActivity() {
             // 位置情報のパーミッションを要求 一旦不要な為コメントアウトとする
             // checkPermission()
         }
+
+        setBlasCustomView(R.layout.view_blas_search_actionbar)
     }
 
 //    fun replaceFragment(fragment: Fragment) {

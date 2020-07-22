@@ -16,10 +16,10 @@ fun AppCompatActivity.showBackKeyForActionBar() {
     }
 }
 
-fun AppCompatActivity.setBlasCustomView() {
+fun AppCompatActivity.setBlasCustomView(layout: Int = R.layout.view_blas_actionbar) {
 
     supportActionBar?.apply {
-        setCustomView(R.layout.view_blas_actionbar)
+        setCustomView(layout)
         setDisplayShowCustomEnabled(true)
         setDisplayShowTitleEnabled(true)
         setDisplayShowHomeEnabled(true)
