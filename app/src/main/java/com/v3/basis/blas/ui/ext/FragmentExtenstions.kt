@@ -47,6 +47,38 @@ fun Fragment.addTitle(extraName: String) {
     }
 }
 
+fun Fragment.setViewTitle(title: String) {
+
+    (requireActivity() as AppCompatActivity).supportActionBar?.also {
+        it.customView.findViewById<TextView>(R.id.title)?.text = title
+    }
+}
+
+fun Fragment.getCustomActionTitle(): String {
+    (requireActivity() as AppCompatActivity).supportActionBar?.also {
+        return it.customView.findViewById<TextView>(R.id.title)?.text.toString()
+    }
+    return ""
+}
+
+fun Fragment.hideViewForCustomActionBar(targets: Array<Int>) {
+
+    (requireActivity() as AppCompatActivity).supportActionBar?.also {
+        targets.forEach { id ->
+            it.customView.findViewById<TextView>(id)?.visibility = View.INVISIBLE
+        }
+    }
+}
+
+fun Fragment.showViewForCustomActionBar(targets: Array<Int>) {
+
+    (requireActivity() as AppCompatActivity).supportActionBar?.also {
+        targets.forEach { id ->
+            it.customView.findViewById<TextView>(id)?.visibility = View.VISIBLE
+        }
+    }
+}
+
 /**
  * パーミッションをとる関数。
  */

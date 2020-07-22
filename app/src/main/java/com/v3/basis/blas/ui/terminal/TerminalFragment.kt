@@ -4,24 +4,28 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.TerminalActivity
-import com.v3.basis.blas.ui.ext.setActionBarTitle
+import com.v3.basis.blas.ui.ext.*
 import com.v3.basis.blas.ui.terminal.adapter.TerminalPagerAdapter
 import kotlinx.android.synthetic.main.fragment_terminal.*
 import kotlinx.android.synthetic.main.fragment_terminal.view.*
 
 class TerminalFragment : Fragment() {
 
-    private lateinit var vm: TerminalViewModel
+    private val vm: TerminalViewModel by activityViewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        vm = ViewModelProviders.of(this).get(TerminalViewModel::class.java)
+//        vm = ViewModelProviders.of(this).get(TerminalViewModel::class.java)
         val view = inflater.inflate(R.layout.fragment_terminal, container, false)
         view.pager.adapter = TerminalPagerAdapter(childFragmentManager) // childFragmentManager?
         view.pager.offscreenPageLimit = 5
@@ -73,6 +77,13 @@ class TerminalFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        (requireActivity() as AppCompatActivity).supportActionBar?.also {
+            it.customView.findViewById<Button>(R.id.searchButton).setOnClickListener { v ->
+                val text = it.customView.findViewById<EditText>(R.id.searchBox).text.toString()
+                vm.filterProject(text)
+            }
+        }
+
         val act = requireActivity() as TerminalActivity
         switchScreen(act.beforeSelectedNavButton)
     }
@@ -91,9 +102,24 @@ class TerminalFragment : Fragment() {
             nav_view.menu.findItem( BottomNavButton.DATA_MANAGE.id ).isChecked = true
             BottomNavButton.DATA_MANAGE
         } else item.first
+
+        checkHideState(_item)
+    }
+
+    private fun checkHideState(item: BottomNavButton) {
+
+        when (item) {
+            BottomNavButton.DATA_MANAGE,
+            BottomNavButton.EQUIPMENT_MANAGE -> {
+                showViewForCustomActionBar(arrayOf(R.id.searchBox, R.id.searchButton))
+            }
+            else -> {
+                hideViewForCustomActionBar(arrayOf(R.id.searchBox, R.id.searchButton))
+            }
+        }
     }
 
     private fun setTitle(title: Int) {
-        (requireActivity() as AppCompatActivity).setActionBarTitle(title)
+        setViewTitle(getString(title))
     }
 }

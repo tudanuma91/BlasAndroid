@@ -36,7 +36,10 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.schedulers.Schedulers.newThread
+import kotlinx.android.synthetic.main.fragment_fixture_view.*
 import kotlinx.android.synthetic.main.fragment_item_view.*
+import kotlinx.android.synthetic.main.fragment_item_view.allSyncButton
+import kotlinx.android.synthetic.main.fragment_item_view.recyclerView
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -213,6 +216,13 @@ class ItemViewFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        //全て同期のボタン
+        //TODO　fukuda 未送信件数の設定がまだ未実装
+        allSyncButton.setOnClickListener {
+            //TODO 三代川さん
+        }
+
         //リサイクラ-viewを取得
         //基本的にデータはまだ到着していないため、空のアクティビティとadapterだけ設定しておく
         val recyclerView = recyclerView
