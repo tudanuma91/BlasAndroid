@@ -17,7 +17,10 @@ import java.io.*
 import java.net.URL
 import java.net.URLConnection
 
-
+/**
+ * [説明]
+ * BLASからデータベースファイルをバックグラウンドでダウンロードするクラス。
+ */
 class DownloadWorker(context: Context, workerParameters: WorkerParameters): BaseDownloadWorker(context, workerParameters) {
 
     companion object {
@@ -29,6 +32,17 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
             }
         }
 
+        /**
+         * [説明]
+         * ローカルDBの保存先のパスを取得するクラス。
+         * 保存先のパスは、プレファレンス(WEBのクッキー)に保存しているため、
+         * プレファレンスから取得する。プレファレンスの設定自体はダウンロード完了時に行っている。
+         * ダウンロードは本クラスのdownloadメソッドのpreference().edit()で行っている。
+         * [引数]
+         * プロジェクトID
+         * [戻り値]
+         * DBの保存パス。エラー時はdefaultValueのnullを返す。
+         */
         fun getSavedPath(projectId: String): String? {
             return preferences().getString(projectId, null)
         }
@@ -58,23 +72,36 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
         }
     }
 
+    /**
+     * [説明]
+     * BLASで作成されたZIPファイルのURLを取得する
+     * [TODO]
+     * エラー時の処理がない？
+     */
     private fun getDownloadUrl(token: String, projectId: String): String {
 
         val payload = mapOf(
             "token" to token,
             "project_id" to projectId
         )
-        val success: (json: JSONObject) -> Unit = {}
-        val funcError:(Int,Int) -> Unit = {errorCode, aplCode -> }
+        val success: (json: JSONObject) -> Unit = {}    //ダウンロード時に呼び出される
+        val funcError:(Int,Int) -> Unit = {errorCode, aplCode -> }  //ダウンロード失敗時に呼び出される
+        //BLASからLDBをダウンロードする。
         val response = BlasRestCache("zip", payload, success, funcError).getResponse()
         val zipModel = Gson().fromJson(response, DownloadZipModel::class.java)
         return BuildConfig.HOST + zipModel.zip_path
     }
 
     override fun getMaxProgressValue(): Int {
+        /*機能していません。overrideしないといけないのでしているだけ。 */
         return 0
     }
 
+    /**
+     * [説明]
+     * getDownloadUrlメソッドで取得したURLを指定してLDBをダウンロードする。
+     * ダウンロードしたファイルはpreferenceに保存する。
+     */
     private fun download(textUrl: String, localPath: String, unZipPath: String) {
 
         val url = URL(textUrl)
