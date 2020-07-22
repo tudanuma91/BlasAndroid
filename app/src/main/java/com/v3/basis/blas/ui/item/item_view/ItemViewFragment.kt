@@ -617,7 +617,7 @@ class ItemViewFragment : Fragment() {
                             totalRecordNum
                         )
                     itemListAll.addAll(itemInfo)
-                }else if (totalRecordNum >= parseFinNum){
+                } else if (totalRecordNum >= parseFinNum){
                     val itemInfo =
                         helper.createSeparateItemList(
                             jsonParseList,

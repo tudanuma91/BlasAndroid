@@ -65,7 +65,7 @@ fun Fragment.hideViewForCustomActionBar(targets: Array<Int>) {
 
     (requireActivity() as AppCompatActivity).supportActionBar?.also {
         targets.forEach { id ->
-            it.customView.findViewById<TextView>(id)?.visibility = View.INVISIBLE
+            it.customView.findViewById<View>(id)?.visibility = View.INVISIBLE
         }
     }
 }
@@ -74,7 +74,7 @@ fun Fragment.showViewForCustomActionBar(targets: Array<Int>) {
 
     (requireActivity() as AppCompatActivity).supportActionBar?.also {
         targets.forEach { id ->
-            it.customView.findViewById<TextView>(id)?.visibility = View.VISIBLE
+            it.customView.findViewById<View>(id)?.visibility = View.VISIBLE
         }
     }
 }

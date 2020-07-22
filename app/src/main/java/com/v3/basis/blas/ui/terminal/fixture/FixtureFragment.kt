@@ -98,6 +98,13 @@ open class FixtureFragment : Fragment() {
                 makeProjectList(true)
             }
             .addTo(disposables)
+
+        terminalViewModel.refreshEvent
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                makeProjectList(false)
+            }
+            .addTo(disposables)
     }
 
     private fun makeProjectList(update: Boolean = false) {
