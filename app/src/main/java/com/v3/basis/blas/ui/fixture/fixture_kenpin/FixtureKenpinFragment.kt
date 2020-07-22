@@ -76,7 +76,7 @@ class FixtureKenpinFragment : Fragment() {
 
         //ライト光るボタン実装
         //現在エラーが出ているので使用不可
-        cameraManager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager?
+        cameraManager = requireActivity().getSystemService(Context.CAMERA_SERVICE) as CameraManager?
 
         //ボタンがタップされたときの処理
         kenpinBtnLight.setOnClickListener{

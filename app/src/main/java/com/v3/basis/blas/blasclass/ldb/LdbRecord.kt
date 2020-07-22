@@ -27,7 +27,7 @@ open class LdbFixtureRecord : LdbSyncBase() {
     var rtn_org_id: Int = 0               //返却した会社ID
     var rtn_user_id: Int = 0             //返却したユーザＩＤ
     var rtn_date: String = ""               //返却した日時
-    var item_id: Long = 0                     //設置した機器が登録されているデータ管理の外部キー
+    var item_id: Long = 0L                  //設置した機器が登録されているデータ管理の外部キー
     var item_org_id: Int = 0             //設置した会社のＩＤ
     var item_user_id: Int = 0           //設置したユーザのＩＤ
     var item_date: String = ""             //設置した日時

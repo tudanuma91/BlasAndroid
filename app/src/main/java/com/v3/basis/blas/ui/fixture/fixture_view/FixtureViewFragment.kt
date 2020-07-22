@@ -195,7 +195,12 @@ class FixtureViewFragment : Fragment() {
                 val list = mutableListOf<FixtureListCell>()
                 it.forEach {
                     val value = createValue(it) ?: ""
-                    val title = it.fixture_id
+
+                    var title = it.fixture_id.toString()
+                    if( it.fixture_id < 0L ) {
+                        title = "(仮登録中)"
+                    }
+
                     // itを全部渡してもいいような気もするが辞めておく・・・
                     val model = FixtureCellModel(
                         token
@@ -366,7 +371,17 @@ class FixtureViewFragment : Fragment() {
             value += "\n[${getString(R.string.col_item_date)}]\n"
             value += setValue(rcd.item_date)
             value += "\n[${getString(R.string.col_item_id)}]\n"
-            value += setValue(rcd.item_id.toString())
+
+            if( rcd.item_id < 0L ) {
+                value += setValue("仮登録中")
+            }
+            else if( 0L == rcd.item_id ) {
+                value += setValue("")
+            }
+            else {
+                value += setValue(rcd.item_id.toString())
+            }
+
         }catch (e:Exception){
 
         }
