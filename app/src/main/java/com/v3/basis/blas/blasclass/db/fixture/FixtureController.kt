@@ -316,8 +316,8 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             }
             else {
                 // 検品不可
-                Log.d("kenpin","検品不可です")
-                errorMessageEvent.onNext("検品不可です")
+                Log.d("kenpin","検品済みです")
+                errorMessageEvent.onNext("検品済みです")
 
                 return false
             }
