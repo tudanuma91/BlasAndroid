@@ -3,8 +3,9 @@ package com.v3.basis.blas.ui.item.item_create
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import android.os.Bundle
-import android.os.Handler
+import android.media.AudioManager
+import android.media.ToneGenerator
+import android.os.*
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -73,6 +74,10 @@ class ItemCreateFragment : Fragment() {
     private var fields: MutableList<FieldDataModel> = mutableListOf()
     private val disposables = CompositeDisposable()
     private lateinit var itemsController: ItemsController
+
+    private lateinit var vibrator: Vibrator
+    private var vibrationEffect = VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
+    private var tone: ToneGenerator? = null
 
     /**
     private lateinit var rootView: LinearLayout
@@ -201,6 +206,7 @@ class ItemCreateFragment : Fragment() {
                 startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
                     val qr = r.data?.getStringExtra("qr_code")
                     it.text.set(qr)
+                    playSoundAndVibe()
                 }
             }
             .addTo(disposables)
@@ -215,6 +221,7 @@ class ItemCreateFragment : Fragment() {
                     try {
                         itemsController.qrCodeCheck( qr )
                         it.text.set(qr)
+                        playSoundAndVibe()
                     }
                     catch ( ex : ItemsController.ItemCheckException ) {
                         // 設置不可の時
@@ -235,6 +242,7 @@ class ItemCreateFragment : Fragment() {
                     try {
                         itemsController.rmQrCodeCheck( qr )
                         it.text.set(qr)
+                        playSoundAndVibe()
                     }
                     catch ( ex : ItemsController.ItemCheckException ) {
                         // 撤去不可の時
@@ -298,6 +306,38 @@ class ItemCreateFragment : Fragment() {
 //            val payload2 = mapOf("token" to token, "my_self" to "1")
 //            BlasRestField(payload, ::getSuccess, ::getFail).execute()
 //            BlasRestUser(payload2, ::userGetSuccess, ::userGetFail).execute()
+        }
+    }
+
+    private fun playSoundAndVibe() {
+
+        vibrationEffect =
+            VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
+        vibrator.vibrate(vibrationEffect)
+        // tone.startTone(ToneGenerator.TONE_DTMF_S,200)
+        //tone.startTone(ToneGenerator.TONE_CDMA_ANSWER,200)
+        playTone(ToneGenerator.TONE_CDMA_ANSWER)
+    }
+
+    private fun playTone(mediaFileRawId: Int) {
+
+        try {
+            if (tone == null) {
+                tone = ToneGenerator(AudioManager.STREAM_SYSTEM, ToneGenerator.MAX_VOLUME)
+            }
+            tone?.also {
+                it.startTone(mediaFileRawId, 200)
+                val handler = Handler(Looper.getMainLooper())
+                handler.postDelayed({
+                    if (it != null) {
+                        Log.d("FixtureActivity", "ToneGenerator released")
+                        it.release()
+                        tone = null
+                    }
+                }, 200)
+            }
+        } catch (e: Exception) {
+            Log.d("FixtureActivity", "Exception while playing sound:$e")
         }
     }
 

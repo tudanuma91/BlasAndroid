@@ -190,6 +190,8 @@ class FixtureActivity : AppCompatActivity() {
                 // ROOMテストインサート
                 if (controller.kenpin(qrCode).not()) {
                     Log.d("FixtureViewText", "INSERT失敗。projectId: $projectId, ")
+                } else {
+                    playSoundAndVibe()
                 }
 //                                BlasRestFixture("kenpin", payload2, ::success, ::error).execute()
             }
@@ -198,6 +200,8 @@ class FixtureActivity : AppCompatActivity() {
                 // FixtureTakeOutFragment().callOnPouse()
                 if (controller.takeout(qrCode).not()) {
                     Log.d("FixtureViewText", "IUPDATE失敗。projectId: $projectId, ")
+                } else {
+                    playSoundAndVibe()
                 }
 //                                BlasRestFixture("takeout",payload2, ::success, ::error).execute()
             }
@@ -206,10 +210,22 @@ class FixtureActivity : AppCompatActivity() {
                 // FixtureReturnFragment().callOnPouse()
                 if (controller.rtn(qrCode).not()) {
                     Log.d("FixtureViewText", "UPDATE失敗。projectId: $projectId, ")
+                } else {
+                    playSoundAndVibe()
                 }
 //                                BlasRestFixture("rtn",payload2, ::success, ::error).execute()
             }
         }
+    }
+
+    private fun playSoundAndVibe() {
+
+        vibrationEffect =
+            VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
+        vibrator.vibrate(vibrationEffect)
+        // tone.startTone(ToneGenerator.TONE_DTMF_S,200)
+        //tone.startTone(ToneGenerator.TONE_CDMA_ANSWER,200)
+        playTone(ToneGenerator.TONE_CDMA_ANSWER)
     }
 
     /**

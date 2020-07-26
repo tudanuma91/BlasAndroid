@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -82,6 +83,11 @@ class TerminalFragment : Fragment() {
                 val text = it.customView.findViewById<EditText>(R.id.searchBox).text.toString()
                 vm.filterProject(text)
             }
+            it.customView.findViewById<ImageButton>(R.id.updateButton).setOnClickListener { v ->
+                //空文字で更新する
+                it.customView.findViewById<EditText>(R.id.searchBox).setText("")
+                vm.filterProject("", true)
+            }
         }
 
         val act = requireActivity() as TerminalActivity
@@ -111,10 +117,10 @@ class TerminalFragment : Fragment() {
         when (item) {
             BottomNavButton.DATA_MANAGE,
             BottomNavButton.EQUIPMENT_MANAGE -> {
-                showViewForCustomActionBar(arrayOf(R.id.searchBox, R.id.searchButton))
+                showViewForCustomActionBar(arrayOf(R.id.searchBox, R.id.searchButton, R.id.updateButton))
             }
             else -> {
-                hideViewForCustomActionBar(arrayOf(R.id.searchBox, R.id.searchButton))
+                hideViewForCustomActionBar(arrayOf(R.id.searchBox, R.id.searchButton, R.id.updateButton))
             }
         }
     }
