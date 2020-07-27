@@ -206,7 +206,8 @@ class ItemCreateFragment : Fragment() {
                 startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
                     val qr = r.data?.getStringExtra("qr_code")
                     it.text.set(qr)
-                    playSoundAndVibe()
+                    // TODO:福田さん　エラーのためいったんコメントアウト
+                    // playSoundAndVibe()
                 }
             }
             .addTo(disposables)
@@ -221,7 +222,8 @@ class ItemCreateFragment : Fragment() {
                     try {
                         itemsController.qrCodeCheck( qr )
                         it.text.set(qr)
-                        playSoundAndVibe()
+                        // TODO:福田さん　エラーのためいったんコメントアウト
+                        // playSoundAndVibe()
                     }
                     catch ( ex : ItemsController.ItemCheckException ) {
                         // 設置不可の時
@@ -242,7 +244,8 @@ class ItemCreateFragment : Fragment() {
                     try {
                         itemsController.rmQrCodeCheck( qr )
                         it.text.set(qr)
-                        playSoundAndVibe()
+                        // TODO:福田さん　エラーのためいったんコメントアウト
+                        // playSoundAndVibe()
                     }
                     catch ( ex : ItemsController.ItemCheckException ) {
                         // 撤去不可の時
