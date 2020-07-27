@@ -20,20 +20,54 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
     }
 
-    fun search(item_id: Long = 0L, offset: Int = 0, paging: Int = 20,endShow:Boolean = false): MutableList<MutableMap<String, String?>> {
+    fun search(
+        item_id: Long = 0L, offset: Int = 0, paging: Int = 20,endShow:Boolean = false,syncFlg:Boolean = false
+    ): MutableList<MutableMap<String, String?>> {
 
-        val cursor = if (item_id == 0L) {
-            var addition = ""
-            if( !endShow ) {
-                addition += " where end_flg = 0 "
+        val cursor = when {
+            0L == item_id -> {
+
+                val addList = mutableListOf<String>()
+                var addition = ""
+                var plHolder  = arrayOf<String>()
+
+
+                if( !endShow ) {
+                    addList += " end_flg = 0 "
+                }
+                if( syncFlg ) {
+                    addList += " sync_status > 0 "
+                }
+
+                if( addList.count() > 0 ) {
+                    addition += " where "
+                    var first = true
+                    addList.forEach {
+                        if( !first ) {
+                            addition += " and "
+                        }
+                        addition += it
+                        first = false
+                    }
+                }
+
+                var addingPager = ""
+                if( 0 != paging ) {
+                    addingPager = "limit ? offset ?"
+                    plHolder += paging.toString()
+                    plHolder += offset.toString()
+                }
+
+                val sql = "select * from items "+ addition + " order by create_date desc " + addingPager
+                Log.d("item search sql",sql)
+                db?.rawQuery(sql, plHolder)
             }
 
-            val sql = "select * from items "+ addition + " order by create_date desc limit ? offset ?"
-
-            db?.rawQuery(sql, arrayOf(paging.toString(),offset.toString()))
-        } else {
-            db?.rawQuery("select * from items where item_id = ?", arrayOf(item_id.toString()))
+            else -> {
+                db?.rawQuery("select * from items where item_id = ?", arrayOf(item_id.toString()))
+            }
         }
+
         val ret = mutableListOf<MutableMap<String, String?>>()
         cursor?.also { c ->
             var notLast = c.moveToFirst()
@@ -367,6 +401,21 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
     }
 
+    fun setErrorMsg( itemId: String,errMsg : String ) {
+        val cv = ContentValues()
+        cv.put("error_msg",errMsg)
+
+        return try {
+            db?.beginTransaction()
+            db?.update("items",cv,"item_id = ?", arrayOf(itemId))
+            db?.setTransactionSuccessful()
+            db?.endTransaction()!!
+        }
+        catch ( ex : Exception ) {
+            ex.printStackTrace()
+            throw ex
+        }
+    }
 }
 
 

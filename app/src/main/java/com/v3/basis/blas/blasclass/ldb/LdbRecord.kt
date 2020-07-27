@@ -13,6 +13,7 @@ import kotlin.reflect.full.starProjectedType
 
 open class LdbSyncBase {
     var sync_status: Int = 0 //何も弄ってない0 仮登録中(新規追加)1、仮登録中(編集)2、仮登録集(削除)3,送信待ち4, 送信完了5
+    var error_msg:String = ""
 }
 
 open class LdbFixtureRecord : LdbSyncBase() {

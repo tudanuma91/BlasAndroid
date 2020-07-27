@@ -2,7 +2,6 @@ package com.v3.basis.blas.ui.fixture.fixture_view
 
 import android.os.VibrationEffect
 import android.util.Log
-import androidx.lifecycle.ViewModel
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.sync.Kenpin
@@ -11,12 +10,10 @@ import com.v3.basis.blas.blasclass.sync.SyncFixtureBase
 import com.v3.basis.blas.blasclass.sync.Takeout
 import com.v3.basis.blas.ui.common.ServerSyncModel
 import com.v3.basis.blas.ui.common.ServerSyncViewModel
-import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
-import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import org.json.JSONObject
 import java.lang.Exception
@@ -53,24 +50,27 @@ class FixtureListViewModel: ServerSyncViewModel() {
             return
         }
 
-        var cync:SyncFixtureBase
-        if( BaseController.KENPIN_FIN == rec.status ) {
-            // 検品
-            cync = Kenpin( model,rec )
+        var sync:SyncFixtureBase
+
+        when( rec.status ) {
+            BaseController.KENPIN_FIN -> {
+                // 検品
+                sync = Kenpin( model,rec )
+            }
+            BaseController.TAKING_OUT -> {
+                // 持出
+                sync = Takeout( model,rec )
+            }
+            BaseController.RTN -> {
+                // 持出
+                sync = Rtn( model,rec )
+            }
+            else -> {
+                Log.d("ERROR!!!","パラメータ異常")
+                return
+            }
         }
-        else if( BaseController.TAKING_OUT == rec.status ) {
-            // 持出
-            cync = Takeout( model,rec )
-        }
-        else if( BaseController.RTN == rec.status ) {
-            // 持出
-            cync = Rtn( model,rec )
-        }
-        else {
-            Log.d("ERROR!!!","パラメータ異常")
-            return
-        }
-        cync.exec()
+        sync.exec()
     }
 
     private var vibrationEffect = VibrationEffect.createOneShot(300,

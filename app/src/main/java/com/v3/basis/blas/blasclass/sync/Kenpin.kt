@@ -31,20 +31,26 @@ class Kenpin( model: FixtureCellModel ,fixture : LdbFixtureRecord ) : SyncFixtur
         return payload2
     }
 
+
+    private fun regstNewRecord( result: JSONObject ) {
+        val records = result.getJSONObject("records")
+        Log.d("records",records.toString())
+
+        val new_fixture_id = records.getString("fixture_id")
+        val org_fixture_id = records.getString("temp_fixture_id")
+        Log.d("fixture_id","new:" + new_fixture_id + " org:" + org_fixture_id)
+
+        // SQLite tableを更新する
+        val fixtureController = FixtureController(  model.context, model.project_id.toString())
+        fixtureController.updateFixtureId(org_fixture_id,new_fixture_id)
+
+    }
+
     override fun success(result: JSONObject){
         Log.d("result",result.toString())
 
         if( BaseController.SYNC_STATUS_NEW == fixture.sync_status ) {
-            val records = result.getJSONObject("records")
-            Log.d("records",records.toString())
-
-            val new_fixture_id = records.getString("fixture_id")
-            val org_fixture_id = records.getString("temp_fixture_id")
-            Log.d("fixture_id","new:" + new_fixture_id + " org:" + org_fixture_id)
-
-            // SQLite tableを更新する
-            val fixtureController = FixtureController(  model.context, model.project_id.toString())
-            fixtureController.updateFixtureId(org_fixture_id,new_fixture_id)
+            regstNewRecord(result)
         }
 
         Log.d("OK", "検品同期完了")
