@@ -61,6 +61,9 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
             408 -> {
                 errMsg = "すでに返却済みです"
             }
+            else -> {
+                errMsg = "サーバー同期エラー"
+            }
         }
 
         Log.d("errMsg" ,errMsg)
@@ -68,6 +71,8 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
         // SQLite tableを更新する
         val fixtureController = FixtureController(  model.context, model.project_id.toString())
         fixtureController.setErrorMsg(fixture.fixture_id.toString(),errMsg)
+
+//        model.errorMessage.set(errMsg)
     }
 
 }

@@ -64,6 +64,30 @@ class SyncItem(val context: Context,val token : String, val projectId : String ,
 
     fun error(errorCode: Int, aplCode :Int) {
         Log.d("error","error!!!!!!!")
+
+        var errMsg = ""
+        when( errorCode ) {
+
+            // TODO:三代川　たぶん足りない・・・Listに全部入れよう！(fixtureも含めて)
+            306 -> {
+                errMsg = "重複エラー"
+            }
+            307 -> {
+                errMsg = "設置機器が登録されているものと異なります"
+            }
+            308 -> {
+                errMsg = "撤去機器が登録されているものと異なります"
+            }
+            else -> {
+                errMsg = "サーバー同期エラー"
+            }
+        }
+
+        Log.d("errMsg",errMsg)
+
+        val ctl = ItemsController(context,projectId.toString())
+        ctl.setErrorMsg(itemId.toString(),errMsg)
+
     }
 
 

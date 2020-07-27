@@ -401,6 +401,21 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
     }
 
+    fun setErrorMsg( itemId: String,errMsg : String ) {
+        val cv = ContentValues()
+        cv.put("error_msg",errMsg)
+
+        return try {
+            db?.beginTransaction()
+            db?.update("items",cv,"item_id = ?", arrayOf(itemId))
+            db?.setTransactionSuccessful()
+            db?.endTransaction()!!
+        }
+        catch ( ex : Exception ) {
+            ex.printStackTrace()
+            throw ex
+        }
+    }
 }
 
 
