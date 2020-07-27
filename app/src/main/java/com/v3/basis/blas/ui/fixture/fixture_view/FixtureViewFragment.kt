@@ -25,6 +25,7 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
+import com.v3.basis.blas.blasclass.sync.Lump
 import com.v3.basis.blas.ui.ext.addTitle
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
@@ -125,6 +126,11 @@ class FixtureViewFragment : Fragment() {
         //TODO　fukuda 未送信件数の設定がまだ未実装
         allSyncButton.setOnClickListener {
             //TODO 三代川さん
+            Log.d("フローティングボタン Fixture","Click!!!!")
+
+            Lump(requireContext(),project_id,token).exec()
+
+
         }
 
         try {
@@ -211,6 +217,8 @@ class FixtureViewFragment : Fragment() {
                         , it.sync_status
                         , requireContext()
                     )
+                    model.errorMessage.set(it.error_msg)
+
                     list.add(FixtureListCell(viewModel, model))
                 }
                 list
