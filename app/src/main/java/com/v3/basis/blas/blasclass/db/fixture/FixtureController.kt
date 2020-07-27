@@ -34,6 +34,10 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             " left join orgs as o_item on fixtures.item_org_id = o_item.org_id" +
             " left join users as u_item on fixtures.item_user_id = u_item.user_id"
 
+
+    /**
+     * (表示用：ユーザー、会社の結付あり)機器一覧の取得
+     */
     fun searchDisp( offset: Int = 0, paging: Int = 20): List<LdbFixtureDispRecord> {
         Log.d("search","start!!!!!!!!!!!!!!!!!!!!!!!")
 
@@ -82,6 +86,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         return ret
     }
 
+    /**
+     * (内部処理用:ユーザー、会社の結付なし)機器一覧情報の取得
+     */
     fun search( fixture_id : Long? = null,syncFlg : Boolean = false) : List<LdbFixtureRecord> {
 
         val addList = mutableListOf<String>()
@@ -145,6 +152,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
     }
      */
 
+    /**
+     * シリアルナンバーがDB中に存在するか確認する
+     */
     private fun checkExistSerail( serial_number:String ) : Boolean {
 
         var ret = false
@@ -165,6 +175,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         return ret
     }
 
+    /**
+     * 検品に伴う新規レコード作成
+     */
     private fun kenpin_insert( serial_number: String) : Boolean {
         // user情報を取得する
         val user = getUserInfo()
@@ -215,6 +228,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
     }
 
+    /**
+     * 既存レコードに対する再検品(他社異動など)
+     */
     private fun kenpin_update( serial_number: String,fixture:LdbFixtureRecord,user:LdbUserRecord ) : Boolean {
 
         if( null != user?.user_id )
@@ -247,8 +263,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
     }
 
-
-
+    /**
+     * 指定されたシリアルナンバーのFixtureレコードを返す
+     */
     private fun getEqualFixtureInfo(serial_number: String )  : LdbFixtureRecord? {
 
         val sql = "select * from fixtures where serial_number = ?"
@@ -268,6 +285,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         return fixture
     }
 
+    /**
+     * パーサーを適用する処理
+     */
     fun passPurser( serial_number:String ) : String {
 
         val purserType = getProjectVlue("purser_type")
@@ -303,7 +323,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         return newSerialNumber
     }
 
-
+    /**
+     * 検品処理
+     */
     fun kenpin( serial_number: String): Boolean {
         Log.d("kenpin","start")
         var ret = false
@@ -347,7 +369,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         return ret
     }
 
-
+    /**
+     * 持ち帰り処理の確認
+     */
     private fun checkTakeout(fixture: LdbFixtureRecord?,user: LdbUserRecord?) : Boolean {
         if( null == fixture ) {
             Log.d("takeout message!","未登録のシリアルナンバーです")
@@ -389,6 +413,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         return true
     }
 
+    /**
+     * 持ち帰り処理
+     */
     fun takeout(serial_number: String): Boolean {
 
         val serial_number = passPurser( serial_number )
@@ -436,7 +463,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         }
     }
 
-
+    /**
+     * 返却処理の確認
+     */
     // TODO:takeoutと殆ど同じだから工夫しろ！
     private fun checkuRtn(fixture: LdbFixtureRecord?,user: LdbUserRecord?) : Boolean {
 
@@ -481,6 +510,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         return true
     }
 
+    /**
+     * 返却処理
+     */
     fun rtn(serial_number: String): Boolean {
 
         val serial_number = passPurser( serial_number )
@@ -529,6 +561,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         }
     }
 
+    /**
+     * 仮IDをサーバーから取得した正しいIDに直す
+     */
     fun updateFixtureId( orgFixtureId:String, newFixtureId:String) : Boolean {
 
         val cv = ContentValues()
@@ -549,6 +584,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         }
     }
 
+    /**
+     * sqliteのsync_status(同期状況)を0(何もなし)に戻す
+     */
     fun resetSyncStatus( fixtureId:String ) : Boolean {
 
         val cv = ContentValues()
@@ -569,4 +607,21 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
     }
 
+    fun setErrorMsg( fixtureId: String,errMsg : String ) {
+
+        val cv = ContentValues()
+        cv.put("error_msg",errMsg)
+
+        return try {
+            db?.beginTransaction()
+            db?.update("fixtures",cv,"fixture_id = ?", arrayOf(fixtureId))
+            db?.setTransactionSuccessful()
+            db?.endTransaction()!!
+        }
+        catch ( ex : Exception ) {
+            ex.printStackTrace()
+            throw ex
+        }
+
+    }
 }
