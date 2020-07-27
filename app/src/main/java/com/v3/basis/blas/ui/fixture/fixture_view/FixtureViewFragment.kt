@@ -217,6 +217,8 @@ class FixtureViewFragment : Fragment() {
                         , it.sync_status
                         , requireContext()
                     )
+                    model.errorMessage.set(it.error_msg)
+
                     list.add(FixtureListCell(viewModel, model))
                 }
                 list

@@ -307,12 +307,10 @@ class ItemViewFragment : Fragment() {
                     }
                     .addTo(disposables)
 
-
-                // TODO:三代川 sqliteから取得すること 1
 //                val payload2 = mapOf("token" to token, "project_id" to projectId)
 //                BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
             }else{
-                throw java.lang.Exception("Failed to receive internal data ")
+                throw Exception("Failed to receive internal data ")
             }
         }catch (e:Exception){
             progressBarFlg = false
@@ -485,14 +483,14 @@ class ItemViewFragment : Fragment() {
         Log.d("デバック処理","エンドshowの値=>${endShow}")
 
         if (endShow) {
-            Log.d("cardManager","ゴミ箱非表示")
+            Log.d("cardManager","ゴミ箱表示")
             list.forEach {
                 val valueFlg = it["end_flg"].toString()
                 val item_id = it["item_id"].toString()
                 val syncStatus = it["sync_status"]?.toInt() ?: 0
                 var text: String? = ""
                 text = createCardText(text, it, colMax)
-                createCard(item_id, text,valueFlg, syncStatus)
+                createCard(item_id, text,valueFlg, syncStatus,it["error_msg"])
             }
         } else {
             Log.d("cardManager","ゴミ箱非表示")
@@ -503,7 +501,7 @@ class ItemViewFragment : Fragment() {
                     val syncStatus = it["sync_status"]?.toInt() ?: 0
                     var text: String? = ""
                     text = createCardText(text, it, colMax)
-                    createCard(item_id, text, valueFlg, syncStatus)
+                    createCard(item_id, text, valueFlg, syncStatus,it["error_msg"])
                 }
             }
         }
@@ -545,7 +543,7 @@ class ItemViewFragment : Fragment() {
     /**
      * カードビューを作成する関数
      */
-    fun createCard(item_id:String,text: String?,valueFlg : String, syncStatus: Int){
+    fun createCard(item_id:String,text: String?,valueFlg : String, syncStatus: Int,errMsg:String?){
         val rowModel = RowModel().also {
             if(valueFlg == FieldType.END) {
                 it.title = "${item_id}${FieldType.ENDTEXT}"
@@ -565,6 +563,9 @@ class ItemViewFragment : Fragment() {
             it.token = token
             it.itemList = itemListAll
             it.projectNames = projectNames
+            if( null != errMsg ) {
+                it.errMsg = errMsg
+            }
         }
 
         val valueList = itemList.filter { it["item_id"] == rowModel.itemId }.first().let {
@@ -594,6 +595,8 @@ class ItemViewFragment : Fragment() {
             syncStatus,
             requireContext()
         )
+        model.errorMessage.set(rowModel.errMsg)
+
         dataList.add(ItemsListCell(viewModel, model))
         Log.d("チェック!!","dataListの値 => ${dataList}")
     }
