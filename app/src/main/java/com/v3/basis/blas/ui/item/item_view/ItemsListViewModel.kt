@@ -1,6 +1,7 @@
 package com.v3.basis.blas.ui.item.item_view
 
 import android.util.Log
+import androidx.databinding.ObservableField
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.Items
 import com.v3.basis.blas.blasclass.db.data.ItemsController
@@ -17,6 +18,8 @@ class ItemsListViewModel: ServerSyncViewModel() {
     val transitionItemImage: PublishSubject<ItemsCellModel> = PublishSubject.create()
     val transitionItemEdit: PublishSubject<ItemsCellModel> = PublishSubject.create()
 
+
+    val sendCount: ObservableField<Int> = ObservableField(0)
 
     override fun syncDB(serverModel: ServerSyncModel) {
         Log.d("syncDB()","start")

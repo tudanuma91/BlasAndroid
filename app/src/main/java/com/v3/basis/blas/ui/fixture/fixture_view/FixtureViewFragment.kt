@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,7 +27,9 @@ import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
 import com.v3.basis.blas.blasclass.sync.Lump
+import com.v3.basis.blas.databinding.FragmentFixtureViewBinding
 import com.v3.basis.blas.ui.ext.addTitle
+import com.v3.basis.blas.ui.ext.getStringExtra
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
 import io.reactivex.Single
@@ -52,6 +55,7 @@ class FixtureViewFragment : Fragment() {
     private var dataListAll = mutableListOf<FixtureListCell>()
     private var dataList = mutableListOf<FixtureListCell>()
     private var valueMap : MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
+    private var searchValueMap:MutableMap<String,String?> = mutableMapOf()
     private var msg = BlasMsg()
     private val toastErrorLen = Toast.LENGTH_LONG
     private var helper = RestHelper()
@@ -66,6 +70,8 @@ class FixtureViewFragment : Fragment() {
 
     private var currentIndex: Int = 0
     private var offset: Int = 0
+
+    private lateinit var bind: FragmentFixtureViewBinding
 
     companion object {
         const val CREATE_UNIT = 20
@@ -98,6 +104,9 @@ class FixtureViewFragment : Fragment() {
         if (extras?.getString("project_id") != null) {
             project_id = extras.getString("project_id").toString()
         }
+
+        checkSearchMap()
+
         fixtureController = FixtureController(requireContext(), project_id)
         fixtureController.errorMessageEvent
             .observeOn(AndroidSchedulers.mainThread())
@@ -116,14 +125,40 @@ class FixtureViewFragment : Fragment() {
             .subscribeBy { Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show() }
             .addTo(disposables)
 
-        return inflater.inflate(R.layout.fragment_fixture_view, container, false)
+        bind = DataBindingUtil.inflate(inflater, R.layout.fragment_fixture_view, container, false)
+        bind.vm = viewModel
+
+        return bind.root
+    }
+
+    private fun checkSearchMap() {
+
+        searchValueMap.set("serial_number",getStringExtra("freeWord"))
+        searchValueMap.set("serial_number",getStringExtra("serialNumber"))
+        searchValueMap.set("fixture_id",getStringExtra("dataId"))
+        searchValueMap.set("FixOrg",getStringExtra("kenpinOrg"))
+        searchValueMap.set("FixUser",getStringExtra("kenpinUser"))
+        searchValueMap.set("kenpinDayMin",getStringExtra("kenpinDayMin"))
+        searchValueMap.set("kenpinDayMax",getStringExtra("kenpinDayMax"))
+        searchValueMap.set("TakeOutOrg",getStringExtra("takeOutOrg"))
+        searchValueMap.set("TakeOutUser",getStringExtra("takeOutUser"))
+        searchValueMap.set("takeOutDayMin",getStringExtra("takeOutDayMin"))
+        searchValueMap.set("takeOutDayMax",getStringExtra("takeOutDayMax"))
+        searchValueMap.set("RtnOrg",getStringExtra("returnOrg"))
+        searchValueMap.set("RtnUser",getStringExtra("returnUser"))
+        searchValueMap.set("returnDayMin",getStringExtra("returnDayMin"))
+        searchValueMap.set("returnDayMax",getStringExtra("returnDayMax"))
+        searchValueMap.set("ItemOrg",getStringExtra("itemOrg"))
+        searchValueMap.set("ItemUser",getStringExtra("itemUser"))
+        searchValueMap.set("itemDayMin",getStringExtra("itemDayMin"))
+        searchValueMap.set("itemDayMax",getStringExtra("itemDayMax"))
+        searchValueMap.set("status",getStringExtra("status"))
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         //全て同期のボタン
-        //TODO　fukuda 未送信件数の設定がまだ未実装
         allSyncButton.setOnClickListener {
             //TODO 三代川さん
             Log.d("フローティングボタン Fixture","Click!!!!")
@@ -194,7 +229,7 @@ class FixtureViewFragment : Fragment() {
 
     private fun searchAsync() {
 
-        Single.fromCallable { fixtureController.searchDisp(offset = offset) }
+        Single.fromCallable { fixtureController.searchDisp(offset = offset, searchMap = searchValueMap) }
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .map {
@@ -252,6 +287,14 @@ class FixtureViewFragment : Fragment() {
         if (dataList.isNotEmpty()) {
             currentIndex += CREATE_UNIT
         }
+
+        setNotSendCount(filteredList)
+    }
+
+    private fun setNotSendCount(list: List<FixtureListCell>) {
+
+        val count = list.filter { it.model.syncVisible.get() }.size
+        viewModel.sendCount.set((viewModel.sendCount.get() as Int) + count)
     }
 
     /**

@@ -253,7 +253,7 @@ class FixtureSearchFragment : Fragment() {
         Day.setOnClickListener {
             val dtp =
                 DatePickerDialog(
-                    getContext()!!,
+                    requireContext(),
                     DatePickerDialog.OnDateSetListener { view, y, m, d ->
                         //フォーマットを作成
                         Day.setText(String.format("%d-%02d-%02d", y, m + 1, d))

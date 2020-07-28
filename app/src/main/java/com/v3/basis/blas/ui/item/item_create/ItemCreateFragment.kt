@@ -3,6 +3,7 @@ package com.v3.basis.blas.ui.item.item_create
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Context
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.*
@@ -150,6 +151,7 @@ class ItemCreateFragment : Fragment() {
             .addTo(disposables)
 
         subscribeFormEvent()
+        vibrator = requireActivity().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
         Log.d("ItemCreateFragment.onCreateView()","end")
         return bind.root
@@ -206,8 +208,7 @@ class ItemCreateFragment : Fragment() {
                 startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
                     val qr = r.data?.getStringExtra("qr_code")
                     it.text.set(qr)
-                    // TODO:福田さん　エラーのためいったんコメントアウト
-                    // playSoundAndVibe()
+                     playSoundAndVibe()
                 }
             }
             .addTo(disposables)

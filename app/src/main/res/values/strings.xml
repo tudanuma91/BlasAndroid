@@ -166,6 +166,7 @@
     <!--受け取り失敗系-->
     <string name="other_recieve_error">内部データの取得に失敗しました。</string>
 
+    <string name="all_sync_text">未送信\n%1$d件</string>
 
 
 </resources>

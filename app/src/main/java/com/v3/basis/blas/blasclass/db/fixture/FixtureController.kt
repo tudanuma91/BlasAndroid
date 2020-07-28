@@ -38,8 +38,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
     /**
      * (表示用：ユーザー、会社の結付あり)機器一覧の取得
      */
-    fun searchDisp( offset: Int = 0, paging: Int = 20): List<LdbFixtureDispRecord> {
+    fun searchDisp( offset: Int = 0, paging: Int = 20, searchMap: Map<String, String?>): List<LdbFixtureDispRecord> {
         Log.d("search","start!!!!!!!!!!!!!!!!!!!!!!!")
+        //TODO 三代川さん?
 
         val user = getUserInfo()
         var groupId = 1

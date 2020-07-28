@@ -2,6 +2,8 @@ package com.v3.basis.blas.ui.fixture.fixture_view
 
 import android.os.VibrationEffect
 import android.util.Log
+import androidx.databinding.ObservableField
+import androidx.lifecycle.ViewModel
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.sync.Kenpin
@@ -23,6 +25,8 @@ class FixtureListViewModel: ServerSyncViewModel() {
     private lateinit var model: FixtureCellModel
     val errorEvent: PublishSubject<String> = PublishSubject.create()
     private val disposable = CompositeDisposable()
+
+    val sendCount: ObservableField<Int> = ObservableField(0)
 
     override fun syncDB(serverModel: ServerSyncModel) {
 

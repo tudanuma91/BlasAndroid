@@ -27,6 +27,7 @@ import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import com.v3.basis.blas.blasclass.sync.Lump
 import com.v3.basis.blas.ui.ext.addTitle
+import com.v3.basis.blas.ui.fixture.fixture_view.FixtureListCell
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
 import io.reactivex.Scheduler
@@ -472,6 +473,11 @@ class ItemViewFragment : Fragment() {
         createCardManager(list,colMax)
     }
 
+    private fun setNotSendCount(list: List<ItemsListCell>) {
+
+        val count = list.filter { it.model.syncVisible.get() }.size
+        viewModel.sendCount.set((viewModel.sendCount.get() as Int) + count)
+    }
 
 
     /**
@@ -598,6 +604,8 @@ class ItemViewFragment : Fragment() {
         model.errorMessage.set(rowModel.errMsg)
 
         dataList.add(ItemsListCell(viewModel, model))
+        val count = dataList.filter { it.model.syncVisible.get() }.size
+        allSyncButton.text = "未送信\n${count}件"
         Log.d("チェック!!","dataListの値 => ${dataList}")
     }
 
