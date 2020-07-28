@@ -37,7 +37,8 @@ class FixtureReturnFragment : Fragment() {
     lateinit var projectName:String
     lateinit var projectId:String
     private var McameraManager: CameraManager? = null
-    private var McameraID: String? = null
+    //使用していないため、コメントアウトします
+    //private var McameraID: String? = null
     private var SW: Boolean = false
     private var fragm : FragmentActivity? = null
     lateinit var root :View
@@ -87,9 +88,12 @@ class FixtureReturnFragment : Fragment() {
 
         //ボタンがタップされたときの処理
         btn_light.setOnClickListener{
+           /*
+           使用していないためコメントアウトします
             if(McameraID == null){
                 Log.d("null","nullだったよ")
             }
+            */
             try {
                 if(SW == false){
                     //SWがfalseならばトーチモードをtrueにしてLDEオン

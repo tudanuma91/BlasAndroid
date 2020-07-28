@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Color
 import android.hardware.camera2.CameraManager
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -44,7 +45,8 @@ class FixtureTakeOutFragment : Fragment() {
     private val toastErrorLen = Toast.LENGTH_LONG
     private lateinit var token:String
     private var McameraManager: CameraManager? = null
-    private var McameraID: String? = null
+    //使っていないため、コメントアウトします
+    //private var McameraID: String? = null
     private var SW: Boolean = false
     private lateinit var projectName:String
     private lateinit var projectId:String
@@ -90,9 +92,12 @@ class FixtureTakeOutFragment : Fragment() {
 
         //ボタンがタップされたときの処理
         btn_light.setOnClickListener{
+            /*
+            使用していないため、コメントアウトします
             if(McameraID == null){
-                Toast.makeText(activity,"ライトがありません",Toast.LENGTH_LONG).show()
+                Log.d("null","ライトが存在しない")
             }
+            */
             try {
                 if(SW == false){
                     //SWがfalseならばトーチモードをtrueにしてLDEオン
