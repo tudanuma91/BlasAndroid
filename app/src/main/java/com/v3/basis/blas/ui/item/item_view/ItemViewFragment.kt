@@ -127,6 +127,9 @@ class ItemViewFragment : Fragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
                 val intent = Intent(requireContext(), ItemImageActivity::class.java)
+                intent.putExtra("item_id", "${it.item_id}")
+                intent.putExtra("token", token)
+                intent.putExtra("project_id", projectId)
                 requireContext().startActivity(intent)
             }
             .addTo(disposables)
@@ -658,10 +661,6 @@ class ItemViewFragment : Fragment() {
                 }
             }
             .addTo(disposables)
-
-
-
-
     }
 
 
