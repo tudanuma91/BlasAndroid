@@ -20,8 +20,9 @@ import kotlinx.android.synthetic.main.activity_item.*
 import android.content.Intent
 
 
-
-
+/**
+ * データ管理画面クラス
+ */
 class ItemActivity : AppCompatActivity() {
 
     companion object {
@@ -71,6 +72,10 @@ class ItemActivity : AppCompatActivity() {
         setBlasCustomView()
     }
 
+    /**
+     * [説明]
+     * データ一覧画面で画面上部の←ボタンを押したときにコールされる。
+     */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val navController = findNavController(R.id.nav_host_fragment)
         when (item.itemId) {

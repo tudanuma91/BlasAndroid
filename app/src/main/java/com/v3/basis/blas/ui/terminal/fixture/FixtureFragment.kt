@@ -107,6 +107,10 @@ open class FixtureFragment : Fragment() {
             .addTo(disposables)
     }
 
+    /**
+     * [説明]
+     * BLASからプロジェクト一覧を取得する
+     */
     private fun makeProjectList(update: Boolean = false) {
         if (update) {
             if (beforeFilterWord != filterWord) {
@@ -120,12 +124,18 @@ open class FixtureFragment : Fragment() {
         }
     }
 
+    /**
+     * [説明]
+     * プロジェクト選択時にデータ管理画面、または機器管理画面を呼び出す。
+     * データ管理画面、機器管理画面のどちらを呼び出すかは、画面のタイトルで判定する
+     */
     open fun clickCell(rowModel: RowModel, model: DownloadModel) {
 
         if (model.doneDownloaded.get()) {
             val title = getCustomActionTitle()
             val title2 = requireContext().resources.getString(R.string.navi_title_terminal_item)
             if (title == title2) {
+                //データ管理の画面を呼び出す
                 Log.d(
                     "DataManagement",
                     "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"
@@ -136,6 +146,7 @@ open class FixtureFragment : Fragment() {
                 intent.putExtra("projectName", rowModel.title)
                 startActivity(intent)
             } else {
+                //機器管理の画面を呼び出す
                 Log.d(
                     "DataManagement",
                     "click_NAME => ${rowModel.title}/click_ID => ${rowModel.detail}"

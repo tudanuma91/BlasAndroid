@@ -19,6 +19,10 @@ import kotlin.reflect.full.isSupertypeOf
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.starProjectedType
 
+/**
+ * [説明]
+ * SQLiteのDBを管理するクラス。
+ */
 abstract class BaseController(
     private val context: Context
     ,val projectId: String
