@@ -76,7 +76,7 @@ class FixtureSearchFragment : Fragment() {
         root = inflater.inflate(R.layout.fragment_fixture_search, container, false)
 
         //配列に入力フォームを格納する。
-        formMap.set("freeWord", root.findViewById<EditText>(R.id.fixFreeWordValue))
+//        formMap.set("freeWord", root.findViewById<EditText>(R.id.fixFreeWordValue))
         formMap.set("serialNumber", root.findViewById<EditText>(R.id.fixSerialNumberSelect))
         formMap.set("dataId", root.findViewById<EditText>(R.id.fixDataIdSelect))
         //ステータスは別口で取得すること
@@ -169,8 +169,8 @@ class FixtureSearchFragment : Fragment() {
                         }
                     } else {
                         //正常ケース
-                        val freeWordEdit = root.findViewById<EditText>(R.id.fixFreeWordValue)
-                        freeWord = freeWordEdit.text.toString()
+//                        val freeWordEdit = root.findViewById<EditText>(R.id.fixFreeWordValue)
+//                        freeWord = freeWordEdit.text.toString()
                         startSearch()
                     }
                 }
@@ -335,7 +335,7 @@ class FixtureSearchFragment : Fragment() {
     private fun titlePicker(idx: String): TextView? {
         val title :TextView ?
         when(idx) {
-            "freeWord" -> { title = root.findViewById<TextView>(R.id.fixFreeWord) }
+//            "freeWord" -> { title = root.findViewById<TextView>(R.id.fixFreeWord) }
             "serialNumber"->{ title = root.findViewById<TextView>(R.id.fixSerialNumber) }
             "dataId"->{ title = root.findViewById<TextView>(R.id.fixDataId) }
             "kenpinOrg"->{ title = root.findViewById<TextView>(R.id.fixKenpinOrg) }

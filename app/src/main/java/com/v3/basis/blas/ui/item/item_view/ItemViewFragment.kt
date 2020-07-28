@@ -225,7 +225,6 @@ class ItemViewFragment : Fragment() {
         //全て同期のボタン
         //TODO　fukuda 未送信件数の設定がまだ未実装
         allSyncButton.setOnClickListener {
-            //TODO 三代川さん
             Log.d("フローティングボタン Item","Click!!!!")
             Lump(requireContext(),projectId,token).exec()
         }

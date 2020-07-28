@@ -2,7 +2,6 @@ package com.v3.basis.blas.blasclass.db.fixture
 
 import android.content.ContentValues
 import android.content.Context
-import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.Purser
@@ -34,14 +33,35 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             " left join orgs as o_item on fixtures.item_org_id = o_item.org_id" +
             " left join users as u_item on fixtures.item_user_id = u_item.user_id"
 
+    private val keyChanger = mapOf(
+        "serial_number" to "fixtures.serial_number"
+        ,"fixture_id" to "fixtures.fixture_id"
+        ,"FixOrg" to "o_fix.name"
+        ,"FixUser" to "u_fix.name"
+        ,"kenpinDayMin" to "fixtures.fix_date"
+        ,"kenpinDayMax" to "fixtures.fix_date"
+        ,"TakeOutOrg" to "o_takeout.name"
+        ,"TakeOutUser" to "u_takeout.name"
+        ,"takeOutDayMin" to "fixtures.takeout_date"
+        ,"takeOutDayMax" to "fixtures.takeout_date"
+        ,"RtnOrg" to "o_rtn.name"
+        ,"RtnUser" to "u_rtn.name"
+        ,"returnDayMin" to "fixtures.rtn_date"
+        ,"returnDayMax" to "fixtures.rtn_date"
+        ,"ItemOrg" to "o_item.name"
+        ,"ItemUser" to "u_item.name"
+        ,"itemDayMin" to "fixtures.item_date"
+        ,"itemDayMax" to "fixtures.item_date"
+        ,"status" to "fixtures.status"
+    )
+
+    private var additionList = arrayOf<String>()
+    private var plHolder  = arrayOf<String>()
 
     /**
-     * (表示用：ユーザー、会社の結付あり)機器一覧の取得
+     * 自社だけ表示を判断
      */
-    fun searchDisp( offset: Int = 0, paging: Int = 20, searchMap: Map<String, String?>): List<LdbFixtureDispRecord> {
-        Log.d("search","start!!!!!!!!!!!!!!!!!!!!!!!")
-        //TODO 三代川さん?
-
+    private fun chgeckLimitMyOrg() {
         val user = getUserInfo()
         var groupId = 1
 
@@ -49,28 +69,119 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             groupId = user.group_id
         }
         Log.d("group_id取得！！！",groupId.toString())
+
         val fixtureDispRange = getGroupsValue(groupId,"fixture_disp_range")
         Log.d("fixtureDispRange",fixtureDispRange.toString())
-
-        var sqlAdition = ""
-        var plHolder  = arrayOf<String>()
 
         if( 0 == fixtureDispRange ) {
             // projectの設定に従う
             val showData = getProjectVlue("show_data")
             if( 1 == showData ) {
                 // 自分の会社分しか見れない
-                //val myOrgId = getUserInfo(db,"org_id")
                 val myOrgId = user?.org_id
-                sqlAdition = " where fixtures.fix_org_id = ?"
+                additionList += " fixtures.fix_org_id = ? "
                 plHolder += myOrgId.toString()
             }
         }
 
+    }
+
+    /**
+     * 検索条件の生成
+     */
+    private fun createAddition(searchMap: Map<String, String?>) {
+        Log.d("searchMap",searchMap.toString())
+
+        searchMap.forEach {
+            if( null == it.value || "" == it.value ) {
+                return@forEach
+            }
+
+            when(it.key) {
+                "freeWord" -> {
+                    // 何もしない
+                    return@forEach
+                }
+                "kenpinDayMin","takeOutDayMin","returnDayMin","itemDayMin" -> {
+                    additionList += keyChanger[it.key] + " >= ? "
+                    plHolder += it.value + " 00:00:00"
+                }
+                "kenpinDayMax","takeOutDayMax","returnDayMax","itemDayMax" -> {
+                    additionList += keyChanger[it.key] + " < ? "
+                    plHolder += it.value + " 00:00:00"
+                }
+                "status" -> {
+                    when( it.value ) {
+                        "持出可" -> {
+                            additionList += "(" + keyChanger[it.key] + " = 0 or "+ keyChanger[it.key] + " = 4)"
+                        }
+                        "持出中" -> {
+                            additionList += keyChanger[it.key] + " = 1 "
+
+                        }
+                        "設置済" -> {
+                            additionList += keyChanger[it.key] + " = 2 "
+
+                        }
+                        "持出不可" -> {
+                            additionList += keyChanger[it.key] + " = 3 "
+                        }
+                        else -> {
+                            return@forEach
+                        }
+                    }
+                }
+
+                else -> {
+                    additionList += keyChanger[it.key] + " like ? "
+                    plHolder += "%" +  it.value + "%"
+                }
+            }
+        }
+    }
+
+    /**
+     * where文を生成する
+     */
+    private fun createSqlWhere(additionList : Array<String> ) : String {
+
+        var sqlAdition = ""
+        if( additionList.count() > 0 ) {
+            var first = true
+
+            sqlAdition += " where "
+            additionList.forEach {
+                if( !first ) {
+                    sqlAdition += " and "
+                }
+                sqlAdition += it
+                first = false
+            }
+        }
+
+        return  sqlAdition
+    }
+
+
+    /**
+     * (表示用：ユーザー、会社の結付あり)機器一覧の取得
+     */
+    fun searchDisp( offset: Int = 0, paging: Int = 20, searchMap: Map<String, String?>): List<LdbFixtureDispRecord> {
+        Log.d("search","start!!!!!!!!!!!!!!!!!!!!!!!")
+
+        chgeckLimitMyOrg()
+        createAddition(searchMap)
+
+        // where文を生成
+        val sqlWhere = createSqlWhere( additionList )
+
+        // limit,offset
         plHolder += paging.toString()
         plHolder += offset.toString()
 
-        val sql = searchDispFixtureSql + sqlAdition  + " order by fixtures.create_date desc limit ? offset ? "
+        val sql = searchDispFixtureSql + sqlWhere  + " order by fixtures.create_date desc limit ? offset ? "
+        Log.d("search fixture sql",sql)
+//        Log.d("plHolder",plHolder.toString())
 
         val cursor = db?.rawQuery(sql, plHolder)
         val ret = mutableListOf<LdbFixtureDispRecord>()

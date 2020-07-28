@@ -124,7 +124,6 @@ class ItemSearchFragment : Fragment() {
 
             //レイアウトの設置位置の設定
 
-            // TODO:三代川 sqliteから取得する！！
             Single.fromCallable { FieldController(requireContext(),projectId).searchDisp() }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy {

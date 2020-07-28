@@ -24,6 +24,7 @@
                 android:layout_height="25dp"
                 android:layout_weight="0.7" />
 
+<!--
             <TextView
                 android:id="@+id/fixFreeWord"
                 android:layout_width="match_parent"
@@ -38,7 +39,7 @@
                 android:layout_weight="0.3"
                 android:ems="10"
                 android:inputType="textPersonName" />
-
+-->
 
             <TextView
                 android:id="@+id/fixSerialNumber"

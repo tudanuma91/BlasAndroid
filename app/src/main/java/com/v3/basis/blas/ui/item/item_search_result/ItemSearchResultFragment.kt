@@ -222,7 +222,7 @@ class ItemSearchResultFragment : Fragment() {
 
         val itemsController = ItemsController(requireContext(),projectId)
 
-        // TODO:findValueMapから検索条件を作る
+        // TODO:三代川　findValueMapから検索条件を作る
         Single.fromCallable { itemsController.search() }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {

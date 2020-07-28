@@ -133,7 +133,7 @@ class FixtureViewFragment : Fragment() {
 
     private fun checkSearchMap() {
 
-        searchValueMap.set("serial_number",getStringExtra("freeWord"))
+        searchValueMap.set("freeWord",getStringExtra("freeWord"))
         searchValueMap.set("serial_number",getStringExtra("serialNumber"))
         searchValueMap.set("fixture_id",getStringExtra("dataId"))
         searchValueMap.set("FixOrg",getStringExtra("kenpinOrg"))
@@ -160,12 +160,8 @@ class FixtureViewFragment : Fragment() {
 
         //全て同期のボタン
         allSyncButton.setOnClickListener {
-            //TODO 三代川さん
             Log.d("フローティングボタン Fixture","Click!!!!")
-
             Lump(requireContext(),project_id,token).exec()
-
-
         }
 
         try {
