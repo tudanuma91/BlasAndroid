@@ -6,6 +6,7 @@ import android.util.Log
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkFixture
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkRmFixture
+import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.db.fixture.Fixtures
 import com.v3.basis.blas.blasclass.ldb.LdbRmFixtureRecord
 import java.time.LocalDateTime
@@ -20,25 +21,94 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
     }
 
+    val addList = mutableListOf<String>()
+    var plHolder  = arrayOf<String>()
+
+    /**
+     * ワード検索条件を構築
+     */
+    private fun createAddList(findValueMap:MutableMap<String,String?>) {
+        Log.d("createAddList()","start")
+
+        if( !findValueMap.containsKey("freeWord") )
+            return
+        else if(findValueMap["freeWord"].isNullOrBlank())
+            return
+
+        val freeWord = findValueMap["freeWord"]
+
+        val user = getUserInfo()
+        var groupId = 0
+        if( null == user ) {
+            groupId = 1
+        }
+        else {
+            groupId = user.group_id
+        }
+
+        val dataDispHiddenCol = getGroupsValue(groupId,"data_disp_hidden_column")
+        val fields = FieldController(context, projectId).searchDisp()
+        var additionOr = arrayOf<String>()
+
+        fields.forEach {
+            var disp = false
+            if( 1 == dataDispHiddenCol ) {
+                disp = true
+            }
+            else {
+                if( 1 == it.edit_id || 2 == it.edit_id ) {
+                    disp = true
+                }
+            }
+
+            if( disp ) {
+                additionOr +=   " fld" + it.col + " like ? "
+                plHolder += "%" + freeWord + "%"
+            }
+        }
+
+        var orStr = ""
+        if( additionOr.count() > 0 ) {
+
+            orStr += " ("
+            var first = true
+            additionOr.forEach {
+                if( !first ) {
+                    orStr += " or "
+                }
+                orStr += it
+                first = false
+            }
+            orStr += ") "
+        }
+        addList += orStr
+    }
+
     fun search(
         item_id: Long = 0L, offset: Int = 0, paging: Int = 20,endShow:Boolean = false,syncFlg:Boolean = false
+        , findValueMap:MutableMap<String,String?>? = null
     ): MutableList<MutableMap<String, String?>> {
 
         val cursor = when {
             0L == item_id -> {
 
-                val addList = mutableListOf<String>()
                 var addition = ""
-                var plHolder  = arrayOf<String>()
 
+                if( null != findValueMap ) {
+                    // ワード検索
+                    createAddList(findValueMap)
+                }
 
+                // ゴミ箱
                 if( !endShow ) {
                     addList += " end_flg = 0 "
                 }
+                // 未同期のみ
                 if( syncFlg ) {
                     addList += " sync_status > 0 "
                 }
 
+                // where文作成
                 if( addList.count() > 0 ) {
                     addition += " where "
                     var first = true
@@ -84,7 +154,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         return ret
     }
 
-    private fun validQr( map: Map<String, String?> ,orgItemMap : MutableMap<String, String?>? = null ) {
+    private fun ctlValidQr(map: Map<String, String?>, orgItemMap : MutableMap<String, String?>? = null ) {
         val inst = getFieldCols( FIELD_TYPE_QRCODE_INT_INSPECTION )
         val rms = getFieldCols(FIELD_TYPE_QRCODE_INT_RM)
 
@@ -113,7 +183,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         Log.d("insert()","start")
 
         // QRコードバリデート処理
-        validQr(map)
+        ctlValidQr(map)
 
         val item = Items()
         setProperty(item, map)
@@ -165,7 +235,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
         // QRコードバリデート処理
         val orgItemMap = map["item_id"]?.toLong()?.let { search(it) }
-        orgItemMap?.get(0)?.let { validQr(map, it) }
+        orgItemMap?.get(0)?.let { ctlValidQr(map, it) }
 
         // mapで来たのをclass入れる
          val item = Items()

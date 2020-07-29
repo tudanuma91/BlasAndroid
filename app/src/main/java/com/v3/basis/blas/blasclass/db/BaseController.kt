@@ -24,7 +24,7 @@ import kotlin.reflect.full.starProjectedType
  * SQLiteのDBを管理するクラス。
  */
 abstract class BaseController(
-    private val context: Context
+    protected val context: Context
     ,val projectId: String
 ) {
 

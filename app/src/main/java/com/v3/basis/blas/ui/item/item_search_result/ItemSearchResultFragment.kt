@@ -223,25 +223,27 @@ class ItemSearchResultFragment : Fragment() {
         val itemsController = ItemsController(requireContext(),projectId)
 
         // TODO:三代川　findValueMapから検索条件を作る
-        Single.fromCallable { itemsController.search() }
+        Single.fromCallable { itemsController.search( findValueMap = findValueMap ) }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
-                if (it.isNotEmpty()) {
-
-                    // TODO:一覧画面を表示したい。なにすればよい？
+                if ( it.isNotEmpty() ) {
                     itemList.clear()
                     jsonItemList.clear()
-                    //jsonItemList.set("1",result)
-
                     setAdapter(it)
                 } else {
-                    throw Exception()
+                    // TODO:とりあえず
+                    val title = getString(R.string.dialog_title)
+                    val text = getString(R.string.search_error)
+                    AlertDialog.Builder(activity)
+                        .setTitle(title)
+                        .setMessage(text)
+                        .setPositiveButton("OK"){ dialog, which ->
+                            requireActivity().finish()
+                        }
+                        .show()
                 }
             }
             .addTo(disposables)
-
-
-
     }
 
     private fun createDataList( itemInfo : MutableList<MutableMap<String, String?>> ) {
