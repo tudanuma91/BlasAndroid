@@ -163,6 +163,8 @@ class ItemSearchFragment : Fragment() {
         rootView.addView(freeWordSearch)
         titleMap.set(key = "freeWord", value = title)
 
+        // TODO: 三代川(メモ) 一旦フリーワードだけの対応とする
+/*
         fieldList.forEach {field ->
 
             val formSectionTitle = formAction.createFormSectionTitle2(layoutParams,field.name)
@@ -281,6 +283,7 @@ class ItemSearchFragment : Fragment() {
             rootView.addView(space)
             cnt += 1
         }
+*/
 
         //ボタンの作成処理
         val button = Button(activity)

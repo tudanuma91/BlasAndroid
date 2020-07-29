@@ -233,7 +233,7 @@ class ItemSearchResultFragment : Fragment() {
                     jsonItemList.clear()
                     //jsonItemList.set("1",result)
 
-                    setAdapter()
+                    setAdapter(it)
                 } else {
                     throw Exception()
                 }
@@ -244,10 +244,10 @@ class ItemSearchResultFragment : Fragment() {
 
     }
 
-    private fun createDataList() {
+    private fun createDataList( itemInfo : MutableList<MutableMap<String, String?>> ) {
         var colMax = fieldMap.size
-        var itemInfo = helper.createItemList(jsonItemList, colMax )
-        itemInfo = searchAndroid(findValueMap,itemInfo,dateTimeCol,checkValueCol)
+//        var itemInfo = helper.createItemList(jsonItemList, colMax )
+//        itemInfo = searchAndroid(findValueMap,itemInfo,dateTimeCol,checkValueCol)
         itemList.addAll(itemInfo)
 
         baseList = itemList
@@ -269,9 +269,9 @@ class ItemSearchResultFragment : Fragment() {
     /**
      *  データ登録
      */
-    private fun setAdapter() {
+    private fun setAdapter( itemInfo : MutableList<MutableMap<String, String?>> ) {
         Log.d("konishi", "setAdapter")
-        createDataList()
+        createDataList( itemInfo )
         adapter.notifyItemInserted(0)
         progressBarFlg = false
         chkProgress(progressBarFlg,rootView)
@@ -280,6 +280,7 @@ class ItemSearchResultFragment : Fragment() {
     /**
      * データ取得時
      */
+/*
     private fun itemRecv(result: JSONObject) {
         itemList.clear()
         jsonItemList.clear()
@@ -290,10 +291,12 @@ class ItemSearchResultFragment : Fragment() {
             setAdapter()
         }
     }
+*/
 
     /**
      * フィールド取得時
      */
+/*
     private fun fieldRecv(result: JSONObject) {
         Log.d("ItemSearchResultFragment.filedRecv()","start")
 
@@ -311,6 +314,7 @@ class ItemSearchResultFragment : Fragment() {
             setAdapter()
         }
     }
+*/
 
     /**
      * フィールド取得失敗時
@@ -350,7 +354,7 @@ class ItemSearchResultFragment : Fragment() {
         Log.d("デバック処理","エンドshowの値=>${endShow}")
         if(mode == "New"){
             list.forEach {
-                val valueFlg = it["endFlg"].toString()
+                val valueFlg = it["end_flg"].toString()
                 if (valueFlg == FieldType.NORMAL) {
                     val item_id = it["item_id"].toString()
                     var text: String? = ""
