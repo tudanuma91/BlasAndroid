@@ -1,15 +1,5 @@
 package com.v3.basis.blas.blasclass.ldb
 
-import android.util.Log
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import kotlin.reflect.KMutableProperty
-import kotlin.reflect.KVisibility
-import kotlin.reflect.full.isSubtypeOf
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.full.starProjectedType
-
 
 open class LdbSyncBase {
     var sync_status: Int = 0 //何も弄ってない0 仮登録中(新規追加)1、仮登録中(編集)2、仮登録集(削除)3,送信待ち4, 送信完了5
@@ -243,33 +233,36 @@ class LdbItemRecord : LdbSyncBase() {
 
 
 
-data class LDBRmFixtureRecord(
-    var rm_fixture_id:Int? =0,          //主キー
-    var project_id:Int? =0,             //プロジェクトID
-    var rm_org_id:Int? = 0,              //撤去した会社ID
-    var rm_org_name:String? = null,         //撤去した会社の名前
-    var rm_user_id:Int? = 0,             //撤去したユーザID
-    var rm_user_name:String? = null,        //撤去したユーザ名
-    var rm_date:String? = null,             //撤去した日時
-    var rm_tmp_org_id:Int? = 0,          //一時保管した会社ID
-    var rm_tmp_org_name:String? = null,     //一時保管した会社名
-    var rm_tmp_user_id:Int? = 0,         //一時保管したユーザID
-    var rm_tmp_user_name:String? = null,    //一時保管したユーザ名
-    var rm_tmp_date:String? = null,         //一時保管した日付
-    var rm_comp_org_id:Int? = 0,         //撤去完了した会社ID
-    var rm_comp_org_name:String? = null,    //撤去完了した会社名
-    var rm_comp_user_id:Int? = 0,        //撤去完了したユーザID
-    var rm_comp_user_name:String? = null,   //撤去完了したユーザ名
-    var rm_comp_date:String? = null,        //撤去完了した日時
-    var item_id:Long? = 0,                //撤去した機器のシリアルナンバーを含むデータ管理のレコード(外部キー)
-    var item_org_id:Int? = 0,            //撤去した機器のシリアルナンバーを含むデータ管理の会社ID
-    var item_org_name:String? = null,       //撤去した機器のシリアルナンバーを含むデータ管理の会社名
-    var item_user_id:Int? = 0,           //撤去した機器のシリアルナンバーを含むデータ管理のユーザID
-    var item_user_name:String? = null,      //撤去した機器のシリアルナンバーを含むデータ管理のユーザ名
-    var serial_number:String? = null,       //シリアルナンバー
-    var status:Int? = 0,                 //0:未撤去 1:現場撤去 2:一時保管 3:撤去完了
-    var sync_status:Int? = 0
-)
+open class LdbRmFixtureRecord : LdbSyncBase() {
+    var rm_fixture_id: Int = 0          //主キー
+    var project_id: Int = 0             //プロジェクトID
+    var rm_org_id: Int = 0              //撤去した会社ID
+    var rm_user_id: Int = 0             //撤去したユーザID
+    var rm_date: String = ""             //撤去した日時
+    var rm_tmp_org_id: Int = 0          //一時保管した会社ID
+    var rm_tmp_user_id: Int = 0         //一時保管したユーザID
+    var rm_tmp_date: String = ""         //一時保管した日付
+    var rm_comp_org_id: Int = 0         //撤去完了した会社ID
+    var rm_comp_user_id: Int = 0        //撤去完了したユーザID
+    var rm_comp_date: String = ""        //撤去完了した日時
+    var item_id: Long = 0                //撤去した機器のシリアルナンバーを含むデータ管理のレコード(外部キー)
+    var item_org_id: Int = 0            //撤去した機器のシリアルナンバーを含むデータ管理の会社ID
+    var item_user_id: Int = 0           //撤去した機器のシリアルナンバーを含むデータ管理のユーザID
+    var serial_number: String = ""       //シリアルナンバー
+    var status: Int = 0                 //0:未撤去 1:現場撤去 2:一時保管 3:撤去完了
+}
+
+class LdbRmFixtureDispRecord : LdbRmFixtureRecord() {
+    var rm_org_name: String = ""         //撤去した会社の名前
+    var rm_user_name: String = ""        //撤去したユーザ名
+    var rm_tmp_org_name: String = ""     //一時保管した会社名
+    var rm_tmp_user_name: String = ""    //一時保管したユーザ名
+    var rm_comp_org_name: String = ""    //撤去完了した会社名
+    var rm_comp_user_name: String = ""   //撤去完了したユーザ名
+    var item_org_name: String = ""       //撤去した機器のシリアルナンバーを含むデータ管理の会社名
+    var item_user_name: String = ""      //撤去した機器のシリアルナンバーを含むデータ管理のユーザ名
+
+}
 
 
 data class LdbFieldRecord(

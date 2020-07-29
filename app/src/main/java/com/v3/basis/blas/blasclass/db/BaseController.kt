@@ -85,8 +85,9 @@ abstract class BaseController(
             //.filter{ it.returnType.isSubtypeOf(String::class.starProjectedType) }
             .filterIsInstance<KMutableProperty<*>>()
             .forEach { prop ->
+                Log.d("setProperty()","propName:" + prop.name )
                 val value = cursor.getString( cursor.getColumnIndex(prop.name) )
-                Log.d("setProperty()","propName:" + prop.name + "  value:" + value)
+                Log.d("setProperty()","value:" + value)
 
                 if( value.isNullOrEmpty() ) {
                     return@forEach

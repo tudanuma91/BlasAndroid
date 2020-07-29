@@ -7,7 +7,7 @@ import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkFixture
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkRmFixture
 import com.v3.basis.blas.blasclass.db.fixture.Fixtures
-import com.v3.basis.blas.blasclass.ldb.LDBRmFixtureRecord
+import com.v3.basis.blas.blasclass.ldb.LdbRmFixtureRecord
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -393,7 +393,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         else {
 
             cursor.moveToFirst()
-            val rm_fixture = setProperty(Fixtures(),cursor) as LDBRmFixtureRecord
+            val rm_fixture = setProperty(LdbRmFixtureRecord(),cursor) as LdbRmFixtureRecord
             cursor.close()
 
             // TODO:既存では特にこれ以上のチェックなし？？？
