@@ -34,7 +34,7 @@ abstract class ServerSyncViewModel: ViewModel() {
                     setError("例外が発生しました", serverModel)
                 },
                 onComplete = {
-                    serverModel.syncEnable.set(true)
+                    serverModel.syncEnable.set(false)
                     serverModel.progress.set(false)
                     serverModel.status.set("サーバーに登録成功しました")
                     Log.d("サーバー登録","成功！！")

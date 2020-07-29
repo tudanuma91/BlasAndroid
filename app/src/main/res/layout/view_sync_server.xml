@@ -49,6 +49,7 @@
             android:enabled="@{model.syncEnable}"
             android:onClick="@{v -> vm.clickSyncToServer(model)}"
             android:text="サーバーに登録"
+            android:visibility="@{model.syncEnable ? View.VISIBLE : View.INVISIBLE}"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/progress" />
 

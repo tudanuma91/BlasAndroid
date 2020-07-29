@@ -403,7 +403,10 @@ class ItemSearchFragment : Fragment() {
                 }
 
                 Log.d("ItemSearchFragment.setDisplay()","startActivity")
-                startActivity(intent)
+//                startActivity(intent)
+                ItemActivity.searchFreeWord = searchValue["freeWord"]
+                val parent = (requireActivity() as ItemActivity)
+                parent.reloard()
             }
 
         }

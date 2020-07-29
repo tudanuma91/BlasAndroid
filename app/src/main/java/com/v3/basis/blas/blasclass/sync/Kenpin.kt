@@ -52,6 +52,7 @@ class Kenpin( model: FixtureCellModel ,fixture : LdbFixtureRecord ) : SyncFixtur
         if( BaseController.SYNC_STATUS_NEW == fixture.sync_status ) {
             regstNewRecord(result)
         }
+        eventCompleted.onNext(true)
 
         Log.d("OK", "検品同期完了")
     }

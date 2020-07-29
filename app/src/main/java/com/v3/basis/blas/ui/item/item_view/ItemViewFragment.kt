@@ -17,31 +17,26 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.R
+import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.ItemEditActivity
 import com.v3.basis.blas.activity.ItemImageActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
-import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.db.data.ItemsController
+import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import com.v3.basis.blas.blasclass.sync.Lump
 import com.v3.basis.blas.ui.ext.addTitle
-import com.v3.basis.blas.ui.fixture.fixture_view.FixtureListCell
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
-import io.reactivex.Scheduler
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
-import io.reactivex.schedulers.Schedulers.newThread
-import kotlinx.android.synthetic.main.fragment_fixture_view.*
 import kotlinx.android.synthetic.main.fragment_item_view.*
-import kotlinx.android.synthetic.main.fragment_item_view.allSyncButton
-import kotlinx.android.synthetic.main.fragment_item_view.recyclerView
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -61,6 +56,8 @@ class ItemViewFragment : Fragment() {
     private var parseNum = 20
     private var parseStartNum = 0
     private var parseFinNum = parseNum
+
+    private var findValueMap:MutableMap<String,String?>? = null
 
 //    private val fieldMap: MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
     private var fields:List<LdbFieldRecord> = mutableListOf()
@@ -205,6 +202,14 @@ class ItemViewFragment : Fragment() {
 
         }
 
+        val searchWord = ItemActivity.searchFreeWord
+        if (searchWord.isNullOrBlank().not()) {
+            findValueMap = mutableMapOf()
+            findValueMap?.set("freeWord", searchWord)
+        } else {
+            findValueMap = null
+        }
+
         return root
     }
 
@@ -223,10 +228,11 @@ class ItemViewFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         //全て同期のボタン
-        //TODO　fukuda 未送信件数の設定がまだ未実装
         allSyncButton.setOnClickListener {
             Log.d("フローティングボタン Item","Click!!!!")
-            Lump(requireContext(),projectId,token).exec()
+            Lump(requireContext(),projectId,token){
+                (requireActivity() as ItemActivity).reloard()
+            }.exec()
         }
 
         //リサイクラ-viewを取得
@@ -325,7 +331,7 @@ class ItemViewFragment : Fragment() {
 
     private fun searchASync() {
 
-        Single.fromCallable { itemsController.search(offset = offset, paging = CREATE_UNIT) }
+        Single.fromCallable { itemsController.search(offset = offset, paging = CREATE_UNIT, findValueMap = findValueMap) }
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {

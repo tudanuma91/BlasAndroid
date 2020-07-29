@@ -7,6 +7,7 @@ import com.v3.basis.blas.blasclass.db.data.Items
 import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.item.item_view.ItemsCellModel
+import io.reactivex.subjects.PublishSubject
 import org.json.JSONObject
 import java.lang.Exception
 
@@ -14,6 +15,8 @@ class SyncItem(val context: Context,val token : String, val projectId : String ,
 
     lateinit var mapItem : MutableMap<String, String?>
     lateinit var item : Items
+
+    val eventCompleted: PublishSubject<Boolean> = PublishSubject.create()
 
     fun exec(  ) {
 
@@ -59,6 +62,8 @@ class SyncItem(val context: Context,val token : String, val projectId : String ,
             ctl.updateItemId4Update(item.item_id.toString(),item,mapItem)
         }
 
+        eventCompleted.onNext(true)
+
         Log.d("success()","end")
     }
 
@@ -87,6 +92,8 @@ class SyncItem(val context: Context,val token : String, val projectId : String ,
 
         val ctl = ItemsController(context,projectId.toString())
         ctl.setErrorMsg(itemId.toString(),errMsg)
+
+        eventCompleted.onNext(false)
 
     }
 

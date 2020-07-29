@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.R
+import com.v3.basis.blas.activity.FixtureActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.canTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.finishInstall
@@ -160,8 +161,12 @@ class FixtureViewFragment : Fragment() {
 
         //全て同期のボタン
         allSyncButton.setOnClickListener {
+            //  連打禁止！！
+            allSyncButton.isEnabled = false
             Log.d("フローティングボタン Fixture","Click!!!!")
-            Lump(requireContext(),project_id,token).exec()
+            Lump(requireContext(),project_id,token){
+                (requireActivity() as FixtureActivity).reloard()
+            }.exec()
         }
 
         try {
