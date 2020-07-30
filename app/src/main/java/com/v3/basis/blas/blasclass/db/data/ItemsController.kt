@@ -21,8 +21,8 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
     }
 
-    val addList = mutableListOf<String>()
-    var plHolder  = arrayOf<String>()
+    private val addList = mutableListOf<String>()
+    private lateinit var plHolder : Array<String>
 
     /**
      * ワード検索条件を構築
@@ -88,6 +88,11 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         item_id: Long = 0L, offset: Int = 0, paging: Int = 20,endShow:Boolean = false,syncFlg:Boolean = false
         , findValueMap:MutableMap<String,String?>? = null
     ): MutableList<MutableMap<String, String?>> {
+
+        // 初期化
+        addList.clear()
+        plHolder = arrayOf<String>()
+
 
         val cursor = when {
             0L == item_id -> {

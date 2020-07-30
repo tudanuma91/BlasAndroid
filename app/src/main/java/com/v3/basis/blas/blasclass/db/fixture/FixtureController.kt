@@ -55,8 +55,8 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         ,"status" to "fixtures.status"
     )
 
-    private var additionList = arrayOf<String>()
-    private var plHolder  = arrayOf<String>()
+    private lateinit var additionList : Array<String>
+    private lateinit var plHolder : Array<String>
 
     /**
      * 自社だけ表示を判断
@@ -167,7 +167,11 @@ class FixtureController(context: Context, projectId: String): BaseController(con
      * (表示用：ユーザー、会社の結付あり)機器一覧の取得
      */
     fun searchDisp( offset: Int = 0, paging: Int = 20, searchMap: Map<String, String?>): List<LdbFixtureDispRecord> {
-        Log.d("search","start!!!!!!!!!!!!!!!!!!!!!!!")
+        Log.d("search","start!!!!!!  offset:" + offset + "  paging:" + paging)
+
+        // 初期化
+        additionList = arrayOf<String>()
+        plHolder = arrayOf<String>()
 
         chgeckLimitMyOrg()
         createAddition(searchMap)
@@ -476,6 +480,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         // なければ新規追加
         Log.d("kenpin","存在しないシリアルなので新規作成する")
+        errorMessageEvent.onNext("")
 
         ret = kenpin_insert(serial_number)
 
@@ -523,6 +528,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             return false
         }
 
+        errorMessageEvent.onNext("")
         return true
     }
 
@@ -565,6 +571,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             db?.update("fixtures",cv,"serial_number = ?", arrayOf(serial_number))
             db?.setTransactionSuccessful()
             Log.d("takeout","成功！！！")
+            errorMessageEvent.onNext("")
             true
         } catch (e: Exception) {
             //とりあえず例外をキャッチして、Falseを返す？
@@ -619,7 +626,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             return false
         }
 
-
+        errorMessageEvent.onNext("")
         return true
     }
 
