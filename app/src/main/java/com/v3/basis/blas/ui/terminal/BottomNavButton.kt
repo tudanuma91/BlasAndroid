@@ -9,7 +9,7 @@ enum class BottomNavButton(val id: Int, var title: Int) : Serializable {
     DATA_MANAGE(R.id.navigation_data_management, R.string.navi_title_terminal_item),
     EQUIPMENT_MANAGE(R.id.navigation_equipment_management, R.string.navi_title_terminal_fixture),
     LOGOUT(R.id.navigation_logout, R.string.navi_title_terminal_logout),
-    STATUS(R.id.navigation_status, R.string.navi_title_terminal_status);
+    STATUS(R.id.navigation_status, R.string.navi_title_terminal_web);
 
     companion object {
         fun find(position: Int): BottomNavButton {

@@ -26,8 +26,8 @@ class TerminalPagerAdapter(childFragmentManager: FragmentManager) : FragmentPage
             0 -> { DashboardsFragment() }
             1 -> { ProjectFragment() }//←これはダミーのFragmentとして残してる
             2 -> { FixtureFragment() }
-            3 -> { WebViewFragment() }
-            4 -> { StatusFragment() }
+            3 -> { LogoutFragment() }
+            4 -> { WebViewFragment() }
             else -> { DashboardsFragment() }
         }
     }

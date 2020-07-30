@@ -18,8 +18,8 @@
 
     <item
         android:id="@+id/navigation_status"
-        android:icon="@drawable/ic_announcement_black_24dp"
-        android:title="@string/navi_title_terminal_status" />
+        android:icon="@drawable/ic_baseline_language_24"
+        android:title="@string/navi_title_terminal_web" />
     <item
         android:id="@+id/navigation_logout"
         android:icon="@drawable/ic_redo_black_24dp"

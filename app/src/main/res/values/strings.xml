@@ -43,6 +43,7 @@
     <string name="navi_title_terminal_fixture">機器管理</string>
     <string name="navi_title_terminal_logout">ログアウト</string>
     <string name="navi_title_terminal_status">ステータス</string>
+    <string name="navi_title_terminal_web">ウェブ</string>
     <!--データ管理画面-->
     <string name="navi_title_item_search">データ検索</string>
     <string name="navi_title_item_search_result">データ検索結果</string>

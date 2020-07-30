@@ -8,14 +8,11 @@ import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
-<<<<<<< HEAD
 import androidx.activity.OnBackPressedCallback
-=======
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
->>>>>>> fukuda/offline
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -235,18 +232,22 @@ fun Fragment.continueDownloadTask(vm: DownloadViewModel, model: DownloadModel) {
     }
 }
 
-<<<<<<< HEAD
 fun Fragment.setBackPressedEvent(action: (callback: OnBackPressedCallback) -> Unit) {
-    requireActivity().onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-        override fun handleOnBackPressed() {
-            action.invoke(this)
-        }
-    })
-=======
+    requireActivity().onBackPressedDispatcher.addCallback(
+        this,
+        object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                action.invoke(this)
+            }
+        })
+}
+
 fun Fragment.startActivityWithResult(launchClass: Class<*>, requestCode: Int, extra: Pair<String, String>, callBack: (result: ActivityResult) -> Unit): ActivityResultLauncher<Intent> {
 
     val registry = requireActivity().activityResultRegistry
-    val observer = registry.register(requestCode.toString(), viewLifecycleOwner, ActivityResultContracts.StartActivityForResult(),
+    val observer = registry.register(requestCode.toString(),
+        viewLifecycleOwner,
+        ActivityResultContracts.StartActivityForResult(),
         ActivityResultCallback {
             Log.d("result", "fragment: ${it.data?.getStringExtra("result")}")
             callBack.invoke(it)
@@ -255,5 +256,4 @@ fun Fragment.startActivityWithResult(launchClass: Class<*>, requestCode: Int, ex
     i.putExtra(extra.first, extra.second)
     observer.launch(i)
     return observer
->>>>>>> fukuda/offline
 }
