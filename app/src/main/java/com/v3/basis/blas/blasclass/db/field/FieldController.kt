@@ -3,7 +3,9 @@ package com.v3.basis.blas.blasclass.db.field
 import android.content.Context
 import android.util.Log
 import com.v3.basis.blas.blasclass.db.BaseController
+import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
+import org.json.JSONObject
 
 class FieldController(context: Context, projectId: String) : BaseController(context, projectId){
 
@@ -51,6 +53,31 @@ class FieldController(context: Context, projectId: String) : BaseController(cont
             var notLast = it.moveToFirst()
             while (notLast) {
                 val field = setProperty(LdbFieldRecord(),it) as LdbFieldRecord
+
+                if( ItemsController.FIELD_TYPE_SINGLE_SELECT == field.type
+                    &&  0 != field.parent_field_id
+                ) {
+                    // 連動パラメータ(とりあえず文字列だけが表示されるようにした)
+                    var new_choice = ""
+                    val choice = field.choice?.replace("\\\"","\"")
+                    val jsonChoice = JSONObject(choice)
+
+                    var first = true
+                    val parents = jsonChoice.names()
+
+                    for( i in 0 until parents.length() ) {
+                        val child = jsonChoice.getString( parents[i].toString() )
+
+                        if( !first ) {
+                            new_choice += ","
+                        }
+                        new_choice += child
+                        first = false
+
+                    }
+                    field.choice = new_choice
+                }
+
                 ret.add(field)
                 notLast = it.moveToNext()
             }
