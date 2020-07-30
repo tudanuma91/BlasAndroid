@@ -90,4 +90,9 @@ class FixtureListViewModel: ServerSyncViewModel() {
         Log.d("NG", "作成失敗")
         Log.d("errorCorde", "${errorCode}")
     }
+
+    override fun onCleared() {
+        super.onCleared()
+        disposable.dispose()
+    }
 }

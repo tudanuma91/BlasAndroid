@@ -1129,6 +1129,11 @@ class ItemCreateFragment : Fragment() {
         tp.show()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        disposables.dispose()
+    }
+
 /*
     private fun userGetSuccess(result: JSONObject){
         val test = helper.createUserList(result)

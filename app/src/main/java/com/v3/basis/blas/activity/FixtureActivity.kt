@@ -332,5 +332,9 @@ class FixtureActivity : AppCompatActivity() {
         startActivity(intent)
      */
 
+    override fun onDestroy() {
+        super.onDestroy()
+        disposable.dispose()
+    }
 
 }

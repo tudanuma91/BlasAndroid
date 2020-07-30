@@ -493,7 +493,7 @@ class ItemViewFragment : Fragment() {
      * endflgから表示するか否かを判断。表示する場合は処理を投げる。
      *
      */
-    private fun  createCardManager(list:MutableList<MutableMap<String,String?>>,colMax : Int){
+    private fun createCardManager(list:MutableList<MutableMap<String,String?>>,colMax : Int){
         Log.d("デバック処理","エンドshowの値=>${endShow}")
 
         if (endShow) {
@@ -677,7 +677,6 @@ class ItemViewFragment : Fragment() {
     }
 
 
-
     /**
      * パースした件数と次に行う件数を記録する
      */
@@ -690,6 +689,7 @@ class ItemViewFragment : Fragment() {
 
     override fun onDestroyView() {
         recyclerView.adapter = null
+        disposables.dispose()
         super.onDestroyView()
     }
 }

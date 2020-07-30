@@ -732,4 +732,9 @@ class ItemSearchFragment : Fragment() {
         return formPart
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        disposables.dispose()
+    }
+
 }

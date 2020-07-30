@@ -81,6 +81,7 @@ class DownloadViewModel: ViewModel() {
             .addTo(disposable)
     }
 
+/*
 //    private fun setDownloadUrl(model: DownloadModel, callback: () -> Unit) {
 //
 ////        item.downloadUrl = "https://www.basis-service.com/blas777/item/20200514043512291.zip"
@@ -107,6 +108,7 @@ class DownloadViewModel: ViewModel() {
 //        }
 //        BlasRestCache("zip", payload, success, funcError).execute()
 //    }
+*/
 
     /**
      * ダウンロードボタンがクリックされたとき、呼び出し側にそれを通知します。
@@ -129,6 +131,7 @@ class DownloadViewModel: ViewModel() {
         model.savePath = createZipFile(model.projectId, model.saveDir)
         model.downloading.set(true)
         model.downloadingText.set("ダウンロード待ち")
+        model.doneDownloaded.set(false)
         startDownload.onNext(model)
     }
 
@@ -303,5 +306,10 @@ class DownloadViewModel: ViewModel() {
 
         return Single.fromCallable { action.invoke() }
             .doOnError { Log.d("DownloadItem.saveAsync", "Failed to read flag") }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        disposable.dispose()
     }
 }

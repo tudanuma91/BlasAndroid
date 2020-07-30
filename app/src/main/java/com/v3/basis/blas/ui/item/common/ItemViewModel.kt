@@ -113,4 +113,9 @@ class ItemViewModel: ViewModel() {
     fun clickAccountName(field: FieldText) {
         accountNameEvent.onNext(field)
     }
+
+    override fun onCleared() {
+        super.onCleared()
+        disposable.dispose()
+    }
 }

@@ -453,6 +453,7 @@ class FixtureViewFragment : Fragment() {
 
     override fun onDestroyView() {
         recyclerView.adapter = null
+        disposables.dispose()
         super.onDestroyView()
     }
 
