@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import androidx.databinding.ObservableField
 
 data class ItemImageCellItem(
-    val id: String,
+    val id: String, //project_image_idのこと
     val title: String,
     var image: ObservableField<Bitmap>,
     var empty: ObservableField<Boolean>,

@@ -8,8 +8,14 @@ import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkFixture
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkRmFixture
 import com.v3.basis.blas.blasclass.db.fixture.Fixtures
 import com.v3.basis.blas.blasclass.ldb.LDBRmFixtureRecord
+import java.io.File
+import java.io.FileInputStream
+import java.security.MessageDigest
+import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
+
 
 class ItemsController(context: Context, projectId: String): BaseController(context, projectId) {
 

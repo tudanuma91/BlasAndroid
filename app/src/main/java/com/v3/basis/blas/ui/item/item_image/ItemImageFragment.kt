@@ -29,11 +29,13 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
 import com.v3.basis.blas.blasclass.app.BlasMsg
-import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
+import com.v3.basis.blas.blasclass.component.ImageComponent
+import com.v3.basis.blas.blasclass.controller.ImagesController
 import com.v3.basis.blas.ui.item.item_image.adapter.AdapterCellItem
 import com.v3.basis.blas.ui.item.item_image.model.ImageFieldModel
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
@@ -90,7 +92,7 @@ class ItemImageFragment : Fragment() {
 
         button.setOnClickListener { view ->
             //setup2を元に戻してからpushすること
-            viewModel.setup(token, projectId, itemId)
+            viewModel.setup(requireContext(), token, projectId, itemId)
             AlertDialog.Builder(activity)
                 .setTitle("メッセージ")
                 .setMessage("リロードしました")
@@ -109,7 +111,7 @@ class ItemImageFragment : Fragment() {
         recyclerView.layoutManager = GridLayoutManager(requireContext(), 2) as RecyclerView.LayoutManager?
 
         viewModel = ViewModelProviders.of(this).get(ItemImageViewModel::class.java)
-        viewModel.setup(token, projectId, itemId)
+        viewModel.setup(requireContext(), token, projectId, itemId)
 
 
         viewModel.receiveImageFields
@@ -184,6 +186,10 @@ class ItemImageFragment : Fragment() {
         return false
     }
 
+    /**
+     * [説明]
+     * 画像を新規追加、または更新する場合に呼ばれる。
+     */
     private fun startFileChoicer() {
 
         //カメラの起動Intentの用意
@@ -276,6 +282,22 @@ class ItemImageFragment : Fragment() {
                     Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
                     Log.d("upload", "upload error")
                 }
+                val imgCon =
+                    ImagesController(
+                        requireContext(),
+                        projectId
+                    )
+                //ここでbmpにファイル名を付けてキャッシュディレクトリに保存する
+                val imgFileName:String? = ImageComponent().saveBmp2Local(requireContext(), projectId, bmp)
+                if(imgFileName != null) {
+                    //画像ファイルが保存できたらDBを更新する
+                    if(!imgCon.upload2LDB(item.id, itemId, imgFileName, item.imageId)) {
+                        //DBに保存失敗したため、画像を削除する
+                        Toast.makeText(requireContext(), "画像ファイルの保存に失敗しました", Toast.LENGTH_LONG).show()
+                        ImageComponent().delImgFile(requireContext(), projectId, imgFileName)
+                    }
+                }
+
                 viewModel.upload(bmp, mime, item, error)
             }
         }
