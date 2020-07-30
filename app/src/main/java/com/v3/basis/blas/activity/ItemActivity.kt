@@ -78,9 +78,13 @@ class ItemActivity : AppCompatActivity() {
      * データ一覧画面で画面上部の←ボタンを押したときにコールされる。
      */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment)
+
+        // 検索ワードを消去
+        searchFreeWord = null
+
         when (item.itemId) {
             android.R.id.home -> {
+                val navController = findNavController(R.id.nav_host_fragment)
 
                 if (navController.currentDestination?.id == R.id.navi_item_view) {
                     this.finish()
@@ -90,7 +94,8 @@ class ItemActivity : AppCompatActivity() {
                     transitionItemListScreen()
                 }
             }
-            else -> return super.onOptionsItemSelected(item)
+            else ->
+                return super.onOptionsItemSelected(item)
         }
         return true
     }
