@@ -127,7 +127,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
                 }
 
                 var addingPager = ""
-                var plHolder = arrayOf<String>()
+                //var plHolder = arrayOf<String>()
                 if( 0 != paging ) {
                     addingPager = "limit ? offset ?"
                     plHolder += paging.toString()
