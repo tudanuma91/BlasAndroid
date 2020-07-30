@@ -475,6 +475,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         // なければ新規追加
         Log.d("kenpin","存在しないシリアルなので新規作成する")
+        errorMessageEvent.onNext("")
 
         ret = kenpin_insert(serial_number)
 
@@ -522,6 +523,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             return false
         }
 
+        errorMessageEvent.onNext("")
         return true
     }
 
@@ -564,6 +566,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             db?.update("fixtures",cv,"serial_number = ?", arrayOf(serial_number))
             db?.setTransactionSuccessful()
             Log.d("takeout","成功！！！")
+            errorMessageEvent.onNext("")
             true
         } catch (e: Exception) {
             //とりあえず例外をキャッチして、Falseを返す？
@@ -618,7 +621,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             return false
         }
 
-
+        errorMessageEvent.onNext("")
         return true
     }
 
