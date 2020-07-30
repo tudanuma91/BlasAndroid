@@ -16,6 +16,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
     companion object {
 
+        const val FIELD_TYPE_SINGLE_SELECT = 5
         const val FIELD_TYPE_QRCODE_INT_INSPECTION = 8
         const val FIELD_TYPE_QRCODE_INT_RM = 11
 
