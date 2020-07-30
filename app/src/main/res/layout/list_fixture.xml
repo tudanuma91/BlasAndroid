@@ -1,52 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="horizontal"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    >
 
-    <LinearLayout
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="model"
+            type="com.v3.basis.blas.ui.fixture.fixture_view.FixtureCellModel" />
+        <variable
+            name="vm"
+            type="com.v3.basis.blas.ui.fixture.fixture_view.FixtureListViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="horizontal">
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/card_view"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                app:cardBackgroundColor="@color/cardview_light_background"
-                app:cardCornerRadius="10dp"
-                app:cardElevation="4dp"
-                app:contentPadding="16dp">
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
-                <LinearLayout
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/card_view"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:padding="6dp">
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    app:cardBackgroundColor="@color/cardview_light_background"
+                    app:cardCornerRadius="10dp"
+                    app:cardElevation="4dp"
+                    app:contentPadding="16dp">
 
-                    <TextView
-                        android:id="@+id/row_title"
-                        android:layout_width="wrap_content"
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        tools:text="titleです" />
+                        android:padding="6dp"
+                        >
 
-                    <TextView
-                        android:id="@+id/row_detail"
-                        android:layout_width="wrap_content"
-                        android:layout_height="0dp"
-                        android:layout_weight="0.3"
-                        tools:text="詳細ですよ詳細ですよ詳細ですよ詳細ですよ詳細ですよ" />
-                    
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
+                        <include
+                            android:id="@+id/syncView"
+                            app:vm="@{vm}"
+                            app:model="@{model}"
+                            layout="@layout/view_sync_server"
+                            app:layout_constraintTop_toTopOf="parent"
+                            />
+
+                        <TextView
+                            android:id="@+id/row_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:text="@{model.title}"
+                            app:layout_constraintTop_toBottomOf="@id/syncView"
+                            app:layout_constraintStart_toStartOf="parent"
+                            tools:text="titleです" />
+
+                        <TextView
+                            android:id="@+id/row_detail"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@{model.detail}"
+                            app:layout_constraintTop_toBottomOf="@id/row_title"
+                            app:layout_constraintStart_toStartOf="parent"
+                            tools:text="詳細ですよ詳細ですよ詳細ですよ詳細ですよ詳細ですよ" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

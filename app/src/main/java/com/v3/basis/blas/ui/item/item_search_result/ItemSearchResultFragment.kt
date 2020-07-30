@@ -2,29 +2,32 @@ package com.v3.basis.blas.ui.item.item_search_result
 
 
 import android.app.AlertDialog
-import android.graphics.Color
-import android.icu.lang.UCharacter
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Button
+import android.widget.ProgressBar
+import android.widget.Switch
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasMsg
-import com.v3.basis.blas.blasclass.app.searchAndroid
 import com.v3.basis.blas.blasclass.config.FieldType
+import com.v3.basis.blas.blasclass.db.data.ItemsController
+import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.helper.RestHelper
-import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
-import com.v3.basis.blas.blasclass.rest.BlasRestField
-import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
+import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.fragment_item_search_result.*
 import org.json.JSONObject
-import java.lang.Exception
 
 /**
  * A simple [Fragment] subclass.
@@ -59,6 +62,7 @@ class ItemSearchResultFragment : Fragment() {
     private val dataList = mutableListOf<RowModel>()
     private var baseList :MutableList<MutableMap<String,String?>> = mutableListOf()
     private val helper:RestHelper = RestHelper()
+    private val disposables = CompositeDisposable()
 
     private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
         override fun onClickRow(tappedView: View, rowModel: RowModel) {
@@ -146,7 +150,10 @@ class ItemSearchResultFragment : Fragment() {
     }
 
 
+    // 検索ボタンを押すと呼ばれる
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Log.d("ItemSearchResultFragment.onViewCreated()","start")
+
         super.onViewCreated(view, savedInstanceState)
         Log.d("lifeCycle", "onViewCreated")
         if(chkReceiveData) {
@@ -165,10 +172,33 @@ class ItemSearchResultFragment : Fragment() {
                     recyclerView.layoutManager = LinearLayoutManager(activity)
                     recyclerView.adapter = adapter
 
+
                     //呼ぶタイミングを確定させる！！
-                    val payload2 = mapOf("token" to token, "project_id" to projectId)
-                    BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
-                    BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
+                    Single.fromCallable { FieldController(requireContext(),projectId).searchDisp() }
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeBy {fieldList ->
+
+                            //カラム順に並べ替える
+                            fieldMap.clear()
+                            val fieldMapList = helper.createFieldList2(fieldList)
+                            var cnt = 1
+                            fieldMapList.forEach {
+                                fieldMap[cnt] = it
+                                cnt += 1
+                            }
+
+                            getItem()
+
+                        }
+                        .addTo(disposables)
+
+
+
+
+//                    val payload2 = mapOf("token" to token, "project_id" to projectId)
+//                    BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
+
+//                    BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
                 }else{
                     throw Exception("Failed to receive internal data ")
                 }
@@ -183,10 +213,39 @@ class ItemSearchResultFragment : Fragment() {
 
     }
 
-    private fun createDataList() {
+
+    private fun getItem() {
+
+        val itemsController = ItemsController(requireContext(),projectId)
+
+        // TODO:三代川　findValueMapから検索条件を作る
+        Single.fromCallable { itemsController.search( findValueMap = findValueMap ) }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                if ( it.isNotEmpty() ) {
+                    itemList.clear()
+                    jsonItemList.clear()
+                    setAdapter(it)
+                } else {
+                    // TODO:とりあえず
+                    val title = getString(R.string.dialog_title)
+                    val text = getString(R.string.search_error)
+                    AlertDialog.Builder(activity)
+                        .setTitle(title)
+                        .setMessage(text)
+                        .setPositiveButton("OK"){ dialog, which ->
+                            requireActivity().finish()
+                        }
+                        .show()
+                }
+            }
+            .addTo(disposables)
+    }
+
+    private fun createDataList( itemInfo : MutableList<MutableMap<String, String?>> ) {
         var colMax = fieldMap.size
-        var itemInfo = helper.createItemList(jsonItemList, colMax )
-        itemInfo = searchAndroid(findValueMap,itemInfo,dateTimeCol,checkValueCol)
+//        var itemInfo = helper.createItemList(jsonItemList, colMax )
+//        itemInfo = searchAndroid(findValueMap,itemInfo,dateTimeCol,checkValueCol)
         itemList.addAll(itemInfo)
 
         baseList = itemList
@@ -199,7 +258,7 @@ class ItemSearchResultFragment : Fragment() {
                 .setTitle(title)
                 .setMessage(text)
                 .setPositiveButton("OK"){ dialog, which ->
-                    activity!!.finish()
+                    requireActivity().finish()
                 }
                 .show()
         }
@@ -208,9 +267,9 @@ class ItemSearchResultFragment : Fragment() {
     /**
      *  データ登録
      */
-    private fun setAdapter() {
+    private fun setAdapter( itemInfo : MutableList<MutableMap<String, String?>> ) {
         Log.d("konishi", "setAdapter")
-        createDataList()
+        createDataList( itemInfo )
         adapter.notifyItemInserted(0)
         progressBarFlg = false
         chkProgress(progressBarFlg,rootView)
@@ -219,6 +278,7 @@ class ItemSearchResultFragment : Fragment() {
     /**
      * データ取得時
      */
+/*
     private fun itemRecv(result: JSONObject) {
         itemList.clear()
         jsonItemList.clear()
@@ -229,11 +289,15 @@ class ItemSearchResultFragment : Fragment() {
             setAdapter()
         }
     }
+*/
 
     /**
      * フィールド取得時
      */
+/*
     private fun fieldRecv(result: JSONObject) {
+        Log.d("ItemSearchResultFragment.filedRecv()","start")
+
         //カラム順に並べ替える
         fieldMap.clear()
         val fieldList = helper.createFieldList(result)
@@ -243,10 +307,12 @@ class ItemSearchResultFragment : Fragment() {
             cnt +=1
         }
 
+        // TODO:現在jsonItemList取得されない
         if(jsonItemList.isNotEmpty() && fieldMap.isNotEmpty()) {
             setAdapter()
         }
     }
+*/
 
     /**
      * フィールド取得失敗時
@@ -286,7 +352,7 @@ class ItemSearchResultFragment : Fragment() {
         Log.d("デバック処理","エンドshowの値=>${endShow}")
         if(mode == "New"){
             list.forEach {
-                val valueFlg = it["endFlg"].toString()
+                val valueFlg = it["end_flg"].toString()
                 if (valueFlg == FieldType.NORMAL) {
                     val item_id = it["item_id"].toString()
                     var text: String? = ""

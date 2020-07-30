@@ -21,6 +21,7 @@ import com.v3.basis.blas.blasclass.rest.BlasRestProject
 import com.v3.basis.blas.ui.ext.addDownloadTask
 import com.v3.basis.blas.ui.ext.getStringExtra
 import com.v3.basis.blas.ui.terminal.common.DownloadViewModel
+import com.v3.basis.blas.ui.terminal.fixture.FixtureFragment
 import com.v3.basis.blas.ui.terminal.project.project_list_view.RowModel
 import com.v3.basis.blas.ui.terminal.project.project_list_view.ViewAdapterAdapter
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -33,9 +34,11 @@ import java.lang.Exception
 
 /**
  * 表示・遷移などデータ管理画面にかかわる処理を行う。
+ *      注意：現在は使ってないため、コメントアウト
  */
 class ProjectFragment : Fragment() {
 
+    /*
     private lateinit var homeViewModel: ProjectViewModel
     private var handler = Handler()
     lateinit var token:String
@@ -159,7 +162,7 @@ class ProjectFragment : Fragment() {
         recyclerView.adapter = null
         super.onDestroyView()
     }
-
+     */
 }
 
 

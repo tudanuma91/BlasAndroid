@@ -12,4 +12,5 @@ class RowModel {
     var image: ImageButton? = null
     var image2 : ImageButton? = null
     var projectNames : String? = null
+    var errMsg : String? = null
 }

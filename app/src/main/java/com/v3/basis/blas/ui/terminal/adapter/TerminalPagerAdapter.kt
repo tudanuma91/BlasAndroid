@@ -24,7 +24,7 @@ class TerminalPagerAdapter(childFragmentManager: FragmentManager) : FragmentPage
     override fun getItem(position: Int): Fragment {
         return when (position) {
             0 -> { DashboardsFragment() }
-            1 -> { ProjectFragment() }
+            1 -> { ProjectFragment() }//←これはダミーのFragmentとして残してる
             2 -> { FixtureFragment() }
             3 -> { WebViewFragment() }
             4 -> { StatusFragment() }

@@ -19,7 +19,8 @@ import androidx.work.workDataOf
 abstract class BaseDownloadWorker(context: Context, workerParameters: WorkerParameters): Worker(context, workerParameters)  {
 
     companion object {
-        const val KEY_DOWNLOAD = "key_download"
+        const val KEY_TOKEN = "key_token"
+        const val KEY_PROJECT_ID = "key_project_id"
         const val KEY_SAVE_PATH = "key_save_path"
         const val KEY_UNZIP_PATH = "key_unzip_path"
         const val KEY_SAVE_PATH_KEY_NAME = "key_save_path_kay_name"
@@ -30,14 +31,16 @@ abstract class BaseDownloadWorker(context: Context, workerParameters: WorkerPara
     //  Runningに変わったら実行される
     override fun doWork(): Result {
 
-        val downloadUrl = inputData.getString(KEY_DOWNLOAD)
+        val token = inputData.getString(KEY_TOKEN)
+            ?: throw IllegalStateException("might be forgot set to download key via with WorkerHelper")
+        val projectId = inputData.getString(KEY_PROJECT_ID)
             ?: throw IllegalStateException("might be forgot set to download key via with WorkerHelper")
         val savePath = inputData.getString(KEY_SAVE_PATH)
             ?: throw IllegalStateException("might be forgot set to savePath key via with WorkerHelper")
         val unzipPath = inputData.getString(KEY_UNZIP_PATH)
             ?: throw IllegalStateException("might be forgot set to savePath key via with WorkerHelper")
 
-        return downloadTask(downloadUrl, savePath, unzipPath)
+        return downloadTask(token, projectId, savePath, unzipPath)
     }
 
     /**
@@ -79,7 +82,7 @@ abstract class BaseDownloadWorker(context: Context, workerParameters: WorkerPara
      * [作成者]
      * fukuda
      */
-    abstract fun downloadTask(downloadUrl: String, savePath: String, unZipPath: String): Result
+    abstract fun downloadTask(token: String, projectId: String, savePath: String, unZipPath: String): Result
 
     /**
      * ダウンロード処理を実行します。

@@ -9,6 +9,7 @@ import android.util.Log
 import android.widget.*
 import androidx.fragment.app.FragmentActivity
 import com.v3.basis.blas.blasclass.config.FieldType
+import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import java.security.AccessController.getContext
 import java.util.*
 
@@ -158,6 +159,19 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
         return view
     }
 
+    open fun createFormSectionTitle2(
+        params: LinearLayout.LayoutParams?, title:String?
+    ): TextView {
+        val view = TextView(baseActivity)
+        var formTitle = if(title != null){"${title}"}else{" "}
+        view.setText("${formTitle}")
+        //文字の色変更したい。
+        view.setTextColor(Color.BLACK)
+        view.setLayoutParams(params)
+        return view
+    }
+
+
     /**
      * 配列から必要な情報を抜き出す
      * type=>一行入力や複数選択など
@@ -172,6 +186,14 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
         return typeMap
     }
 
+    fun createFormInfoMap2(field : LdbFieldRecord): MutableMap<String, String?> {
+        val typeMap :MutableMap<String,String?> = mutableMapOf()
+        typeMap.set(key = "type",value = "${field.type}")
+        typeMap.set(key = "require",value = "${field.essential}")
+        typeMap.set(key = "unique",value = "${field.unique_chk}")
+        return typeMap
+    }
+
 
     /**
      * テキストフィールドを作成する関数。
@@ -182,7 +204,7 @@ open class FormActionDataBasic(setToken:String,setActivity: FragmentActivity) {
      *
      * []
      */
-    open fun createTextField(params:LinearLayout.LayoutParams?, cnt:Int,formInfo: formType): EditText {
+    open fun createTextField(params:LinearLayout.LayoutParams?, cnt:Int,formInfo: formType? = null): EditText {
         val edit = EditText(baseActivity)
         edit.setText("")
         edit.inputType =1

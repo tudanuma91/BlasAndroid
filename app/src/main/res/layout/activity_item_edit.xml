@@ -8,7 +8,7 @@
 
     <fragment
         android:id="@+id/fragmentLogin"
-        android:name="com.v3.basis.blas.ui.item.item_edit.ItemEditFragment"
+        android:name="com.v3.basis.blas.ui.item.item_create.ItemCreateFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 

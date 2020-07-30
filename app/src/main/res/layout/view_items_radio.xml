@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="idx"
+            type="Integer" />
+        <variable
+            name="text"
+            type="String" />
+        <variable
+            name="model"
+            type="com.v3.basis.blas.ui.item.common.FieldSingleSelect" />
+    </data>
+
+    <RadioButton
+        android:text="@{text}"
+        android:onClick="@{v -> model.selected(idx)}"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+</layout>

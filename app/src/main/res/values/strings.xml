@@ -15,6 +15,9 @@
     <string name="password_null">パスワードが指定されていません</string>
     <string name="user_name_too_long">ユーザ名が長すぎます</string>
     <string name="password_too_long">パスワードが長すぎます</string>
+    <string name="twoauth_null">認証コードが指定されていません</string>
+    <string name="twoauth_wrong">認証コードが誤っています</string>
+    <string name="twoauth_time_over">認証コードの時間切れです。再度ログインして下さい</string>
 
 
     <!-- データ系 -->
@@ -93,6 +96,7 @@
     <string name="col_takeout_date">持出した日</string>
     <string name="col_return_date">返却した日</string>
     <string name="col_item_date">設置した日</string>
+    <string name="col_item_id">itemId</string>
     <string name="col_datetime">時間</string>
     <string name="col_day">日付</string>
     <string name="col_account">アカウント名を入力する</string>
@@ -164,6 +168,7 @@
     <!--受け取り失敗系-->
     <string name="other_recieve_error">内部データの取得に失敗しました。</string>
 
+    <string name="all_sync_text">未送信\n%1$d件</string>
 
 
 </resources>

@@ -14,6 +14,7 @@ import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.app.searchAndroid
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.canTakeOut
+import com.v3.basis.blas.blasclass.config.FixtureType.Companion.rtn
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.finishInstall
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.notTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusCanTakeOut
@@ -154,9 +155,16 @@ class FixtureSearchResultFragment : Fragment() {
                 val value = createValue(it)
                 val rowModel = RowModel().also {
                     //モデル作成
+
                     if (fixture_id != null) {
-                        it.title = fixture_id.toString()
+                        if( 0L < fixture_id.toLong()) {
+                            it.title = "（仮登録中)"
+                        }
+                        else {
+                            it.title = fixture_id.toString()
+                        }
                     }
+
                     if (value != null) {
                         it.detail = value
                     }
@@ -171,7 +179,7 @@ class FixtureSearchResultFragment : Fragment() {
                 .setTitle(title)
                 .setMessage(text)
                 .setPositiveButton("OK"){ dialog, which ->
-                    activity!!.finish()
+                    requireActivity().finish()
                 }
                 .show()
         }
@@ -257,6 +265,7 @@ class FixtureSearchResultFragment : Fragment() {
         value += "\n[${getString(R.string.col_status)}]\n"
         value += when(list["status"]){//config.FixtureTypeにて定義している。
             canTakeOut -> {"${statusCanTakeOut}"}
+            rtn -> {"${statusCanTakeOut}"}
             takeOut -> {"${statusTakeOut}"}
             finishInstall -> {"${statusFinishInstall}"}
             notTakeOut -> {"${statusNotTakeOut}"}

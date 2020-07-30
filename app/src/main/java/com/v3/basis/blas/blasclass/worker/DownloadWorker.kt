@@ -4,14 +4,23 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.work.WorkerParameters
+import com.google.gson.Gson
+import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.rest.BlasRestCache
 import com.v3.basis.blas.ui.ext.traceLog
 import com.v3.basis.blas.ui.ext.unzip
+import com.v3.basis.blas.ui.terminal.common.DownloadModel
+import com.v3.basis.blas.ui.terminal.common.DownloadZipModel
+import org.json.JSONObject
 import java.io.*
 import java.net.URL
 import java.net.URLConnection
 
-
+/**
+ * [説明]
+ * BLASからデータベースファイルをバックグラウンドでダウンロードするクラス。
+ */
 class DownloadWorker(context: Context, workerParameters: WorkerParameters): BaseDownloadWorker(context, workerParameters) {
 
     companion object {
@@ -23,6 +32,17 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
             }
         }
 
+        /**
+         * [説明]
+         * ローカルDBの保存先のパスを取得するクラス。
+         * 保存先のパスは、プレファレンス(WEBのクッキー)に保存しているため、
+         * プレファレンスから取得する。プレファレンスの設定自体はダウンロード完了時に行っている。
+         * ダウンロードは本クラスのdownloadメソッドのpreference().edit()で行っている。
+         * [引数]
+         * プロジェクトID
+         * [戻り値]
+         * DBの保存パス。エラー時はdefaultValueのnullを返す。
+         */
         fun getSavedPath(projectId: String): String? {
             return preferences().getString(projectId, null)
         }
@@ -30,15 +50,21 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
         private fun preferences(): SharedPreferences {
 
             val context = BlasApp.applicationContext()
+            //getSharedPreferencesはクッキーみたいなもの。
+            //値は本クラスのdownload関数内でセットしている。
             return context.getSharedPreferences(COMPLETED_DOWNLOAD, Context.MODE_PRIVATE)
         }
     }
 
-    override fun downloadTask(downloadUrl: String, savePath: String, unZipPath: String): Result {
+    override fun downloadTask(token: String, projectId: String, savePath: String, unZipPath: String): Result {
 
         return try {
 
-            download(downloadUrl, savePath, unZipPath)
+            val url = getDownloadUrl(token, projectId)
+            if (url.isBlank()) {
+                return Result.failure()
+            }
+            download(url, savePath, unZipPath)
             Result.success()
         } catch (e: Exception) {
             traceLog("Failed to download task, ${e::class.java.name}")
@@ -46,10 +72,36 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
         }
     }
 
+    /**
+     * [説明]
+     * BLASで作成されたZIPファイルのURLを取得する
+     * [TODO]
+     * エラー時の処理がない？
+     */
+    private fun getDownloadUrl(token: String, projectId: String): String {
+
+        val payload = mapOf(
+            "token" to token,
+            "project_id" to projectId
+        )
+        val success: (json: JSONObject) -> Unit = {}    //ダウンロード時に呼び出される
+        val funcError:(Int,Int) -> Unit = {errorCode, aplCode -> }  //ダウンロード失敗時に呼び出される
+        //BLASからLDBをダウンロードする。
+        val response = BlasRestCache("zip", payload, success, funcError).getResponse()
+        val zipModel = Gson().fromJson(response, DownloadZipModel::class.java)
+        return BuildConfig.HOST + zipModel.zip_path
+    }
+
     override fun getMaxProgressValue(): Int {
+        /*機能していません。overrideしないといけないのでしているだけ。 */
         return 0
     }
 
+    /**
+     * [説明]
+     * getDownloadUrlメソッドで取得したURLを指定してLDBをダウンロードする。
+     * ダウンロードしたファイルはpreferenceに保存する。
+     */
     private fun download(textUrl: String, localPath: String, unZipPath: String) {
 
         val url = URL(textUrl)
@@ -80,8 +132,10 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
             file.delete()
 
             val name = inputData.getString(KEY_SAVE_PATH_KEY_NAME)
-                ?: throw IllegalStateException("might be forgot set to savePath key via with WorkerHelper")
-            val fileName = File(unZipPath).listFiles()?.get(0)?.path
+                ?: throw IllegalStateException("セーブPATHが設定されていません")
+            //val fileName = File(unZipPath).listFiles()?.last()?.path
+            val fileName = File(unZipPath).listFiles().filter({it.name.endsWith(".db")}).last().path
+            Log.d("file path test", "$fileName")
             preferences().edit().putString(name, fileName).apply()
         }
     }

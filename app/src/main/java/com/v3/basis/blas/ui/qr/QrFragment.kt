@@ -25,6 +25,8 @@ import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.CompoundBarcodeView
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.QRActivity
+import com.v3.basis.blas.blasclass.db.BaseController
+import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.ui.ext.checkPermissions
 import com.v3.basis.blas.ui.ext.permissionChk
 import com.v3.basis.blas.ui.fixture.fixture_kenpin.FixtureKenpinFragment
@@ -74,7 +76,7 @@ class QrFragment : Fragment() {
 
         //ライト光るボタン実装
         //現在エラーが出ているので使用不可
-        cameraManager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager?
+        cameraManager = requireActivity().getSystemService(Context.CAMERA_SERVICE) as CameraManager?
 
         //ボタンがタップされたときの処理
         dataQrBtnLight.setOnClickListener{
@@ -104,10 +106,12 @@ class QrFragment : Fragment() {
      * カメラの初期化（カメラの起動・停止はonResume,onPauseにて実施する）
      */
     private fun initQRCamera() {//QRコードリーダ起動
+
         //権限チェック
         val setPermisson =requireActivity().permissionChk()
 
         if (setPermisson) {
+
             // qr_view.resume()
             openQRCamera(
                 "kenpin",
@@ -116,7 +120,8 @@ class QrFragment : Fragment() {
                 token,
                 projectId,
                 data_qr_result_text,
-                data_qr_message)
+                data_qr_message
+            )
         } else {//許可取れなかった場合、行う
             requestPermissions(arrayOf(
                 Manifest.permission.CAMERA,
@@ -167,7 +172,6 @@ class QrFragment : Fragment() {
         projectId:String?,
         result_text: TextView,
         message_text: TextView
-
     ) {
         qr_view.decodeContinuous(object : BarcodeCallback {
             override fun barcodeResult(result: BarcodeResult?) {//QRコードを読み取った時の処理
@@ -183,9 +187,8 @@ class QrFragment : Fragment() {
 
                         //Thread.sleep(500)
                         Log.d("QRCode", "処理実行！！")
+
                         result_text.text = "$result"
-
-
 
                         //ひとつ前のQRコードをこのQRコードにする。連続読み取りを避けるため。
                         oldResult = result.toString()

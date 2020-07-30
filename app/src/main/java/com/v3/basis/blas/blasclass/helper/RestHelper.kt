@@ -2,6 +2,7 @@ package com.v3.basis.blas.blasclass.helper
 
 import android.util.Log
 import com.google.gson.JsonObject
+import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import org.json.JSONArray
 import org.json.JSONObject
 import java.lang.Exception
@@ -37,7 +38,7 @@ class RestHelper {
      * 項目名や項目の順番を取得
      */
     fun createFieldList(result:JSONObject): List<MutableMap<String, String?>> {
-        Log.d("fun_createFieldList","start")
+        Log.d("fun_createFieldList1","start")
         val rtnMap :MutableMap<String,MutableMap<String, String?>> = mutableMapOf()
         val fieldList = result.getJSONArray("records")
 
@@ -60,6 +61,28 @@ class RestHelper {
 
         return rtnMapSort
     }
+
+    // TODO:これ必要？？
+    fun createFieldList2(fields:List<LdbFieldRecord>): List<MutableMap<String, String?>> {
+        Log.d("fun_createFieldList2","start")
+        val rtnMap :MutableMap<String,MutableMap<String, String?>> = mutableMapOf()
+
+        var cnt = 0
+        fields.forEach{
+            val valueMap : MutableMap<String,String?> = mutableMapOf()
+
+            valueMap.set(key = "field_col",value = it.col.toString())
+            valueMap.set(key = "field_name",value = it.name)
+            valueMap.set(key = "type",value = it.type.toString())
+
+            rtnMap.set(key = cnt.toString(),value = valueMap)
+            cnt += 1
+        }
+        val rtnMapSort = rtnMap.values.sortedBy { it["field_col"] !!.toInt()}
+
+        return rtnMapSort
+    }
+
 
     /**
      * データ管理にて、一覧表示に使用。
@@ -149,7 +172,7 @@ class RestHelper {
     //TODO:この処理何とかすること！！
 
     fun createItemList(resultMap:MutableMap<String,JSONObject>,colMax:Int): MutableList<MutableMap<String, String?>> {
-        Log.d("fun_createFieldList","start")
+        Log.d("fun_createItemList","start")
         val result = resultMap["1"]
         val rtnMap :MutableList<MutableMap<String, String?>> = mutableListOf()
         val itemList = result!!.getJSONArray("records")
@@ -261,8 +284,11 @@ class RestHelper {
 
     fun createCheckValue(value:String?): String {
         var newValue = ""
-        if(value != "") {
-            val jsonValue = JSONObject(value)
+        if(value != null && value != "") {
+            val tmp = if (value.contains("\\")) {
+                value.replace("\\", "")
+            } else value
+            val jsonValue = JSONObject(tmp)
             newValue += "${jsonValue["value"]}"
             if (jsonValue["memo"].toString() != "" && !jsonValue.isNull("memo") ) {
                 newValue += "(備考)${jsonValue["memo"]}"

@@ -2,12 +2,20 @@ package com.v3.basis.blas.ui.ext
 
 import android.Manifest
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
+<<<<<<< HEAD
 import androidx.activity.OnBackPressedCallback
+=======
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+>>>>>>> fukuda/offline
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -16,8 +24,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.work.WorkInfo
 import com.v3.basis.blas.R
+import com.v3.basis.blas.activity.QRActivity
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
-import com.v3.basis.blas.blasclass.db.users.UsersController
 import com.v3.basis.blas.blasclass.worker.DownloadWorker
 import com.v3.basis.blas.blasclass.worker.WorkerHelper
 import com.v3.basis.blas.ui.terminal.common.DownloadModel
@@ -26,6 +34,7 @@ import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.util.*
+import kotlin.reflect.full.memberProperties
 
 
 fun Fragment.getStringExtra(key: String) : String? {
@@ -38,6 +47,38 @@ fun Fragment.addTitle(extraName: String) {
         getStringExtra(extraName)?.run {
             it.customView.findViewById<TextView>(R.id.title)?.text = it.title
             it.customView.findViewById<TextView>(R.id.projectName)?.text = this
+        }
+    }
+}
+
+fun Fragment.setViewTitle(title: String) {
+
+    (requireActivity() as AppCompatActivity).supportActionBar?.also {
+        it.customView.findViewById<TextView>(R.id.title)?.text = title
+    }
+}
+
+fun Fragment.getCustomActionTitle(): String {
+    (requireActivity() as AppCompatActivity).supportActionBar?.also {
+        return it.customView.findViewById<TextView>(R.id.title)?.text.toString()
+    }
+    return ""
+}
+
+fun Fragment.hideViewForCustomActionBar(targets: Array<Int>) {
+
+    (requireActivity() as AppCompatActivity).supportActionBar?.also {
+        targets.forEach { id ->
+            it.customView.findViewById<View>(id)?.visibility = View.INVISIBLE
+        }
+    }
+}
+
+fun Fragment.showViewForCustomActionBar(targets: Array<Int>) {
+
+    (requireActivity() as AppCompatActivity).supportActionBar?.also {
+        targets.forEach { id ->
+            it.customView.findViewById<View>(id)?.visibility = View.VISIBLE
         }
     }
 }
@@ -104,10 +145,10 @@ fun Fragment.closeSoftKeyboard() {
  * [作成者]
  * fukuda
  */
-fun Fragment.addDownloadTask(vm: DownloadViewModel, model: DownloadModel, unzipPath: String, projectId: String) {
+fun Fragment.addDownloadTask(vm: DownloadViewModel, model: DownloadModel, unzipPath: String, token: String, projectId: String) {
 
     var once = true
-    WorkerHelper.addDownloadTask<DownloadWorker>(this, model.downloadUrl, model.savePath, unzipPath, projectId) { state, progress, id ->
+    WorkerHelper.addDownloadTask<DownloadWorker>(this, token, projectId, model.savePath, unzipPath, projectId) { state, progress, id ->
 
         when (state) {
             WorkInfo.State.BLOCKED,
@@ -123,20 +164,32 @@ fun Fragment.addDownloadTask(vm: DownloadViewModel, model: DownloadModel, unzipP
             }
             WorkInfo.State.SUCCEEDED -> {
                 vm.setFinishDownloading(model)
+                /**
                 //テスト
                 Completable
                     .fromAction {
                         val ctl = FixtureController(requireContext(), projectId)
-                        val list = ctl.search()
-                        Log.d("FixtureController", "list:" + list.toString())
-                        val _join = ctl.joinTest()
-                        Log.d("FixtureController", "list:" + _join.first { it.username != null })
-                        val join = UsersController(requireContext(), projectId).joinTest()
-                        Log.d("JoinTest", "list:" + join.toString())
+                        val records = ctl.searchDisp()
+
+                        records.forEach { rec ->
+                            rec::class.memberProperties.forEach {prop ->
+                                Log.d("prop:",prop.name + ":" + prop.call(rec).toString())
+                            }
+                        }
+
+//                        val _join = ctl.joinTest()
+//                        Log.d("FixtureController", "list:" + _join.first { it.username != null })
+//                        val join = UsersController(requireContext(), projectId).joinTest()
+//                        Log.d("JoinTest", "list:" + join.toString())
                     }
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe()
+                **/
+            }
+            WorkInfo.State.FAILED -> {
+                WorkerHelper.stopDownload(requireContext(), id)
+                vm.cancelDownloading(model, id)
             }
         }
     }
@@ -182,10 +235,25 @@ fun Fragment.continueDownloadTask(vm: DownloadViewModel, model: DownloadModel) {
     }
 }
 
+<<<<<<< HEAD
 fun Fragment.setBackPressedEvent(action: (callback: OnBackPressedCallback) -> Unit) {
     requireActivity().onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
             action.invoke(this)
         }
     })
+=======
+fun Fragment.startActivityWithResult(launchClass: Class<*>, requestCode: Int, extra: Pair<String, String>, callBack: (result: ActivityResult) -> Unit): ActivityResultLauncher<Intent> {
+
+    val registry = requireActivity().activityResultRegistry
+    val observer = registry.register(requestCode.toString(), viewLifecycleOwner, ActivityResultContracts.StartActivityForResult(),
+        ActivityResultCallback {
+            Log.d("result", "fragment: ${it.data?.getStringExtra("result")}")
+            callBack.invoke(it)
+        })
+    val i = Intent(requireContext(), launchClass)
+    i.putExtra(extra.first, extra.second)
+    observer.launch(i)
+    return observer
+>>>>>>> fukuda/offline
 }

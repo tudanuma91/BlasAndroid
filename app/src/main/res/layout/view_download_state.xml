@@ -25,11 +25,10 @@
             android:layout_gravity="left|bottom"
             android:src="@drawable/ic_file_download_black_24dp"
             android:background="@color/cardview_light_background"
-            android:onClick="@{v -> vm.downloadClick(item)}"
+            android:onClick="@{v -> vm.clickDownload(item)}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:hasNotUrl="@{item.hasNotDownloadUrl}"
-            app:nowDownloading="@{item.downloading}"
+            android:visibility="@{item.downloading == false ? View.VISIBLE : View.INVISIBLE}"
             />
         
         <ProgressBar

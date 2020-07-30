@@ -41,7 +41,8 @@ class FixtureKenpinFragment : Fragment() {
     private var parentChk :Boolean = true
     private val toastErrorLen = Toast.LENGTH_LONG
     private var cameraManager: CameraManager? = null
-    private var cameraID: String? = null
+    //使用していないため、コメントアウトします
+    //private var cameraID: String? = null
     private var SW: Boolean = false
     private var oldResult:String? =null
     private var msg = BlasMsg()
@@ -76,13 +77,16 @@ class FixtureKenpinFragment : Fragment() {
 
         //ライト光るボタン実装
         //現在エラーが出ているので使用不可
-        cameraManager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager?
+        cameraManager = requireActivity().getSystemService(Context.CAMERA_SERVICE) as CameraManager?
 
         //ボタンがタップされたときの処理
         kenpinBtnLight.setOnClickListener{
+            /*
+            使用していないため、コメントアウトします
             if(cameraID == null){
                 Log.d("null","ライトが存在しない")
             }
+            */
             try {
                 if(SW == false){
                     //SWがfalseならばトーチモードをtrueにしてLDEオン

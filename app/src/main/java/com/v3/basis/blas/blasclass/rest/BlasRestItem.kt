@@ -53,9 +53,17 @@ open class BlasRestItem(val crud:String = "search",
                 method = "POST"
                 blasUrl = BlasRest.URL + "items/create/"
             }
+            "create_sync"->{
+                method = "POST"
+                blasUrl = BlasRest.URL + "items/create_sync/"
+            }
             "update"->{
                 method = "PUT"
                 blasUrl = BlasRest.URL + "items/update/"
+            }
+            "update_sync"->{
+                method = "PUT"
+                blasUrl = BlasRest.URL + "items/update_sync/"
             }
             "delete"->{
                 method = "DELETE"
