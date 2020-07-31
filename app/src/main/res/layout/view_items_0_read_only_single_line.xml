@@ -34,14 +34,12 @@
             />
 
         <!-- TwoWay Bindingで, 入力した値が自動的に変数にも反映されます！ -->
-        <EditText
-            android:id="@+id/editText"
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:singleLine="false"
             android:text="@={model.text}"
-            android:singleLine="true"
-            tools:text="EDIT"
-            />
+            tools:text="EDIT" />
 
     </LinearLayout>
 </layout>

@@ -16,7 +16,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableBoolean
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import com.google.gson.GsonBuilder
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.QRActivity
@@ -28,7 +27,6 @@ import com.v3.basis.blas.blasclass.formaction.FormActionDataCreate
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import com.v3.basis.blas.blasclass.rest.BlasRest
-import com.v3.basis.blas.blasclass.rest.BlasRestUser
 import com.v3.basis.blas.databinding.*
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
@@ -40,7 +38,6 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
-import org.json.JSONObject
 import java.util.*
 
 
@@ -510,100 +507,114 @@ class ItemCreateFragment : Fragment() {
         val name = field.name!!
         val mustInput = field.essential == 1
 
-        val view = when (field.type.toString()) {
-            FieldType.TEXT_FIELD -> {
-                val l: ViewItems1TextSingleLineBinding =
-                    DataBindingUtil.inflate(layoutInflater, R.layout.view_items_1_text_single_line, null, false)
-                l.model = FieldText(cellNumber, name, mustInput)
-                l.root to l.model
-            }
-            FieldType.TEXT_AREA -> {
-                val l: ViewItems2TextMultiLineBinding =
-                    DataBindingUtil.inflate(layoutInflater, R.layout.view_items_2_text_multi_line, null, false)
-                l.model = FieldText(cellNumber, name, mustInput)
-                l.root to l.model
-            }
-            FieldType.DATE_TIME -> {
-                val l: ViewItems3DateBinding =
-                    DataBindingUtil.inflate(layoutInflater, R.layout.view_items_3_date, null, false)
-                l.model = FieldText(cellNumber, name, mustInput)
-                l.vm = viewModel
-                l.root to l.model
-            }
-            FieldType.TIME -> {
-                val l: ViewItems4TimeBinding =
-                    DataBindingUtil.inflate(layoutInflater, R.layout.view_items_4_time, null, false)
-                l.model = FieldText(cellNumber, name, mustInput)
-                l.vm = viewModel
-                l.root to l.model
-            }
-            FieldType.SINGLE_SELECTION -> {
-                val l: ViewItems5SelectBinding =
-                    DataBindingUtil.inflate(layoutInflater, R.layout.view_items_5_select, null, false)
-                val model = FieldSingleSelect(cellNumber, name, mustInput)
-                l.model = model
-                l.vm = viewModel
-                l.radioGroup.createChildren(layoutInflater, field.choice, model)
-                l.root to l.model
-            }
-            FieldType.MULTIPLE_SELECTION -> {
-                val l: ViewItems6SelectMultiBinding =
-                    DataBindingUtil.inflate(layoutInflater, R.layout.view_items_6_select_multi, null, false)
-                val model = FieldMultiSelect(cellNumber, name, mustInput)
-                l.model = model
-                l.vm = viewModel
-                l.checkBoxGroup.createChildren(layoutInflater, field.choice, model)
-                l.root to l.model
-            }
-            FieldType.LOCATION -> {
-                val l: ViewItems7LocationBinding =
-                    DataBindingUtil.inflate(layoutInflater, R.layout.view_items_7_location, null, false)
-                l.model = FieldText(cellNumber, name, mustInput)
-                l.vm = viewModel
-                l.root to l.model
-            }
-            FieldType.KENPIN_RENDOU_QR -> {
-                val l: ViewItems8QrKenpinBinding =
-                    DataBindingUtil.inflate(layoutInflater, R.layout.view_items_8_qr_kenpin, null, false)
-                l.model = FieldText(cellNumber, name, mustInput)
-                l.vm = viewModel
-                l.root to l.model
-            }
-            FieldType.SIG_FOX -> {
-                val l: ViewItems9SigfoxBinding =
-                    DataBindingUtil.inflate(layoutInflater, R.layout.view_items_9_sigfox, null, false)
-                l.model = FieldSigFox(cellNumber, name, mustInput)
-                l.root to l.model
-            }
-            FieldType.QR_CODE -> {
-                val l: ViewItemsAQrBinding =
-                    DataBindingUtil.inflate(layoutInflater, R.layout.view_items_a_qr, null, false)
-                l.model = FieldText(cellNumber, name, mustInput)
-                l.vm = viewModel
-                l.root to l.model
-            }
-            FieldType.TEKKILYO_RENDOU_QR -> {
-                val l: ViewItemsBQrTekkyoBinding =
-                    DataBindingUtil.inflate(layoutInflater, R.layout.view_items_b_qr_tekkyo, null, false)
-                l.model = FieldText(cellNumber, name, mustInput)
-                l.vm = viewModel
-                l.root to l.model
-            }
-            FieldType.ACOUNT_NAME -> {
-                val l: ViewItemsCAccountBinding =
-                    DataBindingUtil.inflate(layoutInflater, R.layout.view_items_c_account, null, false)
-                l.model = FieldText(cellNumber, name, mustInput)
-                l.vm = viewModel
-                l.root to l.model
-            }
-            FieldType.CHECK_VALUE -> {
-                val l: CellCheckvalueBinding =
-                    DataBindingUtil.inflate(layoutInflater, R.layout.cell_checkvalue, null, false)
-                l.model = FieldCheckText(cellNumber, name, mustInput)
-                l.root to l.model
-            }
-            else -> { null }
+        val view = if( 1 == field.edit_id ) {
+            val l: ViewItems0ReadOnlySingleLineBinding =
+                DataBindingUtil.inflate(layoutInflater, R.layout.view_items_0_read_only_single_line, null, false)
+            l.model = FieldText(cellNumber, name, mustInput)
+            l.root to l.model
         }
+        else {
+            when (field.type.toString()) {
+                FieldType.TEXT_FIELD -> {
+                    val l: ViewItems1TextSingleLineBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_1_text_single_line, null, false)
+                    l.model = FieldText(cellNumber, name, mustInput)
+                    l.root to l.model
+
+                }
+                FieldType.TEXT_AREA -> {
+                    val l: ViewItems2TextMultiLineBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_2_text_multi_line, null, false)
+                    l.model = FieldText(cellNumber, name, mustInput)
+                    l.root to l.model
+                }
+                FieldType.DATE_TIME -> {
+                    val l: ViewItems3DateBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_3_date, null, false)
+                    l.model = FieldText(cellNumber, name, mustInput)
+                    l.vm = viewModel
+                    l.root to l.model
+                }
+                FieldType.TIME -> {
+                    val l: ViewItems4TimeBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_4_time, null, false)
+                    l.model = FieldText(cellNumber, name, mustInput)
+                    l.vm = viewModel
+                    l.root to l.model
+                }
+                FieldType.SINGLE_SELECTION -> {
+                    val l: ViewItems5SelectBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_5_select, null, false)
+                    val model = FieldSingleSelect(cellNumber, name, mustInput)
+                    l.model = model
+                    l.vm = viewModel
+                    l.radioGroup.createChildren(layoutInflater, field.choice, model)
+                    l.root to l.model
+
+                }
+                FieldType.MULTIPLE_SELECTION -> {
+                    val l: ViewItems6SelectMultiBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_6_select_multi, null, false)
+                    val model = FieldMultiSelect(cellNumber, name, mustInput)
+                    l.model = model
+                    l.vm = viewModel
+                    l.checkBoxGroup.createChildren(layoutInflater, field.choice, model)
+                    l.root to l.model
+                }
+                FieldType.LOCATION -> {
+                    val l: ViewItems7LocationBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_7_location, null, false)
+                    l.model = FieldText(cellNumber, name, mustInput)
+                    l.vm = viewModel
+                    l.root to l.model
+                }
+                FieldType.KENPIN_RENDOU_QR -> {
+                    val l: ViewItems8QrKenpinBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_8_qr_kenpin, null, false)
+                    l.model = FieldText(cellNumber, name, mustInput)
+                    l.vm = viewModel
+                    l.root to l.model
+                }
+                FieldType.SIG_FOX -> {
+                    val l: ViewItems9SigfoxBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_9_sigfox, null, false)
+                    l.model = FieldSigFox(cellNumber, name, mustInput)
+                    l.root to l.model
+                }
+                FieldType.QR_CODE -> {
+                    val l: ViewItemsAQrBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_a_qr, null, false)
+                    l.model = FieldText(cellNumber, name, mustInput)
+                    l.vm = viewModel
+                    l.root to l.model
+                }
+                FieldType.TEKKILYO_RENDOU_QR -> {
+                    val l: ViewItemsBQrTekkyoBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_b_qr_tekkyo, null, false)
+                    l.model = FieldText(cellNumber, name, mustInput)
+                    l.vm = viewModel
+                    l.root to l.model
+                }
+                FieldType.ACOUNT_NAME -> {
+                    val l: ViewItemsCAccountBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_c_account, null, false)
+                    l.model = FieldText(cellNumber, name, mustInput)
+                    l.vm = viewModel
+                    l.root to l.model
+                }
+                FieldType.CHECK_VALUE -> {
+                    val l: CellCheckvalueBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.cell_checkvalue, null, false)
+                    l.model = FieldCheckText(cellNumber, name, mustInput)
+                    l.root to l.model
+                }
+                else -> { null }
+            }
+
+        }
+
+
+
         view?.also {
             bind.innerView.addView(it.first)
             viewModel.fields.add(it.second)
