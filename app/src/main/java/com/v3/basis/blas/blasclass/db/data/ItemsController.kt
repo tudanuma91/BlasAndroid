@@ -135,6 +135,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
                     plHolder += offset.toString()
                 }
 
+                //ここで画像が非同期だった場合もサーバーに登録ボタンを表示したい
                 val sql = "select * from items "+ addition + " order by create_date desc " + addingPager
                 Log.d("item search sql",sql)
                 db?.rawQuery(sql, plHolder)

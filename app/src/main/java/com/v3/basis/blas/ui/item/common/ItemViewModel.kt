@@ -39,6 +39,10 @@ class ItemViewModel: ViewModel() {
         this.itemId = itemId
     }
 
+    /**
+     * [説明]
+     * データ管理の保存ボタンを押したときに呼ばれる
+     */
     fun clickSave(container: LinearLayout) {
         Log.d("clickSave()","start")
 

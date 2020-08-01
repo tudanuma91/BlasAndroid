@@ -13,6 +13,10 @@ import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 
+/**
+ * [説明]
+ * データをBLASに一括送信するためのクラス
+ */
 class Lump(
     val context: Context
     , val projectId:String

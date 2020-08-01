@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.v3.basis.blas.R
+import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.component.ImageComponent
@@ -310,6 +311,7 @@ class ItemImageFragment : Fragment() {
                 //仮登録で保存する
                 imgCon.save2LDB(itemRecord, BaseController.SYNC_STATUS_NEW)
                 //本登録のときに画像を送信するように変更
+                viewModel.fetchImage(item)
                 //viewModel.upload(bmp, mime, item, error)
             }
         }
@@ -317,6 +319,8 @@ class ItemImageFragment : Fragment() {
 
     override fun onDestroyView() {
         recyclerView.adapter = null
+        ItemActivity.setRestartFlag()
+        requireActivity().finish()
         disposables.dispose()
         super.onDestroyView()
     }

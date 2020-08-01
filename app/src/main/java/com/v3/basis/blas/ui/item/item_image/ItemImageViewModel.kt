@@ -159,6 +159,11 @@ class ItemImageViewModel() : ViewModel() {
                             //リモート問い合わせ
                             fetchImageFromRemote(item)
                         }
+                        else {
+                            item.loading.set(false)
+                            item.empty.set(true)
+                            item.imageId = ""
+                        }
                     } else {
                         //想定外のエラー
                         item.loading.set(false)

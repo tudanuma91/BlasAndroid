@@ -6,6 +6,7 @@ import android.util.Log
 import com.v3.basis.blas.blasclass.component.ImageComponent
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.Images
+import com.v3.basis.blas.blasclass.db.data.Items
 import com.v3.basis.blas.ui.item.item_image.model.ItemImage
 import java.io.File
 import java.io.FileInputStream
@@ -71,6 +72,7 @@ class ImagesController (context: Context, projectId: String): BaseController(con
             //SQL作成
             val cv = createConvertValue(image)
             db?.beginTransaction()
+            //画像データの登録
             if(itemImage.image_id != "") {
                 if(!isExists) {
                     //新規登録 または　ダウンロード直後
@@ -84,6 +86,15 @@ class ImagesController (context: Context, projectId: String): BaseController(con
             else {
                 db?.insert("images", null, cv)
             }
+            //データ管理のsync_statusを変更する
+            if(syncStatus == SYNC_STATUS_NEW) {
+                val item = Items()
+                item.item_id = itemImage.item_id.toLong()
+                item.sync_status = syncStatus
+                val cvItem = createConvertValue(item)
+                db?.update("items",cvItem, "item_id =?", arrayOf(itemImage.item_id))
+            }
+
 
             db?.setTransactionSuccessful()
             true
