@@ -5,6 +5,7 @@ import android.util.Base64
 import com.v3.basis.blas.ui.ext.translateToBitmap
 import java.util.*
 
+//JSONファイルでコード直後に使われるレコード
 data class ItemImage(
     val create_date: String,
     val ext: String,

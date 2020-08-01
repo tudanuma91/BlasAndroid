@@ -24,7 +24,7 @@ open class BlasRestImage(val crud:String = "download",
     }
 
 
-    var cacheFileName = context.cacheDir.toString() +  "/image_" + payload["item_id"] + "_" + payload["project_image_id"] +".json"
+    //var cacheFileName = context.cacheDir.toString() +  "/image_" + payload["item_id"] + "_" + payload["project_image_id"] +".json"
     var method = "GET"
     var aplCode:Int = 0
 
@@ -35,7 +35,6 @@ open class BlasRestImage(val crud:String = "download",
     override fun doInBackground(vararg params: String?): String? {
         var response:String? = null
         var json:JSONObject? = null
-        var errorCode = 0
 
         var blasUrl = BlasRest.URL + "images/download/"
 
@@ -43,7 +42,7 @@ open class BlasRestImage(val crud:String = "download",
             "download"->{
                 method = "GET"
                 blasUrl = BlasRest.URL + "images/download230/"
-                cacheFileName = context.cacheDir.toString() +  "/image_" + payload["item_id"] + "_" + payload["project_image_id"] +".json"
+                //cacheFileName = context.cacheDir.toString() +  "/image_" + payload["item_id"] + "_" + payload["project_image_id"] +".json"
             }
             "upload"->{
                 method = "POST"
@@ -60,8 +59,9 @@ open class BlasRestImage(val crud:String = "download",
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)
-
+            funcError(BlasRestErrCode.NETWORK_ERROR, APL_OK)
             //通信エラーが発生したため、キャッシュを読み込む
+            /*
             if (File(cacheFileName).exists()) {
                 try {
                     response = loadJson(cacheFileName)
@@ -77,8 +77,8 @@ open class BlasRestImage(val crud:String = "download",
                     funcError(BlasRestErrCode.NETWORK_ERROR, APL_OK)
                     return response
                 }
-
             }
+
             if (method == "POST"){
                 // 失敗した場合、キュー処理を呼び出す
                 super.reqDataSave(payload,method,blasUrl,funcSuccess,funcError,"Images")
@@ -89,7 +89,7 @@ open class BlasRestImage(val crud:String = "download",
                     json.put("error_code", BlasRestErrCode.NETWORK_ERROR)
                     response = json.toString()
                 }
-            }
+            }*/
         }
         return response
     }
@@ -132,7 +132,7 @@ open class BlasRestImage(val crud:String = "download",
 
             records = json.getJSONArray("records")
             if(records != null){
-                saveJson(cacheFileName, result)
+                //saveJson(cacheFileName, result)
             }
         }
 

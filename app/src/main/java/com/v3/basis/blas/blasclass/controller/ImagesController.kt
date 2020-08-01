@@ -6,9 +6,16 @@ import android.util.Log
 import com.v3.basis.blas.blasclass.component.ImageComponent
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.Images
+import com.v3.basis.blas.ui.item.item_image.model.ItemImage
+import java.io.File
+import java.io.FileInputStream
 import java.io.IOException
+import java.lang.RuntimeException
+import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.*
+
+class ImageControllerException(val errorCode:Int, val msg:String): Exception(msg)
 
 class ImagesController (context: Context, projectId: String): BaseController(context, projectId) {
     //ここから下は画像関係
@@ -22,42 +29,65 @@ class ImagesController (context: Context, projectId: String): BaseController(con
      * fileName: 画像ファイルのフルパス名。
      * imageId: imagesテーブルの主キー。nullの場合は新規追加、null以外の場合は更新する
      */
-    fun upload2LDB(projectImageId:String, itemId:String, fileName:String, imageId:String?=null):Boolean{
+//    fun save2LDB(bmp:Bitmap, projectImageId:String, itemId:String, imageId:String?=null, syncStatus:Int):Boolean{
+    fun save2LDB(itemImage: ItemImage, syncStatus:Int):Boolean{
         val image = Images()
-        //保存用レコード作成
-        if(imageId == null) {
+        var fileName = ""
+        var isExists = false
+        //保存用画像ファイル名を生成する
+        if(itemImage.image_id == "") {
+            //新規追加の場合
             image.image_id = createTempId()
+            fileName = ImageComponent().createTmpImageFileName()
         }
         else {
-            image.image_id = imageId.toLong()
+            //更新の場合
+            fileName = getImageFileName(itemImage.image_id)
+            if(fileName != "") {
+                //すでにLDBに保存されている場合はDBのファイル名を使う
+                isExists = true
+            }
+            else {
+                //保存されていない場合は、仮アファイル名を使う
+                fileName = ImageComponent().createTmpImageFileName()
+            }
+            image.image_id = itemImage.image_id.toLong()
         }
 
         image.project_id = projectId.toInt()
-        image.project_image_id = projectImageId.toInt()
-        image.item_id = itemId.toLong() //仮IDが入ることがあるため
-        image.filename = fileName
+        image.project_image_id = itemImage.project_image_id.toInt()
+        image.item_id = itemImage.item_id.toLong() //仮IDが入ることがあるため
+        //image.filename = fileName
         image.create_date = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
-        image.sync_status = SYNC_STATUS_NEW;//仮登録
-        //画像ファイルを開いてmd5のハッシュ値を取得する
-        /* val digest: MessageDigest = MessageDigest.getInstance("MD-5")
-         var hash = digest.digest(FileInputStream(File(fileName)).readBytes()).joinToString(separator = "") {
-             "%02x".format(it)
-         }
-         image.hash = hash //あってるのか？
- */
-        //LDBに保存する
-        val cv = createConvertValue(image)
+        image.sync_status = syncStatus;//仮登録
+
+        itemImage.bitmap?.let {
+            //画像ファイルを保存する
+            image.hash = ImageComponent().saveBmp2Local(context, projectId, fileName, it)
+        }
+        image.filename = fileName
 
         return try {
+            //SQL作成
+            val cv = createConvertValue(image)
             db?.beginTransaction()
-
-            // itemテーブルに追加
-            db?.insert("images",null,cv)
+            if(itemImage.image_id != "") {
+                if(!isExists) {
+                    //新規登録 または　ダウンロード直後
+                    db?.insert("images", null, cv)
+                }
+                else {
+                    //IDもあって、画像もあるので更新
+                    db?.update("images",cv, "image_id =?", arrayOf(itemImage.image_id))
+                }
+            }
+            else {
+                db?.insert("images", null, cv)
+            }
 
             db?.setTransactionSuccessful()
             true
         } catch (e: Exception) {
-            //とりあえず例外をキャッチして、Falseを返す？
             e.printStackTrace()
             false
         }
@@ -67,16 +97,40 @@ class ImagesController (context: Context, projectId: String): BaseController(con
     }
 
     /**
-     * ここでローカルの画像を読み込めばよいのでは？
+     * [説明]
+     * 指定されたimageIdのファイル名をimagesテーブルから検索して返却する
+     */
+    fun getImageFileName(imageId:String):String {
+        var fileName = ""
+        try {
+            db?.beginTransaction()
+            val sql = "select filename from images where image_id=?"
+            val cursor = db?.rawQuery(sql, arrayOf(imageId))
+            if (cursor != null && cursor?.count > 0) {
+                cursor?.moveToFirst()
+                fileName = cursor?.getString(0)
+            }
+        }
+        catch (e: Exception) {
+            //とりあえず例外をキャッチして、Falseを返す？
+            e.printStackTrace()
+        }
+        finally {
+            db?.endTransaction()
+        }
+        return fileName
+    }
+
+
+    /**
+     * [説明]
+     * itemIdとproject_image_idをキーにローカルDBから画像を探す
      */
     fun searchFromLocal(context:Context, itemId:String, projectImageId:String): Pair<Bitmap, Long> {
-        //この関数は
-        //ローカルDBから画像を探す
-        //IDは何で検索するか
-        //itemIdとproject_image_idで検索
         var fileName:String
         var bmp:Bitmap? = null
-        var image_id:Long = 0
+        var image_id:Long = -1
+
         try {
             db?.beginTransaction()
             val sql = "select image_id, filename from images where project_id=? and item_id=? and project_image_id=?"
@@ -98,12 +152,18 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         }
 
         if(bmp == null) {
-            //例外投げる
-            throw IOException("image is not exists")
-            //return Pair(bmp, image_id)
+            if(itemId.toLong() < 0) {
+                //ローカルに画像がなく、かつ、データIDが仮IDなので、リモートに画像がないのは明白。
+                throw ImageControllerException(1, "リモートに画像はありません")
+            }
+            else {
+                //例外投げる
+                throw ImageControllerException(2, "リモートサーバに確認必要")
+            }
         }
         else {
             return Pair(bmp, image_id)
         }
     }
+
 }
