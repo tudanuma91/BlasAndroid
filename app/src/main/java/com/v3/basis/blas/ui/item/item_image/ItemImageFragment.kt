@@ -29,16 +29,22 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
 import com.v3.basis.blas.blasclass.app.BlasMsg
-import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
+import com.v3.basis.blas.blasclass.component.ImageComponent
+import com.v3.basis.blas.blasclass.controller.ImagesController
+import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.ui.item.item_image.adapter.AdapterCellItem
 import com.v3.basis.blas.ui.item.item_image.model.ImageFieldModel
+import com.v3.basis.blas.ui.item.item_image.model.ItemImage
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.fragment_item_image.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 /**
@@ -90,7 +96,7 @@ class ItemImageFragment : Fragment() {
 
         button.setOnClickListener { view ->
             //setup2を元に戻してからpushすること
-            viewModel.setup(token, projectId, itemId)
+            viewModel.setup(requireContext(), token, projectId, itemId)
             AlertDialog.Builder(activity)
                 .setTitle("メッセージ")
                 .setMessage("リロードしました")
@@ -109,7 +115,7 @@ class ItemImageFragment : Fragment() {
         recyclerView.layoutManager = GridLayoutManager(requireContext(), 2) as RecyclerView.LayoutManager?
 
         viewModel = ViewModelProviders.of(this).get(ItemImageViewModel::class.java)
-        viewModel.setup(token, projectId, itemId)
+        viewModel.setup(requireContext(), token, projectId, itemId)
 
 
         viewModel.receiveImageFields
@@ -159,6 +165,7 @@ class ItemImageFragment : Fragment() {
 
         val list = field.records.map { records -> records.ProjectImage }.map {
             AdapterCellItem(viewModel, it.mapToItemImageCellItem()).apply {
+                this.item.imageId=""
                 viewModel.fetchImage(this.item)
             }
         }
@@ -184,6 +191,10 @@ class ItemImageFragment : Fragment() {
         return false
     }
 
+    /**
+     * [説明]
+     * 画像を新規追加、または更新する場合に呼ばれる。
+     */
     private fun startFileChoicer() {
 
         //カメラの起動Intentの用意
@@ -276,7 +287,30 @@ class ItemImageFragment : Fragment() {
                     Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
                     Log.d("upload", "upload error")
                 }
-                viewModel.upload(bmp, mime, item, error)
+
+                //ここが画像の保存パス！！！
+                val imgCon =
+                    ImagesController(
+                        requireContext(),
+                        projectId
+                    )
+                //ここでbmpにファイル名を付けてキャッシュディレクトリに保存する
+                val itemRecord = ItemImage(
+                    create_date= SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()),
+                    ext = mime,
+                    filename = "",//save2LDBで作成する
+                    hash = "",  //save2LDBで作成する
+                    image = "", //Base64が入るが仕様しない
+                    image_id=item.imageId,
+                    item_id = itemId,
+                    moved="0",
+                    project_id=projectId,
+                    project_image_id = item.id)
+                itemRecord.bitmap = bmp
+                //仮登録で保存する
+                imgCon.save2LDB(itemRecord, BaseController.SYNC_STATUS_NEW)
+                //本登録のときに画像を送信するように変更
+                //viewModel.upload(bmp, mime, item, error)
             }
         }
     }

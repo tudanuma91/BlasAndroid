@@ -24,7 +24,7 @@ import kotlin.reflect.full.starProjectedType
  * SQLiteのDBを管理するクラス。
  */
 abstract class BaseController(
-    protected val context: Context
+    private val context: Context
     ,val projectId: String
 ) {
 
@@ -85,9 +85,8 @@ abstract class BaseController(
             //.filter{ it.returnType.isSubtypeOf(String::class.starProjectedType) }
             .filterIsInstance<KMutableProperty<*>>()
             .forEach { prop ->
-                Log.d("setProperty()","propName:" + prop.name )
                 val value = cursor.getString( cursor.getColumnIndex(prop.name) )
-                Log.d("setProperty()","value:" + value)
+                Log.d("setProperty()","propName:" + prop.name + "  value:" + value)
 
                 if( value.isNullOrEmpty() ) {
                     return@forEach
