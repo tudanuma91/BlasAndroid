@@ -541,7 +541,8 @@ class ItemViewFragment : Fragment() {
                 text += "${newValue}\n"
             }
             else {
-                text += "${item[fldName]}\n"
+                val fldVal = item[fldName]?.replace("\\r","")
+                text += "${fldVal}\n"
             }
 
          }

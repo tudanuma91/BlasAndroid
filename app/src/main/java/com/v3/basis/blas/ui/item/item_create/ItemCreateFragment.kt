@@ -356,7 +356,7 @@ class ItemCreateFragment : Fragment() {
                         val field = (any as FieldModel)
 //                        val columnName = "fld${index + 1}"
                         val columnName = "fld${field.col}"
-                        val value = fieldValues[columnName]
+                        val value = fieldValues[columnName]?.replace("\\r","")
                         field.setValue(value)
                     }
                 }
