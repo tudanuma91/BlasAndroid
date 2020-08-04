@@ -469,6 +469,10 @@ class ItemCreateFragment : Fragment() {
                     l.model = model
                     l.vm = viewModel
                     l.radioGroup.createChildren(layoutInflater, field.choice, model)
+
+                    val baseId = l.radioGroup.children.first().id
+                    l.radioGroup.check(baseId)
+
                     //一回シングルセレクトをマップに格納
                     singleSelectMap[singleCnt] = l
                     //チョイスの値を格納
