@@ -16,6 +16,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableBoolean
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import androidx.preference.PreferenceManager
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.QRActivity
@@ -39,6 +40,7 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import java.util.*
+import kotlin.math.sin
 
 
 /**
@@ -76,6 +78,12 @@ class ItemCreateFragment : Fragment() {
     private lateinit var vibrator: Vibrator
     private var vibrationEffect = VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
     private var tone: ToneGenerator? = null
+
+    //シングルセレクトを取得
+    private val singleSelectMap = mutableMapOf<Int,ViewItems5SelectBinding>()
+    private val singleSelectChoiceMap = mutableMapOf<Int,String?>()
+    private val singleSelectList = mutableListOf<MutableMap<String?,ViewItems5SelectBinding>>()
+    var singleCnt = 1
 
     /**
     private lateinit var rootView: LinearLayout
@@ -344,6 +352,7 @@ class ItemCreateFragment : Fragment() {
 
     private fun readItem() {
         Log.d("readItem()","start")
+        var singleColCnt = 1
 
         itemId?.also { id ->
             Single
@@ -357,13 +366,70 @@ class ItemCreateFragment : Fragment() {
 //                        val columnName = "fld${index + 1}"
                         val columnName = "fld${field.col}"
                         val value = fieldValues[columnName]
-                        field.setValue(value)
+
+                        with(field.javaClass.canonicalName!!) {
+                            when {
+                                //シングルセレクトの処理
+                                contains("FieldSingleSelect") -> {
+                                    //明日、配列の中身をきれいにする
+                                    val choice = singleSelectChoiceMap[singleColCnt]
+                                    val model = singleSelectMap[singleColCnt]
+
+                                    if(choice != null) {
+                                        choice.split(",").forEachIndexed{index, s ->
+                                            if(value == s && model != null){
+                                                model.radioGroup.check(6)
+                                                //var flg = -1
+                                                //radioCheck(flg,index,model,1)
+                                                /*while (flg > -1){
+                                                    model.radioGroup.check(checkId)
+                                                    flg = model.radioGroup.checkedRadioButtonId
+                                                    if(flg > -1){
+                                                        model.radioGroup.check(flg+checkId-1)
+                                                        val test= checkId+flg
+                                                        Log.d("[木島テスト]",test.toString())
+                                                        Log.d("[木島テスト]","走ってるのかコレ？")
+                                                        break
+                                                    }
+                                                }*/
+                                            }
+                                        }
+                                    }
+                                    singleColCnt ++
+                                }
+                                else -> {
+                                    //その他の処理
+                                    field.setValue(value)
+                                }
+                            }
+                        }
                     }
                 }
                 .addTo(disposables)
         }
         Log.d("readItem()","end")
     }
+
+   /* private fun radioCheck(flg:Int,index:Int,model:ViewItems5SelectBinding,loop:Int): Int {
+        var newFlg = flg
+        var id = 0
+
+        model.radioGroup.check(loop)
+        newFlg = model.radioGroup.checkedRadioButtonId
+        Log.d("[木島テスト]","値の取得：${loop}")
+        Log.d("[木島テスト]","値の取得:${newFlg}")
+
+        if(loop <= 15) {
+            if (newFlg == -1) {
+                radioCheck(flg, index, model, loop + 1)
+            } else {
+                id = flg + index
+            }
+        }
+        return  id
+    }*/
+
+
 
 /*
     private fun getSuccess(result: JSONObject?) {
@@ -550,7 +616,16 @@ class ItemCreateFragment : Fragment() {
                     l.model = model
                     l.vm = viewModel
                     l.radioGroup.createChildren(layoutInflater, field.choice, model)
+                    //一回シングルセレクトをマップに格納
+                    singleSelectMap[singleCnt] = l
+                    //チョイスの値を格納
+                    singleSelectChoiceMap[singleCnt] = field.choice
+                    singleCnt++
+                    //val valueMap = mutableMapOf<String?,ViewItems5SelectBinding>()
+                    //valueMap[field.choice] = l
+                    //singleSelectList.add(valueMap)
                     l.root to l.model
+
 
                 }
                 FieldType.MULTIPLE_SELECTION -> {
@@ -629,6 +704,7 @@ class ItemCreateFragment : Fragment() {
             model.values.addAll(list)
             list.forEachIndexed { index, s ->
                 val layout = DataBindingUtil.inflate<ViewItemsRadioBinding>(inflater, R.layout.view_items_radio, null, false)
+                Log.d("[木島テスト]",index.toString())
                 layout.idx = index
                 layout.model = model
                 layout.text = s
@@ -1144,6 +1220,19 @@ class ItemCreateFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         disposables.dispose()
+        singleSelectList.forEach{
+            Log.d("[木島テスト]","${it.values}を削除する")
+            it.values.clear()
+
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        singleSelectList.forEach{
+            Log.d("[木島テスト]","${it.values}を削除する")
+            it.values.clear()
+        }
     }
 
 /*
