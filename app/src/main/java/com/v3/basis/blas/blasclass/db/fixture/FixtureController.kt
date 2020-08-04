@@ -505,7 +505,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
 
         // ステータスが検品済み and 同じ会社で検品されているか？
-        if( KENPIN_FIN != fixture?.status ) {
+        if( KENPIN_FIN != fixture?.status && RTN != fixture?.status ) {
 
             if( 1 == fixture?.status ) {
                 Log.d("takeout message!","すでに持ち出し中です")
@@ -575,6 +575,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             true
         } catch (e: Exception) {
             //とりあえず例外をキャッチして、Falseを返す？
+            Log.d("takeout","db error")
             e.printStackTrace()
             false
         }

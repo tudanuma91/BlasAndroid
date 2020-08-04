@@ -230,7 +230,7 @@ class ItemViewFragment : Fragment() {
         //全て同期のボタン
         allSyncButton.setOnClickListener {
             Log.d("フローティングボタン Item","Click!!!!")
-            Lump(requireContext(),projectId,token){
+            Lump(requireContext(),projectId,token,1){
                 (requireActivity() as ItemActivity).reloard()
             }.exec()
         }

@@ -10,15 +10,15 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
-import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.PublishSubject
 
 class Lump(
     val context: Context
     , val projectId:String
     , val token:String
+    , val callType:Int
     , val callBack: (success: Boolean) -> Unit
 ) {
+
 
     fun exec() {
         Log.d("Lump.exec()","start")
@@ -32,6 +32,7 @@ class Lump(
     private fun syncFixture() {
 
         val fixtures = FixtureController(context,projectId.toString()).search(null,true)
+        var sucCnt = 0
 
         fixtures.forEach {fixture ->
 
@@ -66,12 +67,20 @@ class Lump(
                 }
             }
 
+
             val dis = CompositeDisposable()
             sync.eventCompleted
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy {
-                    callBack.invoke(it)
-                    dis.dispose()
+
+                    if( 0 == callType  ) {
+                        sucCnt ++
+                        if( sucCnt == fixtures.count() ) {
+                            callBack.invoke(it)
+                            dis.dispose()
+                        }
+                    }
+
                 }
                 .addTo(dis)
 
@@ -85,6 +94,7 @@ class Lump(
         Log.d("Lump.syncItem()","start")
 
         val items = ItemsController(context,projectId).search(paging = 0,  syncFlg = true)
+        var sucCnt = 0
 
         items.forEach {  itemMap ->
             itemMap["item_id"]?.toLong()?.let {
@@ -94,8 +104,13 @@ class Lump(
                 sync.eventCompleted
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy {
-                        callBack.invoke(it)
-                        dis.dispose()
+                        if( 1 == callType) {
+                            sucCnt ++
+                            if( sucCnt == items.count() ) {
+                                callBack.invoke(it)
+                                dis.dispose()
+                            }
+                        }
                     }
                     .addTo(dis)
 
