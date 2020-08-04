@@ -49,7 +49,8 @@ class ItemViewModel: ViewModel() {
             itemsController?.also {
                 fields.forEachIndexed { index, f ->
                     val field = (f as FieldModel)
-                    map.set("fld${index + 1}", field.convertToString())
+                    // map.set("fld${index + 1}", field.convertToString())
+                    map.set("fld${field.col}", field.convertToString())
                 }
 
                 try {
