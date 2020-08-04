@@ -230,7 +230,7 @@ class ItemViewFragment : Fragment() {
         //全て同期のボタン
         allSyncButton.setOnClickListener {
             Log.d("フローティングボタン Item","Click!!!!")
-            Lump(requireContext(),projectId,token){
+            Lump(requireContext(),projectId,token,1){
                 (requireActivity() as ItemActivity).reloard()
             }.exec()
         }
@@ -541,7 +541,8 @@ class ItemViewFragment : Fragment() {
                 text += "${newValue}\n"
             }
             else {
-                text += "${item[fldName]}\n"
+                val fldVal = item[fldName]?.replace("\\r","")
+                text += "${fldVal}\n"
             }
 
          }
