@@ -80,7 +80,7 @@ open class BlasRestItem(val crud:String = "search",
         }
         catch(e: Exception) {
             Log.d("blas-log", e.message)
-
+            /*
             if (File(cacheFileName).exists()) {
                 try {
                     response = loadJson(cacheFileName)
@@ -97,10 +97,11 @@ open class BlasRestItem(val crud:String = "search",
                     funcError(BlasRestErrCode.NETWORK_ERROR,aplCode)
                     return response
                 }
-            }
+            }*/
 
             if ((method == "POST") or (method == "PUT")){
                 // 重複エラーのチェック
+                /*
                 val resultList = dupliCheck(payload,response)
 
                 if (resultList.size == 0){
@@ -109,13 +110,13 @@ open class BlasRestItem(val crud:String = "search",
                     errorCode = BlasRestErrCode.NETWORK_ERROR
                 }else{
                     errorCode = BlasRestErrCode.DATA_DUPLI_ERROR
-                }
-
+                }*/
+                /*
                 if(response != null) {
                     json = JSONObject(response)
                     json.put("error_code", errorCode)
                     response = json.toString()
-                }
+                }*/
             }
         }
         return response

@@ -1,5 +1,6 @@
 package com.v3.basis.blas.blasclass.controller
 
+import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
@@ -91,11 +92,12 @@ class ImagesController (context: Context, projectId: String): BaseController(con
                 val item = Items()
                 item.item_id = itemImage.item_id.toLong()
                 item.sync_status = syncStatus
-                val cvItem = createConvertValue(item)
+                //val cvItem = createConvertValue(item)
+                //ここがバグ。project_idとかが全部すっ飛んでしまう
+                val cvItem = ContentValues()
+                cvItem.put("sync_status", SYNC_STATUS_NEW)
                 db?.update("items",cvItem, "item_id =?", arrayOf(itemImage.item_id))
             }
-
-
             db?.setTransactionSuccessful()
             true
         } catch (e: Exception) {
@@ -177,4 +179,67 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         }
     }
 
+    /**
+     * [説明]
+     * 指定されたデータIDのレコードのうち、サーバと同期していない画像レコードを返却する
+     */
+    fun searchNosyncRecord(itemId:Long):MutableList<Images>{
+        //item_idとsync_statusが0以外の画像レコードを探す
+        var resultList:MutableList<Images> = mutableListOf()
+        try {
+            db?.beginTransaction()
+            val sql = "select image_id, project_id, project_image_id, item_id, filename, hash, moved, create_date from images where item_id=? and sync_status!=?"
+            val cursor = db?.rawQuery(sql, arrayOf(itemId.toString(), SYNC_STATUS_SYNC.toString()))
+            cursor?.also { c->
+                var notLast = cursor?.moveToFirst()
+                while(notLast) {
+                    val image_record = Images(
+                        image_id = c.getLong(0),
+                        project_id = c.getInt(1),
+                        project_image_id = c.getInt(2),
+                        item_id = c.getLong(3),
+                        filename = c.getString(4),
+                        hash = c.getString(5),
+                        moved = c.getInt(6),
+                        create_date = c.getString(7)
+                    )
+                    resultList.add(image_record)
+                    //リストに追加する
+                    notLast = c.moveToNext()
+                }
+            }
+        }
+        catch (e: Exception) {
+            //とりあえず例外をキャッチして、Falseを返す？
+            e.printStackTrace()
+        }
+        finally {
+            db?.endTransaction()
+            db?.close()
+        }
+
+        return resultList
+    }
+
+    /**
+     * 仮登録されたレコードを本登録する
+     */
+    fun fixImageRecord(newImageId:String, tempImageId:String) {
+        val cv = ContentValues()
+        cv.put("image_id", newImageId)
+        cv.put("sync_status", SYNC_STATUS_SYNC)
+
+        return try {
+            db?.beginTransaction()
+            db?.update("images", cv, "image_id=?", arrayOf(tempImageId.toString()))
+            db?.setTransactionSuccessful()!!
+        }
+        catch (e:Exception) {
+            e.printStackTrace()
+            throw e
+        }
+        finally {
+            db?.endTransaction()
+        }
+    }
 }

@@ -319,6 +319,7 @@ class ItemImageFragment : Fragment() {
 
     override fun onDestroyView() {
         recyclerView.adapter = null
+        //画面破棄のときにItemActivityをリロードする
         ItemActivity.setRestartFlag()
         requireActivity().finish()
         disposables.dispose()
