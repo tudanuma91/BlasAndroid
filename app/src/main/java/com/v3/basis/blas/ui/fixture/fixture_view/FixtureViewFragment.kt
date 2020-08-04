@@ -27,6 +27,7 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
+import com.v3.basis.blas.blasclass.rest.BlasRest
 import com.v3.basis.blas.blasclass.sync.Lump
 import com.v3.basis.blas.databinding.FragmentFixtureViewBinding
 import com.v3.basis.blas.ui.ext.addTitle
@@ -234,12 +235,16 @@ class FixtureViewFragment : Fragment() {
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .onErrorReturn {
+                Toast.makeText(BlasRest.context, "該当レコードが存在しません", Toast.LENGTH_LONG).show()
                 return@onErrorReturn listOf<LdbFixtureDispRecord>()
             }
             .map {
-
-
                 val list = mutableListOf<FixtureListCell>()
+
+                if(0 == list.count()) {
+                    Toast.makeText(BlasRest.context, "該当レコードが存在しません", Toast.LENGTH_LONG).show()
+                    list
+                }
                 it.forEach {
                     val value = createValue(it) ?: ""
 
