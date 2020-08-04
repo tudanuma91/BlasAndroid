@@ -233,7 +233,12 @@ class FixtureViewFragment : Fragment() {
         Single.fromCallable { fixtureController.searchDisp(offset = offset, searchMap = searchValueMap) }
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
+            .onErrorReturn {
+                return@onErrorReturn listOf<LdbFixtureDispRecord>()
+            }
             .map {
+
+
                 val list = mutableListOf<FixtureListCell>()
                 it.forEach {
                     val value = createValue(it) ?: ""
