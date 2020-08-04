@@ -317,6 +317,11 @@ class ItemImageFragment : Fragment() {
         }
     }
 
+    override fun onStop() {
+        ItemActivity.setRestartFlag()
+        super.onStop()
+    }
+
     override fun onDestroyView() {
         recyclerView.adapter = null
         //画面破棄のときにItemActivityをリロードする

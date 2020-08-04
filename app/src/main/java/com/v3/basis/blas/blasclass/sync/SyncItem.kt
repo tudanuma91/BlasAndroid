@@ -9,6 +9,7 @@ import com.v3.basis.blas.blasclass.db.data.Items
 import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.rest.BlasRestImage
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
+import com.v3.basis.blas.blasclass.rest.SyncBlasRestItem
 import com.v3.basis.blas.ui.item.item_image.FileExtensions
 import com.v3.basis.blas.ui.item.item_view.ItemsCellModel
 import io.reactivex.subjects.PublishSubject
@@ -46,7 +47,26 @@ class SyncItem(val context: Context,val token : String, val projectId : String ,
         }
         payload2["token"] = token
 
-        BlasRestItem("create_sync",payload2,::success,::error).execute()
+        //BlasRestItem("create_sync",payload2,::success,::error).execute()
+        val json = SyncBlasRestItem().create_sync(payload2)
+        if(json != null){
+            val errorCode = json.getInt("error_code")
+            if(errorCode == 0) {
+                val ctl = ItemsController(context,projectId.toString())
+
+                if( BaseController.SYNC_STATUS_NEW == item.sync_status ) {
+                    val records = json.getJSONObject("records")
+
+                    val new_item_id = records.getString("new_item_id")
+                    val org_item_id = records.getString("temp_item_id")
+
+                    ctl.updateItemId4Insert( org_item_id,new_item_id )
+                }
+                else {
+                    ctl.updateItemId4Update(item.item_id.toString(),item,mapItem)
+                }
+            }
+        }
     }
 
     fun imageSuccess(result:JSONObject){
