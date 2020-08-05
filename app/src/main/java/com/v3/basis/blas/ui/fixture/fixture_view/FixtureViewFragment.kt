@@ -241,9 +241,8 @@ class FixtureViewFragment : Fragment() {
             .map {
                 val list = mutableListOf<FixtureListCell>()
 
-                if(0 == list.count()) {
+                if(0 == it.count()) {
                     Toast.makeText(BlasRest.context, "該当レコードが存在しません", Toast.LENGTH_LONG).show()
-                    list
                 }
                 it.forEach {
                     val value = createValue(it) ?: ""
