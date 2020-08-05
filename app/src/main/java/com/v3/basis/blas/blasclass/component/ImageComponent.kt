@@ -69,7 +69,7 @@ class ImageComponent {
             val fileOutputStream = FileOutputStream(imgFullPath)
             bmp!!.compress(Bitmap.CompressFormat.JPEG, 100, byteArrOutputStream)
             fileOutputStream.write(byteArrOutputStream.toByteArray())
-            val digest: MessageDigest = MessageDigest.getInstance("SHA-256")
+            val digest: MessageDigest = MessageDigest.getInstance("MD5")
             hash = digest.digest(byteArrOutputStream.toByteArray()).joinToString(separator = "") {
                 "%02x".format(it)
             }
