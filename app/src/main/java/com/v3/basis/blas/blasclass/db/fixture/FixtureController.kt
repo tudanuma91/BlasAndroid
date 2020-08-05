@@ -180,7 +180,6 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         val sqlWhere = createSqlWhere( additionList )
 
         // limit,offset
-        var plHolder = arrayOf<String>()
         plHolder += paging.toString()
         plHolder += offset.toString()
 
