@@ -122,6 +122,8 @@ class FixtureSearchResultFragment : Fragment() {
                 //呼ぶタイミングを確定させる！！
                 val payload2 = mapOf("token" to token, "project_id" to project_id)
                 Log.d("testtest", "取得する")
+
+                // 使用されていない！！！
                 BlasRestFixture(
                     "search",
                     payload2,

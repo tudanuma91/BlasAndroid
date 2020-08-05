@@ -3,7 +3,7 @@ package com.v3.basis.blas.blasclass.sync
 import android.util.Log
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
-import com.v3.basis.blas.blasclass.rest.BlasRestFixture
+import com.v3.basis.blas.blasclass.rest.SyncBlasRestFixture
 import com.v3.basis.blas.ui.fixture.fixture_view.FixtureCellModel
 import io.reactivex.subjects.PublishSubject
 import org.json.JSONObject
@@ -12,13 +12,17 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
 
     abstract open var crud:String
 
-    abstract fun createPayload2() : MutableMap<String,String>
+    abstract fun createPayload() : MutableMap<String,String>
 
     val eventCompleted: PublishSubject<Boolean> = PublishSubject.create()
 
     fun exec() {
-        val payload2 = createPayload2()
-        BlasRestFixture(crud, payload2, ::success, ::error).execute()
+        val payload = createPayload()
+        //BlasRestFixture(crud, payload2, ::success, ::error).execute()
+
+        SyncBlasRestFixture(context = model.context,fixture = fixture, crud = crud).execute(payload)
+
+        eventCompleted.onNext(true)
     }
 
     open fun success(result: JSONObject) {

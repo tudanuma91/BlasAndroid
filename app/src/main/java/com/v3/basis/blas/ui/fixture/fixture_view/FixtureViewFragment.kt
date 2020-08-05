@@ -124,7 +124,9 @@ class FixtureViewFragment : Fragment() {
         viewModel = ViewModelProviders.of(this).get(FixtureListViewModel::class.java)
         viewModel.errorEvent
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy { Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show() }
+            .subscribeBy {
+                Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
+            }
             .addTo(disposables)
 
         bind = DataBindingUtil.inflate(inflater, R.layout.fragment_fixture_view, container, false)
@@ -241,7 +243,7 @@ class FixtureViewFragment : Fragment() {
             .map {
                 val list = mutableListOf<FixtureListCell>()
 
-                if(0 == it.count()) {
+                if(0 == offset && 0 == it.count()) {
                     Toast.makeText(BlasRest.context, "該当レコードが存在しません", Toast.LENGTH_LONG).show()
                 }
                 it.forEach {
