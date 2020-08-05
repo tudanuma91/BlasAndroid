@@ -19,10 +19,7 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
     fun exec() {
         val payload = createPayload()
         //BlasRestFixture(crud, payload2, ::success, ::error).execute()
-
-        SyncBlasRestFixture(context = model.context,fixture = fixture, crud = crud).execute(payload)
-
-        eventCompleted.onNext(true)
+        SyncBlasRestFixture( crud, ::success,::error).execute(payload)
     }
 
     open fun success(result: JSONObject) {
@@ -37,7 +34,7 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
         Log.d("OK", "同期完了")
     }
 
-    fun error(errorCode: Int, aplCode :Int){
+    fun error(errorCode: Int){
         Log.d("NG", "作成失敗")
         Log.d("errorCorde", "${errorCode}")
 
@@ -77,13 +74,12 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
 
         Log.d("errMsg" ,errMsg)
 
-        eventCompleted.onNext(false)
-
         // SQLite tableを更新する
         val fixtureController = FixtureController(  model.context, model.project_id.toString())
         fixtureController.setErrorMsg(fixture.fixture_id.toString(),errMsg)
 
-//        model.errorMessage.set(errMsg)
+        eventCompleted.onNext(false)
+        model.errorMessage.set(errMsg)
     }
 
 }

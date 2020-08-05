@@ -27,6 +27,8 @@ class Lump(
     fun exec() {
         Log.d("Lump.exec()","start")
 
+
+
         syncFixture()
 
         syncItem()
