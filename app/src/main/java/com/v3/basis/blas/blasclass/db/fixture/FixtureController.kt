@@ -3,8 +3,7 @@ package com.v3.basis.blas.blasclass.db.fixture
 import android.content.ContentValues
 import android.content.Context
 import android.util.Log
-import com.v3.basis.blas.blasclass.db.BaseController
-import com.v3.basis.blas.blasclass.db.Purser
+import com.v3.basis.blas.blasclass.db.*
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
 import com.v3.basis.blas.blasclass.ldb.LdbUserRecord
@@ -271,7 +270,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
     /**
      * シリアルナンバーがDB中に存在するか確認する
      */
-    private fun checkExistSerail( serial_number:String ) : Boolean {
+    private fun checkExistSerial( serial_number:String ) : Boolean {
 
         var ret = false
         val sql = "select count(*) as count from fixtures where serial_number = ?"
@@ -404,32 +403,31 @@ class FixtureController(context: Context, projectId: String): BaseController(con
     /**
      * パーサーを適用する処理
      */
-    fun passPurser( serial_number:String ) : String {
+    fun passPurser( serial_number:String ) : MutableList<String> {
 
         val purserType = getProjectVlue("purser_type")
 
-        var newSerialNumber:String = ""
+        lateinit var newSerialNumber:MutableList<String>
         if( 0 == purserType ) {
+
             newSerialNumber = Purser().encode(serial_number)
         }
         else if( 1 == purserType ) {
             // PURSER_CSV
-            newSerialNumber = Purser().encode(serial_number)
+            newSerialNumber = PurserCSV().encode(serial_number)
         }
         else if(2 == purserType) {
             // PURSER_SPACE
-            //TODO:未実装
-            newSerialNumber = serial_number
+            newSerialNumber = PurserNCU().encode(serial_number)
         }
         else if( 3 == purserType ) {
             // PURSER_REG
             //TODO:未実装
-            newSerialNumber = serial_number
+            newSerialNumber = mutableListOf(serial_number)
         }
         else if( 4 == purserType) {
             // PURSER_CSV_FIRST
-            //TODO:未実装
-            newSerialNumber = serial_number
+            newSerialNumber = PurserCSVFirst().encode(serial_number)
 
         }
         else {
@@ -446,42 +444,45 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         Log.d("kenpin","start")
         var ret = false
 
-        val serial_number = passPurser( serial_number )
+        val serial_numbers = passPurser( serial_number )
 
-        // fixtureテーブル 同じserial_numberが存在しないかを確認
-        if(  checkExistSerail(serial_number) ){
-            // ある場合
-            Log.d("kenpin","同一シリアルが登録済み")
-            var user : LdbUserRecord? = getUserInfo()
-            if(null == user) {
-                user = LdbUserRecord()
-                user.user_id = 1
-                user.org_id = 1
-            }
+        serial_numbers.forEach {
+            // fixtureテーブル 同じserial_numberが存在しないかを確認
+            if (checkExistSerial(it)) {
+                // ある場合
+                Log.d("kenpin", "同一シリアルが登録済み")
+                var user: LdbUserRecord? = getUserInfo()
+                if (null == user) {
+                    user = LdbUserRecord()
+                    user.user_id = 1
+                    user.org_id = 1
+                }
 
-            var fixture = getEqualFixtureInfo(serial_number)
+                var fixture = getEqualFixtureInfo(it)
 
-            if( fixture?.fix_org_id != user?.org_id && 0 == fixture?.status ) {
-                Log.d("kenpin","他社検品を異動")
-                // 他社が検品、持ち出し可なら ⇒ 異動
-                ret = kenpin_update(serial_number,fixture,user)
+                if (fixture?.fix_org_id != user?.org_id && 0 == fixture?.status) {
+                    Log.d("kenpin", "他社検品を異動")
+                    // 他社が検品、持ち出し可なら ⇒ 異動
+                    ret = kenpin_update(it, fixture, user)
 
-                return ret
-            }
-            else {
-                // 検品不可
-                Log.d("kenpin","検品済みです")
-                errorMessageEvent.onNext("検品済みです")
+                    return ret
+                } else {
+                    // 検品不可
+                    Log.d("kenpin", "検品済みです")
+                    errorMessageEvent.onNext("検品済みです")
 
-                return false
+                    return false
+                }
+                // なければ新規追加
+                Log.d("kenpin", "存在しないシリアルなので新規作成する")
+                errorMessageEvent.onNext("")
+
+                ret = kenpin_insert(it)
+                if(!ret) {
+                    return false
+                }
             }
         }
-
-        // なければ新規追加
-        Log.d("kenpin","存在しないシリアルなので新規作成する")
-        errorMessageEvent.onNext("")
-
-        ret = kenpin_insert(serial_number)
 
         return ret
     }
@@ -536,51 +537,53 @@ class FixtureController(context: Context, projectId: String): BaseController(con
      */
     fun takeout(serial_number: String): Boolean {
 
-        val serial_number = passPurser( serial_number )
+        val serial_numbers = passPurser( serial_number )
 
-        // 該当シリアルナンバーの機器情報を取得
-        var fixture = getEqualFixtureInfo(serial_number)
-        var user : LdbUserRecord? = getUserInfo()
-        if(null == user) {
-            user = LdbUserRecord()
-            user.user_id = 1
-            user.org_id = 1
+        serial_numbers.forEach {
+            // 該当シリアルナンバーの機器情報を取得
+            var fixture = getEqualFixtureInfo(it)
+            var user: LdbUserRecord? = getUserInfo()
+            if (null == user) {
+                user = LdbUserRecord()
+                user.user_id = 1
+                user.org_id = 1
+            }
+
+            if (!checkTakeout(fixture, user)) {
+                return false
+            }
+
+            fixture!!.takeout_user_id = user.user_id
+            fixture!!.takeout_org_id = user.org_id
+
+            val current = LocalDateTime.now()
+            val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss")
+
+            fixture!!.takeout_date = current.format(formatter)
+            fixture!!.update_date = current.format(formatter)
+            fixture!!.status = TAKING_OUT
+            fixture!!.sync_status = SYNC_STATUS_EDIT
+
+            val cv = createConvertValue(fixture as Any, null)
+
+            return try {
+                db?.beginTransaction()
+                //db.execSQL("UPDATE fixtures set status = 1 where serial_number = ?", arrayOf(serial_number))
+                db?.update("fixtures", cv, "serial_number = ?", arrayOf(it))
+                db?.setTransactionSuccessful()
+                Log.d("takeout", "成功！！！")
+                errorMessageEvent.onNext("")
+                true
+            } catch (e: Exception) {
+                //とりあえず例外をキャッチして、Falseを返す？
+                Log.d("takeout", "db error")
+                e.printStackTrace()
+                false
+            } finally {
+                db?.endTransaction()
+            }
         }
-
-        if( !checkTakeout(fixture,user) ) {
-            return false
-        }
-
-        fixture!!.takeout_user_id = user.user_id
-        fixture!!.takeout_org_id = user.org_id
-
-        val current = LocalDateTime.now()
-        val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss")
-
-        fixture!!.takeout_date = current.format(formatter)
-        fixture!!.update_date = current.format(formatter)
-        fixture!!.status = TAKING_OUT
-        fixture!!.sync_status = SYNC_STATUS_EDIT
-
-        val cv = createConvertValue(fixture as Any,null)
-
-        return try {
-            db?.beginTransaction()
-            //db.execSQL("UPDATE fixtures set status = 1 where serial_number = ?", arrayOf(serial_number))
-            db?.update("fixtures",cv,"serial_number = ?", arrayOf(serial_number))
-            db?.setTransactionSuccessful()
-            Log.d("takeout","成功！！！")
-            errorMessageEvent.onNext("")
-            true
-        } catch (e: Exception) {
-            //とりあえず例外をキャッチして、Falseを返す？
-            Log.d("takeout","db error")
-            e.printStackTrace()
-            false
-        }
-        finally {
-            db?.endTransaction()
-        }
+        return false
     }
 
     /**
@@ -635,50 +638,53 @@ class FixtureController(context: Context, projectId: String): BaseController(con
      */
     fun rtn(serial_number: String): Boolean {
 
-        val serial_number = passPurser( serial_number )
+        val serial_numbers = passPurser( serial_number )
 
-        // 該当シリアルナンバーの機器情報を取得
-        var fixture = getEqualFixtureInfo(serial_number)
-        var user : LdbUserRecord? = getUserInfo()
-        if(null == user) {
-            user = LdbUserRecord()
-            user.user_id = 1
-            user.org_id = 1
+        serial_numbers.forEach {
+            // 該当シリアルナンバーの機器情報を取得
+            var fixture = getEqualFixtureInfo(it)
+            var user : LdbUserRecord? = getUserInfo()
+            if(null == user) {
+                user = LdbUserRecord()
+                user.user_id = 1
+                user.org_id = 1
+            }
+
+            if( !checkuRtn(fixture,user) ) {
+                return false
+            }
+
+            fixture!!.rtn_user_id = user.user_id
+            fixture!!.rtn_org_id = user.org_id
+
+            val current = LocalDateTime.now()
+            val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss")
+
+            fixture!!.rtn_date = current.format(formatter)
+            fixture!!.update_date = current.format(formatter)
+            fixture!!.status = RTN
+            fixture!!.sync_status = SYNC_STATUS_EDIT
+
+            val cv = createConvertValue(fixture,null)
+
+            return try {
+                db?.beginTransaction()
+                // db.execSQL("UPDATE fixtures set status = 2 where serial_number = ?", arrayOf(serial_number))
+                db?.update("fixtures",cv,"serial_number = ?", arrayOf(it))
+
+                db?.setTransactionSuccessful()
+                Log.d("rtn","成功！！！")
+                true
+            } catch (e: Exception) {
+                //とりあえず例外をキャッチして、Falseを返す？
+                e.printStackTrace()
+                false
+            }
+            finally {
+                db?.endTransaction()
+            }
         }
-
-        if( !checkuRtn(fixture,user) ) {
-            return false
-        }
-
-        fixture!!.rtn_user_id = user.user_id
-        fixture!!.rtn_org_id = user.org_id
-
-        val current = LocalDateTime.now()
-        val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss")
-
-        fixture!!.rtn_date = current.format(formatter)
-        fixture!!.update_date = current.format(formatter)
-        fixture!!.status = RTN
-        fixture!!.sync_status = SYNC_STATUS_EDIT
-
-        val cv = createConvertValue(fixture,null)
-
-        return try {
-            db?.beginTransaction()
-            // db.execSQL("UPDATE fixtures set status = 2 where serial_number = ?", arrayOf(serial_number))
-            db?.update("fixtures",cv,"serial_number = ?", arrayOf(serial_number))
-
-            db?.setTransactionSuccessful()
-            Log.d("rtn","成功！！！")
-            true
-        } catch (e: Exception) {
-            //とりあえず例外をキャッチして、Falseを返す？
-            e.printStackTrace()
-            false
-        }
-        finally {
-            db?.endTransaction()
-        }
+        return false
     }
 
     /**
