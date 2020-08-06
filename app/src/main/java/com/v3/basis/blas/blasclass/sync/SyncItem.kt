@@ -23,7 +23,7 @@ class SyncItem(val context: Context,val token : String, val projectId : String ,
 
     val eventCompleted: PublishSubject<Boolean> = PublishSubject.create()
 
-    fun exec(  ) :Boolean{
+    fun exec(  ) :String? {
 
         Log.d("project_id",projectId)
         Log.d("item_id",itemId.toString())
@@ -58,28 +58,28 @@ class SyncItem(val context: Context,val token : String, val projectId : String ,
                     val org_item_id = records.getString("temp_item_id")
 
                     itemCtl.updateItemId4Insert( org_item_id,new_item_id )
-                    return true
+                    return new_item_id
                     //eventCompleted.onNext(true)
                 }
                 else {
                     itemCtl.updateItemId4Update(item.item_id.toString(),item,mapItem)
-                    return true
+                    return item.item_id.toString()
                     //eventCompleted.onNext(true)
                 }
             }
             else {
                 error(errorCode)
-                return false
+                return null
                 //eventCompleted.onNext(false)
             }
         }
         else {
             //通信エラー
             error(-1)
-            return false
+            return null
             //eventCompleted.onNext(false)
         }
-        return true//ここには来ない
+//        return true//ここには来ない
     }
 
 
