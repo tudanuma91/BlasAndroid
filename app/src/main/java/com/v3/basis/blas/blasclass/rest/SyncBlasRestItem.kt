@@ -40,7 +40,8 @@ open class SyncBlasRestItem() : SyncBlasRest() {
             json = JSONObject(response)
         }
         catch(e: Exception) {
-            Log.d("blas-log", e.message)
+            //Log.d("blas-log", e.message)
+            Log.d("blas-log", "通信エラー")
         }
 
         return json
