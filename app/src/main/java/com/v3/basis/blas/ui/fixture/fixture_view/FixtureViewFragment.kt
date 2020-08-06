@@ -167,6 +167,7 @@ class FixtureViewFragment : Fragment() {
             //  連打禁止！！
             allSyncButton.isEnabled = false
             Log.d("フローティングボタン Fixture","Click!!!!")
+
             Lump(requireContext(),project_id,token,0){
                 (requireActivity() as FixtureActivity).reloard()
             }.exec()

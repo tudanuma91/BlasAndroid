@@ -26,13 +26,21 @@ class Lump(
 
     fun exec() {
         Log.d("Lump.exec()","start")
-
-
-
-        syncFixture()
-
-        syncItem()
-
+        val dis = CompositeDisposable()
+        //syncFixture()
+        //syncItem()
+        Single.fromCallable{
+            //syncFixture()
+            syncItem()
+            syncImages()
+            true
+        }.subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                callBack.invoke(true)
+                dis.dispose()
+            }.addTo(CompositeDisposable())
+        Log.d("Lump.exec()","end")
     }
 
     private fun syncFixture() {

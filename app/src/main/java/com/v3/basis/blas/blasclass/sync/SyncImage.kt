@@ -26,6 +26,7 @@ class SyncImage(val context: Context, val token : String, val projectId : String
 
     fun exec(  ) {
         //同じitem_idのうち、未送信画像を検索する
+        val itemCtl = ItemsController(context, projectId)
         val imgCtl = ImagesController(context, projectId)
         val imageRecords = imgCtl.searchNosyncRecord(itemId)
         imageRecords.forEach {
@@ -66,9 +67,23 @@ class SyncImage(val context: Context, val token : String, val projectId : String
 
                     val ctl = ImagesController(context, projectId)
                     ctl.fixImageRecord(newImageId, tempImageId)
+
+                    //ここにデータ管理のsync_statusを戻す処理入れるべきでは？konishi
+
                 } else {
-                    val ctl = ItemsController(context, projectId.toString())
-                    ctl.setErrorMsg(itemId.toString(), "画像の更新に失敗しました")
+                    //画像送信失敗した
+                    val itemRecord = itemCtl.search(itemId)
+                    if(itemRecord.count() > 0) {
+                        val syncStatus = itemRecord[0]["sync_status"]?.toInt()
+                        if(syncStatus == BaseController.SYNC_STATUS_SYNC) {
+                            //データ管理は本登録済みの場合、
+                            // 本登録できているので、画像登録だけがエラーのときは編集中に戻す
+                            itemCtl.setSyncStatus(itemId, BaseController.SYNC_STATUS_EDIT)
+                        }
+
+                        itemCtl.setErrorMsg(itemId.toString(), "画像の更新に失敗しました")
+
+                    }
                 }
             }
         }

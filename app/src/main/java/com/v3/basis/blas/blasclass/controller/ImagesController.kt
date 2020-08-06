@@ -242,4 +242,48 @@ class ImagesController (context: Context, projectId: String): BaseController(con
             db?.endTransaction()
         }
     }
+
+    /**
+     * [説明]
+     * 同期されていない画像のリストを返す
+     * [備考]
+     * 数万件あったらどうしようか
+     */
+    fun searchNosyncRecords():List<Images>{
+        var resultList:MutableList<Images> = mutableListOf()
+        try {
+            db?.beginTransaction()
+            val sql = "select image_id, project_id, project_image_id, item_id, filename, hash, moved, create_date from images where sync_status!=?"
+            //where sync_status!=?はnot equealに注意
+            val cursor = db?.rawQuery(sql, arrayOf(SYNC_STATUS_SYNC.toString()))
+            cursor?.also { c->
+                var notLast = cursor?.moveToFirst()
+                while(notLast) {
+                    val image_record = Images(
+                        image_id = c.getLong(0),
+                        project_id = c.getInt(1),
+                        project_image_id = c.getInt(2),
+                        item_id = c.getLong(3),
+                        filename = c.getString(4),
+                        hash = c.getString(5),
+                        moved = c.getInt(6),
+                        create_date = c.getString(7)
+                    )
+                    resultList.add(image_record)
+                    //リストに追加する
+                    notLast = c.moveToNext()
+                }
+            }
+        }
+        catch (e: Exception) {
+            //とりあえず例外をキャッチして、Falseを返す？
+            e.printStackTrace()
+        }
+        finally {
+            db?.endTransaction()
+            db?.close()
+        }
+
+        return resultList
+    }
 }
