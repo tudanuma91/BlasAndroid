@@ -494,6 +494,22 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             throw ex
         }
     }
+
+    fun setSyncStatus(itemId:Long, syncStatus:Int) {
+        val cv = ContentValues()
+        cv.put("sync_status", syncStatus)
+
+        return try {
+            db?.beginTransaction()
+            db?.update("items",cv,"item_id = ?", arrayOf(itemId.toString()))
+            db?.setTransactionSuccessful()
+            db?.endTransaction()!!
+        }
+        catch ( ex : Exception ) {
+            ex.printStackTrace()
+            throw ex
+        }
+    }
 }
 
 

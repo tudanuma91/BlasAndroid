@@ -2,14 +2,17 @@ package com.v3.basis.blas.blasclass.sync
 
 import android.content.Context
 import android.util.Log
+import com.v3.basis.blas.blasclass.controller.ImagesController
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.ui.fixture.fixture_view.FixtureCellModel
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
 
 /**
  * [説明]
@@ -26,11 +29,20 @@ class Lump(
 
     fun exec() {
         Log.d("Lump.exec()","start")
+        val dis = CompositeDisposable()
 
-        syncFixture()
-
-        syncItem()
-
+        Single.fromCallable{
+            syncFixture()
+            syncItem()
+            syncImages()
+            true
+        }.subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                callBack.invoke(true)
+                dis.dispose()
+            }.addTo(CompositeDisposable())
+        Log.d("Lump.exec()","end")
     }
 
     private fun syncFixture() {
@@ -124,4 +136,12 @@ class Lump(
 
     }
 
+    fun syncImages() {
+        Log.d("Lump.syncImages()","start")
+        //同期されていないレコードを取得する
+        val images = ImagesController(context,projectId).searchNosyncRecords()
+        images.forEach{
+            it.item_id?.let { it1 -> SyncImage(context,token,projectId, it1).exec() }
+        }
+    }
 }

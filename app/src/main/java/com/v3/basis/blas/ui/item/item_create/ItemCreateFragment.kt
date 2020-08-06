@@ -360,6 +360,8 @@ class ItemCreateFragment : Fragment() {
         if( model != null ) {
             val childs =model.radioGroup.children
             var baseId = childs.first().id
+            val test = childs
+
 
             var choiceId = 0
             if( null != choice ) {

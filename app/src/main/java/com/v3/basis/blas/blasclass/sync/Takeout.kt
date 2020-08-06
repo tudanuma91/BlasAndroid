@@ -10,7 +10,7 @@ class Takeout(model: FixtureCellModel, fixture : LdbFixtureRecord ) : SyncFixtur
 
     override var crud: String = "takeout"
 
-    override fun createPayload2(): MutableMap<String, String> {
+    override fun createPayload(): MutableMap<String, String> {
 
         var payload2 = mutableMapOf(
             "token" to model.token,

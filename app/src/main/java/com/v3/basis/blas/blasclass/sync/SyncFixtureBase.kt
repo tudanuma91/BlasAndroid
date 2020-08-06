@@ -3,7 +3,7 @@ package com.v3.basis.blas.blasclass.sync
 import android.util.Log
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
-import com.v3.basis.blas.blasclass.rest.BlasRestFixture
+import com.v3.basis.blas.blasclass.rest.SyncBlasRestFixture
 import com.v3.basis.blas.ui.fixture.fixture_view.FixtureCellModel
 import io.reactivex.subjects.PublishSubject
 import org.json.JSONObject
@@ -12,13 +12,14 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
 
     abstract open var crud:String
 
-    abstract fun createPayload2() : MutableMap<String,String>
+    abstract fun createPayload() : MutableMap<String,String>
 
     val eventCompleted: PublishSubject<Boolean> = PublishSubject.create()
 
     fun exec() {
-        val payload2 = createPayload2()
-        BlasRestFixture(crud, payload2, ::success, ::error).execute()
+        val payload = createPayload()
+        //BlasRestFixture(crud, payload2, ::success, ::error).execute()
+        SyncBlasRestFixture( crud, ::success,::error).execute(payload)
     }
 
     open fun success(result: JSONObject) {
@@ -33,7 +34,7 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
         Log.d("OK", "同期完了")
     }
 
-    fun error(errorCode: Int, aplCode :Int){
+    fun error(errorCode: Int){
         Log.d("NG", "作成失敗")
         Log.d("errorCorde", "${errorCode}")
 
@@ -73,13 +74,12 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
 
         Log.d("errMsg" ,errMsg)
 
-        eventCompleted.onNext(false)
-
         // SQLite tableを更新する
         val fixtureController = FixtureController(  model.context, model.project_id.toString())
         fixtureController.setErrorMsg(fixture.fixture_id.toString(),errMsg)
 
-//        model.errorMessage.set(errMsg)
+        eventCompleted.onNext(false)
+        model.errorMessage.set(errMsg)
     }
 
 }

@@ -12,7 +12,7 @@ class Kenpin( model: FixtureCellModel ,fixture : LdbFixtureRecord ) : SyncFixtur
 
     override var crud:String = "kenpin"
 
-    override fun createPayload2() : MutableMap<String,String> {
+    override fun createPayload() : MutableMap<String,String> {
         var payload2 = mutableMapOf(
             "token" to model.token,
             "fixture_id" to  fixture.fixture_id.toString(),
