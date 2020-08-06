@@ -36,8 +36,9 @@ class Lump(
             //syncFixture()
             syncItem()
             syncImages()
+            true
         }.subscribeOn(Schedulers.newThread())
-            .observeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
                 callBack.invoke(true)
                 dis.dispose()
