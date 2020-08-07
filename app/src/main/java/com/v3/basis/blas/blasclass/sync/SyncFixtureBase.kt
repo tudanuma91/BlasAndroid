@@ -7,6 +7,7 @@ import com.v3.basis.blas.blasclass.rest.SyncBlasRestFixture
 import com.v3.basis.blas.ui.fixture.fixture_view.FixtureCellModel
 import io.reactivex.subjects.PublishSubject
 import org.json.JSONObject
+import java.lang.Exception
 
 abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFixtureRecord) {
 
@@ -19,7 +20,13 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
     fun exec() {
         val payload = createPayload()
         //BlasRestFixture(crud, payload2, ::success, ::error).execute()
-        SyncBlasRestFixture( crud, ::success,::error).execute(payload)
+       // SyncBlasRestFixture( crud, ::success,::error).execute(payload)
+
+        val ret = SyncBlasRestFixture(crud).execute(payload)
+        if(ret != 0) {
+            val errMsg = error(ret)
+            throw Exception(errMsg)
+        }
     }
 
     open fun success(result: JSONObject) {
@@ -34,7 +41,7 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
         Log.d("OK", "同期完了")
     }
 
-    fun error(errorCode: Int){
+    fun error(errorCode: Int):String{
         Log.d("NG", "作成失敗")
         Log.d("errorCorde", "${errorCode}")
 
@@ -78,8 +85,9 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
         val fixtureController = FixtureController(  model.context, model.project_id.toString())
         fixtureController.setErrorMsg(fixture.fixture_id.toString(),errMsg)
 
-        eventCompleted.onNext(false)
-        model.errorMessage.set(errMsg)
+        //eventCompleted.onNext(false)
+        //model.errorMessage.set(errMsg)
+        return errMsg
     }
 
 }

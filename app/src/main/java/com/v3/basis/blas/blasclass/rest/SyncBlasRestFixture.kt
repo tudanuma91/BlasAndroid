@@ -9,8 +9,8 @@ import org.json.JSONObject
 
 class SyncBlasRestFixture(
     val crud:String
-    ,val funcSuccess:(JSONObject)->Unit
-    ,val funcError:(Int)->Unit
+    //,val funcSuccess:(JSONObject)->Unit
+    //,val funcError:(Int)->Unit
 
 
 ) : SyncBlasRest() {
@@ -61,24 +61,26 @@ class SyncBlasRestFixture(
     }
 
 
-    fun execute( payload:Map<String,String?> )  {
+    fun execute( payload:Map<String,String?> ):Int  {
 
         try {
             val response = super.getResponseData(payload,method,blasUrl)
             val json = JSONObject(response)
 
             val errorCode = json.getString("error_code")
-
+            /*
             if( "0" == errorCode  ) {
                 funcSuccess( json )
             }
             else {
                 funcError( errorCode.toInt() )
-            }
+            }*/
+            return errorCode.toInt()
         }
         catch ( ex:Exception ) {
             Log.d("blas-log(fixture)", ex.message)
         }
+        return -1
     }
 
 

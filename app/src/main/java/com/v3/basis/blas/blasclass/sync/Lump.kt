@@ -2,6 +2,7 @@ package com.v3.basis.blas.blasclass.sync
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import com.v3.basis.blas.blasclass.controller.ImagesController
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.ItemsController
@@ -38,10 +39,16 @@ class Lump(
             true
         }.subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                callBack.invoke(true)
-                dis.dispose()
-            }.addTo(CompositeDisposable())
+            .subscribeBy (
+                onError = { Toast.makeText(context, "例外が発生しました", Toast.LENGTH_LONG).show()
+                    callBack.invoke(true)
+                    dis.dispose()
+                },
+                onSuccess = {
+                    callBack.invoke(true)
+                    dis.dispose()
+                }
+            ).addTo(CompositeDisposable())
         Log.d("Lump.exec()","end")
     }
 
@@ -82,8 +89,13 @@ class Lump(
                     return
                 }
             }
-
-
+            try {
+                sync.exec()
+            }
+            catch(e:Exception) {
+                Log.d("error", "syncFixture() exception")
+            }
+            /*
             val dis = CompositeDisposable()
             sync.eventCompleted
                 .observeOn(AndroidSchedulers.mainThread())
@@ -101,7 +113,7 @@ class Lump(
                 .addTo(dis)
 
             sync.exec()
-
+            */
         }
 
     }
@@ -115,7 +127,14 @@ class Lump(
         items.forEach {  itemMap ->
             itemMap["item_id"]?.toLong()?.let {
                 val sync = SyncItem(context,token,projectId, it)
+                try {
+                    sync.exec()
+                }
+                catch(e:Exception) {
+                    Log.d("error", "syncItem() exception")
+                }
 
+                /*
                 val dis = CompositeDisposable()
                 sync.eventCompleted
                     .observeOn(AndroidSchedulers.mainThread())
@@ -130,7 +149,7 @@ class Lump(
                     }
                     .addTo(dis)
 
-                sync.exec()
+                sync.exec()*/
             }
         }
 
