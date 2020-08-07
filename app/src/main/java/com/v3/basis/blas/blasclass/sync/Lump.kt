@@ -40,7 +40,7 @@ class Lump(
         }.subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy (
-                onError = { Toast.makeText(context, "例外が発生しました", Toast.LENGTH_LONG).show()
+                onError = { //Toast.makeText(context, "例外が発生しました", Toast.LENGTH_LONG).show()
                     callBack.invoke(true)
                     dis.dispose()
                 },
@@ -89,12 +89,21 @@ class Lump(
                     return
                 }
             }
+            sync.exec()
+            /*
             try {
                 sync.exec()
+             //   FixtureController(context,projectId.toString()).resetSyncStatus(fixture.fixture_id.toString())
+             //   FixtureController(context,projectId.toString()).setErrorMsg(fixture.fixture_id.toString(), "")
             }
             catch(e:Exception) {
+                e.message?.let {
+                    FixtureController(context,projectId.toString()).setErrorMsg(fixture.fixture_id.toString(),
+                        it
+                    )
+                }
                 Log.d("error", "syncFixture() exception")
-            }
+            }*/
             /*
             val dis = CompositeDisposable()
             sync.eventCompleted
