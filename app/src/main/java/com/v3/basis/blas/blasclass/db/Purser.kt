@@ -45,8 +45,6 @@ class PurserNCU : PurserBase() {
             }
             else {
                 if(tokens[i] != "") {
-                    //シリアルナンバー登録。改行は除去する
-                    val serial = tokens[i].replace("\n", "")
                     serials.add(tokens[i])
                 }
             }

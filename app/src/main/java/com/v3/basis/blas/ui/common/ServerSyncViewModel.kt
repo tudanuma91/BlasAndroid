@@ -31,7 +31,7 @@ abstract class ServerSyncViewModel: ViewModel() {
             .subscribeBy(
                 onError = {
                     serverModel.syncEnable.set(true)
-                    setError("例外が発生しました", serverModel)
+                    it.message?.let { it1 -> setError(it1, serverModel) }
                 },
                 onComplete = {
                     serverModel.syncEnable.set(false)

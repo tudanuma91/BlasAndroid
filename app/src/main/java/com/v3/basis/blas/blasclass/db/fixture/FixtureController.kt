@@ -476,11 +476,10 @@ class FixtureController(context: Context, projectId: String): BaseController(con
                 // なければ新規追加
                 Log.d("kenpin", "存在しないシリアルなので新規作成する")
                 errorMessageEvent.onNext("")
-
-                ret = kenpin_insert(it)
-                if(!ret) {
-                    return false
-                }
+            }
+            ret = kenpin_insert(it)
+            if(!ret) {
+                return false
             }
         }
 
