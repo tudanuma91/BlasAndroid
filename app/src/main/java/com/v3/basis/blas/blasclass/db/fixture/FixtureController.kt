@@ -689,15 +689,17 @@ class FixtureController(context: Context, projectId: String): BaseController(con
     /**
      * 仮IDをサーバーから取得した正しいIDに直す
      */
-    fun updateFixtureId( orgFixtureId:String, newFixtureId:String) : Boolean {
+    fun updateFixtureId( oldFixtureId:String, newFixtureId:String) : Boolean {
 
         val cv = ContentValues()
         cv.put("fixture_id",newFixtureId)
         cv.put("sync_status", SYNC_STATUS_SYNC)
+        cv.put("error_msg", "")
+
 
         return try {
             db?.beginTransaction()
-            db?.update("fixtures",cv,"fixture_id = ?", arrayOf(orgFixtureId))
+            db?.update("fixtures",cv,"fixture_id = ?", arrayOf(oldFixtureId))
             db?.setTransactionSuccessful()
             db?.endTransaction()
             Log.d("update","成功！！")
@@ -747,6 +749,18 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             ex.printStackTrace()
             throw ex
         }
+    }
 
+    fun delete(fixtureId:Long) {
+       try {
+           db?.beginTransaction()
+           db?.delete("fixtures", "fixture_id = ?", arrayOf(fixtureId.toString()))
+           db?.setTransactionSuccessful()
+           db?.endTransaction()
+       }
+       catch ( ex : Exception ) {
+           ex.printStackTrace()
+           throw ex
+       }
     }
 }

@@ -510,6 +510,19 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             throw ex
         }
     }
+
+    fun delete(itemId:Long) {
+        try {
+            db?.beginTransaction()
+            db?.delete("items", "itemId = ?", arrayOf(itemId.toString()))
+            db?.setTransactionSuccessful()
+            db?.endTransaction()
+        }
+        catch ( ex : Exception ) {
+            ex.printStackTrace()
+            throw ex
+        }
+    }
 }
 
 

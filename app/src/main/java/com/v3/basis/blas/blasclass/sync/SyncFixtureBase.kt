@@ -21,10 +21,38 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
         val payload = createPayload()
         //BlasRestFixture(crud, payload2, ::success, ::error).execute()
        // SyncBlasRestFixture( crud, ::success,::error).execute(payload)
+        val fixtureId = payload["fixture_id"]
+        val json = SyncBlasRestFixture(crud).execute(payload)
+        val ctl = FixtureController(model.context, model.project_id.toString())
+        if(json != null) {
+            val errorCode = json.getInt("error_code")
+            if(errorCode == 0) {
+                if (fixtureId != null) {
+                    if(fixtureId.toLong() < 0) {
+                        val records = json.getJSONObject("records")
+                        val new_fixture_id = records.getString("fixture_id")
+                        val old_fixture_id = records.getString("temp_fixture_id")
+                        ctl.updateFixtureId(old_fixture_id, new_fixture_id)
+                    }
+                    else {
+                        ctl.resetSyncStatus(fixtureId)
+                    }
+                }
+            }
+            else {
+                val errMsg = error(errorCode)
 
-        val ret = SyncBlasRestFixture(crud).execute(payload)
-        if(ret != 0) {
-            val errMsg = error(ret)
+                if(fixtureId !=null){
+                    ctl.setErrorMsg(fixtureId, errMsg)
+                }
+                throw Exception(errMsg)
+            }
+        }
+        else {
+            val errMsg = error(-1)
+            if(fixtureId !=null){
+                ctl.setErrorMsg(fixtureId, errMsg)
+            }
             throw Exception(errMsg)
         }
     }
