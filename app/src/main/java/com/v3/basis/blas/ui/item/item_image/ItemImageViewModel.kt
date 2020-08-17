@@ -219,9 +219,22 @@ class ItemImageViewModel() : ViewModel() {
     }
 
     private fun updateCellItem(item: ItemImageCellItem, bitmap: Bitmap, error: (errorCode: Int,aplCode:Int) -> Unit) {
-        item.image.set(bitmap)
-        upload(bitmap, item.ext, item, error)
         item.loading.set(true)
+        item.image.set(bitmap)
+        //upload(bitmap, item.ext, item, error)
+        val imageController = ImagesController(context, projectId)
+        //リモートから画像をダウンロードできているので、imageIdは必ずある。
+        //リモートからダウンロードした画像は本登録する。
+        val itemRecord = ItemImage(
+            image_id=item.imageId,
+            item_id = itemId,
+            moved="0",
+            project_id=projectId,
+            project_image_id = item.id)
+
+        itemRecord.bitmap = bitmap
+        imageController.save2LDB(itemRecord, BaseController.SYNC_STATUS_NEW)
+        item.loading.set(false)
     }
 
     fun selectFile(id: String) {
