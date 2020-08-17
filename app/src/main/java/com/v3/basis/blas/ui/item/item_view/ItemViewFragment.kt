@@ -132,6 +132,14 @@ class ItemViewFragment : Fragment() {
             }
             .addTo(disposables)
 
+        viewModel.serverSyncedEvent
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                val count = dataList.filter { it.model.syncVisible.get() && it.model.syncedToServer.get().not() }.size
+                allSyncButton.text = "未送信\n${count}件"
+            }
+            .addTo(disposables)
+
         val extras = activity?.intent?.extras
         if(extras?.getString("token") != null ) {
             token = extras.getString("token").toString() //トークンの値を取得

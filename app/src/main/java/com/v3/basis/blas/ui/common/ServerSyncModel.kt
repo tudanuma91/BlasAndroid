@@ -16,5 +16,6 @@ open class ServerSyncModel(
     val progress: ObservableBoolean = ObservableBoolean(false)
     val status: ObservableField<String> = ObservableField("サーバーに登録待ちです")
     val syncEnable: ObservableBoolean = ObservableBoolean(true)
+    val syncedToServer: ObservableBoolean = ObservableBoolean(false)
     val syncVisible: ObservableBoolean = ObservableBoolean(syncStatus >= 1)
 }

@@ -1,24 +1,23 @@
 package com.v3.basis.blas.ui.common
 
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
-import com.v3.basis.blas.activity.FixtureActivity
 import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
-import com.v3.basis.blas.ui.fixture.fixture_view.FixtureCellModel
-import com.v3.basis.blas.ui.fixture.fixture_view.FixtureViewFragment
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.PublishSubject
 
 abstract class ServerSyncViewModel: ViewModel() {
 
     protected val disposableMap: MutableMap<Long, CompositeDisposable> = mutableMapOf()
     protected abstract fun syncDB(model: ServerSyncModel)
+
+    val serverSyncedEvent: PublishSubject<Unit> = PublishSubject.create()
 
     fun clickSyncToServer(serverModel: ServerSyncModel) {
 
@@ -42,6 +41,8 @@ abstract class ServerSyncViewModel: ViewModel() {
                     serverModel.syncEnable.set(false)
                     serverModel.progress.set(false)
                     serverModel.status.set("サーバーに登録成功しました")
+                    serverModel.syncedToServer.set(true)
+                    serverSyncedEvent.onNext(Unit)
                     Log.d("サーバー登録","成功！！")
                 }
             )
