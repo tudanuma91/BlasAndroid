@@ -299,9 +299,6 @@ class ItemImageFragment : Fragment() {
                 val itemRecord = ItemImage(
                     create_date= SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()),
                     ext = mime,
-                    filename = "",//save2LDBで作成する
-                    hash = "",  //save2LDBで作成する
-                    image = "", //Base64が入るが仕様しない
                     image_id=item.imageId,
                     item_id = itemId,
                     moved="0",
