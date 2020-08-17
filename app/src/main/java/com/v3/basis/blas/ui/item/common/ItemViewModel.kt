@@ -39,6 +39,10 @@ class ItemViewModel: ViewModel() {
         this.itemId = itemId
     }
 
+    /**
+     * [説明]
+     * データ管理の保存ボタンを押したときに呼ばれる
+     */
     fun clickSave(container: LinearLayout) {
         Log.d("clickSave()","start")
 
@@ -49,7 +53,8 @@ class ItemViewModel: ViewModel() {
             itemsController?.also {
                 fields.forEachIndexed { index, f ->
                     val field = (f as FieldModel)
-                    map.set("fld${index + 1}", field.convertToString())
+                    // map.set("fld${index + 1}", field.convertToString())
+                    map.set("fld${field.col}", field.convertToString())
                 }
 
                 try {

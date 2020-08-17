@@ -1,8 +1,13 @@
 package com.v3.basis.blas.ui.common
 
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
+import com.v3.basis.blas.activity.FixtureActivity
+import com.v3.basis.blas.blasclass.db.data.ItemsController
+import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.ui.fixture.fixture_view.FixtureCellModel
+import com.v3.basis.blas.ui.fixture.fixture_view.FixtureViewFragment
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -31,7 +36,7 @@ abstract class ServerSyncViewModel: ViewModel() {
             .subscribeBy(
                 onError = {
                     serverModel.syncEnable.set(true)
-                    setError("例外が発生しました", serverModel)
+                    it.message?.let { it1 -> setError(it1, serverModel) }
                 },
                 onComplete = {
                     serverModel.syncEnable.set(false)
@@ -46,14 +51,38 @@ abstract class ServerSyncViewModel: ViewModel() {
     }
 
     fun clickCancel(model: ServerSyncModel) {
+        /*
         model.progress.set(false)
         model.syncEnable.set(true)
         model.status.set("サーバーに登録待ちです")
-
+        */
         //DB同期スレッドをキャンセルする！！
         if (disposableMap.containsKey(model.uniqueId)) {
             disposableMap[model.uniqueId]?.dispose()
             disposableMap.remove(model.uniqueId)
+        }
+
+        val className = model::class.simpleName
+        if(className == "FixtureCellModel") {
+            if(model.uniqueId < 0) {
+                //仮登録で負のIDだったら削除する。
+                //例外返ったときにキチンとキャッチすること
+                try {
+                    FixtureController(
+                        model.context,
+                        model.project_id.toString()
+                    ).delete(model.uniqueId)
+                }
+                catch(e:Exception) {
+                }
+            }
+
+            //仮登録で正のIDだったら、サーバと同期する
+        }
+        else if (className == "ItemsCellModel") {
+            Log.d("konishi", className)
+            //例外返ったときにキチンとキャッチすること
+            ItemsController(model.context, model.project_id.toString()).delete(model.uniqueId)
         }
     }
 

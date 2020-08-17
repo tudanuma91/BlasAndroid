@@ -37,13 +37,12 @@ class FixtureListViewModel: ServerSyncViewModel() {
         Log.d("fixture_id",model.fixture_id.toString())
 
         val fixtureController = FixtureController( model.context, model.project_id.toString())
-        fixtureController
+      /*  fixtureController
             .errorMessageEvent
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy { errorEvent.onNext(it) }
-            .addTo(disposable)
+            .addTo(disposable)*/
         val records = fixtureController.search( model.fixture_id )
-
         if( 0 == records.count() ) {
             Log.d("getRecord","該当レコードが存在しません!!!")
             throw Exception("DB Sync error!! 該当レコードが存在しません")
@@ -71,9 +70,10 @@ class FixtureListViewModel: ServerSyncViewModel() {
             }
             else -> {
                 Log.d("ERROR!!!","パラメータ異常")
-                return
+                throw Exception("パラメーター異常")
             }
         }
+        //ここで例外を返すのでコール元で表示する
         sync.exec()
     }
 

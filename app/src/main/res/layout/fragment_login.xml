@@ -31,7 +31,7 @@
 
                 android:inputType="textEmailAddress"
                 android:selectAllOnFocus="true"
-                android:text="admin"
+                android:text="konishiadmin"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -46,7 +46,7 @@
                 android:imeOptions="actionDone"
                 android:inputType="textPassword"
                 android:selectAllOnFocus="true"
-                android:text="testtest"
+                android:text="afd0279c"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/userName" />

@@ -811,7 +811,7 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
     fun getHash(source:String) : String{
 
         source.toByteArray()
-        val hashStr = MessageDigest.getInstance("SHA-256")
+        val hashStr = MessageDigest.getInstance("MD5")
             .digest(source.toByteArray())
             .joinToString(separator = "") {
                 "%02x".format(it)

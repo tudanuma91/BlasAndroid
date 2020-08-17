@@ -27,6 +27,7 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
+import com.v3.basis.blas.blasclass.rest.BlasRest
 import com.v3.basis.blas.blasclass.sync.Lump
 import com.v3.basis.blas.databinding.FragmentFixtureViewBinding
 import com.v3.basis.blas.ui.ext.addTitle
@@ -123,7 +124,9 @@ class FixtureViewFragment : Fragment() {
         viewModel = ViewModelProviders.of(this).get(FixtureListViewModel::class.java)
         viewModel.errorEvent
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy { Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show() }
+            .subscribeBy {
+                Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
+            }
             .addTo(disposables)
 
         bind = DataBindingUtil.inflate(inflater, R.layout.fragment_fixture_view, container, false)
@@ -164,7 +167,8 @@ class FixtureViewFragment : Fragment() {
             //  連打禁止！！
             allSyncButton.isEnabled = false
             Log.d("フローティングボタン Fixture","Click!!!!")
-            Lump(requireContext(),project_id,token){
+
+            Lump(requireContext(),project_id,token,0){
                 (requireActivity() as FixtureActivity).reloard()
             }.exec()
         }
@@ -233,8 +237,16 @@ class FixtureViewFragment : Fragment() {
         Single.fromCallable { fixtureController.searchDisp(offset = offset, searchMap = searchValueMap) }
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
+            .onErrorReturn {
+                Toast.makeText(BlasRest.context, "該当レコードが存在しません", Toast.LENGTH_LONG).show()
+                return@onErrorReturn listOf<LdbFixtureDispRecord>()
+            }
             .map {
                 val list = mutableListOf<FixtureListCell>()
+
+                if(0 == offset && 0 == it.count()) {
+                    Toast.makeText(BlasRest.context, "該当レコードが存在しません", Toast.LENGTH_LONG).show()
+                }
                 it.forEach {
                     val value = createValue(it) ?: ""
 

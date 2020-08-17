@@ -3,22 +3,58 @@ package com.v3.basis.blas.blasclass.sync
 import android.util.Log
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
-import com.v3.basis.blas.blasclass.rest.BlasRestFixture
+import com.v3.basis.blas.blasclass.rest.SyncBlasRestFixture
 import com.v3.basis.blas.ui.fixture.fixture_view.FixtureCellModel
 import io.reactivex.subjects.PublishSubject
 import org.json.JSONObject
+import java.lang.Exception
 
 abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFixtureRecord) {
 
     abstract open var crud:String
 
-    abstract fun createPayload2() : MutableMap<String,String>
+    abstract fun createPayload() : MutableMap<String,String>
 
     val eventCompleted: PublishSubject<Boolean> = PublishSubject.create()
 
     fun exec() {
-        val payload2 = createPayload2()
-        BlasRestFixture(crud, payload2, ::success, ::error).execute()
+        val payload = createPayload()
+        //BlasRestFixture(crud, payload2, ::success, ::error).execute()
+       // SyncBlasRestFixture( crud, ::success,::error).execute(payload)
+        val fixtureId = payload["fixture_id"]
+        val json = SyncBlasRestFixture(crud).execute(payload)
+        val ctl = FixtureController(model.context, model.project_id.toString())
+        if(json != null) {
+            val errorCode = json.getInt("error_code")
+            if(errorCode == 0) {
+                if (fixtureId != null) {
+                    if(fixtureId.toLong() < 0) {
+                        val records = json.getJSONObject("records")
+                        val new_fixture_id = records.getString("fixture_id")
+                        val old_fixture_id = records.getString("temp_fixture_id")
+                        ctl.updateFixtureId(old_fixture_id, new_fixture_id)
+                    }
+                    else {
+                        ctl.resetSyncStatus(fixtureId)
+                    }
+                }
+            }
+            else {
+                val errMsg = error(errorCode)
+
+                if(fixtureId !=null){
+                    ctl.setErrorMsg(fixtureId, errMsg)
+                }
+                throw Exception(errMsg)
+            }
+        }
+        else {
+            val errMsg = error(-1)
+            if(fixtureId !=null){
+                ctl.setErrorMsg(fixtureId, errMsg)
+            }
+            throw Exception(errMsg)
+        }
     }
 
     open fun success(result: JSONObject) {
@@ -33,7 +69,7 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
         Log.d("OK", "同期完了")
     }
 
-    fun error(errorCode: Int, aplCode :Int){
+    fun error(errorCode: Int):String{
         Log.d("NG", "作成失敗")
         Log.d("errorCorde", "${errorCode}")
 
@@ -73,13 +109,13 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
 
         Log.d("errMsg" ,errMsg)
 
-        eventCompleted.onNext(false)
-
         // SQLite tableを更新する
         val fixtureController = FixtureController(  model.context, model.project_id.toString())
         fixtureController.setErrorMsg(fixture.fixture_id.toString(),errMsg)
 
-//        model.errorMessage.set(errMsg)
+        //eventCompleted.onNext(false)
+        //model.errorMessage.set(errMsg)
+        return errMsg
     }
 
 }

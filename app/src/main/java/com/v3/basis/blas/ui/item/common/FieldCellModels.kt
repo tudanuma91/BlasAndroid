@@ -8,6 +8,7 @@ import java.lang.StringBuilder
 
 data class FieldText(
 	override val fieldNumber: Int,
+	override val col:Int,
 	override val title: String,
 	override val mustInput: Boolean,
 	val text: ObservableField<String> = ObservableField("")
@@ -24,6 +25,7 @@ data class FieldText(
 
 data class FieldSingleSelect(
 	override val fieldNumber: Int,
+	override val col:Int,
 	override val title: String,
 	override val mustInput: Boolean,
 	val values: MutableList<String> = mutableListOf(),
@@ -50,6 +52,7 @@ data class FieldSingleSelect(
 
 data class FieldMultiSelect(
 	override val fieldNumber: Int,
+	override val col:Int,
 	override val title: String,
 	override val mustInput: Boolean,
 	val values: MutableList<String> = mutableListOf(),
@@ -88,6 +91,7 @@ data class FieldMultiSelect(
 
 data class FieldSigFox(
 	override val fieldNumber: Int,
+	override val col:Int,
 	override val title: String = "シグフォックスは使用できません",
 	override val mustInput: Boolean): FieldModel {
 
@@ -97,6 +101,7 @@ data class FieldSigFox(
 
 data class FieldCheckText(
 	override val fieldNumber: Int,
+	override val col:Int,
 	override val title: String,
 	override val mustInput: Boolean,
 	val text: ObservableField<String> = ObservableField(""),

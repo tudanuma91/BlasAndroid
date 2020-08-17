@@ -229,8 +229,11 @@ class ItemViewFragment : Fragment() {
 
         //全て同期のボタン
         allSyncButton.setOnClickListener {
+            progressBarFlg = true
+            chkProgress(progressBarFlg,rootView)
             Log.d("フローティングボタン Item","Click!!!!")
-            Lump(requireContext(),projectId,token){
+            Lump(requireContext(),projectId,token,1){
+                progressBarFlg = false
                 (requireActivity() as ItemActivity).reloard()
             }.exec()
         }
@@ -526,31 +529,27 @@ class ItemViewFragment : Fragment() {
     /**
      * カードビューのテキストを作成する関数
      */
-    private fun createCardText(text:String?,it:MutableMap<String,String?>,colMax: Int): String? {
-        var loopcnt = 1
+    private fun createCardText(text:String?, item:MutableMap<String,String?>, colMax: Int): String? {
+
         var text = text
-        for (col in 1..colMax) {
-            val fldName = "fld${col}"
-            //レコードの定義取得
-            if (loopcnt == 1) {
-//                text = "[${fieldMap[col]!!["field_name"]}]\n"
-                text = "[${fields[col - 1].name}]\n"
-                text += "${it[fldName]}\n"
-            } else {
-//                text += "[${fieldMap[col]!!["field_name"]}]\n"
-                text += "[${fields[col - 1].name}]\n"
 
-//                if (fieldMap[col]!!["type"] == FieldType.CHECK_VALUE) {
-                if (fields[col - 1].type.toString() == FieldType.CHECK_VALUE) {
-                    val newValue = helper.createCheckValue(it[fldName].toString())
-                    text += "${newValue}\n"
-                } else {
-                    text += "${it[fldName]}\n"
-                }
+        fields.forEach {field ->
 
+            val fldName = "fld${field.col}"
+
+            text += "[${field.name}]\n"
+
+            if (field.type.toString() == FieldType.CHECK_VALUE) {
+                val newValue = helper.createCheckValue(item[fldName].toString())
+                text += "${newValue}\n"
             }
-            loopcnt += 1
-        }
+            else {
+                val fldVal = item[fldName]?.replace("\\r","")
+                text += "${fldVal}\n"
+            }
+
+         }
+
         return text
     }
 

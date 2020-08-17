@@ -135,6 +135,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
                     plHolder += offset.toString()
                 }
 
+                //ここで画像が非同期だった場合もサーバーに登録ボタンを表示したい
                 val sql = "select * from items "+ addition + " order by create_date desc " + addingPager
                 Log.d("item search sql",sql)
                 db?.rawQuery(sql, plHolder)
@@ -487,6 +488,35 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             db?.update("items",cv,"item_id = ?", arrayOf(itemId))
             db?.setTransactionSuccessful()
             db?.endTransaction()!!
+        }
+        catch ( ex : Exception ) {
+            ex.printStackTrace()
+            throw ex
+        }
+    }
+
+    fun setSyncStatus(itemId:Long, syncStatus:Int) {
+        val cv = ContentValues()
+        cv.put("sync_status", syncStatus)
+
+        return try {
+            db?.beginTransaction()
+            db?.update("items",cv,"item_id = ?", arrayOf(itemId.toString()))
+            db?.setTransactionSuccessful()
+            db?.endTransaction()!!
+        }
+        catch ( ex : Exception ) {
+            ex.printStackTrace()
+            throw ex
+        }
+    }
+
+    fun delete(itemId:Long) {
+        try {
+            db?.beginTransaction()
+            db?.delete("items", "itemId = ?", arrayOf(itemId.toString()))
+            db?.setTransactionSuccessful()
+            db?.endTransaction()
         }
         catch ( ex : Exception ) {
             ex.printStackTrace()

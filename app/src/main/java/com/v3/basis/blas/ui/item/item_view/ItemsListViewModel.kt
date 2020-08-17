@@ -6,12 +6,13 @@ import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.Items
 import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.rest.BlasRestItem
+import com.v3.basis.blas.blasclass.sync.SyncImage
 import com.v3.basis.blas.blasclass.sync.SyncItem
 import com.v3.basis.blas.ui.common.ServerSyncModel
 import com.v3.basis.blas.ui.common.ServerSyncViewModel
 import io.reactivex.subjects.PublishSubject
 import org.json.JSONObject
-import java.lang.Exception
+import kotlin.Exception
 
 class ItemsListViewModel: ServerSyncViewModel() {
 
@@ -25,7 +26,12 @@ class ItemsListViewModel: ServerSyncViewModel() {
         Log.d("syncDB()","start")
 
         val model = serverModel as ItemsCellModel
-        SyncItem(model.context,model.token,model.project_id.toString(),model.item_id).exec()
+        val item_id = SyncItem(model.context,model.token,model.project_id.toString(),model.item_id).exec()
+
+        if (item_id == null) {
+            throw Exception("item_id is null!!")
+        }
+        SyncImage(model.context,model.token,model.project_id.toString(),item_id.toLong()).exec()
 
         Log.d("syncDB()","end")
     }

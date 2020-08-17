@@ -10,7 +10,7 @@ class Rtn(model: FixtureCellModel, fixture : LdbFixtureRecord ) : SyncFixtureBas
 
     override var crud:String = "rtn"
 
-    override fun createPayload2(): MutableMap<String, String> {
+    override fun createPayload(): MutableMap<String, String> {
 
         var payload2 = mutableMapOf(
             "token" to model.token,
