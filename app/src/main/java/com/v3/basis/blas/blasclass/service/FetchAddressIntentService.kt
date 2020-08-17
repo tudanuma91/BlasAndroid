@@ -27,6 +27,8 @@ class FetchAddressIntentService: IntentService("FetchAddressIntentService") {
         var errorMessage = ""
 
         // Get the location passed to this service through an extra.
+        val receiver: ResultReceiver = intent.getParcelableExtra(LocationConstants.RECEIVER)
+        this.receiver = receiver
         val location: Location = intent.getParcelableExtra(LocationConstants.LOCATION_DATA_EXTRA)
         val geocoder = Geocoder(this, Locale.getDefault())
         var addresses: List<Address> = emptyList()
