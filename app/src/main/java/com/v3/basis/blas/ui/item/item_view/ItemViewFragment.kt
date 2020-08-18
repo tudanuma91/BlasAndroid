@@ -541,22 +541,28 @@ class ItemViewFragment : Fragment() {
 
         var text = text
 
+        text += "<table border=\"1\" style=\"border-collapse: collapse; table-layout:fixed;\" width=\"100%\">"
+
         fields.forEach {field ->
 
             val fldName = "fld${field.col}"
 
-            text += "[${field.name}]\n"
+            text += "<tr>"
+            text += "<td>${field.name}</td>"
 
             if (field.type.toString() == FieldType.CHECK_VALUE) {
                 val newValue = helper.createCheckValue(item[fldName].toString())
-                text += "${newValue}\n"
+                text += "<td>${newValue}</td>"
             }
             else {
                 val fldVal = item[fldName]?.replace("\\r","")
-                text += "${fldVal}\n"
+                text += "<td>${fldVal}</td>"
             }
 
+            text += "</tr>"
          }
+
+        text += "</table>"
 
         return text
     }

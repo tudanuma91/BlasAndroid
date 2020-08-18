@@ -60,12 +60,18 @@
                             android:text="@{model.title}"
                             tools:text="titleです" />
 
-                        <TextView
-                            android:id="@+id/row_detail"
-                            android:text="@{model.detail}"
+                        <WebView
+                            app:htmlText="@{model.detail}"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            tools:text="詳細ですよ" />
+                            />
+
+<!--                        <TextView-->
+<!--                            android:id="@+id/row_detail"-->
+<!--                            app:htmlText="@{model.detail}"-->
+<!--                            android:layout_width="wrap_content"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            tools:text="詳細ですよ" />-->
 
                         <LinearLayout
                             android:layout_width="match_parent"
