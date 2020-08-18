@@ -41,6 +41,8 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_fixture_view.*
+import kotlinx.android.synthetic.main.fragment_fixture_view.allSyncButton
+import kotlinx.android.synthetic.main.fragment_item_view.*
 import kotlinx.android.synthetic.main.fragment_item_view.recyclerView
 import org.json.JSONArray
 import org.json.JSONObject
@@ -122,6 +124,15 @@ class FixtureViewFragment : Fragment() {
             .addTo(disposables)
 
         viewModel = ViewModelProviders.of(this).get(FixtureListViewModel::class.java)
+
+        viewModel.serverSyncedEvent
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                val count = dataList.filter { it.model.syncVisible.get() && it.model.syncedToServer.get().not() }.size
+                allSyncButton.text = "未送信\n${count}件"
+            }
+            .addTo(disposables)
+
         viewModel.errorEvent
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
