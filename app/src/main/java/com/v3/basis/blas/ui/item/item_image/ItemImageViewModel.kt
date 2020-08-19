@@ -196,6 +196,8 @@ class ItemImageViewModel() : ViewModel() {
             item.empty.set(false)
         }
 
+        /* ここを改良する */
+
         val payload = mapOf("token" to token, "image_id" to item.imageId)
         BlasRestImage("delete", payload, ::success, ::error).execute()
     }

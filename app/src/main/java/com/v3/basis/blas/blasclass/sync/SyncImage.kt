@@ -82,7 +82,6 @@ class SyncImage(val context: Context, val token : String, val projectId : String
                         }
 
                         itemCtl.setErrorMsg(itemId.toString(), "画像の更新に失敗しました")
-
                     }
                 }
             }

@@ -20,7 +20,6 @@ import java.util.*
 class ImageControllerException(val errorCode:Int, val msg:String): Exception(msg)
 
 class ImagesController (context: Context, projectId: String): BaseController(context, projectId) {
-    //ここから下は画像関係
     /**
      * [説明]
      * 画像をLDBに新規追加する
@@ -31,7 +30,6 @@ class ImagesController (context: Context, projectId: String): BaseController(con
      * fileName: 画像ファイルのフルパス名。
      * imageId: imagesテーブルの主キー。nullの場合は新規追加、null以外の場合は更新する
      */
-//    fun save2LDB(bmp:Bitmap, projectImageId:String, itemId:String, imageId:String?=null, syncStatus:Int):Boolean{
     fun save2LDB(itemImage: ItemImage, syncStatus:Int):Boolean{
         val image = Images()
         var fileName = ""
@@ -225,22 +223,68 @@ class ImagesController (context: Context, projectId: String): BaseController(con
      * 仮登録されたレコードを本登録する
      */
     fun fixImageRecord(newImageId:String, tempImageId:String) {
-        val cv = ContentValues()
-        cv.put("image_id", newImageId)
-        cv.put("sync_status", SYNC_STATUS_SYNC)
+        var syncStatus = -1
+        var imgFileName = ""
 
-        return try {
+        //ここで削除か新規追加、更新のどちかを調べる必要がある。
+        //tempImageIdで画像を検索して、ステータスを取得するしかない。
+        try{
             db?.beginTransaction()
-            db?.update("images", cv, "image_id=?", arrayOf(tempImageId.toString()))
-            db?.setTransactionSuccessful()!!
+            val sql = "select filename, sync_status from images where image_id=?"
+            //ID変更前のレコードのステータスを取得する
+            val cursor = db?.rawQuery(sql, arrayOf(tempImageId))
+            cursor?.also{c->
+                c.moveToFirst()
+                imgFileName = c.getString(0)
+                syncStatus = c.getInt(1)
+            }
         }
-        catch (e:Exception) {
+        catch(e:Exception) {
             e.printStackTrace()
-            throw e
         }
         finally {
             db?.endTransaction()
         }
+
+        if(syncStatus == SYNC_STATUS_DEL) {
+            //削除だった場合
+            try{
+                db?.beginTransaction()
+                //レコード削除
+                db?.delete("images", "image_id=?", arrayOf(tempImageId.toString()))
+                //画像ファイルを削除する
+                ImageComponent().delImgFile(context, projectId, imgFileName)
+                //レコードと画像の両方を削除できたら成功
+                db?.setTransactionSuccessful()!!
+            }
+            catch (e:Exception) {
+                e.printStackTrace()
+                throw e
+            }
+            finally {
+                db?.endTransaction()
+            }
+        }
+        else {
+            //新規追加、または更新の場合
+            try {
+                val cv = ContentValues()
+                cv.put("image_id", newImageId)
+                cv.put("sync_status", SYNC_STATUS_SYNC)
+                db?.beginTransaction()
+                db?.update("images", cv, "image_id=?", arrayOf(tempImageId.toString()))
+                db?.setTransactionSuccessful()!!
+            }
+            catch (e:Exception) {
+                e.printStackTrace()
+                throw e
+            }
+            finally {
+                db?.endTransaction()
+            }
+        }
+
+        //itemテーブルのステータスも変更すること。
     }
 
     /**
@@ -285,5 +329,35 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         }
 
         return resultList
+    }
+
+    fun deleteImageLocal(imageId:Long) {
+        //画像管理テーブルを削除中に変更する。
+        //実際の画像ファイル削除は本登録完了後に行う
+        try {
+            db?.beginTransaction()
+            val sql = "select item_id from images where image_id=?"
+            val cursor = db?.rawQuery(sql, arrayOf(imageId.toString()))
+            cursor?.moveToFirst()
+            cursor?.let {
+                val itemId = it.getString(0)
+                val cvItem = ContentValues()
+                cvItem.put("sync_status", SYNC_STATUS_EDIT)
+                //データ管理テーブルを更新中に変更する
+                db?.update("items",cvItem, "item_id =?", arrayOf(itemId))
+                //画像管理テーブルを削除中に変更する
+                val image = Images()
+                image.sync_status = SYNC_STATUS_DEL
+                val cvImage = createConvertValue(image)
+                db?.update("images",cvImage, "image_id =?", arrayOf(imageId.toString()))
+            }
+            db?.setTransactionSuccessful()!!
+        }
+        catch(e: Exception) {
+            e.printStackTrace()
+        }
+        finally {
+            db?.endTransaction()
+        }
     }
 }
