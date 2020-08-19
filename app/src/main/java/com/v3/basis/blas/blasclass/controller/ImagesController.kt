@@ -141,17 +141,23 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         var fileName:String
         var bmp:Bitmap? = null
         var image_id:Long = -1
-
+        var syncStatus = SYNC_STATUS_SYNC
         try {
             db?.beginTransaction()
-            val sql = "select image_id, filename from images where project_id=? and item_id=? and project_image_id=?"
+            val sql = "select image_id, filename, sync_status from images where project_id=? and item_id=? and project_image_id=?"
             val cursor = db?.rawQuery(sql, arrayOf(projectId, itemId, projectImageId))
             if(cursor != null && cursor?.count > 0) {
                 //画像レコードがあった場合
                 cursor?.moveToFirst()
                 image_id = cursor?.getLong(0)
                 fileName = cursor?.getString(1) ?: ""
-                bmp = ImageComponent().readBmpFromLocal(context, projectId, fileName)
+                syncStatus = cursor?.getInt(2)
+                if(syncStatus == SYNC_STATUS_DEL) {
+                    bmp = null
+                }
+                else {
+                    bmp = ImageComponent().readBmpFromLocal(context, projectId, fileName)
+                }
             }
         } catch (e: Exception) {
             //とりあえず例外をキャッチして、Falseを返す？
@@ -163,7 +169,10 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         }
 
         if(bmp == null) {
-            if(itemId.toLong() < 0) {
+            if(syncStatus == SYNC_STATUS_DEL) {
+                throw ImageControllerException(3, "削除中です")
+            }
+            else if(itemId.toLong() < 0) {
                 //ローカルに画像がなく、かつ、データIDが仮IDなので、リモートに画像がないのは明白。
                 throw ImageControllerException(1, "リモートに画像はありません")
             }
@@ -283,8 +292,8 @@ class ImagesController (context: Context, projectId: String): BaseController(con
                 db?.endTransaction()
             }
         }
-
-        //itemテーブルのステータスも変更すること。
+        //itemテーブルのステータスは、本登録したときにitemのデータも送信しているため
+        //SyncItem内でsync_statusは登録完了になっている。
     }
 
     /**
@@ -346,9 +355,8 @@ class ImagesController (context: Context, projectId: String): BaseController(con
                 //データ管理テーブルを更新中に変更する
                 db?.update("items",cvItem, "item_id =?", arrayOf(itemId))
                 //画像管理テーブルを削除中に変更する
-                val image = Images()
-                image.sync_status = SYNC_STATUS_DEL
-                val cvImage = createConvertValue(image)
+                val cvImage = ContentValues()
+                cvImage.put("sync_status", SYNC_STATUS_DEL)
                 db?.update("images",cvImage, "image_id =?", arrayOf(imageId.toString()))
             }
             db?.setTransactionSuccessful()!!

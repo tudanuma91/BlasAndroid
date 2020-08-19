@@ -196,10 +196,15 @@ class ItemImageViewModel() : ViewModel() {
             item.empty.set(false)
         }
 
-        /* ここを改良する */
-
-        val payload = mapOf("token" to token, "image_id" to item.imageId)
-        BlasRestImage("delete", payload, ::success, ::error).execute()
+        /* ここを改良する Single.fromCallble使う */
+        val error: (errorCode: Int, aplCode:Int) -> Unit = { i: Int, i1: Int ->
+            item.loading.set(false)
+        }
+        val imgCon = ImagesController(context, projectId)
+        imgCon.deleteImageLocal(item.imageId.toLong())
+        //updateCellItem(item, null, error)
+        //val payload = mapOf("token" to token, "image_id" to item.imageId)
+        //BlasRestImage("delete", payload, ::success, ::error).execute()
     }
 
     fun rightRotate(item: ItemImageCellItem) {

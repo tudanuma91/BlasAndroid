@@ -78,7 +78,8 @@ class SyncImage(val context: Context, val token : String, val projectId : String
                     val ctl = ImagesController(context, projectId)
                     ctl.fixImageRecord(newImageId, tempImageId)
 
-                    //ここにデータ管理のsync_statusを戻す処理入れるべきでは？konishi
+                    //itemテーブルのステータスは、本登録したときにitemのデータも送信しているため
+                    //SyncItem内でsync_statusは登録完了になっている。
 
                 } else {
                     //画像送信失敗した
