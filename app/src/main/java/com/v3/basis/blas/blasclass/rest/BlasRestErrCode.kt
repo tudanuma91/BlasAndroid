@@ -47,8 +47,7 @@ class BlasRestErrCode() {
         const val IMG_CANT_ACCESS = 500
         const val IMG_SAVE_ERROR = 501
         const val IMG_NOT_FOUND_DEL_IMG = 502
-
-
+        const val IMG_HASH_ERROR = 503
 
         //通信
         const val NETWORK_ERROR = 1001

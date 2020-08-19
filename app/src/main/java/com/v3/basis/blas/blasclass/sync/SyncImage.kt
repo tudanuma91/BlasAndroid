@@ -16,6 +16,8 @@ import com.v3.basis.blas.ui.item.item_view.ItemsCellModel
 import io.reactivex.subjects.PublishSubject
 import org.json.JSONObject
 import java.lang.Exception
+import java.net.URLEncoder
+import java.security.MessageDigest
 
 class SyncImage(val context: Context, val token : String, val projectId : String, val itemId :Long) {
 
@@ -39,13 +41,20 @@ class SyncImage(val context: Context, val token : String, val projectId : String
             //bmpを読む
             val bmp = it.filename?.let { it1 ->
                 ImageComponent().readBmpFromLocal(
-                    context, it.project_id.toString(),
-                    it1
+                    context, it.project_id.toString(), it1
                 )
             }
 
             //bmpをbase64に変換する
             val base64Img = bmp?.let { it1 -> ImageComponent().encode(bmp, ext) }
+
+            // サーバー側base64decodeで微妙に違うものになるので、base64データをhash化する
+            val hash = MessageDigest.getInstance("MD5")
+                .digest(base64Img?.toByteArray())
+                .joinToString(separator = ""){
+                    "%02x".format(it)
+                }
+
             //送信用payloadの作成
             val payload = mapOf(
                 "token" to token,
@@ -54,7 +63,8 @@ class SyncImage(val context: Context, val token : String, val projectId : String
                 "project_image_id" to it.project_image_id.toString(),
                 "item_id" to it.item_id.toString(),
                 "image" to base64Img,
-                "image_type" to (format?.restImageType ?: "jpg")
+                "image_type" to (format?.restImageType ?: "jpg"),
+                "hash" to hash
             )
 
             val json = SyncBlasRestImage().upload(payload)

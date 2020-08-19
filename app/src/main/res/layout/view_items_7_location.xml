@@ -38,7 +38,6 @@
         <!-- TwoWay Bindingで, 入力した値が自動的に変数にも反映されます！ -->
         <EditText
             android:inputType="none"
-            android:onClick="@{v -> vm.clickLocation(model)}"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@={model.text}"
@@ -46,7 +45,7 @@
             tools:text="EDIT"
             />
         <Button
-            android:onClick="@{v -> vm.clickQRCodeKenpin(model)}"
+            android:onClick="@{v -> vm.clickLocation(model)}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="場所を取得する"
