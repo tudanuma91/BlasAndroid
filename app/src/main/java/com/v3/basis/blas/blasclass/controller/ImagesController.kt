@@ -165,7 +165,6 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         }
         finally {
             db?.endTransaction()
-            db?.close()
         }
 
         if(bmp == null) {
@@ -195,7 +194,7 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         var resultList:MutableList<Images> = mutableListOf()
         try {
             db?.beginTransaction()
-            val sql = "select image_id, project_id, project_image_id, item_id, filename, hash, moved, create_date from images where item_id=? and sync_status!=?"
+            val sql = "select image_id, project_id, project_image_id, item_id, filename, hash, moved, create_date, sync_status from images where item_id=? and sync_status!=?"
             val cursor = db?.rawQuery(sql, arrayOf(itemId.toString(), SYNC_STATUS_SYNC.toString()))
             cursor?.also { c->
                 var notLast = cursor?.moveToFirst()
@@ -208,7 +207,8 @@ class ImagesController (context: Context, projectId: String): BaseController(con
                         filename = c.getString(4),
                         hash = c.getString(5),
                         moved = c.getInt(6),
-                        create_date = c.getString(7)
+                        create_date = c.getString(7),
+                        sync_status = c.getInt(8)
                     )
                     resultList.add(image_record)
                     //リストに追加する
@@ -222,79 +222,55 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         }
         finally {
             db?.endTransaction()
-            db?.close()
         }
 
         return resultList
     }
 
-    /**
-     * 仮登録されたレコードを本登録する
-     */
-    fun fixImageRecord(newImageId:String, tempImageId:String) {
-        var syncStatus = -1
+    fun fixDeleteImage(imageId:String) {
         var imgFileName = ""
 
-        //ここで削除か新規追加、更新のどちかを調べる必要がある。
-        //tempImageIdで画像を検索して、ステータスを取得するしかない。
+        //削除だった場合
         try{
             db?.beginTransaction()
-            val sql = "select filename, sync_status from images where image_id=?"
-            //ID変更前のレコードのステータスを取得する
-            val cursor = db?.rawQuery(sql, arrayOf(tempImageId))
-            cursor?.also{c->
-                c.moveToFirst()
-                imgFileName = c.getString(0)
-                syncStatus = c.getInt(1)
-            }
+            //レコード削除
+            db?.delete("images", "image_id=?", arrayOf(imageId))
+            //画像ファイルを削除する
+            ImageComponent().delImgFile(context, projectId, imgFileName)
+            //レコードと画像の両方を削除できたら成功
+            db?.setTransactionSuccessful()!!
         }
-        catch(e:Exception) {
+        catch (e:Exception) {
             e.printStackTrace()
+            throw e
         }
         finally {
             db?.endTransaction()
         }
-
-        if(syncStatus == SYNC_STATUS_DEL) {
-            //削除だった場合
-            try{
-                db?.beginTransaction()
-                //レコード削除
-                db?.delete("images", "image_id=?", arrayOf(tempImageId.toString()))
-                //画像ファイルを削除する
-                ImageComponent().delImgFile(context, projectId, imgFileName)
-                //レコードと画像の両方を削除できたら成功
-                db?.setTransactionSuccessful()!!
-            }
-            catch (e:Exception) {
-                e.printStackTrace()
-                throw e
-            }
-            finally {
-                db?.endTransaction()
-            }
-        }
-        else {
-            //新規追加、または更新の場合
-            try {
-                val cv = ContentValues()
-                cv.put("image_id", newImageId)
-                cv.put("sync_status", SYNC_STATUS_SYNC)
-                db?.beginTransaction()
-                db?.update("images", cv, "image_id=?", arrayOf(tempImageId.toString()))
-                db?.setTransactionSuccessful()!!
-            }
-            catch (e:Exception) {
-                e.printStackTrace()
-                throw e
-            }
-            finally {
-                db?.endTransaction()
-            }
-        }
-        //itemテーブルのステータスは、本登録したときにitemのデータも送信しているため
-        //SyncItem内でsync_statusは登録完了になっている。
     }
+
+    /**
+     * 仮登録されたレコードを本登録する
+     */
+    fun fixUploadImage(newImageId:String, tempImageId:String) {
+        //新規追加、または更新の場合
+        try {
+            val cv = ContentValues()
+            cv.put("image_id", newImageId)
+            cv.put("sync_status", SYNC_STATUS_SYNC)
+            db?.beginTransaction()
+            db?.update("images", cv, "image_id=?", arrayOf(tempImageId.toString()))
+            db?.setTransactionSuccessful()!!
+        }
+        catch (e:Exception) {
+            e.printStackTrace()
+            throw e
+        }
+        finally {
+            db?.endTransaction()
+        }
+    }
+
 
     /**
      * [説明]
@@ -334,13 +310,12 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         }
         finally {
             db?.endTransaction()
-            db?.close()
         }
 
         return resultList
     }
 
-    fun deleteImageLocal(imageId:Long) {
+    fun reserveDeleteImg(imageId:Long) : Boolean {
         //画像管理テーブルを削除中に変更する。
         //実際の画像ファイル削除は本登録完了後に行う
         try {
@@ -367,5 +342,7 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         finally {
             db?.endTransaction()
         }
+
+        return true
     }
 }
