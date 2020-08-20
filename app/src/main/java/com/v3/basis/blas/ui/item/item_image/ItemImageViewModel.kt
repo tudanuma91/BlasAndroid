@@ -184,20 +184,21 @@ class ItemImageViewModel() : ViewModel() {
 
     fun deleteClick(item: ItemImageCellItem) = deleteAction.onNext(item)
     fun deleteItem(item: ItemImageCellItem) {
-
-        item.loading.set(false)
-        fun success(json: JSONObject) {
-            item.loading.set(false)
-            item.empty.set(true)
-        }
-
-        fun error(errorCode: Int, aplCode:Int) {
-            item.loading.set(false)
-            item.empty.set(false)
-        }
-
-        val payload = mapOf("token" to token, "image_id" to item.imageId)
-        BlasRestImage("delete", payload, ::success, ::error).execute()
+        /* ここを改良する Single.fromCallble使う */
+        Single.fromCallable {
+            val imgCon = ImagesController(context, projectId)
+            imgCon.reserveDeleteImg(item.imageId.toLong())
+        }.subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(
+                onError = {
+                    Toast.makeText(context, "画像の削除予約に失敗しました", Toast.LENGTH_SHORT).show()
+                },
+                onSuccess = {
+                    item.image.set(null)
+                    item.empty.set(true)
+                }
+            ).addTo(CompositeDisposable())
     }
 
     fun rightRotate(item: ItemImageCellItem) {

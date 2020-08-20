@@ -3,12 +3,20 @@ package com.v3.basis.blas.blasclass.component
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.util.Base64
 import android.util.Log
+import com.bumptech.glide.load.model.ResourceLoader
 import com.v3.basis.blas.ui.item.item_image.FileExtensions
 import java.io.*
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.security.DigestInputStream
 import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
 import java.util.*
+import kotlin.text.StringBuilder
 
 class ImageComponent {
 
@@ -98,6 +106,7 @@ class ImageComponent {
         try{
             val InputStream = FileInputStream(fullPath)
             bmp = BitmapFactory.decodeStream(InputStream)
+
         }catch(e:IOException) {
             e.printStackTrace()
         }
@@ -125,8 +134,9 @@ class ImageComponent {
         val byteArrayOutputStream = ByteArrayOutputStream()
         bitmap.compress(format.compressFormat, 100, byteArrayOutputStream)
         val byteArray: ByteArray = byteArrayOutputStream.toByteArray()
+        val flag = Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING   // 足し算されて11になる（bit加算）
 
-        val flag = Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING
         return Base64.encodeToString(byteArray, flag)
     }
+
 }

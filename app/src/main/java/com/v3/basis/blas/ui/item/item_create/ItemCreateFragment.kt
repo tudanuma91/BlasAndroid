@@ -1,6 +1,7 @@
 package com.v3.basis.blas.ui.item.item_create
 
 
+import android.Manifest
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
@@ -31,6 +32,7 @@ import com.v3.basis.blas.blasclass.rest.BlasRest
 import com.v3.basis.blas.databinding.*
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
+import com.v3.basis.blas.ui.ext.requestPermissions
 import com.v3.basis.blas.ui.ext.startActivityWithResult
 import com.v3.basis.blas.ui.item.common.*
 import io.reactivex.Single
@@ -227,8 +229,7 @@ class ItemCreateFragment : Fragment() {
                     try {
                         itemsController.qrCodeCheck( qr )
                         it.text.set(qr)
-                        // TODO:福田さん　エラーのためいったんコメントアウト
-                        // playSoundAndVibe()
+                         playSoundAndVibe()
                     }
                     catch ( ex : ItemsController.ItemCheckException ) {
                         // 設置不可の時
@@ -249,8 +250,7 @@ class ItemCreateFragment : Fragment() {
                     try {
                         itemsController.rmQrCodeCheck( qr )
                         it.text.set(qr)
-                        // TODO:福田さん　エラーのためいったんコメントアウト
-                        // playSoundAndVibe()
+                         playSoundAndVibe()
                     }
                     catch ( ex : ItemsController.ItemCheckException ) {
                         // 撤去不可の時
@@ -263,8 +263,14 @@ class ItemCreateFragment : Fragment() {
 
         viewModel.locationEvent
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                //TODO
+            .subscribeBy { field ->
+                requestPermissions(arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                    (requireActivity() as ItemActivity).fetchLocationAddress {address ->
+                        field.text.set(address)
+                    }
+                }
             }
             .addTo(disposables)
 

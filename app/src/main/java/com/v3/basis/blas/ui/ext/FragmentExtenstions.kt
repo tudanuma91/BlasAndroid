@@ -257,3 +257,10 @@ fun Fragment.startActivityWithResult(launchClass: Class<*>, requestCode: Int, ex
     observer.launch(i)
     return observer
 }
+
+fun Fragment.requestPermissions(permissions: Array<String>, resultCallBacks: (Map<String, Boolean>) -> Unit) {
+    val launcher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        resultCallBacks.invoke(it)
+    }
+    launcher.launch(permissions)
+}
