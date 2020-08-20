@@ -6,6 +6,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import androidx.room.Room
+import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.ldb.LdbUserRecord
@@ -198,6 +199,11 @@ abstract class BaseController(
         val cursor = db?.rawQuery(sql, arrayOf( BlasApp.userId.toString() ))
 
         if( 0 == cursor?.count ) {
+
+            if( !BuildConfig.SET_ADMIN ) {
+                throw Exception("該当ユーザーが存在しません")
+            }
+
             return null
         }
 

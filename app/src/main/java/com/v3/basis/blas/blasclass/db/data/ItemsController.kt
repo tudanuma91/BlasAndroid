@@ -3,6 +3,7 @@ package com.v3.basis.blas.blasclass.db.data
 import android.content.ContentValues
 import android.content.Context
 import android.util.Log
+import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkFixture
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkRmFixture
