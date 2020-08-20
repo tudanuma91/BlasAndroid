@@ -23,7 +23,6 @@
         android:usesCleartextTraffic="true">
         <activity
             android:name=".activity.ItemImageZoomActivity"
-            android:label="@string/title_item_image_zoom"
             android:screenOrientation="portrait"/>
         <activity
             android:name=".activity.FixtureSearchResultActivity"

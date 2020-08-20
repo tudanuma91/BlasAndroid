@@ -72,6 +72,7 @@
     <string name="error_data_create">新規作成に失敗しました</string>
     <string name="success_data_update">更新に成功しました。</string>
     <string name="error_data_update">更新に失敗しました。</string>
+    <string name="error_image_get">画像の取得に失敗しました。</string>
 
 
     <!-- 選択肢 -->

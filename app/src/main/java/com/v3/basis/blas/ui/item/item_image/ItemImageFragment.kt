@@ -45,6 +45,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
+import kotlinx.android.synthetic.main.cell_item_image.*
 import kotlinx.android.synthetic.main.fragment_item_image.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -169,12 +170,11 @@ class ItemImageFragment : Fragment() {
         viewModel.zoomAction
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
-                Log.d("[木島テスト]","テスト")
-                Log.d("[木島テスト]","${it.title}")
                 val intent = Intent(requireContext(),ItemImageZoomActivity::class.java)
                 intent.putExtra("project_img_id",it.id)
                 intent.putExtra("project_id",projectId)
                 intent.putExtra("item_id",itemId)
+                intent.putExtra("title",it.title)
                 /*
                 intent.putExtra("item_id", "${it.item_id}")
                 intent.putExtra("token", token)
