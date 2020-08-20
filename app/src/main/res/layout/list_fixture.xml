@@ -42,7 +42,7 @@
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:padding="6dp"
                         >
 
@@ -64,11 +64,11 @@
                             app:layout_constraintStart_toStartOf="parent"
                             tools:text="titleです" />
 
-                        <TextView
+                        <WebView
                             android:id="@+id/row_detail"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@{model.detail}"
+                            app:htmlText="@{model.detail}"
                             app:layout_constraintTop_toBottomOf="@id/row_title"
                             app:layout_constraintStart_toStartOf="parent"
                             tools:text="詳細ですよ詳細ですよ詳細ですよ詳細ですよ詳細ですよ" />

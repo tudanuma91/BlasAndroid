@@ -30,6 +30,7 @@ import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
 import com.v3.basis.blas.blasclass.rest.BlasRest
 import com.v3.basis.blas.blasclass.sync.Lump
 import com.v3.basis.blas.databinding.FragmentFixtureViewBinding
+
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.getStringExtra
 import com.xwray.groupie.GroupAdapter
@@ -398,11 +399,17 @@ class FixtureViewFragment : Fragment() {
      */
     private fun createValue(rcd: LdbFixtureDispRecord): String? {
         var value:String? =null
+
+        value += "<table style=\"border-collapse: collapse; table-layout:fixed; border-style: solid; border-color: #87CEFA; border: 0px none;\" width=\"100%\">"
         try {
-            value = "[${getString(R.string.col_serialnumber)}]"
-            value += "\n${rcd.serial_number}"
-            value += "\n[${getString(R.string.col_status)}]\n"
-            value += when (rcd.status) {//config.FixtureTypeにて定義している。
+            value += "<tr>"
+            value += "<td>${getString(R.string.col_serialnumber)}</td>"
+            value += "<td>${rcd.serial_number}</td>"
+            value += "</tr>"
+
+            value += "<tr>"
+            value += "<td>${getString(R.string.col_status)}</td>"
+            value += "<td>" + when (rcd.status) {//config.FixtureTypeにて定義している。
                 canTakeOut.toInt() -> {
                     "${statusCanTakeOut}"
                 }
@@ -420,46 +427,89 @@ class FixtureViewFragment : Fragment() {
                 }
                 else -> {
                 }
-            }
-            value += "\n\n\n[${getString(R.string.col_kenpin_org)}]\n"
-            value += setValue(rcd.fix_org_name)
-            value += "\n[${getString(R.string.col_kenpin_user)}]\n"
-            value += setValue(rcd.fix_user_name)
-            value += "\n[${getString(R.string.col_kenpin_date)}]\n"
-            value += setValue(rcd.fix_date)
-            value += "\n\n\n[${getString(R.string.col_takeout_org)}]\n"
-            value += setValue(rcd.takeout_org_name)
-            value += "\n[${getString(R.string.col_takeout_user)}]\n"
-            value += setValue(rcd.takeout_user_name)
-            value += "\n[${getString(R.string.col_takeout_date)}]\n"
-            value += setValue(rcd.takeout_date)
-            value += "\n\n\n[${getString(R.string.col_return_org)}]\n"
-            value += setValue(rcd.rtn_org_name)
-            value += "\n[${getString(R.string.col_return_user)}]\n"
-            value += setValue(rcd.rtn_user_name)
-            value += "\n[${getString(R.string.col_return_date)}]\n"
-            value += setValue(rcd.rtn_date)
-            value += "\n\n\n[${getString(R.string.col_item_org)}]\n"
-            value += setValue(rcd.item_org_name)
-            value += "\n[${getString(R.string.col_item_user)}]\n"
-            value += setValue(rcd.item_user_name)
-            value += "\n[${getString(R.string.col_item_date)}]\n"
-            value += setValue(rcd.item_date)
-            value += "\n[${getString(R.string.col_item_id)}]\n"
+            } + "</td>"
+            value += "</tr>"
+
+            value += "<tr>"
+            value += "<td>${getString(R.string.col_kenpin_org)}</td>"
+            value += "<td>" + setValue(rcd.fix_org_name) + "</td>"
+            value += "</tr>"
+
+            value += "<tr>"
+            value += "<td>${getString(R.string.col_kenpin_user)}</td>"
+            value += "<td>" + setValue(rcd.fix_user_name) + "</td>"
+            value += "</tr>"
+
+            value += "<tr>"
+            value += "<td>${getString(R.string.col_kenpin_date)}</td>"
+            value += "<td>" + setValue(rcd.fix_date) + "</td>"
+            value += "</tr>"
+
+            value += "<tr>"
+            value += "<td>${getString(R.string.col_takeout_org)}</td>"
+            value += "<td>" + setValue(rcd.takeout_org_name) + "</td>"
+            value += "</tr>"
+
+            value += "<tr>"
+            value += "<td>${getString(R.string.col_takeout_user)}</td>"
+            value += "<td>" + setValue(rcd.takeout_user_name) + "</td>"
+            value += "</tr>"
+
+            value += "<tr>"
+            value += "<td>${getString(R.string.col_takeout_date)}</td>"
+            value += "<td>" + setValue(rcd.takeout_date) + "</td>"
+            value += "</tr>"
+
+            value += "<tr>"
+            value += "<td>${getString(R.string.col_return_org)}</td>"
+            value += "<td>" + setValue(rcd.rtn_org_name) + "</td>"
+            value += "</tr>"
+
+            value += "<tr>"
+            value += "<td>${getString(R.string.col_return_user)}</td>"
+            value += "<td>" + setValue(rcd.rtn_user_name) + "</td>"
+            value += "</tr>"
+
+            value += "<tr>"
+            value += "<td>${getString(R.string.col_return_date)}</td>"
+            value += "<td>" + setValue(rcd.rtn_date) + "</td>"
+            value += "</tr>"
+
+            value += "<tr>"
+            value += "<td>${getString(R.string.col_item_org)}</td>"
+            value += "<td>" + setValue(rcd.item_org_name) + "</td>"
+            value += "</tr>"
+
+            value += "<tr>"
+            value += "<td>${getString(R.string.col_item_user)}</td>"
+            value += "<td>" + setValue(rcd.item_user_name) + "</td>"
+            value += "</tr>"
+
+            value += "<tr>"
+            value += "<td>${getString(R.string.col_item_date)}</td>"
+            value += "<td>" + setValue(rcd.item_date) + "</td>"
+            value += "</tr>"
+
+            value += "<tr>"
+            value += "<td>${getString(R.string.col_item_id)}</td>"
 
             if( rcd.item_id < 0L ) {
-                value += setValue("仮登録中")
+                value += "<td>" + setValue("仮登録中") + "</td>"
             }
             else if( 0L == rcd.item_id ) {
-                value += setValue("")
+                value += "<td>" + setValue("") + "</td>"
             }
             else {
-                value += setValue(rcd.item_id.toString())
+                value += "<td>" + setValue(rcd.item_id.toString()) + "</td>"
             }
+            value += "</tr>"
 
         }catch (e:Exception){
 
         }
+
+        value += "</table>"
+        Log.d("Table", value)
 
         return value
 
