@@ -541,22 +541,41 @@ class ItemViewFragment : Fragment() {
 
         var text = text
 
-        text += "<table border=\"1\" style=\"border-collapse: collapse; table-layout:fixed;\" width=\"100%\">"
+//        text += "<table border=\"1\" style=\"border-collapse: collapse; table-layout:fixed; \" width=\"100%\">"
+//        text += "<table border=\"1\" style=\"border-collapse: collapse; table-layout:fixed; border-style: solid; border-color: #FF69B4;\" width=\"100%\">"
+//        text += "<table border=\"1\" style=\"border-collapse: collapse; table-layout:fixed; border-style: solid; border-color: #FF69B4;\" width=\"100%\">"
+//        text += "<table border=\"1\" style=\"border-collapse: collapse; table-layout:fixed; border-style: solid; border-color: #87CEFA;\" width=\"100%\">"
+        text += "<table style=\"border-collapse: collapse; table-layout:fixed; border-style: solid; border-color: #87CEFA; border: 0px none;\" width=\"100%\">"
 
-        fields.forEach {field ->
+        fields.forEachIndexed { index, field ->
 
             val fldName = "fld${field.col}"
 
             text += "<tr>"
-            text += "<td>${field.name}</td>"
+            if (index % 2 == 0) {
+                text += "<td bgcolor=\"#FFEFFF\" style=\"border: 0px none;\">${field.name}</td>"
+            } else {
+                text += "<td style=\"border: 0px none;\">${field.name}</td>"
+            }
+//            text += "<td bgcolor=\"#F0F8FF\" style=\"border: 0px none;\">${field.name}</td>"
 
             if (field.type.toString() == FieldType.CHECK_VALUE) {
                 val newValue = helper.createCheckValue(item[fldName].toString())
-                text += "<td>${newValue}</td>"
+                if (index % 2 == 0) {
+                    text += "<td bgcolor=\"#FFEFFF\" style=\"border: 0px none;\">${newValue}</td>"
+                } else {
+                    text += "<td style=\"border: 0px none;\">${newValue}</td>"
+                }
+//                text += "<td style=\"border: 0px none;\">${newValue}</td>"
             }
             else {
                 val fldVal = item[fldName]?.replace("\\r","")
-                text += "<td>${fldVal}</td>"
+                if (index % 2 == 0) {
+                    text += "<td bgcolor=\"#FFEFFF\" style=\"border: 0px none;\">${fldVal}</td>"
+                } else {
+                    text += "<td style=\"border: 0px none;\">${fldVal}</td>"
+                }
+//                text += "<td style=\"border: 0px none;\">${fldVal}</td>"
             }
 
             text += "</tr>"
