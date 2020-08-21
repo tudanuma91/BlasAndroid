@@ -15,9 +15,8 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.AdapterView.AdapterContextMenuInfo
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -28,21 +27,25 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemActivity
+import com.v3.basis.blas.activity.ItemEditActivity
+import com.v3.basis.blas.activity.ItemImageZoomActivity
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
 import com.v3.basis.blas.blasclass.app.BlasMsg
-import com.v3.basis.blas.blasclass.component.ImageComponent
 import com.v3.basis.blas.blasclass.controller.ImagesController
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.ui.item.item_image.adapter.AdapterCellItem
 import com.v3.basis.blas.ui.item.item_image.model.ImageFieldModel
 import com.v3.basis.blas.ui.item.item_image.model.ItemImage
 import com.xwray.groupie.GroupAdapter
+import com.xwray.groupie.Item
+import com.xwray.groupie.OnItemClickListener
+import com.xwray.groupie.OnItemLongClickListener
 import com.xwray.groupie.databinding.GroupieViewHolder
-import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
+import kotlinx.android.synthetic.main.cell_item_image.*
 import kotlinx.android.synthetic.main.fragment_item_image.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -113,9 +116,11 @@ class ItemImageFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
+        //layoutManagerをgridにすることで横にも表示可能にしている
         recyclerView.layoutManager = GridLayoutManager(requireContext(), 2) as RecyclerView.LayoutManager?
 
         viewModel = ViewModelProviders.of(this).get(ItemImageViewModel::class.java)
+        //画像の取得処理
         viewModel.setup(requireContext(), token, projectId, itemId)
 
 
@@ -160,10 +165,30 @@ class ItemImageFragment : Fragment() {
                 //Toast.makeText(requireContext(), "API Error ($it)", Toast.LENGTH_LONG).show()
             }
             .addTo(disposables)
+
+        //長押し時の処理
+        viewModel.zoomAction
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                val intent = Intent(requireContext(),ItemImageZoomActivity::class.java)
+                intent.putExtra("project_img_id",it.id)
+                intent.putExtra("project_id",projectId)
+                intent.putExtra("item_id",itemId)
+                intent.putExtra("title",it.title)
+                /*
+                intent.putExtra("item_id", "${it.item_id}")
+                intent.putExtra("token", token)
+                intent.putExtra("project_id", projectId)
+                intent.putExtra("value_list", it.valueList)
+                */
+                requireActivity().startActivity(intent)
+
+            }
+            .addTo(disposables)
     }
 
-    private fun createAdapter(field: ImageFieldModel) {
 
+    private fun createAdapter(field: ImageFieldModel) {
         val list = field.records.map { records -> records.ProjectImage }.map {
             AdapterCellItem(viewModel, it.mapToItemImageCellItem()).apply {
                 this.item.imageId=""
@@ -176,7 +201,11 @@ class ItemImageFragment : Fragment() {
         val gAdapter = GroupAdapter<GroupieViewHolder<*>>()
         recyclerView.adapter = gAdapter
         gAdapter.update(adapterCellItems.toList())
+        recyclerView.hasPendingAdapterUpdates()
     }
+
+
+
 
     private fun initCameraPermission(): Boolean {
 
@@ -327,4 +356,5 @@ class ItemImageFragment : Fragment() {
         disposables.dispose()
         super.onDestroyView()
     }
+
 }

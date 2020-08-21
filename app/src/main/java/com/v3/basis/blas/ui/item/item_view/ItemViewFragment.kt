@@ -237,13 +237,19 @@ class ItemViewFragment : Fragment() {
 
         //全て同期のボタン
         allSyncButton.setOnClickListener {
-            progressBarFlg = true
-            chkProgress(progressBarFlg,rootView)
-            Log.d("フローティングボタン Item","Click!!!!")
-            Lump(requireContext(),projectId,token,1){
-                progressBarFlg = false
-                (requireActivity() as ItemActivity).reloard()
-            }.exec()
+            try{
+                progressBarFlg = true
+                chkProgress(progressBarFlg,rootView)
+                Log.d("フローティングボタン Item","Click!!!!")
+                Lump(requireContext(),projectId,token,1){
+                    progressBarFlg = false
+                    (requireActivity() as ItemActivity).reloard()
+                }.exec()
+            }
+            catch(e:Exception) {
+                Log.d("konishi", "ItemActivityなし")
+            }
+
         }
 
         //リサイクラ-viewを取得

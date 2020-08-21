@@ -17,8 +17,8 @@ android {
         applicationId "com.v3.basis.blas"
         minSdkVersion 26
         targetSdkVersion 29
-        versionCode 1
-        versionName "1.0"
+        versionCode 3
+        versionName "1.02"
         testInstrumentationRunner "androidx.test1.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -31,29 +31,36 @@ android {
 
     flavorDimensions "default"
     productFlavors {
+
         develop {
             buildConfigField 'String', 'API_URL', '"http://192.168.1.8/blas7/api/v1/"'
             buildConfigField 'String', 'HOST', '"http://192.168.1.8"'
+            buildConfigField 'Boolean', 'SET_ADMIN',"true"
         }
         production {
             buildConfigField 'String', 'API_URL', '"https://www.basis-service.com/blas70/api/v1/"'
             buildConfigField 'String', 'HOST', '"https://www.basis-service.com"'
+            buildConfigField 'Boolean', 'SET_ADMIN',"false"
         }
         preproduction {
             buildConfigField 'String', 'API_URL', '"https://www.basis-service.com/blas777/api/v1/"'
             buildConfigField 'String', 'HOST', '"https://www.basis-service.com"'
+            buildConfigField 'Boolean', 'SET_ADMIN',"true"
         }
         fukuda {
             buildConfigField 'String', 'API_URL', '"http://192.168.3.6/blas7/api/v1/"'
             buildConfigField 'String', 'HOST', '"http://192.168.3.6"'
+            buildConfigField 'Boolean', 'SET_ADMIN',"true"
         }
         konishi {
             buildConfigField 'String', 'API_URL', '"http://192.168.1.87/blas7/api/v1/"'
             buildConfigField 'String', 'HOST', '"http://192.168.1.87"'
+            buildConfigField 'Boolean', 'SET_ADMIN',"true"
         }
         miyokawa {
             buildConfigField 'String', 'API_URL', '"http://192.168.11.3:8080/blas7/api/v1/"'
             buildConfigField 'String', 'HOST', '"http://192.168.11.3:8080"'
+            buildConfigField 'Boolean', 'SET_ADMIN',"true"
         }
     }
 

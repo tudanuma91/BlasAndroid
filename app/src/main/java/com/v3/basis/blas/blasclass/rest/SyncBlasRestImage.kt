@@ -24,15 +24,31 @@ open class SyncBlasRestImage() : SyncBlasRest() {
     var aplCode:Int = 0
 
     /**
-     * プロジェクトに設定されているフィールドの情報取得要求を行う
+     * 画像をサーバーにアップロードする
      * @param in params 指定なし
      */
     fun upload(payload:Map<String, String?>): JSONObject? {
         var response:String? = null
         var json:JSONObject? = null
-        var blasUrl = BlasRest.URL + "images/download/"
         method = "POST"
-        blasUrl = BlasRest.URL + "images/upload/"
+        val blasUrl = BlasRest.URL + "images/upload/"
+
+        try {
+            response = super.getResponseData(payload,method, blasUrl)
+            json = JSONObject(response)
+        }
+        catch(e: Exception) {
+            Log.d("blas-log", "通信エラー")
+        }
+        return json
+    }
+
+
+    fun delete(payload:Map<String, String?>): JSONObject? {
+        var response:String? = null
+        var json:JSONObject? = null
+        method = "DELETE"
+        val blasUrl = BlasRest.URL + "images/delete/"
 
         try {
             response = super.getResponseData(payload,method, blasUrl)

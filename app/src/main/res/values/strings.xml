@@ -9,6 +9,7 @@
     <string name="title_activity_terminal">TerminalActivity</string>
     <string name="title_item_edit">データ編集画面</string>
     <string name="title_item_image">画像編集画面</string>
+    <string name="title_item_image_zoom"></string>
 
     <!-- パラメータ―不正系 -->
     <string name="username_null">ユーザ名が指定されていません</string>
@@ -60,6 +61,8 @@
     <string name="navi_title_webview">WebView</string>
     <!--共通-->
     <string name="navi_title_back">戻る</string>
+    <!-- コンテキストメニュー-->
+    <string name="context_img_zoom">拡大する</string>
 
     <!--　メッセージ -->
     <string name="success_qr">QRコード読を読み取りました</string>
@@ -69,6 +72,7 @@
     <string name="error_data_create">新規作成に失敗しました</string>
     <string name="success_data_update">更新に成功しました。</string>
     <string name="error_data_update">更新に失敗しました。</string>
+    <string name="error_image_get">画像の取得に失敗しました。</string>
 
 
     <!-- 選択肢 -->
@@ -115,7 +119,7 @@
     <string name="switch_end_flg">ゴミ箱</string>
     <string name="switch_view">表示する</string>
 
-   <!-- ダイアログ -->
+    <!-- ダイアログ -->
     <string name="dialog_title">メッセージ</string>
     <string name="search_error">検索条件に合致するレコードは存在しません</string>
 

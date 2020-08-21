@@ -41,12 +41,22 @@ class Lump(
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy (
                 onError = { //Toast.makeText(context, "例外が発生しました", Toast.LENGTH_LONG).show()
-                    callBack.invoke(true)
-                    dis.dispose()
+                    try{
+                        callBack.invoke(true)
+                        dis.dispose()
+                    }
+                    catch(e:Exception) {
+                        Log.d("konishi", "callBackがない")
+                    }
                 },
                 onSuccess = {
-                    callBack.invoke(true)
-                    dis.dispose()
+                    try {
+                        callBack.invoke(true)
+                        dis.dispose()
+                    }
+                    catch(e:Exception) {
+                        Log.d("konishi", "callBackがない")
+                    }
                 }
             ).addTo(CompositeDisposable())
         Log.d("Lump.exec()","end")
@@ -169,7 +179,9 @@ class Lump(
         //同期されていないレコードを取得する
         val images = ImagesController(context,projectId).searchNosyncRecords()
         images.forEach{
-            it.item_id?.let { it1 -> SyncImage(context,token,projectId, it1).exec() }
+            it.item_id?.let { it1 ->
+                SyncImage(context,token,projectId, it1).exec()
+            }
         }
     }
 }
