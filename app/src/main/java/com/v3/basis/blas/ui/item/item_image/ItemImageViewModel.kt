@@ -23,6 +23,7 @@ import com.v3.basis.blas.ui.ext.translateToBitmap
 import com.v3.basis.blas.ui.item.item_image.model.ImageFieldModel
 import com.v3.basis.blas.ui.item.item_image.model.ItemImage
 import com.v3.basis.blas.ui.item.item_image.model.ItemImageModel
+import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -185,17 +186,25 @@ class ItemImageViewModel() : ViewModel() {
 
     fun deleteClick(item: ItemImageCellItem) = deleteAction.onNext(item)
     fun deleteItem(item: ItemImageCellItem) {
+
+        if (item.loading.get() == true) {
+            return
+        }
+
         /* ここを改良する Single.fromCallble使う */
         Single.fromCallable {
+            item.loading.set(true)
             val imgCon = ImagesController(context, projectId)
             imgCon.reserveDeleteImg(item.imageId.toLong())
         }.subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onError = {
+                    item.loading.set(false)
                     Toast.makeText(context, "画像の削除予約に失敗しました", Toast.LENGTH_SHORT).show()
                 },
                 onSuccess = {
+                    item.loading.set(false)
                     item.image.set(null)
                     item.empty.set(true)
                 }
@@ -204,39 +213,78 @@ class ItemImageViewModel() : ViewModel() {
 
     fun rightRotate(item: ItemImageCellItem) {
 
+        if (item.loading.get() == true) {
+            return
+        }
+
         val error: (errorCode: Int, aplCode:Int) -> Unit = { i: Int, i1: Int ->
             item.loading.set(false)
             item.image.get()?.rotateLeft()
         }
-        item.image.get()?.rotateRight()?.apply { updateCellItem(item, this, error) }
+        item.loading.set(true)
+        Single.create<Bitmap> {emitter ->
+                item.image.get().apply {
+                    this?.also { emitter.onSuccess(this.rotateRight()) }
+                        ?: emitter.onError(IllegalStateException("回転する画像が空です"))
+                }
+            }
+            .subscribeOn(Schedulers.newThread())
+            .subscribeBy(
+                onError = { item.loading.set(true) },
+                onSuccess = { updateCellItem(item, it, error) }
+            )
+            .addTo(disposable)
     }
 
     fun leftRotate(item: ItemImageCellItem) {
+
+        if (item.loading.get() == true) {
+            return
+        }
 
         val error: (errorCode: Int, aplCode:Int) -> Unit = { i: Int, i1: Int ->
             item.loading.set(false)
             item.image.get()?.rotateRight()
         }
-        item.image.get()?.rotateLeft()?.apply { updateCellItem(item, this, error) }
+        item.loading.set(true)
+        Single
+            .create<Bitmap> {emitter ->
+                item.image.get().apply {
+                    this?.also { emitter.onSuccess(this.rotateLeft()) }
+                        ?: emitter.onError(IllegalStateException("回転する画像が空です"))
+                }
+            }
+            .subscribeOn(Schedulers.newThread())
+            .subscribeBy(
+                onError = { item.loading.set(true) },
+                onSuccess = { updateCellItem(item, it, error) }
+            )
+            .addTo(disposable)
     }
 
     private fun updateCellItem(item: ItemImageCellItem, bitmap: Bitmap, error: (errorCode: Int,aplCode:Int) -> Unit) {
         item.loading.set(true)
         item.image.set(bitmap)
         //upload(bitmap, item.ext, item, error)
-        val imageController = ImagesController(context, projectId)
-        //リモートから画像をダウンロードできているので、imageIdは必ずある。
-        //リモートからダウンロードした画像は本登録する。
-        val itemRecord = ItemImage(
-            image_id=item.imageId,
-            item_id = itemId,
-            moved="0",
-            project_id=projectId,
-            project_image_id = item.id)
+        Completable.fromAction {
+            val imageController = ImagesController(context, projectId)
+            //リモートから画像をダウンロードできているので、imageIdは必ずある。
+            //リモートからダウンロードした画像は本登録する。
+            val itemRecord = ItemImage(
+                image_id=item.imageId,
+                item_id = itemId,
+                moved="0",
+                project_id=projectId,
+                project_image_id = item.id)
 
-        itemRecord.bitmap = bitmap
-        imageController.save2LDB(itemRecord, BaseController.SYNC_STATUS_NEW)
-        item.loading.set(false)
+            itemRecord.bitmap = bitmap
+            imageController.save2LDB(itemRecord, BaseController.SYNC_STATUS_NEW)
+        }.subscribeOn(Schedulers.newThread())
+            .subscribeBy(
+                onError = { item.loading.set(false) },
+                onComplete = { item.loading.set(false) }
+            )
+            .addTo(disposable)
     }
 
     fun selectFile(id: String) {
