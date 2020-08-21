@@ -13,6 +13,7 @@
         android:background="@color/colorWhite"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:longClickable="true"
         />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

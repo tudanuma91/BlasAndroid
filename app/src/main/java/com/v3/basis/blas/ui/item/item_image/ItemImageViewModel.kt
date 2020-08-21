@@ -45,6 +45,7 @@ class ItemImageViewModel() : ViewModel() {
     val receiveImageFields: PublishSubject<ImageFieldModel> = PublishSubject.create()
     val uploadAction: PublishSubject<String> = PublishSubject.create()
     val deleteAction: PublishSubject<ItemImageCellItem> = PublishSubject.create()
+    val zoomAction: PublishSubject<ItemImageCellItem> = PublishSubject.create()
 
     private lateinit var token: String
     private lateinit var projectId: String
@@ -240,6 +241,10 @@ class ItemImageViewModel() : ViewModel() {
 
     fun selectFile(id: String) {
         uploadAction.onNext(id)
+    }
+    fun selectFile2(item: ItemImageCellItem): Boolean {
+        zoomAction.onNext(item)
+        return true
     }
 
     fun upload(bitmap: Bitmap, mime: String, item: ItemImageCellItem, error: (errorCode: Int, aplCode:Int) -> Unit) {
