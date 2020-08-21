@@ -31,6 +31,7 @@ class SyncImage(val context: Context, val token : String, val projectId : String
         val itemCtl = ItemsController(context, projectId)
         val imgCtl = ImagesController(context, projectId)
         val imageRecords = imgCtl.searchNosyncRecord(itemId)
+        //画像を削除して送信成功しているのに、一括更新押したときにレコードが見つかるのがおかしい。
         imageRecords.forEach {
             if(it.sync_status == BaseController.SYNC_STATUS_SYNC) {
                 //pass
@@ -67,9 +68,9 @@ class SyncImage(val context: Context, val token : String, val projectId : String
             else {
                 SyncBlasRestImage().delete(payload)?.let{
                     val errorCode = it.getInt("error_code")
-                    if (errorCode == 0) {
+                    if (errorCode == 0 || errorCode == 502) {
                         //DB削除
-                        imgCtl.fixDeleteImage(it.toString())
+                        imgCtl.fixDeleteImage(imageRecord.image_id.toString())
                         //画像削除
                         imageRecord.filename?.also { it1 ->
                             ImageComponent().delImgFile(
