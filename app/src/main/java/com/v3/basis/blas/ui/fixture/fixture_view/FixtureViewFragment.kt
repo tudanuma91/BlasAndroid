@@ -398,17 +398,18 @@ class FixtureViewFragment : Fragment() {
      * 表示する値を作成する
      */
     private fun createValue(rcd: LdbFixtureDispRecord): String? {
-        var value:String? =null
+        var value:String? = ""
 
-        value += "<table style=\"border-collapse: collapse; table-layout:fixed; border-style: solid; border-color: #87CEFA; border: 0px none;\" width=\"100%\">"
+        value += "<table border=\"1\" style=\"border-collapse: collapse; table-layout:fixed; border-style: solid; border-color: #FF69B4;\" width=\"100%\">"
         try {
+            val td = "<td bgcolor=\"#FFEFFF\">"
             value += "<tr>"
-            value += "<td>${getString(R.string.col_serialnumber)}</td>"
+            value += "$td${getString(R.string.col_serialnumber)}</td>"
             value += "<td>${rcd.serial_number}</td>"
             value += "</tr>"
 
             value += "<tr>"
-            value += "<td>${getString(R.string.col_status)}</td>"
+            value += "$td${getString(R.string.col_status)}</td>"
             value += "<td>" + when (rcd.status) {//config.FixtureTypeにて定義している。
                 canTakeOut.toInt() -> {
                     "${statusCanTakeOut}"
@@ -431,67 +432,67 @@ class FixtureViewFragment : Fragment() {
             value += "</tr>"
 
             value += "<tr>"
-            value += "<td>${getString(R.string.col_kenpin_org)}</td>"
+            value += "$td${getString(R.string.col_kenpin_org)}</td>"
             value += "<td>" + setValue(rcd.fix_org_name) + "</td>"
             value += "</tr>"
 
             value += "<tr>"
-            value += "<td>${getString(R.string.col_kenpin_user)}</td>"
+            value += "$td${getString(R.string.col_kenpin_user)}</td>"
             value += "<td>" + setValue(rcd.fix_user_name) + "</td>"
             value += "</tr>"
 
             value += "<tr>"
-            value += "<td>${getString(R.string.col_kenpin_date)}</td>"
+            value += "$td${getString(R.string.col_kenpin_date)}</td>"
             value += "<td>" + setValue(rcd.fix_date) + "</td>"
             value += "</tr>"
 
             value += "<tr>"
-            value += "<td>${getString(R.string.col_takeout_org)}</td>"
+            value += "$td${getString(R.string.col_takeout_org)}</td>"
             value += "<td>" + setValue(rcd.takeout_org_name) + "</td>"
             value += "</tr>"
 
             value += "<tr>"
-            value += "<td>${getString(R.string.col_takeout_user)}</td>"
+            value += "$td${getString(R.string.col_takeout_user)}</td>"
             value += "<td>" + setValue(rcd.takeout_user_name) + "</td>"
             value += "</tr>"
 
             value += "<tr>"
-            value += "<td>${getString(R.string.col_takeout_date)}</td>"
+            value += "$td${getString(R.string.col_takeout_date)}</td>"
             value += "<td>" + setValue(rcd.takeout_date) + "</td>"
             value += "</tr>"
 
             value += "<tr>"
-            value += "<td>${getString(R.string.col_return_org)}</td>"
+            value += "$td${getString(R.string.col_return_org)}</td>"
             value += "<td>" + setValue(rcd.rtn_org_name) + "</td>"
             value += "</tr>"
 
             value += "<tr>"
-            value += "<td>${getString(R.string.col_return_user)}</td>"
+            value += "$td${getString(R.string.col_return_user)}</td>"
             value += "<td>" + setValue(rcd.rtn_user_name) + "</td>"
             value += "</tr>"
 
             value += "<tr>"
-            value += "<td>${getString(R.string.col_return_date)}</td>"
+            value += "$td${getString(R.string.col_return_date)}</td>"
             value += "<td>" + setValue(rcd.rtn_date) + "</td>"
             value += "</tr>"
 
             value += "<tr>"
-            value += "<td>${getString(R.string.col_item_org)}</td>"
+            value += "$td${getString(R.string.col_item_org)}</td>"
             value += "<td>" + setValue(rcd.item_org_name) + "</td>"
             value += "</tr>"
 
             value += "<tr>"
-            value += "<td>${getString(R.string.col_item_user)}</td>"
+            value += "$td${getString(R.string.col_item_user)}</td>"
             value += "<td>" + setValue(rcd.item_user_name) + "</td>"
             value += "</tr>"
 
             value += "<tr>"
-            value += "<td>${getString(R.string.col_item_date)}</td>"
+            value += "$td${getString(R.string.col_item_date)}</td>"
             value += "<td>" + setValue(rcd.item_date) + "</td>"
             value += "</tr>"
 
             value += "<tr>"
-            value += "<td>${getString(R.string.col_item_id)}</td>"
+            value += "$td${getString(R.string.col_item_id)}</td>"
 
             if( rcd.item_id < 0L ) {
                 value += "<td>" + setValue("仮登録中") + "</td>"
