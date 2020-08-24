@@ -201,7 +201,7 @@ abstract class BaseController(
         if( 0 == cursor?.count ) {
 
             if( !BuildConfig.SET_ADMIN ) {
-                throw Exception("該当ユーザーが存在しません")
+                throw Exception("このユーザーでは参照できません")
             }
 
             return null

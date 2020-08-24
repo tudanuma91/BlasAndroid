@@ -19,8 +19,10 @@ import com.v3.basis.blas.activity.FixtureActivity
 import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.TerminalActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
+import com.v3.basis.blas.blasclass.db.users.UsersController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.rest.BlasRestProject
+import com.v3.basis.blas.blasclass.worker.DownloadWorker
 import com.v3.basis.blas.ui.ext.addDownloadTask
 import com.v3.basis.blas.ui.ext.getCustomActionTitle
 import com.v3.basis.blas.ui.terminal.TerminalViewModel
@@ -130,6 +132,21 @@ open class FixtureFragment : Fragment() {
      * データ管理画面、機器管理画面のどちらを呼び出すかは、画面のタイトルで判定する
      */
     open fun clickCell(rowModel: RowModel, model: DownloadModel) {
+
+
+        val projectId = rowModel.detail
+        val path = DownloadWorker.getSavedPath(projectId)
+
+        if( null != path ) {
+
+            try {
+                UsersController(requireContext(),projectId).search()
+            }
+            catch ( ex : Exception ) {
+                Toast.makeText(activity, ex.message, Toast.LENGTH_LONG).show()
+                return
+            }
+        }
 
         if (model.doneDownloaded.get()) {
             val title = getCustomActionTitle()
