@@ -1,16 +1,17 @@
 package com.v3.basis.blas.blasclass.worker
 
+import android.accounts.NetworkErrorException
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import com.google.gson.Gson
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.rest.BlasRestCache
 import com.v3.basis.blas.ui.ext.traceLog
 import com.v3.basis.blas.ui.ext.unzip
-import com.v3.basis.blas.ui.terminal.common.DownloadModel
 import com.v3.basis.blas.ui.terminal.common.DownloadZipModel
 import org.json.JSONObject
 import java.io.*
@@ -62,13 +63,14 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
 
             val url = getDownloadUrl(token, projectId)
             if (url.isBlank()) {
-                return Result.failure()
+                return Result.success(workDataOf(KEY_RESULT_SUCCEEDED to false))
             }
             download(url, savePath, unZipPath)
             Result.success()
         } catch (e: Exception) {
             traceLog("Failed to download task, ${e::class.java.name}")
-            Result.failure()
+            //  failureを返すと、永久に再ダウンロードできなくなる
+            Result.success(workDataOf(KEY_RESULT_SUCCEEDED to false))
         }
     }
 
