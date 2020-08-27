@@ -23,6 +23,11 @@ class CustomImageView(context: Context, attrs: AttributeSet?) : View(context, at
     //画像の配列
     lateinit var mBitmap :Bitmap
 
+    //
+    var mBitmapWidth:Int = 0
+
+    var  mBitmapHeight:Int = 0
+
     //タップしたX座標
     private var touchPointX: Float = 0.0f
 
@@ -91,44 +96,40 @@ class CustomImageView(context: Context, attrs: AttributeSet?) : View(context, at
 
     //描画処理
     override fun onDraw(canvas: Canvas?) {
-        //最初の1回のみ実行
-        if(cnt == 1) {
-            // 画面の横幅いっぱいに画像を表示するための計算
-            val scaleX =
-                width.toFloat() / getImageWidth()
-            // 画面の立幅いっぱいに画像を表示するための計算
-            val scaleY =
-                height.toFloat() / getImageHeight()
-            // 小さいほうを適応させる(画像が切れないようにする)
-            mLastScaleFactor = Math.min(scaleX, scaleY)
-            bitMatrix.postScale(mLastScaleFactor, mLastScaleFactor, 0F, 0F);
-            mLastScaleFactor = 1.0f
-            cnt++
-        }
+        //取得失敗時処理
+        if(mBitmapHeight != 0 && mBitmapWidth != 0) {
+            //最初の1回のみ実行
+            if (cnt == 1) {
+                // 画面の横幅いっぱいに画像を表示するための計算
+                val scaleX =
+                    width.toFloat() / mBitmapWidth
+                // 画面の立幅いっぱいに画像を表示するための計算
+                val scaleY =
+                    height.toFloat() / mBitmapHeight
+                // 小さいほうを適応させる(画像が切れないようにする)
+                mLastScaleFactor = Math.min(scaleX, scaleY)
+                bitMatrix.postScale(mLastScaleFactor, mLastScaleFactor, 0F, 0F);
+                mLastScaleFactor = 1.0f
+                cnt++
+            }
+            //2回目以降はonScaleの変更情報をもとに画像作成する
 
-        //2回目以降はonScaleの変更情報をもとに画像作成する
-        canvas!!.save()
-        canvas.drawBitmap(mBitmap, bitMatrix, mPaint)
-        canvas.restore()
+            canvas!!.save()
+            canvas.drawBitmap(mBitmap, bitMatrix, mPaint)
+            canvas.restore()
+        }
     }
 
     //ピンチイン処理とスクロール処理を定義
     private val mScaleGestureDetector = ScaleGestureDetector(context,mScaleGestureListener)
     private val mGestureDetector = GestureDetector(context,mSimpleOnGestureListener)
 
-    //画像の横を取得する
-    private fun getImageWidth(): Int {
-        return mBitmap.width
-    }
-
-    //画像の縦を取得する
-    private fun getImageHeight(): Int {
-        return mBitmap.height
-    }
 
     //mBitMapに画像を定義
     fun setBitMap(bitmap: Bitmap){
-        mBitmap = bitmap
+        mBitmap = Bitmap.createBitmap(bitmap)
+        mBitmapWidth = bitmap.width
+        mBitmapHeight = bitmap.height
     }
 
 }
