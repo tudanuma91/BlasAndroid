@@ -10,6 +10,7 @@ import com.google.gson.Gson
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.rest.BlasRestCache
+import com.v3.basis.blas.blasclass.rest.SyncBlasRestCache
 import com.v3.basis.blas.ui.ext.traceLog
 import com.v3.basis.blas.ui.ext.unzip
 import com.v3.basis.blas.ui.terminal.common.DownloadZipModel
@@ -89,7 +90,8 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
         val success: (json: JSONObject) -> Unit = {}    //ダウンロード時に呼び出される
         val funcError:(Int,Int) -> Unit = {errorCode, aplCode -> }  //ダウンロード失敗時に呼び出される
         //BLASからLDBをダウンロードする。
-        val response = BlasRestCache("zip", payload, success, funcError).getResponse()
+//        val response = BlasRestCache("zip", payload, success, funcError).getResponse()
+        val response = SyncBlasRestCache().downloadZipUrl(payload)
         val zipModel = Gson().fromJson(response, DownloadZipModel::class.java)
         return BuildConfig.HOST + zipModel.zip_path
     }
