@@ -5,11 +5,13 @@ import android.content.Intent
 import android.util.Log
 import androidx.core.content.ContextCompat.startActivity
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.app.BlasApp
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
+import java.security.MessageDigest
 
 /**
  * restfulの認証APIクラス
@@ -64,10 +66,21 @@ open class BlasRestAuth(val payload:Map<String, String?>, val loginSuccess:(JSON
             userNameRest = payload["name"]
             passwordRest = payload["password"]
 
+            // TODO:test
+/*
+            BlasApp.password = MessageDigest.getInstance("MD5")
+                .digest(payload["password"]?.toByteArray())
+                .joinToString(separator = "") {
+                    "%02x".format(it)
+                }
+ */
+            BlasApp.password = "aaa"
+
             loginSuccess(json)
         }
         else {
             loginError(error_code)
         }
     }
+
 }

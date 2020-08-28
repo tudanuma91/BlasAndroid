@@ -12,6 +12,7 @@ import java.lang.Exception
 class BlasSQLDataBase {
 
     val db = dbHelper.writableDatabase
+//    val db = dbHelper.getWritableDatabase(BlasApp.password)
 
     companion object {
         //TODO:データベースのバージョン
@@ -22,6 +23,8 @@ class BlasSQLDataBase {
         val context = BlasApp.applicationContext()
         val dbHelper = BlasSQLDataBaseHelper(context, BlasSQLDataBase.DB_NAME, null, BlasSQLDataBase.DB_VERSION);
         val database = dbHelper.writableDatabase
+//        val database = dbHelper.getWritableDatabase(BlasApp.password)
+
     }
 
     open fun close(){

@@ -3,7 +3,9 @@ package com.v3.basis.blas.blasclass.db
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
+//import android.database.sqlite.SQLiteDatabase
+import net.sqlcipher.database.SQLiteDatabase
+
 import android.util.Log
 import androidx.room.Room
 import com.v3.basis.blas.BuildConfig
@@ -52,8 +54,12 @@ abstract class BaseController(
 
     var db:SQLiteDatabase?
 
+    var db_path:String? = null
+
     init {
+        SQLiteDatabase.loadLibs(context)
         db = openSQLiteDatabase()
+//        db?.rawQuery("PRAGMA key='aaa'", null)
         db?.rawQuery("PRAGMA foreign_keys=1",null)
     }
 
@@ -68,10 +74,12 @@ abstract class BaseController(
 
     fun openSQLiteDatabase(): SQLiteDatabase? {
 
-        val path = DownloadWorker.getSavedPath(projectId)
-        val helper = path?.let { SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.OPEN_READWRITE) }
+        db_path = DownloadWorker.getSavedPath(projectId)
 
-        Log.d("SqliteDB Path:",path.toString())
+        val helper = db_path?.let { SQLiteDatabase.openDatabase(db_path, BlasApp.password,null, SQLiteDatabase.OPEN_READWRITE) }
+
+
+        Log.d("SqliteDB Path:",db_path.toString())
         return helper
     }
 

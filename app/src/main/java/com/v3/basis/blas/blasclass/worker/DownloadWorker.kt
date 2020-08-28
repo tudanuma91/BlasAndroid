@@ -68,12 +68,14 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
 
             val url = getDownloadUrl(token, projectId)
             if (url.isBlank()) {
+                Log.d("downloadTask()","url is blank!!!!!!!")
                 return Result.success(workDataOf(KEY_RESULT_SUCCEEDED to false))
             }
             download(url, savePath, unZipPath,projectId)
             Result.success()
         } catch (e: Exception) {
             traceLog("Failed to download task, ${e::class.java.name}")
+            Log.d("error!!!!!!!!!!!!",e.message)
             //  failureを返すと、永久に再ダウンロードできなくなる
             Result.success(workDataOf(KEY_RESULT_SUCCEEDED to false))
         }
@@ -91,11 +93,16 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
             "token" to token,
             "project_id" to projectId
         )
-        val success: (json: JSONObject) -> Unit = {}    //ダウンロード時に呼び出される
+        val success: (json: JSONObject) -> Unit = {
+            Log.d("success()","start")
+        }    //ダウンロード時に呼び出される
         val funcError:(Int,Int) -> Unit = {errorCode, aplCode -> }  //ダウンロード失敗時に呼び出される
         //BLASからLDBをダウンロードする。
         val response = BlasRestCache("zip", payload, success, funcError).getResponse()
+
+        Log.d("response!!!!!!!!!!!!!!!!!!!!!!!!!",response)
         val zipModel = Gson().fromJson(response, DownloadZipModel::class.java)
+        Log.d("zipModel.zip_path",zipModel.zip_path)
         return BuildConfig.HOST + zipModel.zip_path
     }
 

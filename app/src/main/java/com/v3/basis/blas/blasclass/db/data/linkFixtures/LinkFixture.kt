@@ -1,7 +1,9 @@
 package com.v3.basis.blas.blasclass.db.data.linkFixtures
 
 import android.content.ContentValues
-import android.database.sqlite.SQLiteDatabase
+//import android.database.sqlite.SQLiteDatabase
+import net.sqlcipher.database.SQLiteDatabase
+
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.Items
 
