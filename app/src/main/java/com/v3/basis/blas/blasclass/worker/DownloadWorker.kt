@@ -17,6 +17,7 @@ import org.json.JSONObject
 import java.io.*
 import java.net.URL
 import java.net.URLConnection
+import java.util.*
 
 /**
  * [説明]
@@ -48,7 +49,7 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
 
             val all = preferences().all
 //            val path = preferences().getString(projectId, null)
-            val path = preferences().getString( BlasApp.userId.toString() + "_" + projectId, null)
+            val path = preferences().getString( BlasApp.userId.toString() + "_" + projectId + "_", null)
 
             return path
         }
@@ -155,7 +156,7 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
 
             // userIdをファイル名に付加
             Log.d("file name",File(filePath).name)
-            val new_name = BlasApp.userId.toString() + "_" + File(filePath).name
+            val new_name = BlasApp.userId.toString() + "_" + projectId + "_" + UUID.randomUUID().toString()
             val new_path = unZipPath + "/" + new_name
             Log.d("new file path",new_path)
 
@@ -163,7 +164,7 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
 
 //            preferences().edit().putString(name, filePath).apply()
 //            preferences().edit().putString(name, new_path ).apply()
-            preferences().edit().putString(BlasApp.userId.toString() + "_" + projectId, new_path ).apply()
+            preferences().edit().putString(BlasApp.userId.toString() + "_" + projectId + "_", new_path ).apply()
         }
     }
 }

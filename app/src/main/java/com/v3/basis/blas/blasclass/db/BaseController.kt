@@ -11,6 +11,7 @@ import androidx.room.Room
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import com.v3.basis.blas.blasclass.ldb.LdbUserRecord
 import com.v3.basis.blas.blasclass.worker.DownloadWorker
 import io.reactivex.subjects.PublishSubject
@@ -58,28 +59,59 @@ abstract class BaseController(
 
     init {
         SQLiteDatabase.loadLibs(context)
-        db = openSQLiteDatabase()
+//        db = openSQLiteDatabase()
+
+        db_path = DownloadWorker.getSavedPath(projectId)
+        Log.d("SqliteDB Path:",db_path.toString())
+
+        db = SQLiteDatabase.openDatabase(db_path, BlasApp.password,
+            null, SQLiteDatabase.OPEN_READWRITE)
+
 //        db?.rawQuery("PRAGMA key='aaa'", null)
-        db?.rawQuery("PRAGMA foreign_keys=1",null)
+
+//        db?.rawQuery("PRAGMA foreign_keys=1",null)
+
+        check()
+
     }
 
+    private fun check() {
+        val sql = "select fields.*,2 as edit_id  from fields order by col"
+        val cursor = db?.rawQuery(sql, null)
 
-    fun openDatabase(): BlasDatabase {
+//        Log.d("user count",cursor?.count.toString())
 
-        val path = DownloadWorker.getSavedPath(projectId)
-        return path?.let {
-            Room.databaseBuilder(context, BlasDatabase::class.java, path).build()
-        } ?: throw FileNotFoundException("プロジェクト${projectId}のDBファイルが見つかりません。")
+        cursor?.also {
+            var notLast = it.moveToFirst()
+
+            while(notLast) {
+
+                val field = setProperty(LdbFieldRecord(),it) as LdbFieldRecord
+
+                Log.d("field_name",field.name)
+                notLast = it.moveToNext()
+
+            }
+
+        }
+
+        cursor?.close()
+
     }
+
 
     fun openSQLiteDatabase(): SQLiteDatabase? {
 
         db_path = DownloadWorker.getSavedPath(projectId)
-
-        val helper = db_path?.let { SQLiteDatabase.openDatabase(db_path, BlasApp.password,null, SQLiteDatabase.OPEN_READWRITE) }
-
-
         Log.d("SqliteDB Path:",db_path.toString())
+
+        val helper = db_path?.let {
+//            SQLiteDatabase.openDatabase(db_path, BlasApp.password,null, SQLiteDatabase.OPEN_READWRITE)
+
+            SQLiteDatabase.openOrCreateDatabase(db_path, BlasApp.password, null)
+        }
+
+
         return helper
     }
 
@@ -95,7 +127,14 @@ abstract class BaseController(
             //.filter{ it.returnType.isSubtypeOf(String::class.starProjectedType) }
             .filterIsInstance<KMutableProperty<*>>()
             .forEach { prop ->
-                val value = cursor.getString( cursor.getColumnIndex(prop.name) )
+                var value : String? = null
+                try{
+                    value = cursor.getString( cursor.getColumnIndex(prop.name) )
+                }
+                catch ( ex: Exception ) {
+                    Log.d("prop.name is empty!!!!!",prop.name)
+                    return@forEach
+                }
                 Log.d("setProperty()","propName:" + prop.name + "  value:" + value)
 
                 if( value.isNullOrEmpty() ) {
@@ -206,6 +245,7 @@ abstract class BaseController(
         val sql = "select * from users where user_id = ?"
         val cursor = db?.rawQuery(sql, arrayOf( BlasApp.userId.toString() ))
 
+/*
         if( 0 == cursor?.count ) {
 
             if( !BuildConfig.SET_ADMIN ) {
@@ -214,6 +254,7 @@ abstract class BaseController(
 
             return null
         }
+*/
 
         var user : LdbUserRecord? = null
         var value : Int = 0
