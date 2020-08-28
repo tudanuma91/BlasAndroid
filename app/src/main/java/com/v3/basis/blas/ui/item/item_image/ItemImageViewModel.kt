@@ -10,6 +10,7 @@ import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
+import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.component.ImageComponent
 import com.v3.basis.blas.blasclass.controller.ImageControllerException
 import com.v3.basis.blas.blasclass.controller.ImagesController
@@ -23,6 +24,8 @@ import com.v3.basis.blas.ui.ext.translateToBitmap
 import com.v3.basis.blas.ui.item.item_image.model.ImageFieldModel
 import com.v3.basis.blas.ui.item.item_image.model.ItemImage
 import com.v3.basis.blas.ui.item.item_image.model.ItemImageModel
+import com.v3.basis.blas.ui.item.item_image.model.*
+import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -52,7 +55,7 @@ class ItemImageViewModel() : ViewModel() {
     private lateinit var itemId: String
 
     private lateinit var imageField: ImageFieldModel
-    private lateinit var images: ItemImageModel
+    private lateinit var images: ItemImageWithLink
     private var disposable = CompositeDisposable()
 
     private lateinit var context: Context
@@ -106,17 +109,18 @@ class ItemImageViewModel() : ViewModel() {
                         Log.d("fetchImage", "failed to decode image")
                     },
                     onSuccess = {
-                        item.image.set(it.bitmap)
+//                        item.image.set(it.bitmap)
+                        item.url.set(BuildConfig.HOST + it.small_image)
                         item.empty.set(false)
                         item.loading.set(false)
-                        item.imageId = it.image_id
-                        item.ext = it.ext
+//                        item.imageId = it.image_id
+//                        item.ext = it.ext
 
                         //LDBの更新
                         val imageController = ImagesController(context, projectId)
                         //リモートから画像をダウンロードできているので、imageIdは必ずある。
                         //リモートからダウンロードした画像は本登録する。
-                        imageController.save2LDB(it, BaseController.SYNC_STATUS_SYNC)
+//                        imageController.save2LDB(it, BaseController.SYNC_STATUS_SYNC)
                     }
                 )
                 .addTo(disposable)//disposableは使い捨ての意味
@@ -130,7 +134,12 @@ class ItemImageViewModel() : ViewModel() {
             else { Log.d("fetch error", "error $errorCode") }
         }
 
-        BlasRestImage("download", payload, ::success, ::error).execute()
+        fun success2(json: JSONObject) {
+            Log.d("success2", json.toString())
+        }
+
+//        BlasRestImage("download", payload, ::success, ::error).execute()
+        BlasRestImage("url", payload, ::success, ::error).execute()
     }
 
     /**
@@ -283,20 +292,11 @@ class ItemImageViewModel() : ViewModel() {
         return Base64.encodeToString(byteArray, flag)
     }
 
-    private fun decode(json: JSONObject) : Single<ItemImage> {
-        return Single.create<ItemImage> { emitter ->
-            images = Gson().fromJson(json.toString(), ItemImageModel::class.java)
-            val item = images.records?.map { it.Image }?.first()?.let {
-                it.apply {
-                    try {
-                        bitmap = Base64.decode(image, Base64.DEFAULT).translateToBitmap()
-                        Log.d("fetch image", "file = ${it.filename}")
-                    } catch (t :Throwable) {
-                        emitter.onError(t)
-                    }
-                }
-            }
-            item?.also { emitter.onSuccess(it) }
+    private fun decode(json: JSONObject) : Single<ItemImageWithLinkImage> {
+        return Single.create<ItemImageWithLinkImage> { emitter ->
+            images = Gson().fromJson(json.toString(), ItemImageWithLink::class.java)
+            val item = images.records.map { it.Image }.first()
+            item.also { emitter.onSuccess(it) }
                 ?: emitter.onError(IllegalStateException("BlasRestImage:failed to json convert"))
         }
     }

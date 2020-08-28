@@ -17,6 +17,7 @@ data class ImageFields(
         return ItemImageCellItem(
             id = project_image_id,
             title = name,
+            url = ObservableField(""),
             image = ObservableField(),
             empty = ObservableField(false),
             loading = ObservableField(true)

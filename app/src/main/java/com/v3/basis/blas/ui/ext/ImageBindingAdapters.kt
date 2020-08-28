@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.util.Base64
 import android.widget.ImageView
 import androidx.databinding.BindingAdapter
+import com.bumptech.glide.Glide
 
 
 @BindingAdapter("convertBase64")
@@ -18,4 +19,12 @@ fun ImageView.setEncodedImage(encodedImage: String?) {
 fun ImageView.setImage(image: Bitmap?) {
 
     image?.also { setImageBitmap(it) } ?: setImageDrawable(null)
+}
+
+@BindingAdapter("url")
+fun ImageView.setImage(image: String?) {
+
+    if (image.isNullOrBlank().not()) {
+        Glide.with(this).load(image).into(this)
+    }
 }

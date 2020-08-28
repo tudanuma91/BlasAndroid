@@ -52,6 +52,10 @@ open class BlasRestImage(val crud:String = "download",
                 method = "DELETE"
                 blasUrl = BlasRest.URL + "images/delete/"
             }
+            "url"->{
+                method = "GET"
+                blasUrl = BlasRest.URL + "images/url/"
+            }
         }
 
         try {
