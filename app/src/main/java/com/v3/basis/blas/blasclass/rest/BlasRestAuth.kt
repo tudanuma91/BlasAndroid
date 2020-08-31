@@ -66,7 +66,7 @@ open class BlasRestAuth(val payload:Map<String, String?>, val loginSuccess:(JSON
             userNameRest = payload["name"]
             passwordRest = payload["password"]
 
-            // TODO:test
+            // passwordで実現するのは無理だった…
 /*
             BlasApp.password = MessageDigest.getInstance("MD5")
                 .digest(payload["password"]?.toByteArray())

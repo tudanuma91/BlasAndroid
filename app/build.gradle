@@ -60,8 +60,8 @@ android {
             buildConfigField 'Boolean', 'SET_ADMIN',"true"
         }
         miyokawa {
-            buildConfigField 'String', 'API_URL', '"http://192.168.11.3:8080/blas7/api/v1/"'
-            buildConfigField 'String', 'HOST', '"http://192.168.11.3:8080"'
+            buildConfigField 'String', 'API_URL', '"http://192.168.11.203:8080/blas7/api/v1/"'
+            buildConfigField 'String', 'HOST', '"http://192.168.11.203:8080"'
             buildConfigField 'Boolean', 'SET_ADMIN',"true"
         }
     }

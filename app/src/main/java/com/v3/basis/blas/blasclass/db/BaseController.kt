@@ -49,8 +49,7 @@ abstract class BaseController(
 
     }
 
-
-        // 使うときはerrorMessageEvent.onNext("メッセージ")とする
+    // 使うときはerrorMessageEvent.onNext("メッセージ")とする
     val errorMessageEvent: PublishSubject<String> = PublishSubject.create()
 
     var db:SQLiteDatabase?
@@ -59,45 +58,11 @@ abstract class BaseController(
 
     init {
         SQLiteDatabase.loadLibs(context)
-//        db = openSQLiteDatabase()
-
-        db_path = DownloadWorker.getSavedPath(projectId)
-        Log.d("SqliteDB Path:",db_path.toString())
-
-        db = SQLiteDatabase.openDatabase(db_path, BlasApp.password,
-            null, SQLiteDatabase.OPEN_READWRITE)
-
-//        db?.rawQuery("PRAGMA key='aaa'", null)
-
-//        db?.rawQuery("PRAGMA foreign_keys=1",null)
-
-        check()
+        db = openSQLiteDatabase()
+        db?.rawQuery("PRAGMA foreign_keys=1",null)
 
     }
 
-    private fun check() {
-        val sql = "select fields.*,2 as edit_id  from fields order by col"
-        val cursor = db?.rawQuery(sql, null)
-
-//        Log.d("user count",cursor?.count.toString())
-
-        cursor?.also {
-            var notLast = it.moveToFirst()
-
-            while(notLast) {
-
-                val field = setProperty(LdbFieldRecord(),it) as LdbFieldRecord
-
-                Log.d("field_name",field.name)
-                notLast = it.moveToNext()
-
-            }
-
-        }
-
-        cursor?.close()
-
-    }
 
 
     fun openSQLiteDatabase(): SQLiteDatabase? {
@@ -106,12 +71,8 @@ abstract class BaseController(
         Log.d("SqliteDB Path:",db_path.toString())
 
         val helper = db_path?.let {
-//            SQLiteDatabase.openDatabase(db_path, BlasApp.password,null, SQLiteDatabase.OPEN_READWRITE)
-
-            SQLiteDatabase.openOrCreateDatabase(db_path, BlasApp.password, null)
+            SQLiteDatabase.openDatabase(db_path, BlasApp.password,null, SQLiteDatabase.OPEN_READWRITE)
         }
-
-
         return helper
     }
 
@@ -146,7 +107,6 @@ abstract class BaseController(
 
         return instance
     }
-
 
     // [参考]https://www.javadrive.jp/android/sqlite_data/index6.html
     protected fun createConvertValue(  instance : Any ,exceptList : List<String>? = null) : ContentValues {
@@ -245,7 +205,6 @@ abstract class BaseController(
         val sql = "select * from users where user_id = ?"
         val cursor = db?.rawQuery(sql, arrayOf( BlasApp.userId.toString() ))
 
-/*
         if( 0 == cursor?.count ) {
 
             if( !BuildConfig.SET_ADMIN ) {
@@ -254,7 +213,6 @@ abstract class BaseController(
 
             return null
         }
-*/
 
         var user : LdbUserRecord? = null
         var value : Int = 0

@@ -101,9 +101,7 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
         //BLASからLDBをダウンロードする。
         val response = BlasRestCache("zip", payload, success, funcError).getResponse()
 
-        Log.d("response!!!!!!!!!!!!!!!!!!!!!!!!!",response)
         val zipModel = Gson().fromJson(response, DownloadZipModel::class.java)
-        Log.d("zipModel.zip_path",zipModel.zip_path)
         return BuildConfig.HOST + zipModel.zip_path
     }
 
