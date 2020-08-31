@@ -30,7 +30,9 @@ class BlasApp : Application() {
         private lateinit var firebaseAnalytics: FirebaseAnalytics
         var token: String? = null
         var userId : Int? = 0
-        var password : String? = null
+//        var password : String? = null
+//        var salt:String? = null
+        var key:String? = null
 
         fun applicationContext() : Context {
             return instance!!.applicationContext

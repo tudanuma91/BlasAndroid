@@ -71,7 +71,7 @@ abstract class BaseController(
         Log.d("SqliteDB Path:",db_path.toString())
 
         val helper = db_path?.let {
-            SQLiteDatabase.openDatabase(db_path, BlasApp.password,null, SQLiteDatabase.OPEN_READWRITE)
+            SQLiteDatabase.openDatabase(db_path, BlasApp.key,null, SQLiteDatabase.OPEN_READWRITE)
         }
         return helper
     }
