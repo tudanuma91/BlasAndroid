@@ -18,6 +18,7 @@ import org.json.JSONObject
 import java.io.*
 import java.net.URL
 import java.net.URLConnection
+import java.util.*
 
 /**
  * [説明]
@@ -140,20 +141,17 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
 
             val name = inputData.getString(KEY_SAVE_PATH_KEY_NAME)
                 ?: throw IllegalStateException("セーブPATHが設定されていません")
-            //val fileName = File(unZipPath).listFiles()?.last()?.path
             val filePath = File(unZipPath).listFiles().filter({it.name.endsWith(".db")}).last().path
             Log.d("file path test", "$filePath")
 
             // userIdをファイル名に付加
             Log.d("file name",File(filePath).name)
-            val new_name = BlasApp.userId.toString() + "_" + projectId + "_" + UUID.randomUUID().toString()
+            val new_name = BlasApp.userId.toString() + "_" + projectId + "_" +  UUID.randomUUID().toString()
             val new_path = unZipPath + "/" + new_name
             Log.d("new file path",new_path)
 
             File(filePath).renameTo( File( new_path ) )
 
-//            preferences().edit().putString(name, filePath).apply()
-//            preferences().edit().putString(name, new_path ).apply()
             preferences().edit().putString(BlasApp.userId.toString() + "_" + projectId + "_", new_path ).apply()
         }
     }
