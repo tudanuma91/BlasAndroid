@@ -3,15 +3,19 @@ package com.v3.basis.blas.blasclass.db.data
 import android.content.ContentValues
 import android.content.Context
 import android.util.Log
-import com.v3.basis.blas.BuildConfig
+import androidx.work.impl.WorkDatabasePathHelper.getDatabasePath
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkFixture
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkRmFixture
 import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.db.fixture.Fixtures
 import com.v3.basis.blas.blasclass.ldb.LdbRmFixtureRecord
+import com.v3.basis.blas.blasclass.worker.DownloadWorker
+import net.sqlcipher.database.SQLiteDatabase
+import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+
 
 class ItemsController(context: Context, projectId: String): BaseController(context, projectId) {
 
@@ -29,8 +33,8 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
     /**
      * ワード検索条件を構築
      */
-    private fun createAddList(findValueMap:MutableMap<String,String?>) {
-        Log.d("createAddList()","start")
+    private fun createAddList(findValueMap: MutableMap<String, String?>) {
+        Log.d("createAddList()", "start")
 
         if( !findValueMap.containsKey("freeWord") )
             return
@@ -48,7 +52,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             groupId = user.group_id
         }
 
-        val dataDispHiddenCol = getGroupsValue(groupId,"data_disp_hidden_column")
+        val dataDispHiddenCol = getGroupsValue(groupId, "data_disp_hidden_column")
         val fields = FieldController(context, projectId).searchDisp()
         var additionOr = arrayOf<String>()
 
@@ -87,14 +91,17 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
     }
 
     fun search(
-        item_id: Long = 0L, offset: Int = 0, paging: Int = 20,endShow:Boolean = false,syncFlg:Boolean = false
-        , findValueMap:MutableMap<String,String?>? = null
+        item_id: Long = 0L,
+        offset: Int = 0,
+        paging: Int = 20,
+        endShow: Boolean = false,
+        syncFlg: Boolean = false,
+        findValueMap: MutableMap<String, String?>? = null
     ): MutableList<MutableMap<String, String?>> {
 
         // 初期化
         addList.clear()
         plHolder = arrayOf<String>()
-
 
         val cursor = when {
             0L == item_id -> {
@@ -138,7 +145,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
                 //ここで画像が非同期だった場合もサーバーに登録ボタンを表示したい
                 val sql = "select * from items "+ addition + " order by create_date desc " + addingPager
-                Log.d("item search sql",sql)
+                Log.d("item search sql", sql)
                 db?.rawQuery(sql, plHolder)
             }
 
@@ -163,8 +170,11 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         return ret
     }
 
-    private fun ctlValidQr(map: Map<String, String?>, orgItemMap : MutableMap<String, String?>? = null ) {
-        val inst = getFieldCols( FIELD_TYPE_QRCODE_INT_INSPECTION )
+    private fun ctlValidQr(
+        map: Map<String, String?>,
+        orgItemMap: MutableMap<String, String?>? = null
+    ) {
+        val inst = getFieldCols(FIELD_TYPE_QRCODE_INT_INSPECTION)
         val rms = getFieldCols(FIELD_TYPE_QRCODE_INT_RM)
 
         // QRコード(検品連動バリデートチェック)
@@ -173,7 +183,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
                 if( null != orgItemMap && map["fld" + it.toString()] == orgItemMap["fld" + it.toString()] ) {
                     return@forEach
                 }
-                qrCodeCheck( map["fld" + it.toString()] )
+                qrCodeCheck(map["fld" + it.toString()])
             }
         }
         // QRコード(撤去連動バリデートチェック)
@@ -182,14 +192,14 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
                 if( null != orgItemMap && map["fld" + it.toString()] == orgItemMap["fld" + it.toString()] ) {
                     return@forEach
                 }
-                rmQrCodeCheck( map["fld" + it.toString()] )
+                rmQrCodeCheck(map["fld" + it.toString()])
             }
         }
 
     }
 
     fun create(map: MutableMap<String, String?>): Boolean {
-        Log.d("insert()","start")
+        Log.d("insert()", "start")
 
         // QRコードバリデート処理
         ctlValidQr(map)
@@ -223,9 +233,9 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             db?.beginTransaction()
 
             // itemテーブルに追加
-            db?.insert("items",null,cv)
+            db?.insert("items", null, cv)
             // fixture(rm_fixture)を更新
-           updateFixture(item,map)
+           updateFixture(item, map)
 
             db?.setTransactionSuccessful()
             true
@@ -240,7 +250,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
     }
 
     fun update(map: Map<String, String?>): Boolean {
-        Log.d("update()","start")
+        Log.d("update()", "start")
 
         // QRコードバリデート処理
         val orgItemMap = map["item_id"]?.toLong()?.let { search(it) }
@@ -266,19 +276,19 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         item.sync_status = SYNC_STATUS_EDIT
 
         // けどまたmap…
-        val cv = createConvertValue(item,null)
+        val cv = createConvertValue(item, null)
 
         return try {
             db?.beginTransaction()
 
             // itmeテーブルを更新
-            db?.update("items",cv,"item_id = ?", arrayOf(item.item_id.toString()))
+            db?.update("items", cv, "item_id = ?", arrayOf(item.item_id.toString()))
             // fixture(rm_fixture)を更新
-            updateFixture(item,map)
+            updateFixture(item, map)
 
             db?.setTransactionSuccessful()
 
-            Log.d("item update","仮登録完了！！")
+            Log.d("item update", "仮登録完了！！")
             true
         } catch (e: Exception) {
             //とりあえず例外をキャッチして、Falseを返す？
@@ -287,14 +297,14 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         }
         finally {
             db?.endTransaction()
-            Log.d("item update","終了！")
+            Log.d("item update", "終了！")
         }
     }
 
     /**
      * 指定されたタイプのFieldのColを返す
      */
-    private fun getFieldCols(type:Int) : List<Int> {
+    private fun getFieldCols(type: Int) : List<Int> {
         val ret = mutableListOf<Int>()
 
         val sql = "select * from fields where type = ?"
@@ -303,7 +313,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         cursor?.also {
             var notLast = it.moveToFirst()
             while( notLast ) {
-                ret.add( cursor.getInt( cursor.getColumnIndex("col") )  )
+                ret.add(cursor.getInt(cursor.getColumnIndex("col")))
                 notLast = it.moveToNext()
             }
         }
@@ -316,8 +326,8 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
     /**
      * fixtureローカルテーブルの更新
      */
-    private fun updateFixture(item :Items, map: Map<String, String?> ) {
-        val inst = getFieldCols( FIELD_TYPE_QRCODE_INT_INSPECTION )
+    private fun updateFixture(item: Items, map: Map<String, String?>) {
+        val inst = getFieldCols(FIELD_TYPE_QRCODE_INT_INSPECTION)
         val rms = getFieldCols(FIELD_TYPE_QRCODE_INT_RM)
 
         // 設置
@@ -327,14 +337,14 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 //                Log.d("test",test.toString())
 
             if( map.containsKey("fld" + it.toString()) ) {
-                LinkFixture(db,item,map.get("fld" + it.toString()).toString()).exec()
+                LinkFixture(db, item, map.get("fld" + it.toString()).toString()).exec()
             }
         }
 
         // 撤去
         rms.forEach{
             if( map.containsKey("fld" + it.toString()) ) {
-                LinkRmFixture(db,item,map.get("fld" + it.toString()).toString()).exec()
+                LinkRmFixture(db, item, map.get("fld" + it.toString()).toString()).exec()
             }
         }
 
@@ -343,23 +353,23 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
     /**
      * ItemIdを新しいものに置き換える(新規作成の時)
      */
-    fun updateItemId4Insert(org_item_id:String, new_item_id:String ) {
-        Log.d("updateItemId()","start")
+    fun updateItemId4Insert(org_item_id: String, new_item_id: String) {
+        Log.d("updateItemId()", "start")
 
         val cv = ContentValues()
-        cv.put("item_id",new_item_id)
+        cv.put("item_id", new_item_id)
         cv.put("sync_status", SYNC_STATUS_SYNC)
 
         return try {
             db?.beginTransaction()
 
-            db?.update("items",cv,"item_id = ?", arrayOf(org_item_id))
-            db?.update("fixtures",cv,"item_id = ?", arrayOf(org_item_id))
-            db?.update("rm_fixtures",cv,"item_id = ?", arrayOf(org_item_id))
+            db?.update("items", cv, "item_id = ?", arrayOf(org_item_id))
+            db?.update("fixtures", cv, "item_id = ?", arrayOf(org_item_id))
+            db?.update("rm_fixtures", cv, "item_id = ?", arrayOf(org_item_id))
 
             db?.setTransactionSuccessful()!!
         }
-        catch (e:Exception) {
+        catch (e: Exception) {
             e.printStackTrace()
             throw e
         }
@@ -375,8 +385,8 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
      * ・Fixtureの設置情報を更新する
      */
     // TODO:名前が変？ItemIdは変更しない
-    fun updateItemId4Update( item_id:String,item : Items,mapItem : MutableMap<String, String?> ) {
-        Log.d("updateItemId()","start")
+    fun updateItemId4Update(item_id: String, item: Items, mapItem: MutableMap<String, String?>) {
+        Log.d("updateItemId()", "start")
 
         val cv = ContentValues()
         cv.put("sync_status", SYNC_STATUS_SYNC)
@@ -384,13 +394,13 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         return try {
             db?.beginTransaction()
 
-            db?.update("items",cv,"item_id = ?", arrayOf(item_id))
+            db?.update("items", cv, "item_id = ?", arrayOf(item_id))
             // fixture,rm_fixtureを更新
-            updateFixture(item,mapItem)
+            updateFixture(item, mapItem)
 
             db?.setTransactionSuccessful()!!
         }
-        catch (e:Exception) {
+        catch (e: Exception) {
             e.printStackTrace()
             throw e
         }
@@ -422,7 +432,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
     /**
      * 検品連動QRコード読込み後のチェック
      */
-    fun qrCodeCheck( serialNumber:String? ) {
+    fun qrCodeCheck(serialNumber: String?) {
 
         val sql = "select * from fixtures where serial_number = ?"
         val cursor = db?.rawQuery(sql, arrayOf(serialNumber))
@@ -439,7 +449,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         else {
 
             cursor.moveToFirst()
-            val fixture = setProperty(Fixtures(),cursor) as Fixtures
+            val fixture = setProperty(Fixtures(), cursor) as Fixtures
             cursor.close()
 
             if( KENPIN_FIN == fixture.status || RTN == fixture.status ) {
@@ -455,7 +465,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
     }
 
-    fun rmQrCodeCheck( serialNumber:String? ) {
+    fun rmQrCodeCheck(serialNumber: String?) {
 
         val sql = "select * from rm_fixtures where serial_number = ?"
         val cursor = db?.rawQuery(sql, arrayOf(serialNumber))
@@ -472,7 +482,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         else {
 
             cursor.moveToFirst()
-            val rm_fixture = setProperty(LdbRmFixtureRecord(),cursor) as LdbRmFixtureRecord
+            val rm_fixture = setProperty(LdbRmFixtureRecord(), cursor) as LdbRmFixtureRecord
             cursor.close()
 
             // TODO:既存では特にこれ以上のチェックなし？？？
@@ -480,46 +490,46 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
     }
 
-    fun setErrorMsg( itemId: String,errMsg : String ) {
+    fun setErrorMsg(itemId: String, errMsg: String) {
         val cv = ContentValues()
-        cv.put("error_msg",errMsg)
+        cv.put("error_msg", errMsg)
 
         return try {
             db?.beginTransaction()
-            db?.update("items",cv,"item_id = ?", arrayOf(itemId))
+            db?.update("items", cv, "item_id = ?", arrayOf(itemId))
             db?.setTransactionSuccessful()
             db?.endTransaction()!!
         }
-        catch ( ex : Exception ) {
+        catch (ex: Exception) {
             ex.printStackTrace()
             throw ex
         }
     }
 
-    fun setSyncStatus(itemId:Long, syncStatus:Int) {
+    fun setSyncStatus(itemId: Long, syncStatus: Int) {
         val cv = ContentValues()
         cv.put("sync_status", syncStatus)
 
         return try {
             db?.beginTransaction()
-            db?.update("items",cv,"item_id = ?", arrayOf(itemId.toString()))
+            db?.update("items", cv, "item_id = ?", arrayOf(itemId.toString()))
             db?.setTransactionSuccessful()
             db?.endTransaction()!!
         }
-        catch ( ex : Exception ) {
+        catch (ex: Exception) {
             ex.printStackTrace()
             throw ex
         }
     }
 
-    fun delete(itemId:Long) {
+    fun delete(itemId: Long) {
         try {
             db?.beginTransaction()
             db?.delete("items", "itemId = ?", arrayOf(itemId.toString()))
             db?.setTransactionSuccessful()
             db?.endTransaction()
         }
-        catch ( ex : Exception ) {
+        catch (ex: Exception) {
             ex.printStackTrace()
             throw ex
         }
