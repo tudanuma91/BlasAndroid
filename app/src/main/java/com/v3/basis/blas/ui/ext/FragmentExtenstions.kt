@@ -21,17 +21,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.work.WorkInfo
 import com.v3.basis.blas.R
-import com.v3.basis.blas.activity.QRActivity
-import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.worker.DownloadWorker
 import com.v3.basis.blas.blasclass.worker.WorkerHelper
 import com.v3.basis.blas.ui.terminal.common.DownloadModel
 import com.v3.basis.blas.ui.terminal.common.DownloadViewModel
-import io.reactivex.Completable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import java.util.*
-import kotlin.reflect.full.memberProperties
 
 
 fun Fragment.getStringExtra(key: String) : String? {
@@ -185,7 +179,7 @@ fun Fragment.addDownloadTask(vm: DownloadViewModel, model: DownloadModel, unzipP
                 **/
             }
             WorkInfo.State.FAILED -> {
-                WorkerHelper.stopDownload(requireContext(), id)
+//                WorkerHelper.stopDownload(requireContext(), id)
                 vm.cancelDownloading(model, id)
             }
         }

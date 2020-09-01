@@ -17,8 +17,8 @@ android {
         applicationId "com.v3.basis.blas"
         minSdkVersion 26
         targetSdkVersion 29
-        versionCode 3
-        versionName "1.02"
+        versionCode 7
+        versionName "1.06"
         testInstrumentationRunner "androidx.test1.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -26,6 +26,8 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
+            jniDebuggable false
         }
     }
 
@@ -58,8 +60,8 @@ android {
             buildConfigField 'Boolean', 'SET_ADMIN',"true"
         }
         miyokawa {
-            buildConfigField 'String', 'API_URL', '"http://192.168.11.3:8080/blas7/api/v1/"'
-            buildConfigField 'String', 'HOST', '"http://192.168.11.3:8080"'
+            buildConfigField 'String', 'API_URL', '"http://192.168.11.203:8080/blas7/api/v1/"'
+            buildConfigField 'String', 'HOST', '"http://192.168.11.203:8080"'
             buildConfigField 'Boolean', 'SET_ADMIN',"true"
         }
     }
@@ -139,6 +141,10 @@ dependencies {
 
     def lifecycle_ver = "2.3.0-alpha05"
     implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_ver"
+
+    // sqlcipper(sqlite暗号化)
+    implementation 'net.zetetic:android-database-sqlcipher:4.4.0@aar'
+//    implementation "androidx.sqlite:sqlite:2.0.1"
 
     debugImplementation 'com.amitshekhar.android:debug-db:1.0.6'
 }

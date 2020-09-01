@@ -3,12 +3,15 @@ package com.v3.basis.blas.blasclass.db
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
+//import android.database.sqlite.SQLiteDatabase
+import net.sqlcipher.database.SQLiteDatabase
+
 import android.util.Log
 import androidx.room.Room
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import com.v3.basis.blas.blasclass.ldb.LdbUserRecord
 import com.v3.basis.blas.blasclass.worker.DownloadWorker
 import io.reactivex.subjects.PublishSubject
@@ -46,32 +49,30 @@ abstract class BaseController(
 
     }
 
-
-        // 使うときはerrorMessageEvent.onNext("メッセージ")とする
+    // 使うときはerrorMessageEvent.onNext("メッセージ")とする
     val errorMessageEvent: PublishSubject<String> = PublishSubject.create()
 
     var db:SQLiteDatabase?
 
+    var db_path:String? = null
+
     init {
+        SQLiteDatabase.loadLibs(context)
         db = openSQLiteDatabase()
         db?.rawQuery("PRAGMA foreign_keys=1",null)
+
     }
 
 
-    fun openDatabase(): BlasDatabase {
-
-        val path = DownloadWorker.getSavedPath(projectId)
-        return path?.let {
-            Room.databaseBuilder(context, BlasDatabase::class.java, path).build()
-        } ?: throw FileNotFoundException("プロジェクト${projectId}のDBファイルが見つかりません。")
-    }
 
     fun openSQLiteDatabase(): SQLiteDatabase? {
 
-        val path = DownloadWorker.getSavedPath(projectId)
-        val helper = path?.let { SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.OPEN_READWRITE) }
+        db_path = DownloadWorker.getSavedPath(projectId)
+        Log.d("SqliteDB Path:",db_path.toString())
 
-        Log.d("SqliteDB Path:",path.toString())
+        val helper = db_path?.let {
+            SQLiteDatabase.openDatabase(db_path, BlasApp.key,null, SQLiteDatabase.OPEN_READWRITE)
+        }
         return helper
     }
 
@@ -87,7 +88,14 @@ abstract class BaseController(
             //.filter{ it.returnType.isSubtypeOf(String::class.starProjectedType) }
             .filterIsInstance<KMutableProperty<*>>()
             .forEach { prop ->
-                val value = cursor.getString( cursor.getColumnIndex(prop.name) )
+                var value : String? = null
+                try{
+                    value = cursor.getString( cursor.getColumnIndex(prop.name) )
+                }
+                catch ( ex: Exception ) {
+                    Log.d("prop.name is empty!!!!!",prop.name)
+                    return@forEach
+                }
                 Log.d("setProperty()","propName:" + prop.name + "  value:" + value)
 
                 if( value.isNullOrEmpty() ) {
@@ -99,7 +107,6 @@ abstract class BaseController(
 
         return instance
     }
-
 
     // [参考]https://www.javadrive.jp/android/sqlite_data/index6.html
     protected fun createConvertValue(  instance : Any ,exceptList : List<String>? = null) : ContentValues {
@@ -201,7 +208,7 @@ abstract class BaseController(
         if( 0 == cursor?.count ) {
 
             if( !BuildConfig.SET_ADMIN ) {
-                throw Exception("該当ユーザーが存在しません")
+                throw Exception("このユーザーでは参照できません")
             }
 
             return null

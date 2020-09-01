@@ -149,15 +149,23 @@ object WorkerHelper {
                         WorkInfo.State.BLOCKED,
                         WorkInfo.State.CANCELLED,
                         WorkInfo.State.ENQUEUED,
-                        WorkInfo.State.FAILED,
                         WorkInfo.State.SUCCEEDED -> {
-                            stateChangedCallBack.invoke(it.state, null, id)
+                            val succeeded = it.outputData.getBoolean(BaseDownloadWorker.KEY_RESULT_SUCCEEDED, true)
+                            if (succeeded) {
+                                stateChangedCallBack.invoke(it.state, null, id)
+                            } else {
+                                //   実行中に例外が発生したら、失敗扱いとする
+                                stateChangedCallBack.invoke(WorkInfo.State.FAILED, null, id)
+                            }
                         }
                         WorkInfo.State.RUNNING -> {
                             stateChangedCallBack.invoke(
                                 it.state,
                                 it.progress.getInt(BaseDownloadWorker.PROGRESS, 0), id
                             )
+                        }
+                        WorkInfo.State.FAILED -> {
+//                            stateChangedCallBack.invoke(it.state, null, id)
                         }
                     }
                 }

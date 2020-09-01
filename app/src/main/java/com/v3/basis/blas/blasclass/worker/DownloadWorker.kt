@@ -1,21 +1,24 @@
 package com.v3.basis.blas.blasclass.worker
 
+import android.accounts.NetworkErrorException
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import com.google.gson.Gson
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.rest.BlasRestCache
+import com.v3.basis.blas.blasclass.rest.SyncBlasRestCache
 import com.v3.basis.blas.ui.ext.traceLog
 import com.v3.basis.blas.ui.ext.unzip
-import com.v3.basis.blas.ui.terminal.common.DownloadModel
 import com.v3.basis.blas.ui.terminal.common.DownloadZipModel
 import org.json.JSONObject
 import java.io.*
 import java.net.URL
 import java.net.URLConnection
+import java.util.*
 
 /**
  * [説明]
@@ -44,7 +47,12 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
          * DBの保存パス。エラー時はdefaultValueのnullを返す。
          */
         fun getSavedPath(projectId: String): String? {
-            return preferences().getString(projectId, null)
+
+            val all = preferences().all
+//            val path = preferences().getString(projectId, null)
+            val path = preferences().getString( BlasApp.userId.toString() + "_" + projectId + "_", null)
+
+            return path
         }
 
         private fun preferences(): SharedPreferences {
@@ -62,13 +70,15 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
 
             val url = getDownloadUrl(token, projectId)
             if (url.isBlank()) {
-                return Result.failure()
+                return Result.success(workDataOf(KEY_RESULT_SUCCEEDED to false))
             }
-            download(url, savePath, unZipPath)
+            download(url, savePath, unZipPath,projectId)
             Result.success()
         } catch (e: Exception) {
             traceLog("Failed to download task, ${e::class.java.name}")
-            Result.failure()
+            Log.d("error!!!!!!!!!!!!",e.message)
+            //  failureを返すと、永久に再ダウンロードできなくなる
+            Result.success(workDataOf(KEY_RESULT_SUCCEEDED to false))
         }
     }
 
@@ -84,10 +94,8 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
             "token" to token,
             "project_id" to projectId
         )
-        val success: (json: JSONObject) -> Unit = {}    //ダウンロード時に呼び出される
-        val funcError:(Int,Int) -> Unit = {errorCode, aplCode -> }  //ダウンロード失敗時に呼び出される
         //BLASからLDBをダウンロードする。
-        val response = BlasRestCache("zip", payload, success, funcError).getResponse()
+        val response = SyncBlasRestCache().downloadZipUrl(payload)
         val zipModel = Gson().fromJson(response, DownloadZipModel::class.java)
         return BuildConfig.HOST + zipModel.zip_path
     }
@@ -102,7 +110,7 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
      * getDownloadUrlメソッドで取得したURLを指定してLDBをダウンロードする。
      * ダウンロードしたファイルはpreferenceに保存する。
      */
-    private fun download(textUrl: String, localPath: String, unZipPath: String) {
+    private fun download(textUrl: String, localPath: String, unZipPath: String,projectId:String) {
 
         val url = URL(textUrl)
         val urlConnection: URLConnection = url.openConnection()
@@ -133,10 +141,18 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
 
             val name = inputData.getString(KEY_SAVE_PATH_KEY_NAME)
                 ?: throw IllegalStateException("セーブPATHが設定されていません")
-            //val fileName = File(unZipPath).listFiles()?.last()?.path
-            val fileName = File(unZipPath).listFiles().filter({it.name.endsWith(".db")}).last().path
-            Log.d("file path test", "$fileName")
-            preferences().edit().putString(name, fileName).apply()
+            val filePath = File(unZipPath).listFiles().filter({it.name.endsWith(".db")}).last().path
+            Log.d("file path test", "$filePath")
+
+            // userIdをファイル名に付加
+            Log.d("file name",File(filePath).name)
+            val new_name = BlasApp.userId.toString() + "_" + projectId + "_" +  UUID.randomUUID().toString()
+            val new_path = unZipPath + "/" + new_name
+            Log.d("new file path",new_path)
+
+            File(filePath).renameTo( File( new_path ) )
+
+            preferences().edit().putString(BlasApp.userId.toString() + "_" + projectId + "_", new_path ).apply()
         }
     }
 }
