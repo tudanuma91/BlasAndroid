@@ -43,6 +43,22 @@ open class SyncBlasRestImage() : SyncBlasRest() {
         return json
     }
 
+    fun getUrl(payload:Map<String, String?>): JSONObject? {
+        var response:String? = null
+        var json:JSONObject? = null
+        method = "GET"
+        val blasUrl = BlasRest.URL + "images/url/"
+
+        try {
+            response = super.getResponseData(payload,method, blasUrl)
+            json = JSONObject(response)
+        }
+        catch(e: Exception) {
+            Log.d("blas-log", "通信エラー")
+        }
+        return json
+    }
+
 
     fun delete(payload:Map<String, String?>): JSONObject? {
         var response:String? = null

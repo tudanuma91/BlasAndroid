@@ -8,6 +8,7 @@ data class ItemImageCellItem(
     val title: String,
     var image: ObservableField<Bitmap>,
     var url: ObservableField<String>,
+    var urlBig: ObservableField<String>,
     var empty: ObservableField<Boolean>,
     var loading: ObservableField<Boolean>
 ) {

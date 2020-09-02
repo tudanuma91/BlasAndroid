@@ -1,45 +1,36 @@
 package com.v3.basis.blas.ui.item.item_image
 
+import android.accounts.NetworkErrorException
 import android.content.Context
-import android.content.Intent
 import android.graphics.Bitmap
 import android.util.Base64
 import android.util.Log
 import android.widget.Toast
-import androidx.core.app.ActivityCompat.startActivityForResult
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.v3.basis.blas.BuildConfig
-import com.v3.basis.blas.blasclass.component.ImageComponent
 import com.v3.basis.blas.blasclass.controller.ImageControllerException
 import com.v3.basis.blas.blasclass.controller.ImagesController
 import com.v3.basis.blas.blasclass.db.BaseController
-import com.v3.basis.blas.blasclass.rest.BlasRest
 import com.v3.basis.blas.blasclass.rest.BlasRestImage
 import com.v3.basis.blas.blasclass.rest.BlasRestImageField
+import com.v3.basis.blas.blasclass.rest.SyncBlasRestImage
 import com.v3.basis.blas.ui.ext.rotateLeft
 import com.v3.basis.blas.ui.ext.rotateRight
-import com.v3.basis.blas.ui.ext.translateToBitmap
-import com.v3.basis.blas.ui.item.item_image.model.ImageFieldModel
-import com.v3.basis.blas.ui.item.item_image.model.ItemImage
-import com.v3.basis.blas.ui.item.item_image.model.ItemImageModel
 import com.v3.basis.blas.ui.item.item_image.model.*
 import io.reactivex.Completable
+import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.internal.util.HalfSerializer.onError
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
-import java.io.IOException
 import java.lang.Exception
-import java.text.SimpleDateFormat
-import java.util.*
+import kotlin.math.sin
 
 
 class ItemImageViewModel() : ViewModel() {
@@ -49,6 +40,8 @@ class ItemImageViewModel() : ViewModel() {
     val uploadAction: PublishSubject<String> = PublishSubject.create()
     val deleteAction: PublishSubject<ItemImageCellItem> = PublishSubject.create()
     val zoomAction: PublishSubject<ItemImageCellItem> = PublishSubject.create()
+    var singlesWithBlasRest: BlasRestCallable? = null
+    val singlePublisher: PublishSubject<Single<JSONObject>> = PublishSubject.create()
 
     private lateinit var token: String
     private lateinit var projectId: String
@@ -66,6 +59,12 @@ class ItemImageViewModel() : ViewModel() {
         this.projectId = projectId
         this.itemId = itemId
         this.context = context
+
+        Single.concat(singlePublisher)
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(Schedulers.newThread())
+            .subscribe()
+            .addTo(disposable)
 
         fun imageFieldSuccess(json: JSONObject) {
 
@@ -95,51 +94,62 @@ class ItemImageViewModel() : ViewModel() {
         val projectImageId = item.id
         Log.d("fetchImage", "fetch id = $projectImageId")
         val payload = mapOf("token" to token, "item_id" to itemId, "project_image_id" to projectImageId)
+        Log.d("payload", payload.toString())
 
-        fun success(json: JSONObject) {
-
-            decode(json)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(Schedulers.newThread())
-                .subscribeBy( //asynctaskのexecute
-                    onError = {
-                        item.loading.set(false)
-                        item.empty.set(true)
-                        item.imageId = ""
-                        Log.d("fetchImage", "failed to decode image")
-                    },
-                    onSuccess = {
-//                        item.image.set(it.bitmap)
-                        item.url.set(BuildConfig.HOST + it.small_image)
-                        item.empty.set(false)
-                        item.loading.set(false)
-//                        item.imageId = it.image_id
-//                        item.ext = it.ext
-
-                        //LDBの更新
-                        val imageController = ImagesController(context, projectId)
-                        //リモートから画像をダウンロードできているので、imageIdは必ずある。
-                        //リモートからダウンロードした画像は本登録する。
-//                        imageController.save2LDB(it, BaseController.SYNC_STATUS_SYNC)
-                    }
-                )
-                .addTo(disposable)//disposableは使い捨ての意味
-
-        }
-
-        fun error(errorCode: Int, aplCode:Int) {
-            item.loading.set(false)
-            item.empty.set(true)
-            if (errorCode == 200) { Log.d("fetch error", "no column") }
-            else { Log.d("fetch error", "error $errorCode") }
-        }
-
-        fun success2(json: JSONObject) {
-            Log.d("success2", json.toString())
-        }
+        val single = Single.create<JSONObject> { emitter ->
+                val json = SyncBlasRestImage().getUrl(payload)
+                json?.also { emitter.onSuccess(json) }
+                    ?: emitter.onError(Throwable("JsonObjectの取得に失敗"))
+            }
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnError {
+                item.loading.set(false)
+                item.empty.set(true)
+            }
+            .doOnSuccess {
+                handleSuccessResponse(it, item)
+            }
+        singlePublisher.onNext(single)
 
 //        BlasRestImage("download", payload, ::success, ::error).execute()
-        BlasRestImage("url", payload, ::success, ::error).execute()
+//        BlasRestImage("url", payload, ::success, ::error).execute()
+    }
+
+    private fun handleSuccessResponse(json: JSONObject, item: ItemImageCellItem) {
+
+        decode(json)
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(Schedulers.newThread())
+            .subscribeBy( //asynctaskのexecute
+                onError = {
+                    item.loading.set(false)
+                    item.empty.set(true)
+                    item.imageId = ""
+                    Log.d("fetchImage", "failed to decode image")
+                },
+                onSuccess = {
+//                        item.image.set(it.bitmap)
+                    item.url.set(BuildConfig.HOST + it.small_image)
+                    item.urlBig.set(BuildConfig.HOST + it.image)
+                    item.empty.set(false)
+
+                    ////////////////////////////////////////////////////////////////////////////////////////////////
+                    //  ＊＊＊＊　item.loadingは画像のロード完了をもってFlaseとするので、ViewModel内では触らないこと ＊＊＊＊
+                    //  fun ImageView.decodeImage(image: String?)でロード完了フラグを設定している
+                    ////////////////////////////////////////////////////////////////////////////////////////////////
+//                        item.loading.set(false)
+                    item.imageId = it.project_image_id
+                    item.ext = it.ext
+
+                    //LDBの更新
+                    val imageController = ImagesController(context, projectId)
+                    //リモートから画像をダウンロードできているので、imageIdは必ずある。
+                    //リモートからダウンロードした画像は本登録する。
+//                        imageController.save2LDB(it, BaseController.SYNC_STATUS_SYNC)
+                }
+            )
+            .addTo(disposable)//disposableは使い捨ての意味
     }
 
     /**
@@ -155,8 +165,8 @@ class ItemImageViewModel() : ViewModel() {
 
         // ローカルから画像ファイルを取得する
         Single.fromCallable { imageController.searchFromLocal(context, itemId, projectImageId) }
-            .subscribeOn(Schedulers.io())
-            .observeOn(Schedulers.io())
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(Schedulers.newThread())
             .subscribeBy(
                 onError = {
                     if (it is ImageControllerException) {

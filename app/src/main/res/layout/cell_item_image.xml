@@ -38,6 +38,8 @@
             android:longClickable="true"
             android:visibility="@{item.empty || item.loading ? View.INVISIBLE : View.VISIBLE}"
             app:url="@{item.url}"
+            app:decodeImage="@{item.url}"
+            app:decodeModel="@{item}"
             app:layout_constraintTop_toBottomOf="@id/title"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

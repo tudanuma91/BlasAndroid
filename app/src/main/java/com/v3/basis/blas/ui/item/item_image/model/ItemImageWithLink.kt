@@ -12,5 +12,7 @@ data class ItemImageWithLinkRecord(
 
 data class ItemImageWithLinkImage(
     val image: String, // /blas7/item/20200818082146102-440-1945139-1541.jpg
-    val small_image: String // /blas7/cache/230_blas7_app_webroot_item_20200818082146102-440-1945139-1541.jpg
+    val small_image: String, // /blas7/cache/230_blas7_app_webroot_item_20200818082146102-440-1945139-1541.jpg
+    val project_image_id: String,
+    val ext: String
 )

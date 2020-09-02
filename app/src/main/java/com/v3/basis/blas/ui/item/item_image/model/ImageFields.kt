@@ -18,6 +18,7 @@ data class ImageFields(
             id = project_image_id,
             title = name,
             url = ObservableField(""),
+            urlBig = ObservableField(""),
             image = ObservableField(),
             empty = ObservableField(false),
             loading = ObservableField(true)
