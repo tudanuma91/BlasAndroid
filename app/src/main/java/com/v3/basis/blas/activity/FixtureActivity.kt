@@ -175,7 +175,9 @@ class FixtureActivity : AppCompatActivity() {
 
     private fun saveLocalDB(payload: Map<String, String?>, qrCode: String, type: String, projectId: String?) {
 
-        val controller = FixtureController(this@FixtureActivity, projectId!!)
+//        val controller = FixtureController(this@FixtureActivity, projectId!!)
+        val controller = FixtureController( BlasApp.applicationContext(), projectId!!)
+
         controller.errorMessageEvent
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
