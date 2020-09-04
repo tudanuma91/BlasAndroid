@@ -41,6 +41,9 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.*
+import kotlinx.android.synthetic.main.view_items_5_select.view.*
+import org.json.JSONObject
 import java.util.*
 
 
@@ -85,6 +88,9 @@ class ItemCreateFragment : Fragment() {
     private val singleSelectChoiceMap = mutableMapOf<Int,String?>()
     private val singleSelectList = mutableListOf<MutableMap<String?,ViewItems5SelectBinding>>()
     var singleCnt = 1
+
+
+    private val singleSelectRadio = mutableMapOf<Int,RadioGroup>()
 
     /**
     private lateinit var rootView: LinearLayout
@@ -471,12 +477,56 @@ class ItemCreateFragment : Fragment() {
                     l.root to l.model
                 }
                 FieldType.SINGLE_SELECTION -> {
+
+                    // TODO:連動パラメータ対応中！！！！！！！！！！！！！
+                    // [参考]https://seesaawiki.jp/w/moonlight_aska/d/%A5%E9%A5%B8%A5%AA%A5%DC%A5%BF%A5%F3%A4%CE%A5%C1%A5%A7%A5%C3%A5%AF%BE%F5%C2%D6%A4%F2%C0%DF%C4%EA%2C%20%BC%E8%C6%C0%A4%B9%A4%EB
+
                     val l: ViewItems5SelectBinding =
-                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_5_select, null, false)
+                        DataBindingUtil.inflate(
+                            layoutInflater, R.layout.view_items_5_select, null, false
+                        )
                     val model = FieldSingleSelect(cellNumber,field.col!!, name, mustInput)
                     l.model = model
                     l.vm = viewModel
-                    l.radioGroup.createChildren(layoutInflater, field.choice, model)
+
+
+                    singleSelectRadio[field.field_id!!] = l.radioGroup
+
+                    if( 0 != field.parent_field_id ) {
+
+                        val jsonChoice = JSONObject(field.choice)
+                        val parents = jsonChoice.names()
+
+                        val child = jsonChoice.getString(parents[0].toString())   // TODO:とりあえず、最初のを表示している
+                        l.radioGroup.createChildren(layoutInflater, child, model)
+
+                        val parentGroup = singleSelectRadio[field.parent_field_id!!]
+
+                        // 連動パラメータ
+                        if (parentGroup != null) {
+                            // 親項目が変わったら子も連動して変える
+                            parentGroup.radioGroup.setOnCheckedChangeListener{ group,checkedId ->
+
+                                val radioButton = this.view?.findViewById<RadioButton>(checkedId)
+                                Log.d("select radio",radioButton?.text.toString())
+                                val parent = radioButton?.text.toString()
+                                val child = jsonChoice.getString(parent)
+
+                                Log.d("child",child)
+                                l.radioGroup.removeAllViews()
+                                l.radioGroup.createChildren(layoutInflater, child, model)
+
+                            }
+                        }
+
+                    }
+                    else  {
+                        l.radioGroup.createChildren(layoutInflater, field.choice, model)
+                    }
+
+
+
+
 
                     val baseId = l.radioGroup.children.first().id
                     l.radioGroup.check(baseId)
@@ -561,16 +611,26 @@ class ItemCreateFragment : Fragment() {
     }
 
 
-    private fun RadioGroup.createChildren(inflater: LayoutInflater, separatedText: String?, model: FieldSingleSelect) {
+    private fun RadioGroup.createChildren(
+        inflater: LayoutInflater, separatedText: String?, model: FieldSingleSelect
+    ) {
         separatedText?.also {
             val list = it.split(",")
             model.values.addAll(list)
             list.forEachIndexed { index, s ->
-                val layout = DataBindingUtil.inflate<ViewItemsRadioBinding>(inflater, R.layout.view_items_radio, null, false)
+                val layout = DataBindingUtil.inflate<ViewItemsRadioBinding>(
+                    inflater, R.layout.view_items_radio
+                    , null, false
+                )
                 layout.idx = index
                 layout.model = model
                 layout.text = s
-                this.addView(layout.root, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+                this.addView(
+                    layout.root, ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                        , ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+                )
             }
         }
     }

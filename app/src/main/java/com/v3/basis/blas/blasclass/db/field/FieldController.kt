@@ -63,8 +63,9 @@ class FieldController(context: Context, projectId: String) : BaseController(cont
                     // 連動パラメータ(とりあえず文字列だけが表示されるようにした)
                     var new_choice = ""
                     val choice = field.choice?.replace("\\\"", "\"")
-                    val jsonChoice = JSONObject(choice)
 
+/*
+                    val jsonChoice = JSONObject(choice)
                     var first = true
                     val parents = jsonChoice.names()
 
@@ -79,6 +80,8 @@ class FieldController(context: Context, projectId: String) : BaseController(cont
 
                     }
                     field.choice = new_choice
+ */
+                    field.choice = choice
                 }
 
                 ret.add(field)
