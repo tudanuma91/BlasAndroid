@@ -2,6 +2,8 @@ package com.v3.basis.blas.ui.item.item_image
 
 import android.graphics.Bitmap
 import androidx.databinding.ObservableField
+import io.reactivex.Single
+import io.reactivex.subjects.PublishSubject
 
 data class ItemImageCellItem(
     val id: String, //project_image_idのこと
@@ -14,4 +16,5 @@ data class ItemImageCellItem(
 ) {
     lateinit var imageId: String
     lateinit var ext: String
+    val bitmapEvent: PublishSubject<Bitmap> = PublishSubject.create()
 }

@@ -2,6 +2,7 @@ package com.v3.basis.blas.blasclass.app
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 
@@ -13,12 +14,14 @@ class BlasApp : Application() {
         firebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
         // Setup handler for uncaught exceptions.
-//        Thread.setDefaultUncaughtExceptionHandler { thread, e ->
+        Thread.setDefaultUncaughtExceptionHandler { thread, e ->
+
+            Log.d("", "")
 //            FirebaseCrashlytics.getInstance().recordException(e)
 //            FirebaseCrashlytics.getInstance().sendUnsentReports()
 //            Thread.setDefaultUncaughtExceptionHandler(null)
 //            throw e
-//        }
+        }
     }
 
     init {

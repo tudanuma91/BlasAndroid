@@ -1,13 +1,15 @@
 package com.v3.basis.blas.ui.item.item_image
 
-import android.accounts.NetworkErrorException
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Base64
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
+import com.tonyodev.fetch2.*
+import com.tonyodev.fetch2core.Func
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.controller.ImageControllerException
 import com.v3.basis.blas.blasclass.controller.ImagesController
@@ -17,41 +19,44 @@ import com.v3.basis.blas.blasclass.rest.BlasRestImageField
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestImage
 import com.v3.basis.blas.ui.ext.rotateLeft
 import com.v3.basis.blas.ui.ext.rotateRight
-import com.v3.basis.blas.ui.item.item_image.model.*
+import com.v3.basis.blas.ui.item.item_image.model.ImageFieldModel
+import com.v3.basis.blas.ui.item.item_image.model.ItemImage
+import com.v3.basis.blas.ui.item.item_image.model.ItemImageWithLink
+import com.v3.basis.blas.ui.item.item_image.model.ItemImageWithLinkImage
 import io.reactivex.Completable
-import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.AsyncSubject
 import io.reactivex.subjects.PublishSubject
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
-import java.lang.Exception
-import kotlin.math.sin
 
 
 class ItemImageViewModel() : ViewModel() {
 
     val errorAPI: PublishSubject<Int> = PublishSubject.create()
-    val receiveImageFields: PublishSubject<ImageFieldModel> = PublishSubject.create()
+    val receiveImageFields: AsyncSubject<ImageFieldModel> = AsyncSubject.create()
     val uploadAction: PublishSubject<String> = PublishSubject.create()
     val deleteAction: PublishSubject<ItemImageCellItem> = PublishSubject.create()
     val zoomAction: PublishSubject<ItemImageCellItem> = PublishSubject.create()
-    var singlesWithBlasRest: BlasRestCallable? = null
-    val singlePublisher: PublishSubject<Single<JSONObject>> = PublishSubject.create()
+//    val singlePublisher: PublishSubject<Completable> = PublishSubject.create()
+    private lateinit var fetch: Fetch
+    private val completeListener: DefaultFetchListener = DefaultFetchListener()
 
     private lateinit var token: String
     private lateinit var projectId: String
     private lateinit var itemId: String
 
     private lateinit var imageField: ImageFieldModel
-    private lateinit var images: ItemImageWithLink
     private var disposable = CompositeDisposable()
 
     private lateinit var context: Context
+    private lateinit var imageController: ImagesController
+    private val imageItems: MutableList<ItemImageWithLinkImage> = mutableListOf()
 
     fun setup(context:Context, token: String, projectId: String, itemId: String) {
 
@@ -60,18 +65,31 @@ class ItemImageViewModel() : ViewModel() {
         this.itemId = itemId
         this.context = context
 
-        Single.concat(singlePublisher)
-            .subscribeOn(Schedulers.newThread())
-            .observeOn(Schedulers.newThread())
-            .subscribe()
-            .addTo(disposable)
+        fetch = Fetch.Impl.getInstance(
+            FetchConfiguration.Builder(context).setDownloadConcurrentLimit(300).build()
+        )
+        fetch.addListener(completeListener)
+
+//        Completable.concat(singlePublisher)
+//            .subscribeOn(Schedulers.newThread())
+//            .observeOn(Schedulers.newThread())
+//            .subscribe()
+//            .addTo(disposable)
 
         fun imageFieldSuccess(json: JSONObject) {
 
             Log.d("image field","${json}")
             json.toString().also {
                 imageField = Gson().fromJson(it, ImageFieldModel::class.java)
-                receiveImageFields.onNext(imageField)
+                Single.create<ImagesController> { it.onSuccess(ImagesController(context, projectId)) }
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(Schedulers.newThread())
+                    .subscribeBy {
+                        imageController = it
+                        receiveImageFields.onNext(imageField)
+                        getImageUrls()
+                    }
+                    .addTo(disposable)
             }
         }
 
@@ -84,6 +102,37 @@ class ItemImageViewModel() : ViewModel() {
         BlasRestImageField(payload2, ::imageFieldSuccess, ::error).execute()
     }
 
+    private fun getImageUrls() {
+
+        val payload = mapOf("token" to token, "item_id" to itemId)
+        Single
+            .fromCallable {
+                val json = SyncBlasRestImage().getUrl(payload)
+                Gson().fromJson(json.toString(), ItemImageWithLink::class.java)
+            }
+            .subscribeOn(Schedulers.newThread())
+            .doOnError {
+                //とりあえず呼び出し側に通知
+                receiveImageFields.onComplete()
+            }
+            .doOnSuccess {
+                imageItems.addAll(it.records.map { it.Image })
+                receiveImageFields.onComplete()
+            }
+            .subscribe()
+            .addTo(disposable)
+    }
+
+    private fun save2DB(record: ItemImage, status: Int) {
+        Completable
+            .fromAction {
+                imageController.save2LDB(record, status)
+            }
+            .subscribeOn(Schedulers.io())
+            .subscribe()
+            .addTo(disposable)
+    }
+
     /**
      * [説明]
      * リモートから画像をダウンロードする。
@@ -91,26 +140,128 @@ class ItemImageViewModel() : ViewModel() {
      * 本関数が呼ばれるのは、ローカルに画像がない場合だけである。
      */
     private fun fetchImageFromRemote(item: ItemImageCellItem){
-        val projectImageId = item.id
-        Log.d("fetchImage", "fetch id = $projectImageId")
-        val payload = mapOf("token" to token, "item_id" to itemId, "project_image_id" to projectImageId)
-        Log.d("payload", payload.toString())
 
-        val single = Single.create<JSONObject> { emitter ->
-                val json = SyncBlasRestImage().getUrl(payload)
-                json?.also { emitter.onSuccess(json) }
-                    ?: emitter.onError(Throwable("JsonObjectの取得に失敗"))
+        Single
+            .create<ItemImageWithLinkImage> {emitter ->
+                imageItems.firstOrNull { it.project_image_id == item.id }?.also { emitter.onSuccess(it) }
+                    ?: emitter.onError(NullPointerException())
             }
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnError {
-                item.loading.set(false)
-                item.empty.set(true)
-            }
-            .doOnSuccess {
-                handleSuccessResponse(it, item)
-            }
-        singlePublisher.onNext(single)
+            .subscribeBy(
+                onError = {
+                    item.loading.set(false)
+                    item.empty.set(true)
+                    item.imageId = ""
+                },
+                onSuccess = {
+                    item.url.set(BuildConfig.HOST + it.small_image)
+                    item.urlBig.set(BuildConfig.HOST + it.image)
+                    item.empty.set(false)
+                    item.ext = it.ext
+                    item.imageId = it.image_id
+                    item.bitmapEvent.observeOn(Schedulers.io())
+                        .subscribeBy {
+                            val itemRecord = ItemImage(
+                                item_id = itemId,
+                                project_id = projectId,
+                                project_image_id = item.id
+                            )
+                            itemRecord.bitmap = it
+                            save2DB(itemRecord, BaseController.SYNC_STATUS_SYNC)
+                        }
+                        .addTo(disposable)
+
+//                    val tmp = context.cacheDir.path + "/tmp_" + System.currentTimeMillis() + "_" + it.image_id// + ".${item.ext}"
+//                    val request = Request(item.urlBig.get()!!, tmp)
+//                    request.priority = Priority.HIGH
+//                    request.networkType = NetworkType.ALL
+//                    completeListener.completedEvent
+//                        .observeOn(Schedulers.io())
+//                        .subscribe {
+//                            if (it.file == tmp) {
+//                                val bitmap = BitmapFactory.decodeFile(it.file)
+//                                Log.d("Bitmap", bitmap.width.toString() + bitmap.height.toString())
+//                                item.image.set(bitmap)
+//                                item.loading.set(false)
+//                                val itemRecord = ItemImage(
+//                                    item_id = itemId,
+//                                    project_id = projectId,
+//                                    project_image_id = item.id
+//                                )
+//                                itemRecord.bitmap = bitmap
+//                                save2DB(itemRecord, BaseController.SYNC_STATUS_SYNC)
+//                            }
+//                        }
+//                        .addTo(disposable)
+//                    fetch.enqueue(request)
+//                    fetch.addListener(DefaultFetchListener {
+//                        Single
+//                            .fromCallable {
+//                                Log.d("Fetch Completed", "Complete: ${it.file}")
+//                            }
+//                            .subscribeOn(Schedulers.newThread())
+//                            .subscribeBy {
+//                            }
+//                            .addTo(disposable)
+//                    })
+
+//                    item.bitmapEvent
+//                        .observeOn(Schedulers.newThread())
+//                        .subscribeBy {
+//                            item.loading.set(false)
+//                            item.image.set(it)
+//
+//                        }
+//                        .addTo(disposable)
+//                    Glide.with(BlasApp.applicationContext())
+//                        .asBitmap()
+//                        .load(item.urlBig)
+//                        .into(object : CustomTarget<Bitmap>() {
+//                            override fun onResourceReady(
+//                                resource: Bitmap,
+//                                transition: Transition<in Bitmap>?
+//                            ) {
+//                                item.loading.set(false)
+//                                item.image.set(resource)
+//                                val itemRecord = ItemImage(
+//                                    item_id = itemId,
+//                                    project_id = projectId,
+//                                    project_image_id = item.id
+//                                )
+//                                itemRecord.bitmap = resource
+////                                imageController.save2LDB(itemRecord, BaseController.SYNC_STATUS_SYNC)
+//                            }
+//
+//                            override fun onLoadCleared(placeholder: Drawable?) {
+//                            }
+//                        })
+                }
+            )
+            .addTo(disposable)
+
+//        val projectImageId = item.id
+//        Log.d("fetchImage", "fetch id = $projectImageId")
+//        val payload = mapOf("token" to token, "item_id" to itemId, "project_image_id" to projectImageId)
+//        Log.d("payload", payload.toString())
+//
+//        val single = Single.create<JSONObject> { emitter ->
+//                val json = SyncBlasRestImage().getUrl(payload)
+//                json?.also { emitter.onSuccess(json) }
+//                    ?: emitter.onError(Throwable("JsonObjectの取得に失敗"))
+//            }
+//            .subscribeOn(Schedulers.newThread())
+//            .observeOn(Schedulers.newThread())
+//            .doOnError {
+//                item.loading.set(false)
+//                item.empty.set(true)
+//            }
+//            .doOnSuccess {
+//                handleSuccessResponse(it, item)
+//            }
+//            .subscribe()
+//            .addTo(disposable)
+//        singlePublisher.onNext(single)
 
 //        BlasRestImage("download", payload, ::success, ::error).execute()
 //        BlasRestImage("url", payload, ::success, ::error).execute()
@@ -118,38 +269,54 @@ class ItemImageViewModel() : ViewModel() {
 
     private fun handleSuccessResponse(json: JSONObject, item: ItemImageCellItem) {
 
-        decode(json)
-            .subscribeOn(Schedulers.newThread())
-            .observeOn(Schedulers.newThread())
-            .subscribeBy( //asynctaskのexecute
-                onError = {
+        val response = decode(json)
+        response?.also {
+            item.url.set(BuildConfig.HOST + it.small_image)
+            item.urlBig.set(BuildConfig.HOST + it.image)
+            item.empty.set(false)
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+            //  ＊＊＊＊　item.loadingは画像のロード完了をもってFlaseとするので、ViewModel内ではTrueにしない ＊＊＊＊
+            //  fun ImageView.decodeImageでロード完了フラグを設定している
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+            item.imageId = it.project_image_id
+            item.ext = it.ext
+            item.bitmapEvent
+                .observeOn(Schedulers.newThread())
+                .subscribeBy {
                     item.loading.set(false)
-                    item.empty.set(true)
-                    item.imageId = ""
-                    Log.d("fetchImage", "failed to decode image")
-                },
-                onSuccess = {
-//                        item.image.set(it.bitmap)
-                    item.url.set(BuildConfig.HOST + it.small_image)
-                    item.urlBig.set(BuildConfig.HOST + it.image)
-                    item.empty.set(false)
-
-                    ////////////////////////////////////////////////////////////////////////////////////////////////
-                    //  ＊＊＊＊　item.loadingは画像のロード完了をもってFlaseとするので、ViewModel内では触らないこと ＊＊＊＊
-                    //  fun ImageView.decodeImage(image: String?)でロード完了フラグを設定している
-                    ////////////////////////////////////////////////////////////////////////////////////////////////
-//                        item.loading.set(false)
-                    item.imageId = it.project_image_id
-                    item.ext = it.ext
-
-                    //LDBの更新
-                    val imageController = ImagesController(context, projectId)
-                    //リモートから画像をダウンロードできているので、imageIdは必ずある。
-                    //リモートからダウンロードした画像は本登録する。
-//                        imageController.save2LDB(it, BaseController.SYNC_STATUS_SYNC)
+                    item.image.set(it)
+                    val itemRecord = ItemImage(
+                        item_id = itemId,
+                        project_id=projectId,
+                        project_image_id = item.id)
+                    itemRecord.bitmap = it
+                    imageController.save2LDB(itemRecord, BaseController.SYNC_STATUS_SYNC)
                 }
-            )
-            .addTo(disposable)//disposableは使い捨ての意味
+                .addTo(disposable)
+//            Glide.with(context)
+//                .asBitmap()
+//                .load(item.urlBig)
+//                .into(object : CustomTarget<Bitmap>(){
+//                    override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+//                        item.loading.set(false)
+//                        item.image.set(resource)
+//                        val itemRecord = ItemImage(
+//                            item_id = itemId,
+//                            project_id=projectId,
+//                            project_image_id = item.id)
+//                        itemRecord.bitmap = resource
+//                        imageController.save2LDB(itemRecord, BaseController.SYNC_STATUS_SYNC)
+//                    }
+//                    override fun onLoadCleared(placeholder: Drawable?) {
+//                    }
+//                })
+        } ?:also {
+            item.loading.set(false)
+            item.empty.set(true)
+            item.imageId = ""
+            Log.d("fetchImage", "failed to decode image")
+        }
     }
 
     /**
@@ -161,7 +328,6 @@ class ItemImageViewModel() : ViewModel() {
      */
     fun fetchImage(item: ItemImageCellItem) {
         val projectImageId = item.id
-        val imageController = ImagesController(context, projectId)
 
         // ローカルから画像ファイルを取得する
         Single.fromCallable { imageController.searchFromLocal(context, itemId, projectImageId) }
@@ -212,8 +378,7 @@ class ItemImageViewModel() : ViewModel() {
         /* ここを改良する Single.fromCallble使う */
         Single.fromCallable {
             item.loading.set(true)
-            val imgCon = ImagesController(context, projectId)
-            imgCon.reserveDeleteImg(item.imageId.toLong())
+            imageController.reserveDeleteImg(item.imageId.toLong())
         }.subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
@@ -285,7 +450,6 @@ class ItemImageViewModel() : ViewModel() {
         item.image.set(bitmap)
         //upload(bitmap, item.ext, item, error)
         Completable.fromAction {
-            val imageController = ImagesController(context, projectId)
             //リモートから画像をダウンロードできているので、imageIdは必ずある。
             //リモートからダウンロードした画像は本登録する。
             val itemRecord = ItemImage(
@@ -296,7 +460,7 @@ class ItemImageViewModel() : ViewModel() {
                 project_image_id = item.id)
 
             itemRecord.bitmap = bitmap
-            imageController.save2LDB(itemRecord, BaseController.SYNC_STATUS_NEW)
+            save2DB(itemRecord, BaseController.SYNC_STATUS_NEW)
         }.subscribeOn(Schedulers.newThread())
             .subscribeBy(
                 onError = { item.loading.set(false) },
@@ -349,12 +513,21 @@ class ItemImageViewModel() : ViewModel() {
         return Base64.encodeToString(byteArray, flag)
     }
 
-    private fun decode(json: JSONObject) : Single<ItemImageWithLinkImage> {
-        return Single.create<ItemImageWithLinkImage> { emitter ->
-            images = Gson().fromJson(json.toString(), ItemImageWithLink::class.java)
-            val item = images.records.map { it.Image }.first()
-            item.also { emitter.onSuccess(it) }
-                ?: emitter.onError(IllegalStateException("BlasRestImage:failed to json convert"))
+//    private fun decode(json: JSONObject) : Single<ItemImageWithLinkImage> {
+//        return Single.create<ItemImageWithLinkImage> { emitter ->
+//            images = Gson().fromJson(json.toString(), ItemImageWithLink::class.java)
+//            val item = images.records.map { it.Image }.first()
+//            item.also { emitter.onSuccess(it) }
+//                ?: emitter.onError(IllegalStateException("BlasRestImage:failed to json convert"))
+//        }
+//    }
+
+    private fun decode(json: JSONObject) : ItemImageWithLinkImage? {
+        try {
+            val images = Gson().fromJson(json.toString(), ItemImageWithLink::class.java)
+            return images.records.map { it.Image }.first()
+        } catch (e: Exception) {
+            return null
         }
     }
 

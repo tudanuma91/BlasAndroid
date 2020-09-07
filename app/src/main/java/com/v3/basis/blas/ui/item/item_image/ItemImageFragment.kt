@@ -18,6 +18,8 @@ import android.util.Log
 import android.view.*
 import android.widget.AdapterView.AdapterContextMenuInfo
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -62,6 +64,7 @@ class ItemImageFragment : Fragment() {
         const val ITEM_ID = "item_id"
         const val REQUEST_CAMERA_PERMISSION:Int = 1
         const val REQUEST_CHOOSER = 2
+        const val REQUEST_ZOOM = 3
 
         fun newInstance(token: String, projectId: String, itemId: String) : Fragment {
             val f = ItemImageFragment()
@@ -174,14 +177,25 @@ class ItemImageFragment : Fragment() {
                 intent.putExtra("project_img_id",it.id)
                 intent.putExtra("project_id",projectId)
                 intent.putExtra("item_id",itemId)
+                intent.putExtra("img_id",it.imageId)
                 intent.putExtra("title",it.title)
+                intent.putExtra("token",token)
                 /*
                 intent.putExtra("item_id", "${it.item_id}")
                 intent.putExtra("token", token)
                 intent.putExtra("project_id", projectId)
                 intent.putExtra("value_list", it.valueList)
                 */
-                requireActivity().startActivity(intent)
+//                startActivityForResult(intent, REQUEST_ZOOM)
+
+                val startForResult =
+                    registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult? ->
+                        if (result?.resultCode == Activity.RESULT_OK) {
+                            //画像の再取得処理
+                            viewModel.setup(requireContext(), token, projectId, itemId)
+                        }
+                    }
+                startForResult.launch(intent)
 
             }
             .addTo(disposables)
@@ -282,7 +296,10 @@ class ItemImageFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 
-        if (requestCode == REQUEST_CHOOSER && resultCode == Activity.RESULT_OK) {
+        if (requestCode == REQUEST_ZOOM && resultCode == Activity.RESULT_OK) {
+            //画像の再取得処理
+            viewModel.setup(requireContext(), token, projectId, itemId)
+        } else if (requestCode == REQUEST_CHOOSER && resultCode == Activity.RESULT_OK) {
 
             val uri = data?.data ?: imageUri
             uri?.also {

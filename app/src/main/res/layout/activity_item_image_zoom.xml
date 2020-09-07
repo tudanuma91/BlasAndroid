@@ -1,19 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_height="match_parent"
-    android:layout_width="match_parent"
-    android:orientation="vertical">
+<layout>
 
-    <com.v3.basis.blas.ui.item.item_image_zoom.custom_view.CustomImageView
-        android:layout_width="match_parent"
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="loading"
+            type="Boolean" />
+        <variable
+            name="activity"
+            type="com.v3.basis.blas.activity.ItemImageZoomActivity" />
+    </data>
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_height="match_parent"
-        android:id="@+id/customView">
+        android:layout_width="match_parent"
+        android:orientation="vertical">
 
-    </com.v3.basis.blas.ui.item.item_image_zoom.custom_view.CustomImageView>
-        <!--
-        android:visibility="@{item.empty ? View.INVISIBLE : View.VISIBLE}"
-        -->
-</LinearLayout>
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            >
+
+            <com.v3.basis.blas.ui.item.item_image_zoom.custom_view.CustomImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/customView">
+
+            </com.v3.basis.blas.ui.item.item_image_zoom.custom_view.CustomImageView>
+
+            <ProgressBar
+                android:id="@+id/progress"
+                android:visibility="@{loading ? View.VISIBLE : View.INVISIBLE}"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            >
+            <Button
+                android:id="@+id/rightRotate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="@{v -> activity.rightRotate()}"
+                android:text="@string/cell_item_image_right_rotate"
+                />
+
+            <Button
+                android:id="@+id/leftRotate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="@{v -> activity.leftRotate()}"
+                android:text="@string/cell_item_image_left_rotate"
+                />
+        </LinearLayout>
+    </LinearLayout>
+
+</layout>

@@ -13,5 +13,6 @@ class AdapterCellItem(private val viewModel: ItemImageViewModel, val item: ItemI
     override fun bind(viewBinding: CellItemImageBinding, position: Int) {
         viewBinding.vm = viewModel
         viewBinding.item = item
+//        viewModel.fetchImage(item)
     }
 }

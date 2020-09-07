@@ -21,7 +21,7 @@ class CustomImageView(context: Context, attrs: AttributeSet?) : View(context, at
     private var cnt = 1
 
     //画像の配列
-    lateinit var mBitmap :Bitmap
+    var mBitmap :Bitmap? = null
 
     //
     var mBitmapWidth:Int = 0
@@ -115,7 +115,9 @@ class CustomImageView(context: Context, attrs: AttributeSet?) : View(context, at
             //2回目以降はonScaleの変更情報をもとに画像作成する
 
             canvas!!.save()
-            canvas.drawBitmap(mBitmap, bitMatrix, mPaint)
+            mBitmap?.also {
+                canvas.drawBitmap(it, bitMatrix, mPaint)
+            }
             canvas.restore()
         }
     }
@@ -127,6 +129,7 @@ class CustomImageView(context: Context, attrs: AttributeSet?) : View(context, at
 
     //mBitMapに画像を定義
     fun setBitMap(bitmap: Bitmap){
+        mBitmap?.recycle()
         mBitmap = Bitmap.createBitmap(bitmap)
         mBitmapWidth = bitmap.width
         mBitmapHeight = bitmap.height

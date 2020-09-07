@@ -36,10 +36,11 @@
             android:onClick="@{v -> vm.selectFile(item.id)}"
             android:onLongClick="@{ () -> vm.selectFile2(item)}"
             android:longClickable="true"
-            android:visibility="@{item.empty || item.loading ? View.INVISIBLE : View.VISIBLE}"
             app:url="@{item.url}"
+            app:image="@{item.image}"
             app:decodeImage="@{item.url}"
             app:decodeModel="@{item}"
+            android:visibility="@{item.empty || item.loading ? View.INVISIBLE : View.VISIBLE}"
             app:layout_constraintTop_toBottomOf="@id/title"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -55,32 +56,32 @@
             android:visibility="@{item.empty ? View.INVISIBLE : item.loading ? View.INVISIBLE : View.VISIBLE}"
             app:layout_constraintTop_toBottomOf="@id/image"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/rightRotate"
-            />
-
-        <Button
-            android:id="@+id/rightRotate"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:onClick="@{v -> vm.rightRotate(item)}"
-            android:text="@string/cell_item_image_right_rotate"
-            android:visibility="@{item.empty ? View.INVISIBLE : item.loading ? View.INVISIBLE : View.VISIBLE}"
-            app:layout_constraintTop_toBottomOf="@id/image"
-            app:layout_constraintStart_toEndOf="@id/delete"
-            app:layout_constraintEnd_toStartOf="@id/leftRotate"
-            />
-
-        <Button
-            android:id="@+id/leftRotate"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:onClick="@{v -> vm.leftRotate(item)}"
-            android:text="@string/cell_item_image_left_rotate"
-            android:visibility="@{item.empty ? View.INVISIBLE : item.loading ? View.INVISIBLE : View.VISIBLE}"
-            app:layout_constraintTop_toBottomOf="@id/image"
-            app:layout_constraintStart_toEndOf="@id/rightRotate"
             app:layout_constraintEnd_toEndOf="parent"
             />
+
+<!--        <Button-->
+<!--            android:id="@+id/rightRotate"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:onClick="@{v -> vm.rightRotate(item)}"-->
+<!--            android:text="@string/cell_item_image_right_rotate"-->
+<!--            android:visibility="@{item.empty ? View.INVISIBLE : item.loading ? View.INVISIBLE : View.VISIBLE}"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/image"-->
+<!--            app:layout_constraintStart_toEndOf="@id/delete"-->
+<!--            app:layout_constraintEnd_toStartOf="@id/leftRotate"-->
+<!--            />-->
+
+<!--        <Button-->
+<!--            android:id="@+id/leftRotate"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:onClick="@{v -> vm.leftRotate(item)}"-->
+<!--            android:text="@string/cell_item_image_left_rotate"-->
+<!--            android:visibility="@{item.empty ? View.INVISIBLE : item.loading ? View.INVISIBLE : View.VISIBLE}"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/image"-->
+<!--            app:layout_constraintStart_toEndOf="@id/rightRotate"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            />-->
 
         <TextView
             android:id="@+id/blank"
