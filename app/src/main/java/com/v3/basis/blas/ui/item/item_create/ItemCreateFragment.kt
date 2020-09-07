@@ -365,25 +365,38 @@ class ItemCreateFragment : Fragment() {
     /**
      * シングルセレクトの編集フィールド処理
      */
-    private fun whenSingleSelect(singleColCnt:Int, fieldValue:String? ) {
-        val choice = singleSelectChoiceMap[singleColCnt]
+    private fun whenSingleSelect(singleColCnt:Int, fieldValue:String? ,parentFieldId:Int) {
+        var choice = singleSelectChoiceMap[singleColCnt]
         val model = singleSelectMap[singleColCnt]
 
         if( model != null ) {
             val childs =model.radioGroup.children
             var baseId = childs.first().id
-            val test = childs
-
 
             var choiceId = 0
             if( null != choice ) {
+
+
+                if( 0 != parentFieldId ) {
+                    // 連動パラメータの時
+                    val parentRadio = singleSelectRadio[parentFieldId]
+                    val parentCheckId = parentRadio?.radioGroup?.checkedRadioButtonId
+                    val parentValue = this.view?.findViewById<RadioButton>(parentCheckId!!)?.text.toString()
+
+                    Log.d("parentValue",parentValue)
+
+                    val json = JSONObject(choice)
+                    choice = json.getString(parentValue)
+                }
                 val aChoice = choice?.split(",")
 
                 run loop@ {
-                    aChoice.forEachIndexed { index, s ->
-                        if( s == fieldValue ) {
-                            choiceId = index
-                            return@loop
+                    if (aChoice != null) {
+                        aChoice.forEachIndexed { index, s ->
+                            if( s == fieldValue ) {
+                                choiceId = index
+                                return@loop
+                            }
                         }
                     }
                 }
@@ -418,8 +431,10 @@ class ItemCreateFragment : Fragment() {
                         with(field.javaClass.canonicalName!!) {
                             when {
                                 contains("FieldSingleSelect") -> {
+                                    val fieldSingleSelect = field as FieldSingleSelect
+
                                     //シングルセレクトの処理
-                                    whenSingleSelect(singleColCnt,value)
+                                    whenSingleSelect(singleColCnt,value,fieldSingleSelect.parentFieldId!!)
                                     singleColCnt ++
                                 }
                                 else -> {
@@ -478,31 +493,26 @@ class ItemCreateFragment : Fragment() {
                 }
                 FieldType.SINGLE_SELECTION -> {
 
-                    // TODO:連動パラメータ対応中！！！！！！！！！！！！！
-                    // [参考]https://seesaawiki.jp/w/moonlight_aska/d/%A5%E9%A5%B8%A5%AA%A5%DC%A5%BF%A5%F3%A4%CE%A5%C1%A5%A7%A5%C3%A5%AF%BE%F5%C2%D6%A4%F2%C0%DF%C4%EA%2C%20%BC%E8%C6%C0%A4%B9%A4%EB
-
                     val l: ViewItems5SelectBinding =
                         DataBindingUtil.inflate(
                             layoutInflater, R.layout.view_items_5_select, null, false
                         )
-                    val model = FieldSingleSelect(cellNumber,field.col!!, name, mustInput)
+                    val model = FieldSingleSelect(cellNumber,field.col!!, name, mustInput,field.parent_field_id)
                     l.model = model
                     l.vm = viewModel
-
 
                     singleSelectRadio[field.field_id!!] = l.radioGroup
 
                     if( 0 != field.parent_field_id ) {
-
+                        // 連動パラメータ
                         val jsonChoice = JSONObject(field.choice)
                         val parents = jsonChoice.names()
 
-                        val child = jsonChoice.getString(parents[0].toString())   // TODO:とりあえず、最初のを表示している
+                        val child = jsonChoice.getString(parents[0].toString())
                         l.radioGroup.createChildren(layoutInflater, child, model)
 
                         val parentGroup = singleSelectRadio[field.parent_field_id!!]
 
-                        // 連動パラメータ
                         if (parentGroup != null) {
                             // 親項目が変わったら子も連動して変える
                             parentGroup.radioGroup.setOnCheckedChangeListener{ group,checkedId ->
@@ -516,6 +526,8 @@ class ItemCreateFragment : Fragment() {
                                 l.radioGroup.removeAllViews()
                                 l.radioGroup.createChildren(layoutInflater, child, model)
 
+                                val baseId = l.radioGroup.children.first().id
+                                l.radioGroup.check(baseId)
                             }
                         }
 
@@ -523,10 +535,6 @@ class ItemCreateFragment : Fragment() {
                     else  {
                         l.radioGroup.createChildren(layoutInflater, field.choice, model)
                     }
-
-
-
-
 
                     val baseId = l.radioGroup.children.first().id
                     l.radioGroup.check(baseId)
@@ -540,7 +548,6 @@ class ItemCreateFragment : Fragment() {
                     //valueMap[field.choice] = l
                     //singleSelectList.add(valueMap)
                     l.root to l.model
-
 
                 }
                 FieldType.MULTIPLE_SELECTION -> {

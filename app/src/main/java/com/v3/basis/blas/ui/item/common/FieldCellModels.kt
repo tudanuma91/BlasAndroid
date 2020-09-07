@@ -28,6 +28,7 @@ data class FieldSingleSelect(
 	override val col:Int,
 	override val title: String,
 	override val mustInput: Boolean,
+	val parentFieldId:Int? = 0,
 	val values: MutableList<String> = mutableListOf(),
 	val selectedIndex: ObservableInt = ObservableInt(-1)): FieldModel {
 
