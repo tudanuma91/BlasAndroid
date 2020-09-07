@@ -43,9 +43,6 @@ class ItemImageViewModel() : ViewModel() {
     val uploadAction: PublishSubject<String> = PublishSubject.create()
     val deleteAction: PublishSubject<ItemImageCellItem> = PublishSubject.create()
     val zoomAction: PublishSubject<ItemImageCellItem> = PublishSubject.create()
-//    val singlePublisher: PublishSubject<Completable> = PublishSubject.create()
-    private lateinit var fetch: Fetch
-    private val completeListener: DefaultFetchListener = DefaultFetchListener()
 
     private lateinit var token: String
     private lateinit var projectId: String
@@ -64,17 +61,6 @@ class ItemImageViewModel() : ViewModel() {
         this.projectId = projectId
         this.itemId = itemId
         this.context = context
-
-        fetch = Fetch.Impl.getInstance(
-            FetchConfiguration.Builder(context).setDownloadConcurrentLimit(300).build()
-        )
-        fetch.addListener(completeListener)
-
-//        Completable.concat(singlePublisher)
-//            .subscribeOn(Schedulers.newThread())
-//            .observeOn(Schedulers.newThread())
-//            .subscribe()
-//            .addTo(disposable)
 
         fun imageFieldSuccess(json: JSONObject) {
 
@@ -171,152 +157,9 @@ class ItemImageViewModel() : ViewModel() {
                             save2DB(itemRecord, BaseController.SYNC_STATUS_SYNC)
                         }
                         .addTo(disposable)
-
-//                    val tmp = context.cacheDir.path + "/tmp_" + System.currentTimeMillis() + "_" + it.image_id// + ".${item.ext}"
-//                    val request = Request(item.urlBig.get()!!, tmp)
-//                    request.priority = Priority.HIGH
-//                    request.networkType = NetworkType.ALL
-//                    completeListener.completedEvent
-//                        .observeOn(Schedulers.io())
-//                        .subscribe {
-//                            if (it.file == tmp) {
-//                                val bitmap = BitmapFactory.decodeFile(it.file)
-//                                Log.d("Bitmap", bitmap.width.toString() + bitmap.height.toString())
-//                                item.image.set(bitmap)
-//                                item.loading.set(false)
-//                                val itemRecord = ItemImage(
-//                                    item_id = itemId,
-//                                    project_id = projectId,
-//                                    project_image_id = item.id
-//                                )
-//                                itemRecord.bitmap = bitmap
-//                                save2DB(itemRecord, BaseController.SYNC_STATUS_SYNC)
-//                            }
-//                        }
-//                        .addTo(disposable)
-//                    fetch.enqueue(request)
-//                    fetch.addListener(DefaultFetchListener {
-//                        Single
-//                            .fromCallable {
-//                                Log.d("Fetch Completed", "Complete: ${it.file}")
-//                            }
-//                            .subscribeOn(Schedulers.newThread())
-//                            .subscribeBy {
-//                            }
-//                            .addTo(disposable)
-//                    })
-
-//                    item.bitmapEvent
-//                        .observeOn(Schedulers.newThread())
-//                        .subscribeBy {
-//                            item.loading.set(false)
-//                            item.image.set(it)
-//
-//                        }
-//                        .addTo(disposable)
-//                    Glide.with(BlasApp.applicationContext())
-//                        .asBitmap()
-//                        .load(item.urlBig)
-//                        .into(object : CustomTarget<Bitmap>() {
-//                            override fun onResourceReady(
-//                                resource: Bitmap,
-//                                transition: Transition<in Bitmap>?
-//                            ) {
-//                                item.loading.set(false)
-//                                item.image.set(resource)
-//                                val itemRecord = ItemImage(
-//                                    item_id = itemId,
-//                                    project_id = projectId,
-//                                    project_image_id = item.id
-//                                )
-//                                itemRecord.bitmap = resource
-////                                imageController.save2LDB(itemRecord, BaseController.SYNC_STATUS_SYNC)
-//                            }
-//
-//                            override fun onLoadCleared(placeholder: Drawable?) {
-//                            }
-//                        })
                 }
             )
             .addTo(disposable)
-
-//        val projectImageId = item.id
-//        Log.d("fetchImage", "fetch id = $projectImageId")
-//        val payload = mapOf("token" to token, "item_id" to itemId, "project_image_id" to projectImageId)
-//        Log.d("payload", payload.toString())
-//
-//        val single = Single.create<JSONObject> { emitter ->
-//                val json = SyncBlasRestImage().getUrl(payload)
-//                json?.also { emitter.onSuccess(json) }
-//                    ?: emitter.onError(Throwable("JsonObjectの取得に失敗"))
-//            }
-//            .subscribeOn(Schedulers.newThread())
-//            .observeOn(Schedulers.newThread())
-//            .doOnError {
-//                item.loading.set(false)
-//                item.empty.set(true)
-//            }
-//            .doOnSuccess {
-//                handleSuccessResponse(it, item)
-//            }
-//            .subscribe()
-//            .addTo(disposable)
-//        singlePublisher.onNext(single)
-
-//        BlasRestImage("download", payload, ::success, ::error).execute()
-//        BlasRestImage("url", payload, ::success, ::error).execute()
-    }
-
-    private fun handleSuccessResponse(json: JSONObject, item: ItemImageCellItem) {
-
-        val response = decode(json)
-        response?.also {
-            item.url.set(BuildConfig.HOST + it.small_image)
-            item.urlBig.set(BuildConfig.HOST + it.image)
-            item.empty.set(false)
-
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-            //  ＊＊＊＊　item.loadingは画像のロード完了をもってFlaseとするので、ViewModel内ではTrueにしない ＊＊＊＊
-            //  fun ImageView.decodeImageでロード完了フラグを設定している
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-            item.imageId = it.project_image_id
-            item.ext = it.ext
-            item.bitmapEvent
-                .observeOn(Schedulers.newThread())
-                .subscribeBy {
-                    item.loading.set(false)
-                    item.image.set(it)
-                    val itemRecord = ItemImage(
-                        item_id = itemId,
-                        project_id=projectId,
-                        project_image_id = item.id)
-                    itemRecord.bitmap = it
-                    imageController.save2LDB(itemRecord, BaseController.SYNC_STATUS_SYNC)
-                }
-                .addTo(disposable)
-//            Glide.with(context)
-//                .asBitmap()
-//                .load(item.urlBig)
-//                .into(object : CustomTarget<Bitmap>(){
-//                    override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-//                        item.loading.set(false)
-//                        item.image.set(resource)
-//                        val itemRecord = ItemImage(
-//                            item_id = itemId,
-//                            project_id=projectId,
-//                            project_image_id = item.id)
-//                        itemRecord.bitmap = resource
-//                        imageController.save2LDB(itemRecord, BaseController.SYNC_STATUS_SYNC)
-//                    }
-//                    override fun onLoadCleared(placeholder: Drawable?) {
-//                    }
-//                })
-        } ?:also {
-            item.loading.set(false)
-            item.empty.set(true)
-            item.imageId = ""
-            Log.d("fetchImage", "failed to decode image")
-        }
     }
 
     /**
@@ -392,81 +235,6 @@ class ItemImageViewModel() : ViewModel() {
                     item.empty.set(true)
                 }
             ).addTo(CompositeDisposable())
-    }
-
-    fun rightRotate(item: ItemImageCellItem) {
-
-        if (item.loading.get() == true) {
-            return
-        }
-
-        val error: (errorCode: Int, aplCode:Int) -> Unit = { i: Int, i1: Int ->
-            item.loading.set(false)
-            item.image.get()?.rotateLeft()
-        }
-        item.loading.set(true)
-        Single.create<Bitmap> {emitter ->
-                item.image.get().apply {
-                    this?.also { emitter.onSuccess(this.rotateRight()) }
-                        ?: emitter.onError(IllegalStateException("回転する画像が空です"))
-                }
-            }
-            .subscribeOn(Schedulers.newThread())
-            .subscribeBy(
-                onError = { item.loading.set(true) },
-                onSuccess = { updateCellItem(item, it, error) }
-            )
-            .addTo(disposable)
-    }
-
-    fun leftRotate(item: ItemImageCellItem) {
-
-        if (item.loading.get() == true) {
-            return
-        }
-
-        val error: (errorCode: Int, aplCode:Int) -> Unit = { i: Int, i1: Int ->
-            item.loading.set(false)
-            item.image.get()?.rotateRight()
-        }
-        item.loading.set(true)
-        Single
-            .create<Bitmap> {emitter ->
-                item.image.get().apply {
-                    this?.also { emitter.onSuccess(this.rotateLeft()) }
-                        ?: emitter.onError(IllegalStateException("回転する画像が空です"))
-                }
-            }
-            .subscribeOn(Schedulers.newThread())
-            .subscribeBy(
-                onError = { item.loading.set(true) },
-                onSuccess = { updateCellItem(item, it, error) }
-            )
-            .addTo(disposable)
-    }
-
-    private fun updateCellItem(item: ItemImageCellItem, bitmap: Bitmap, error: (errorCode: Int,aplCode:Int) -> Unit) {
-        item.loading.set(true)
-        item.image.set(bitmap)
-        //upload(bitmap, item.ext, item, error)
-        Completable.fromAction {
-            //リモートから画像をダウンロードできているので、imageIdは必ずある。
-            //リモートからダウンロードした画像は本登録する。
-            val itemRecord = ItemImage(
-                image_id=item.imageId,
-                item_id = itemId,
-                moved="0",
-                project_id=projectId,
-                project_image_id = item.id)
-
-            itemRecord.bitmap = bitmap
-            save2DB(itemRecord, BaseController.SYNC_STATUS_NEW)
-        }.subscribeOn(Schedulers.newThread())
-            .subscribeBy(
-                onError = { item.loading.set(false) },
-                onComplete = { item.loading.set(false) }
-            )
-            .addTo(disposable)
     }
 
     fun selectFile(id: String) {
