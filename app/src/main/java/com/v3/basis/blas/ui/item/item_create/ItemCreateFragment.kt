@@ -498,10 +498,6 @@ class ItemCreateFragment : Fragment() {
                             layoutInflater, R.layout.view_items_5_select, null, false
                         )
                     val model = FieldSingleSelect(cellNumber,field.col!!, name, mustInput,field.parent_field_id)
-                    l.model = model
-                    l.vm = viewModel
-
-                    singleSelectRadio[field.field_id!!] = l.radioGroup
 
                     if( 0 != field.parent_field_id ) {
                         // 連動パラメータ
@@ -509,18 +505,22 @@ class ItemCreateFragment : Fragment() {
                         val parents = jsonChoice.names()
 
                         val child = jsonChoice.getString(parents[0].toString())
+                        model.values = child.split(",").toMutableList()
+
                         l.radioGroup.createChildren(layoutInflater, child, model)
 
                         val parentGroup = singleSelectRadio[field.parent_field_id!!]
 
                         if (parentGroup != null) {
-                            // 親項目が変わったら子も連動して変える
+                            // 親項目が変わったら子も連動して変える(親のセレクトチェンジイベントに細工する)
                             parentGroup.radioGroup.setOnCheckedChangeListener{ group,checkedId ->
 
                                 val radioButton = this.view?.findViewById<RadioButton>(checkedId)
                                 Log.d("select radio",radioButton?.text.toString())
                                 val parent = radioButton?.text.toString()
+
                                 val child = jsonChoice.getString(parent)
+                                model.values = child.split(",").toMutableList()
 
                                 Log.d("child",child)
                                 l.radioGroup.removeAllViews()
@@ -535,6 +535,11 @@ class ItemCreateFragment : Fragment() {
                     else  {
                         l.radioGroup.createChildren(layoutInflater, field.choice, model)
                     }
+
+
+                    l.model = model
+                    l.vm = viewModel
+                    singleSelectRadio[field.field_id!!] = l.radioGroup
 
                     val baseId = l.radioGroup.children.first().id
                     l.radioGroup.check(baseId)
