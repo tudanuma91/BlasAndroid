@@ -41,6 +41,9 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.*
+import kotlinx.android.synthetic.main.view_items_5_select.view.*
+import org.json.JSONObject
 import java.util.*
 
 
@@ -85,6 +88,9 @@ class ItemCreateFragment : Fragment() {
     private val singleSelectChoiceMap = mutableMapOf<Int,String?>()
     private val singleSelectList = mutableListOf<MutableMap<String?,ViewItems5SelectBinding>>()
     var singleCnt = 1
+
+
+    private val singleSelectRadio = mutableMapOf<Int,RadioGroup>()
 
     /**
     private lateinit var rootView: LinearLayout
@@ -359,25 +365,38 @@ class ItemCreateFragment : Fragment() {
     /**
      * シングルセレクトの編集フィールド処理
      */
-    private fun whenSingleSelect(singleColCnt:Int, fieldValue:String? ) {
-        val choice = singleSelectChoiceMap[singleColCnt]
+    private fun whenSingleSelect(singleColCnt:Int, fieldValue:String? ,parentFieldId:Int) {
+        var choice = singleSelectChoiceMap[singleColCnt]
         val model = singleSelectMap[singleColCnt]
 
         if( model != null ) {
             val childs =model.radioGroup.children
             var baseId = childs.first().id
-            val test = childs
-
 
             var choiceId = 0
             if( null != choice ) {
+
+
+                if( 0 != parentFieldId ) {
+                    // 連動パラメータの時
+                    val parentRadio = singleSelectRadio[parentFieldId]
+                    val parentCheckId = parentRadio?.radioGroup?.checkedRadioButtonId
+                    val parentValue = this.view?.findViewById<RadioButton>(parentCheckId!!)?.text.toString()
+
+                    Log.d("parentValue",parentValue)
+
+                    val json = JSONObject(choice)
+                    choice = json.getString(parentValue)
+                }
                 val aChoice = choice?.split(",")
 
                 run loop@ {
-                    aChoice.forEachIndexed { index, s ->
-                        if( s == fieldValue ) {
-                            choiceId = index
-                            return@loop
+                    if (aChoice != null) {
+                        aChoice.forEachIndexed { index, s ->
+                            if( s == fieldValue ) {
+                                choiceId = index
+                                return@loop
+                            }
                         }
                     }
                 }
@@ -412,8 +431,10 @@ class ItemCreateFragment : Fragment() {
                         with(field.javaClass.canonicalName!!) {
                             when {
                                 contains("FieldSingleSelect") -> {
+                                    val fieldSingleSelect = field as FieldSingleSelect
+
                                     //シングルセレクトの処理
-                                    whenSingleSelect(singleColCnt,value)
+                                    whenSingleSelect(singleColCnt,value,fieldSingleSelect.parentFieldId!!)
                                     singleColCnt ++
                                 }
                                 else -> {
@@ -471,12 +492,54 @@ class ItemCreateFragment : Fragment() {
                     l.root to l.model
                 }
                 FieldType.SINGLE_SELECTION -> {
+
                     val l: ViewItems5SelectBinding =
-                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_5_select, null, false)
-                    val model = FieldSingleSelect(cellNumber,field.col!!, name, mustInput)
+                        DataBindingUtil.inflate(
+                            layoutInflater, R.layout.view_items_5_select, null, false
+                        )
+                    val model = FieldSingleSelect(cellNumber,field.col!!, name, mustInput,field.parent_field_id)
+
+                    if( 0 != field.parent_field_id ) {
+                        // 連動パラメータ
+                        val jsonChoice = JSONObject(field.choice)
+                        val parents = jsonChoice.names()
+
+                        val child = jsonChoice.getString(parents[0].toString())
+                        model.values = child.split(",").toMutableList()
+
+                        l.radioGroup.createChildren(layoutInflater, child, model)
+
+                        val parentGroup = singleSelectRadio[field.parent_field_id!!]
+
+                        if (parentGroup != null) {
+                            // 親項目が変わったら子も連動して変える(親のセレクトチェンジイベントに細工する)
+                            parentGroup.radioGroup.setOnCheckedChangeListener{ group,checkedId ->
+
+                                val radioButton = this.view?.findViewById<RadioButton>(checkedId)
+                                Log.d("select radio",radioButton?.text.toString())
+                                val parent = radioButton?.text.toString()
+
+                                val child = jsonChoice.getString(parent)
+                                model.values = child.split(",").toMutableList()
+
+                                Log.d("child",child)
+                                l.radioGroup.removeAllViews()
+                                l.radioGroup.createChildren(layoutInflater, child, model)
+
+                                val baseId = l.radioGroup.children.first().id
+                                l.radioGroup.check(baseId)
+                            }
+                        }
+
+                    }
+                    else  {
+                        l.radioGroup.createChildren(layoutInflater, field.choice, model)
+                    }
+
+
                     l.model = model
                     l.vm = viewModel
-                    l.radioGroup.createChildren(layoutInflater, field.choice, model)
+                    singleSelectRadio[field.field_id!!] = l.radioGroup
 
                     val baseId = l.radioGroup.children.first().id
                     l.radioGroup.check(baseId)
@@ -490,7 +553,6 @@ class ItemCreateFragment : Fragment() {
                     //valueMap[field.choice] = l
                     //singleSelectList.add(valueMap)
                     l.root to l.model
-
 
                 }
                 FieldType.MULTIPLE_SELECTION -> {
@@ -561,16 +623,26 @@ class ItemCreateFragment : Fragment() {
     }
 
 
-    private fun RadioGroup.createChildren(inflater: LayoutInflater, separatedText: String?, model: FieldSingleSelect) {
+    private fun RadioGroup.createChildren(
+        inflater: LayoutInflater, separatedText: String?, model: FieldSingleSelect
+    ) {
         separatedText?.also {
             val list = it.split(",")
             model.values.addAll(list)
             list.forEachIndexed { index, s ->
-                val layout = DataBindingUtil.inflate<ViewItemsRadioBinding>(inflater, R.layout.view_items_radio, null, false)
+                val layout = DataBindingUtil.inflate<ViewItemsRadioBinding>(
+                    inflater, R.layout.view_items_radio
+                    , null, false
+                )
                 layout.idx = index
                 layout.model = model
                 layout.text = s
-                this.addView(layout.root, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+                this.addView(
+                    layout.root, ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                        , ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+                )
             }
         }
     }

@@ -28,8 +28,10 @@ data class FieldSingleSelect(
 	override val col:Int,
 	override val title: String,
 	override val mustInput: Boolean,
-	val values: MutableList<String> = mutableListOf(),
-	val selectedIndex: ObservableInt = ObservableInt(-1)): FieldModel {
+	val parentFieldId:Int? = 0,
+	var values: MutableList<String> = mutableListOf(),
+	val selectedIndex: ObservableInt = ObservableInt(-1)
+): FieldModel {
 
 	fun selected(idx: Int) {
 		selectedIndex.set(idx)
@@ -37,7 +39,8 @@ data class FieldSingleSelect(
 
 	override fun convertToString(): String? {
 		val idx = selectedIndex.get()
-		return if (idx == -1) { null } else { values.get(idx) }
+//		return if (idx == -1) { null } else { values.get(idx) }
+		return if (idx == -1) { values.get(0) } else { values.get(idx) }
 	}
 
 	override fun setValue(value: String?) {
@@ -48,6 +51,7 @@ data class FieldSingleSelect(
 			}
 		}
 	}
+
 }
 
 data class FieldMultiSelect(
