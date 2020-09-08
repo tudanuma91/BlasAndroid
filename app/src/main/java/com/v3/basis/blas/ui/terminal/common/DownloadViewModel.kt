@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
-import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.rest.BlasRestCache
 import com.v3.basis.blas.ui.ext.continueDownloadTask
@@ -64,7 +63,7 @@ class DownloadViewModel: ViewModel() {
         readAsync {
             //   読み込み！！（仮機能）
             val pref = preferences()
-            pref.getString(model.projectId, "")!!
+            pref.getString(BlasApp.userId.toString() + "_" + model.projectId + "_", "")!!
         }.subscribeBy {
                 with(model) {
                     uuid = it
@@ -169,7 +168,7 @@ class DownloadViewModel: ViewModel() {
         //   仮のセーブ方法！！
         taskAsync {
             val pref = preferences()
-            pref.edit().putString(model.projectId, uuid.toString()).apply()
+            pref.edit().putString(BlasApp.userId.toString() + "_" + model.projectId + "_", uuid.toString()).apply()
         }
     }
 
@@ -179,7 +178,7 @@ class DownloadViewModel: ViewModel() {
         model.downloadingText.set("ダウンロードに失敗")
         taskAsync {
             val pref = preferences()
-            pref.edit().putString(model.projectId, "").apply()
+            pref.edit().putString( BlasApp.userId.toString() + "_" + model.projectId + "_", "").apply()
         }
     }
 
@@ -226,7 +225,7 @@ class DownloadViewModel: ViewModel() {
         //   仮のセーブ方法！！
         taskAsync {
             val pref = preferences()
-            pref.edit().putString(model.projectId, COMPLETE).apply()
+            pref.edit().putString(BlasApp.userId.toString() + "_" + model.projectId + "_", COMPLETE).apply()
         }
     }
 
