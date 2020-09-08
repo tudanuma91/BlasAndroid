@@ -192,7 +192,7 @@ class ItemImageFragment : Fragment() {
                     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult? ->
                         if (result?.resultCode == Activity.RESULT_OK) {
                             //画像の再取得処理
-                            viewModel.setup(requireContext(), token, projectId, itemId)
+                            viewModel.fetchImage(it)
                         }
                     }
                 startForResult.launch(intent)
