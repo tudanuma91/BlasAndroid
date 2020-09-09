@@ -13,7 +13,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.core.view.children
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableBoolean
 import androidx.fragment.app.Fragment
@@ -41,8 +40,6 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.*
-import kotlinx.android.synthetic.main.view_items_5_select.view.*
 import org.json.JSONObject
 import java.util.*
 
@@ -90,7 +87,7 @@ class ItemCreateFragment : Fragment() {
     var singleCnt = 1
 
 
-    private val singleSelectRadio = mutableMapOf<Int,RadioGroup>()
+    private val singleSelectSpinner = mutableMapOf<Int,Spinner>()
 
     /**
     private lateinit var rootView: LinearLayout
@@ -370,18 +367,16 @@ class ItemCreateFragment : Fragment() {
         val model = singleSelectMap[singleColCnt]
 
         if( model != null ) {
-            val childs =model.radioGroup.children
-            var baseId = childs.first().id
 
-            var choiceId = 0
+            var position = 0
+            var choiceIndex = 0
             if( null != choice ) {
 
 
                 if( 0 != parentFieldId ) {
                     // 連動パラメータの時
-                    val parentRadio = singleSelectRadio[parentFieldId]
-                    val parentCheckId = parentRadio?.radioGroup?.checkedRadioButtonId
-                    val parentValue = this.view?.findViewById<RadioButton>(parentCheckId!!)?.text.toString()
+                    val parentSpinner = singleSelectSpinner[parentFieldId]
+                    val parentValue = parentSpinner?.selectedItem as String
 
                     Log.d("parentValue",parentValue)
 
@@ -394,17 +389,17 @@ class ItemCreateFragment : Fragment() {
                     if (aChoice != null) {
                         aChoice.forEachIndexed { index, s ->
                             if( s == fieldValue ) {
-                                choiceId = index
+                                choiceIndex = index
                                 return@loop
                             }
                         }
                     }
                 }
 
-                baseId += choiceId
+                position = choiceIndex
             }
 
-            model.radioGroup.check( baseId )
+            model.spinner.setSelection(position)
         }
 
 
@@ -507,42 +502,53 @@ class ItemCreateFragment : Fragment() {
                         val child = jsonChoice.getString(parents[0].toString())
                         model.values = child.split(",").toMutableList()
 
-                        l.radioGroup.createChildren(layoutInflater, child, model)
+                        l.spinner.createChildren(child, model)
 
-                        val parentGroup = singleSelectRadio[field.parent_field_id!!]
+                        val parentSpinner = singleSelectSpinner[field.parent_field_id!!]
 
-                        if (parentGroup != null) {
+                        if (parentSpinner != null) {
                             // 親項目が変わったら子も連動して変える(親のセレクトチェンジイベントに細工する)
-                            parentGroup.radioGroup.setOnCheckedChangeListener{ group,checkedId ->
+                            val listener = parentSpinner.onItemSelectedListener as SpinnerItemSelectedListener
+                            listener.optionalAction = { parent, position ->
 
-                                val radioButton = this.view?.findViewById<RadioButton>(checkedId)
-                                Log.d("select radio",radioButton?.text.toString())
-                                val parent = radioButton?.text.toString()
+                                if (parent?.adapter is ArrayAdapter<*>) {// ArrayAdapter<String>
+                                    val item = parent.adapter.getItem(position) as String
+                                    try {
+                                        val newChild = jsonChoice.getString(item)
+                                        model.values = newChild.split(",").toMutableList()
 
-                                val child = jsonChoice.getString(parent)
-                                model.values = child.split(",").toMutableList()
-
-                                Log.d("child",child)
-                                l.radioGroup.removeAllViews()
-                                l.radioGroup.createChildren(layoutInflater, child, model)
-
-                                val baseId = l.radioGroup.children.first().id
-                                l.radioGroup.check(baseId)
+                                        Log.d("child",newChild)
+                                        (l.spinner.adapter as ArrayAdapter<*>).clear()
+                                        l.spinner.createChildren(newChild, model)
+                                        l.spinner.setSelection(0)
+                                        model.selectedIndex.set(position)
+                                    } catch (e: Exception) {
+                                        val ad = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_item)
+                                        ad.addAll("")
+                                        l.spinner.adapter = ad
+                                    }
+                                }
                             }
                         }
-
                     }
                     else  {
-                        l.radioGroup.createChildren(layoutInflater, field.choice, model)
+                        l.spinner.createChildren(field.choice, model)
+                    }
+
+                    l.spinner.onItemSelectedListener = SpinnerItemSelectedListener().apply {
+                        this.selectAction = {
+                            model.selectedIndex.set(it)
+                        }
                     }
 
 
                     l.model = model
                     l.vm = viewModel
-                    singleSelectRadio[field.field_id!!] = l.radioGroup
+                    singleSelectSpinner[field.field_id!!] = l.spinner
 
-                    val baseId = l.radioGroup.children.first().id
-                    l.radioGroup.check(baseId)
+                    if (l.spinner.count > 0) {
+                        l.spinner.setSelection(0)
+                    }
 
                     //一回シングルセレクトをマップに格納
                     singleSelectMap[singleCnt] = l
@@ -623,27 +629,13 @@ class ItemCreateFragment : Fragment() {
     }
 
 
-    private fun RadioGroup.createChildren(
-        inflater: LayoutInflater, separatedText: String?, model: FieldSingleSelect
-    ) {
+    private fun Spinner.createChildren(separatedText: String?, model: FieldSingleSelect) {
         separatedText?.also {
             val list = it.split(",")
             model.values.addAll(list)
-            list.forEachIndexed { index, s ->
-                val layout = DataBindingUtil.inflate<ViewItemsRadioBinding>(
-                    inflater, R.layout.view_items_radio
-                    , null, false
-                )
-                layout.idx = index
-                layout.model = model
-                layout.text = s
-                this.addView(
-                    layout.root, ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                        , ViewGroup.LayoutParams.WRAP_CONTENT
-                    )
-                )
-            }
+            val ad = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_item)
+            ad.addAll(list)
+            this.adapter = ad
         }
     }
 
@@ -714,7 +706,18 @@ class ItemCreateFragment : Fragment() {
         }
     }
 
+    inner class SpinnerItemSelectedListener : AdapterView.OnItemSelectedListener {
 
+        var selectAction: ((position: Int) -> Unit)? = null
+        var optionalAction: ((parent: AdapterView<*>?, position: Int) -> Unit)? = null
+        override fun onNothingSelected(parent: AdapterView<*>?) {
+        }
+
+        override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+            selectAction?.invoke(position)
+            optionalAction?.invoke(parent, position)
+        }
+    }
 }
 
 
