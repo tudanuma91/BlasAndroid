@@ -2,14 +2,11 @@ package com.v3.basis.blas.ui.item.item_image
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.util.Base64
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
-import com.tonyodev.fetch2.*
-import com.tonyodev.fetch2core.Func
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.controller.ImageControllerException
 import com.v3.basis.blas.blasclass.controller.ImagesController
@@ -17,8 +14,6 @@ import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.rest.BlasRestImage
 import com.v3.basis.blas.blasclass.rest.BlasRestImageField
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestImage
-import com.v3.basis.blas.ui.ext.rotateLeft
-import com.v3.basis.blas.ui.ext.rotateRight
 import com.v3.basis.blas.ui.item.item_image.model.ImageFieldModel
 import com.v3.basis.blas.ui.item.item_image.model.ItemImage
 import com.v3.basis.blas.ui.item.item_image.model.ItemImageWithLink

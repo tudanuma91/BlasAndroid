@@ -33,6 +33,8 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.v3.basis.blas.blasclass.service.FetchAddressIntentService
 import com.v3.basis.blas.blasclass.service.LocationConstants
+import com.v3.basis.blas.ui.terminal.BottomNavButton
+import kotlinx.android.synthetic.main.fragment_terminal.view.*
 
 
 /**
@@ -116,6 +118,13 @@ class ItemActivity : AppCompatActivity() {
         }
 
         setBlasCustomView()
+
+        item_list_bottom_navigation.setOnNavigationItemSelectedListener {
+            if (it.itemId == R.id.navi_item_drawing_seach) {
+                startActivity(Intent(this, DrawingSearchActivity::class.java))
+                false
+            } else true
+        }
     }
 
     /**
