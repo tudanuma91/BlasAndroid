@@ -12,16 +12,45 @@
             type="com.v3.basis.blas.activity.DrawingSearchActivity.LabelModel" />
     </data>
 
-    <TextView
-        android:id="@+id/label1"
-        android:text="@{model.name}"
-        android:textSize="12dp"
-        android:padding="6dp"
-        android:textColor="@color/colorWhite"
-        android:gravity="center_vertical"
+    <LinearLayout
+        android:id="@+id/parent"
+        android:orientation="horizontal"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:backColor="@{model.color}"
-        tools:text="Label1"
-        />
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/label"
+            android:text="@{model.name}"
+            android:textSize="12dp"
+            android:padding="6dp"
+            android:textColor="@color/colorWhite"
+            android:gravity="center_vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{v -> activity.clickLabel(model)}"
+            app:backColor="@{model.color}"
+            />
+    </LinearLayout>
+
+<!--    <androidx.constraintlayout.widget.ConstraintLayout-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content">-->
+
+<!--        <TextView-->
+<!--            android:id="@+id/label"-->
+<!--            android:text="@{model.name}"-->
+<!--            android:textSize="12dp"-->
+<!--            android:padding="6dp"-->
+<!--            android:textColor="@color/colorWhite"-->
+<!--            android:gravity="center_vertical"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:onClick="@{v -> activity.clickLabel(model)}"-->
+<!--            tools:text="Label1"-->
+<!--            app:backColor="@{model.color}"-->
+<!--            app:layout_constraintTop_toTopOf="parent"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            />-->
+<!--    </androidx.constraintlayout.widget.ConstraintLayout>-->
+
 </layout>
