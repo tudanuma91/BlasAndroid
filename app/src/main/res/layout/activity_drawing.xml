@@ -15,11 +15,14 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:orientation="vertical"
+        android:background="@color/colorLightGray"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <LinearLayout
             android:id="@+id/header"
+            android:padding="10dp"
+            android:background="@color/colorMain"
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -31,11 +34,103 @@
                 android:src="@drawable/ic_baseline_keyboard_backspace_24"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
                 />
+
+            <LinearLayout
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                >
+                <TextView
+                    android:id="@+id/category"
+                    android:text="カテゴリー名"
+                    android:textColor="@color/colorText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginBottom="4dp"
+                    app:layout_constraintStart_toEndOf="@id/backButton"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/categorySpinner"
+                    />
+
+                <Spinner
+                    android:id="@+id/categorySpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    app:layout_constraintStart_toEndOf="@id/backButton"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                >
+                <TextView
+                    android:id="@+id/subCategory"
+                    android:text="サブカテゴリー名"
+                    android:textColor="@color/colorText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginBottom="4dp"
+                    app:layout_constraintStart_toEndOf="@id/backButton"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/categorySpinner"
+                    />
+
+                <Spinner
+                    android:id="@+id/subCategorySpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    app:layout_constraintStart_toEndOf="@id/backButton"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                >
+                <TextView
+                    android:id="@+id/drawingName"
+                    android:text="図面名"
+                    android:textColor="@color/colorText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginBottom="4dp"
+                    app:layout_constraintStart_toEndOf="@id/backButton"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/categorySpinner"
+                    />
+
+                <Spinner
+                    android:id="@+id/drawingSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    app:layout_constraintStart_toEndOf="@id/backButton"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    />
+            </LinearLayout>
 
         </LinearLayout>
 
         <FrameLayout
+            android:id="@+id/container"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             app:layout_constraintTop_toBottomOf="@id/header"

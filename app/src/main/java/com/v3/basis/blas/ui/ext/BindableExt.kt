@@ -30,4 +30,11 @@ object CustomBindingAdapter {
         this.loadDataWithBaseURL(null, text, "text/html", "utf-8", null)
 //        this.text = Html.fromHtml(text, HtmlCompat.FROM_HTML_MODE_LEGACY)
     }
+
+    @JvmStatic
+    @BindingAdapter(value = ["backColor"], requireAll = false)
+    fun View.backColor(color: Int) {
+
+        this.setBackgroundColor(color)
+    }
 }

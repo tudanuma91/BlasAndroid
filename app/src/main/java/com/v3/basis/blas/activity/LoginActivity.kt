@@ -1,5 +1,6 @@
 package com.v3.basis.blas.activity
 
+import android.graphics.Bitmap
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -12,6 +13,8 @@ import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.view.MenuItem
 import androidx.core.content.ContextCompat.getSystemService
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import com.google.zxing.BinaryBitmap
+import com.google.zxing.multi.qrcode.QRCodeMultiReader
 import com.v3.basis.blas.ui.ext.showBackKeyForActionBar
 
 
@@ -22,6 +25,8 @@ class LoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_login)
         setTitle(R.string.title_login)
         showBackKeyForActionBar()
+
+//        QRCodeMultiReader().decodeMultiple(BinaryBitmap()).first().resultPoints.first().
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
