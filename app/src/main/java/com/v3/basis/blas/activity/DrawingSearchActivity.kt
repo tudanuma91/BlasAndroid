@@ -185,20 +185,7 @@ class DrawingSearchActivity : AppCompatActivity() {
 
                 val item = drawings.get(position)
                 fetchSpots(item.id)
-                currentDrawing = applicationContext.resources.getDrawable(item.resId, null).toBitmap()
-                //  URL使用時は↓
-//                Glide.with(this@DrawingSearchActivity)
-//                    .asBitmap()
-//                    .load(item.drawingFile)
-//                    .into(object : CustomTarget<Bitmap>() {
-//                        override fun onLoadCleared(placeholder: Drawable?) {}
-//                        override fun onResourceReady(
-//                            resource: Bitmap,
-//                            transition: Transition<in Bitmap>?
-//                        ) {
-//                            currentDrawing = resource
-//                        }
-//                    })
+                setDrawingImage(item)
             }
         }
     }
@@ -216,6 +203,7 @@ class DrawingSearchActivity : AppCompatActivity() {
 
         //TODO API呼び出しに置き換える"大阪", "東京"
         categoryEvent.onNext(listOf(
+            //   テストデータ　↓
             DrawingCategory(1, "東京")
         ))
     }
@@ -225,6 +213,7 @@ class DrawingSearchActivity : AppCompatActivity() {
 
         //TODO API呼び出しに置き換える
         subCategoryEvent.onNext(
+            //   テストデータ　↓
             when (drawingCategoryId) {
                 1 -> listOf(
                     DrawingSubCategory(1, "徳洲会"),
@@ -241,6 +230,7 @@ class DrawingSearchActivity : AppCompatActivity() {
 
         //TODO API呼び出しに置き換える
         drawingsEvent.onNext(
+            //   テストデータ　↓
             when (drawingSubCategoryId) {
                 1 -> listOf(
                     Drawings(1, "1F", "", R.drawable.drawing_sample)
@@ -262,6 +252,7 @@ class DrawingSearchActivity : AppCompatActivity() {
 
         //TODO API呼び出しに置き換える
         spotsEvent.onNext(
+            //   テストデータ　↓
             when (drawingId) {
                 1 -> listOf(
                     DrawingSpots("Label1", "red", 100, 200),
@@ -281,6 +272,24 @@ class DrawingSearchActivity : AppCompatActivity() {
                 else -> listOf()
             }
         )
+    }
+
+    private fun setDrawingImage(item: Drawings) {
+
+        currentDrawing = applicationContext.resources.getDrawable(item.resId, null).toBitmap()
+        //  URL使用時は↓
+//                Glide.with(this@DrawingSearchActivity)
+//                    .asBitmap()
+//                    .load(item.drawingFile)
+//                    .into(object : CustomTarget<Bitmap>() {
+//                        override fun onLoadCleared(placeholder: Drawable?) {}
+//                        override fun onResourceReady(
+//                            resource: Bitmap,
+//                            transition: Transition<in Bitmap>?
+//                        ) {
+//                            currentDrawing = resource
+//                        }
+//                    })
     }
 
     inner class LabelModel {
