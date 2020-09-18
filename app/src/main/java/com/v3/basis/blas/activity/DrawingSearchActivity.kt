@@ -56,13 +56,8 @@ class DrawingSearchActivity : AppCompatActivity() {
         setContentView(R.layout.activity_drawing)
 
         bind = DataBindingUtil.setContentView(this, R.layout.activity_drawing)
-
-//        //  サンプル画像の設定
-//        bind.photoView.setImageResource(R.drawable.drawing_sample2)
-
         //  最大１６倍！！
         bind.photoView.attacher.maximumScale = 16.0f
-
         //  初期倍率　= 1.0
         scale = bind.photoView.attacher.scale
 
@@ -83,6 +78,19 @@ class DrawingSearchActivity : AppCompatActivity() {
                     textView.layoutParams = params
                 }
             }
+        }
+
+        bind.photoView.setOnSingleFlingListener { e1, e2, velocityX, velocityY ->
+            val nextPos = drawingSpinner.selectedItemPosition + 1
+            val prevPos = drawingSpinner.selectedItemPosition - 1
+            val left = Math.abs(velocityX) > Math.abs(velocityY) && velocityX > 0
+            val right = Math.abs(velocityX) > Math.abs(velocityY) && velocityX <= 0
+            if (right && nextPos < drawings.size) {
+                drawingSpinner.setSelection(nextPos)
+            } else if (left && prevPos >= 0) {
+                drawingSpinner.setSelection(prevPos)
+            }
+            false
         }
 
         //  スピナーの項目選択時のイベント設定
@@ -238,7 +246,8 @@ class DrawingSearchActivity : AppCompatActivity() {
                     Drawings(1, "1F", "", R.drawable.drawing_sample)
                 )
                 2 -> listOf(
-                    Drawings(2, "1F", "", R.drawable.drawing_sample2)
+                    Drawings(2, "1F", "", R.drawable.drawing_sample2),
+                    Drawings(4, "2F", "", R.drawable.drawing_sample)
                 )
                 3 -> listOf(
                     Drawings(3, "1F", "", R.drawable.sample3)
@@ -263,6 +272,11 @@ class DrawingSearchActivity : AppCompatActivity() {
                 )
                 3 -> listOf(
                     DrawingSpots("Label20", "yellow", 300, 180)
+                )
+                4 -> listOf(
+                    DrawingSpots("Label20", "yellow", 300, 180),
+                    DrawingSpots("Label1", "red", 100, 200),
+                    DrawingSpots("Label2", "blue", 200, 100)
                 )
                 else -> listOf()
             }
