@@ -23,11 +23,34 @@ class SyncBlasRestInquiry : SyncBlasRest() {
 
     val zipDir =  BlasApp.applicationContext().dataDir.path + "/temp/"
 
+    val zipBufferSize = 1024 * 1024
+
+
+    private fun entryZip( filePath:String,zipOutStream: ZipOutputStream ) {
+        Log.d("entryZip()","filePath:" + filePath)
+
+        val zipEntry = ZipEntry( filePath )
+
+        zipOutStream.putNextEntry(zipEntry)
+        FileInputStream(filePath.toString()).use {fileInputStream ->
+            val bytes = ByteArray( zipBufferSize )
+            var length : Int
+            while( fileInputStream.read(bytes).also{ length = it }  >= 0 ) {
+                zipOutStream.write(bytes,0,length)
+            }
+        }
+
+        zipOutStream.closeEntry()
+    }
+
+
     private fun create_zip( zipFile:String ) {
 
         val context = BlasApp.applicationContext()
         val preferences = context.getSharedPreferences(DownloadWorker.COMPLETED_DOWNLOAD, Context.MODE_PRIVATE)
         val all = preferences.all
+
+        val blasDir = BlasApp.applicationContext().dataDir
 
 //        val zipDir =  BlasApp.applicationContext().dataDir.path + "/temp/"
         val directory = File(zipDir)
@@ -36,24 +59,18 @@ class SyncBlasRestInquiry : SyncBlasRest() {
 //        val zipFile = UUID.randomUUID().toString() + ".zip"
         val outputPath = Paths.get( zipDir + zipFile )
         val zipFileCoding: Charset = Charset.forName("Shift_JIS")
-        val zipBufferSize = 1024 * 1024
 
         // TODO:ここでやるべきかは？？？
         // zipを作る
         FileOutputStream( outputPath.toString()  ).use {fileOutputStream ->
             ZipOutputStream( BufferedOutputStream(fileOutputStream), zipFileCoding).use { zipOutStream ->
+
+                entryZip(blasDir.toString() + "/databases/BLAS_DB",zipOutStream)
+
                 all.forEach { key, filePath ->
-                    val zipEntry = ZipEntry( filePath.toString() )
-                    zipOutStream.putNextEntry(zipEntry)
-                    FileInputStream(filePath.toString()).use {fileInputStream ->
-                        val bytes = ByteArray( zipBufferSize )
-                        var length : Int
-                        while( fileInputStream.read(bytes).also{ length = it }  >= 0 ) {
-                            zipOutStream.write(bytes,0,length)
-                        }
-                    }
-                    zipOutStream.closeEntry()
+                    entryZip(filePath.toString(),zipOutStream)
                 }
+
             }
         }
 
