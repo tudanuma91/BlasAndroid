@@ -13,6 +13,7 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.nio.charset.Charset
 import java.nio.file.Paths
+import java.security.MessageDigest
 import java.util.*
 
 import java.util.zip.ZipEntry
@@ -87,9 +88,16 @@ class SyncBlasRestInquiry : SyncBlasRest() {
         val file = File( zipDir + zipFile )
         val base64Zip = createBase64(file)
 
+        val hash = MessageDigest.getInstance("SHA1")
+            .digest(base64Zip?.toByteArray())
+            .joinToString(separator = "") {
+                "%02x".format(it)
+            }
+
         // 送信
         val payload = mapOf(
             "token" to token,
+            "hash" to hash,
             "zip" to base64Zip
         )
 
