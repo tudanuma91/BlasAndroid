@@ -12,10 +12,6 @@
         android:id="@+id/navi_item_seach"
         android:icon="@drawable/ic_search_black_24dp"
         android:title="@string/navi_title_item_search"/>
-    <item
-        android:id="@+id/navi_item_drawing_seach"
-        android:icon="@drawable/ic_search_black_24dp"
-        android:title="@string/navi_title_item_drawing_search"/>
    <!-- <item
         android:id="@+id/navi_item_back"
         android:icon="@drawable/ic_redo_black_24dp"

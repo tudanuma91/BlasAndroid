@@ -8,6 +8,7 @@
     <color name="colorText">#000000</color>
     <color name="colorWhite">#FFFFFF</color>
     <color name="colorGray">#BBBBBB</color>
+    <color name="colorGray2">#888888</color>
     <color name="colorLightGray">#DDDDDD</color>
     
     <drawable name="backgroundGray">@color/colorGray</drawable>

@@ -101,7 +101,8 @@ class ItemActivity : AppCompatActivity() {
             setOf(
                 R.id.navi_item_view, //データ一覧
                 R.id.navi_item_create, //データ新規作成
-                R.id.navi_item_seach //データ検索
+                R.id.navi_item_seach, //データ検索
+                R.id.navi_item_drawing_seach
                // R.id.navi_item_back
             )
         )
@@ -119,11 +120,8 @@ class ItemActivity : AppCompatActivity() {
 
         setBlasCustomView()
 
-        item_list_bottom_navigation.setOnNavigationItemSelectedListener {
-            if (it.itemId == R.id.navi_item_drawing_seach) {
-                startActivity(Intent(this, DrawingSearchActivity::class.java))
-                false
-            } else true
+        item_list_bottom_navigation.setOnClickListener {
+            startActivity(Intent(this, DrawingSearchActivity::class.java))
         }
     }
 
