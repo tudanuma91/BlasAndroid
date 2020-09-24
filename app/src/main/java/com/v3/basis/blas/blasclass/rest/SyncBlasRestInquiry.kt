@@ -7,10 +7,7 @@ import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.app.BlasApp.Companion.token
 import com.v3.basis.blas.blasclass.worker.DownloadWorker
 import org.json.JSONObject
-import java.io.BufferedOutputStream
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
+import java.io.*
 import java.nio.charset.Charset
 import java.nio.file.Paths
 import java.security.MessageDigest
@@ -29,11 +26,11 @@ class SyncBlasRestInquiry : SyncBlasRest() {
     private fun entryZip( filePath:String,zipOutStream: ZipOutputStream ) {
         Log.d("entryZip()","filePath:" + filePath)
 
-        val zipEntry = ZipEntry( filePath )
-
-        zipOutStream.putNextEntry(zipEntry)
         FileInputStream(filePath.toString()).use {fileInputStream ->
             val bytes = ByteArray( zipBufferSize )
+            val zipEntry = ZipEntry( filePath )
+            zipOutStream.putNextEntry(zipEntry)
+
             var length : Int
             while( fileInputStream.read(bytes).also{ length = it }  >= 0 ) {
                 zipOutStream.write(bytes,0,length)
@@ -51,16 +48,12 @@ class SyncBlasRestInquiry : SyncBlasRest() {
         val all = preferences.all
 
         val blasDir = BlasApp.applicationContext().dataDir
-
-//        val zipDir =  BlasApp.applicationContext().dataDir.path + "/temp/"
         val directory = File(zipDir)
         directory.mkdirs()
 
-//        val zipFile = UUID.randomUUID().toString() + ".zip"
         val outputPath = Paths.get( zipDir + zipFile )
         val zipFileCoding: Charset = Charset.forName("Shift_JIS")
 
-        // TODO:ここでやるべきかは？？？
         // zipを作る
         FileOutputStream( outputPath.toString()  ).use {fileOutputStream ->
             ZipOutputStream( BufferedOutputStream(fileOutputStream), zipFileCoding).use { zipOutStream ->
@@ -81,11 +74,12 @@ class SyncBlasRestInquiry : SyncBlasRest() {
         var base64 : String? = null
         try {
             val fis = FileInputStream(file)
-            val length = file.length()
 
             val bytes = ByteArray(file.length().toInt())
             fis.read(bytes)
-            base64 = Base64.encodeToString(bytes,Base64.DEFAULT)
+
+            val flag = Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING   // 足し算されて11になる（bit加算）
+            base64 = Base64.encodeToString(bytes,flag)
         }
         catch ( ex : Exception ) {
             throw ex
