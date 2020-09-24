@@ -120,7 +120,7 @@ class ItemActivity : AppCompatActivity() {
 
         setBlasCustomView()
 
-        item_list_bottom_navigation.setOnClickListener {
+        navi_item_drawing_seach.setOnClickListener {
             startActivity(Intent(this, DrawingSearchActivity::class.java))
         }
     }

@@ -13,14 +13,16 @@
         android:layout_gravity="bottom"
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        >
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/item_list_bottom_navigation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?android:attr/windowBackground"
             android:layout_weight="1"
+            app:elevation="0dp"
+            android:background="?android:attr/windowBackground"
             app:menu="@menu/bottom_navigation_menu_item"
             app:labelVisibilityMode="labeled"
             />
@@ -28,7 +30,7 @@
         <TextView
             android:id="@+id/navi_item_drawing_seach"
             android:drawableTop="@drawable/ic_search_black_24dp"
-            android:background="?android:attr/windowBackground"
+            android:background="@android:color/transparent"
             android:textColor="@color/colorGray2"
             android:paddingTop="8dp"
             android:layout_weight="3"
