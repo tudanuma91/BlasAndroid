@@ -18,13 +18,13 @@ import java.security.NoSuchAlgorithmException
 import java.util.*
 import kotlin.text.StringBuilder
 
-class ImageComponent {
+open class ImageComponent {
 
     /**
      * [説明]
      * 画像のフルパスを取得する
      */
-    fun getSavedDir(context: Context, projectId:String):String {
+    open fun getSavedDir(context: Context, projectId:String):String {
         return context.dataDir.path + "/images/${projectId}/"
     }
 

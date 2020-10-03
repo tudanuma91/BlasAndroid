@@ -4,18 +4,24 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableField
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.v3.basis.blas.R
 import com.v3.basis.blas.databinding.ActivityDrawingBinding
 import com.v3.basis.blas.databinding.ViewLabelBinding
+import com.v3.basis.blas.ui.item.item_drawing_search.*
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
@@ -30,26 +36,21 @@ class DrawingSearchActivity : AppCompatActivity() {
     private val topMargin = 200
     private val leftMargin = 300
 
-    private var scale: Float = 0.0f
+    private var scale: Float = 0.0f // 図面のズームインアウトに使用するスケール変数
     private val disposables: CompositeDisposable = CompositeDisposable()
-
-    data class DrawingCategory(val id: Int, val name: String)
-    data class DrawingSubCategory(val id: Int, val name: String)
-    data class Drawings(val id: Int, val name: String, val drawingFile: String, val resId: Int/* <- テスト用 */)
-    data class DrawingSpots(val name: String, val color: String, val x: Int, val y: Int)
 
     private val categoryEvent: PublishSubject<List<DrawingCategory>> = PublishSubject.create()
     private val subCategoryEvent: PublishSubject<List<DrawingSubCategory>> = PublishSubject.create()
-    private val drawingsEvent: PublishSubject<List<Drawings>> = PublishSubject.create()
-    private val spotsEvent: PublishSubject<List<DrawingSpots>> = PublishSubject.create()
+    private val drawingsEvent: PublishSubject<List<Drawing>> = PublishSubject.create()
+    private val drawingImageEvent: PublishSubject<DrawingImage> = PublishSubject.create()
 
     private val categories: MutableList<DrawingCategory> = mutableListOf()
     private val subCategories: MutableList<DrawingSubCategory> = mutableListOf()
-    private val drawings: MutableList<Drawings> = mutableListOf()
-    private val spots: MutableList<DrawingSpots> = mutableListOf()
+    private val drawings: MutableList<Drawing> = mutableListOf()
     private val labels: MutableList<LabelModel> = mutableListOf()
 
-    private var currentDrawing: Bitmap? = null
+    private val mViewModel: DrawingSearchViewModel by viewModels { DrawingSearchViewModelFactory(
+        this, intent.extras?.getString("token") ?: "",intent.extras?.getString("project_id") ?: "") }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -126,18 +127,21 @@ class DrawingSearchActivity : AppCompatActivity() {
             }
             .addTo(disposables)
 
-        //  ラベル取得コールバック
-        spotsEvent
+        //  図面画像取得コールバック
+        drawingImageEvent
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
+            .subscribeBy { drawingImage ->
+                // ラベルデータのセット
+                val scaleOfOriginalImage = bind.photoView.width.toFloat() / drawingImage.bitmap.width
+                Log.d("DEBUG", "drawingImageEvent: $scaleOfOriginalImage ")
                 bind.labelContainer.removeAllViews()
 
-                val labels = it.map {
+                val labels = drawingImage.spots.map {
                     LabelModel().apply {
                         this.name.set(it.name)
                         this.color.set(it.color)
-                        this.x = it.x
-                        this.y = it.y
+                        this.x = (it.x * scaleOfOriginalImage).toInt()
+                        this.y = (it.y * scaleOfOriginalImage).toInt()
                     }
                 }
                 this.labels.clear()
@@ -150,22 +154,41 @@ class DrawingSearchActivity : AppCompatActivity() {
                     it.layout = txt.parent
                     bind.labelContainer.addView(txt.root)
                 }
-                bind.photoView.setImageBitmap(currentDrawing)
+                // 画像データのセット
+                bind.photoView.setImageBitmap(drawingImage.bitmap)
             }
             .addTo(disposables)
 
-        fetchCategory(0)
+        mViewModel.getCategories().observe(this, androidx.lifecycle.Observer { categories ->
+            Log.d("DEBUG", "onCreate: mViewModel Update UI")
+            categoryEvent.onNext(categories)
+        })
+
+        mViewModel.getSubCategories().observe(this, androidx.lifecycle.Observer { subcategories ->
+            Log.d("DEBUG", "onCreate: mViewModel Update UI")
+            subCategoryEvent.onNext(subcategories)
+        })
+
+        mViewModel.getDrawings().observe(this, androidx.lifecycle.Observer { drawings ->
+            Log.d("DEBUG", "onCreate: mViewModel Update UI")
+            drawingsEvent.onNext(drawings)
+        })
+
+        mViewModel.getDrawingImage().observe(this, androidx.lifecycle.Observer { drawingImage ->
+            Log.d("DEBUG", "onCreate: mViewModel Image Load")
+            drawingImageEvent.onNext(drawingImage)
+        })
     }
 
     //  カテゴリー、サブカテゴリー、図面名をスピナーにセットする
-    fun setSpinners() {
+    private fun setSpinners() {
 
         //  都道府県
         categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
 
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                fetchSubCategory(categories[position].id)
+                mViewModel.selectCategory(categories[position])
             }
         }
 
@@ -174,18 +197,17 @@ class DrawingSearchActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
 
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                fetchDrawings(0, 0, subCategories[position].id)
+                mViewModel.selectSubCategory(subCategories[position])
             }
         }
 
         //  図面名
         drawingSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
 
-                val item = drawings.get(position)
-                fetchSpots(item.id)
-                setDrawingImage(item)
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val drawing = drawings[position]
+                mViewModel.selectDrawing(drawing)
             }
         }
     }
@@ -196,100 +218,6 @@ class DrawingSearchActivity : AppCompatActivity() {
         data.putExtra("drawing", model.name)
         setResult(Activity.RESULT_OK, data)
         finish()
-    }
-
-    //  カテゴリーを取得
-    fun fetchCategory(projectId: Int) {
-
-        //TODO API呼び出しに置き換える"大阪", "東京"
-        categoryEvent.onNext(listOf(
-            //   テストデータ　↓
-            DrawingCategory(1, "東京")
-        ))
-    }
-
-    //  サブカテゴリーを取得
-    fun fetchSubCategory(drawingCategoryId: Int) {
-
-        //TODO API呼び出しに置き換える
-        subCategoryEvent.onNext(
-            //   テストデータ　↓
-            when (drawingCategoryId) {
-                1 -> listOf(
-                    DrawingSubCategory(1, "徳洲会"),
-                    DrawingSubCategory(2, "徳洲会２"),
-                    DrawingSubCategory(3, "徳洲会３")
-                )
-                else -> listOf()
-            }
-        )
-    }
-
-    //  図面を取得
-    fun fetchDrawings(projectId: Int, drawingCategoryId: Int, drawingSubCategoryId: Int) {
-
-        //TODO API呼び出しに置き換える
-        drawingsEvent.onNext(
-            //   テストデータ　↓
-            when (drawingSubCategoryId) {
-                1 -> listOf(
-                    Drawings(1, "1F", "", R.drawable.drawing_sample)
-                )
-                2 -> listOf(
-                    Drawings(2, "1F", "", R.drawable.drawing_sample2),
-                    Drawings(4, "2F", "", R.drawable.drawing_sample)
-                )
-                3 -> listOf(
-                    Drawings(3, "1F", "", R.drawable.sample3)
-                )
-                else -> listOf()
-            }
-        )
-    }
-
-    //  ラベルを取得
-    fun fetchSpots(drawingId: Int) {
-
-        //TODO API呼び出しに置き換える
-        spotsEvent.onNext(
-            //   テストデータ　↓
-            when (drawingId) {
-                1 -> listOf(
-                    DrawingSpots("Label1", "red", 100, 200),
-                    DrawingSpots("Label2", "blue", 200, 100)
-                )
-                2 -> listOf(
-                    DrawingSpots("Label10", "green", 300, 150)
-                )
-                3 -> listOf(
-                    DrawingSpots("Label20", "yellow", 300, 180)
-                )
-                4 -> listOf(
-                    DrawingSpots("Label20", "yellow", 300, 180),
-                    DrawingSpots("Label1", "red", 100, 200),
-                    DrawingSpots("Label2", "blue", 200, 100)
-                )
-                else -> listOf()
-            }
-        )
-    }
-
-    private fun setDrawingImage(item: Drawings) {
-
-        currentDrawing = applicationContext.resources.getDrawable(item.resId, null).toBitmap()
-        //  URL使用時は↓
-//                Glide.with(this@DrawingSearchActivity)
-//                    .asBitmap()
-//                    .load(item.drawingFile)
-//                    .into(object : CustomTarget<Bitmap>() {
-//                        override fun onLoadCleared(placeholder: Drawable?) {}
-//                        override fun onResourceReady(
-//                            resource: Bitmap,
-//                            transition: Transition<in Bitmap>?
-//                        ) {
-//                            currentDrawing = resource
-//                        }
-//                    })
     }
 
     inner class LabelModel {

@@ -121,7 +121,12 @@ class ItemActivity : AppCompatActivity() {
         setBlasCustomView()
 
         navi_item_drawing_seach.setOnClickListener {
-            startActivity(Intent(this, DrawingSearchActivity::class.java))
+            val intent = Intent(this, DrawingSearchActivity::class.java)
+            val token:String = this.intent.extras?.get("token") as String? ?: ""
+            intent.putExtra("token", token)
+            val projectId:String = this.intent.extras?.get("project_id") as String? ?: ""
+            intent.putExtra("project_id", projectId)
+            startActivity(intent)
         }
     }
 
