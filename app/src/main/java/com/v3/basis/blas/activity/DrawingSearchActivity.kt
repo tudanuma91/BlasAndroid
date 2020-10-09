@@ -104,6 +104,16 @@ class DrawingSearchActivity : AppCompatActivity() {
                 categories.clear()
                 categories.addAll(it)
                 categorySpinner.adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, it.map { it.name })
+
+                // 画面回転時の選択状態をViewModelから取得する
+                val selectedCategory = mViewModel.selectedCategory.value
+                selectedCategory?.let {selected ->
+                    categories.forEachIndexed { index, category ->
+                        if (selected.id == category.id) {
+                            categorySpinner.setSelection(index)
+                        }
+                    }
+                }
             }
             .addTo(disposables)
 
@@ -114,6 +124,16 @@ class DrawingSearchActivity : AppCompatActivity() {
                 subCategories.clear()
                 subCategories.addAll(it)
                 subCategorySpinner.adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, it.map { it.name })
+
+                // 画面回転時の選択状態をViewModelから取得する
+                val selectedSubCategory = mViewModel.selectedSubCategory.value
+                selectedSubCategory?.let {selected ->
+                    subCategories.forEachIndexed { index, subCategory  ->
+                        if (selected.id == subCategory.id) {
+                            subCategorySpinner.setSelection(index)
+                        }
+                    }
+                }
             }
             .addTo(disposables)
 
@@ -124,6 +144,16 @@ class DrawingSearchActivity : AppCompatActivity() {
                 drawings.clear()
                 drawings.addAll(it)
                 drawingSpinner.adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, it.map { it.name })
+
+                // 画面回転時の選択状態をViewModelから取得する
+                val selectedDrawing = mViewModel.selectedDrawing.value
+                selectedDrawing?.let {selected ->
+                    drawings.forEachIndexed { index, drawing ->
+                        if (selected.id == drawing.id) {
+                            drawingSpinner.setSelection(index)
+                        }
+                    }
+                }
             }
             .addTo(disposables)
 

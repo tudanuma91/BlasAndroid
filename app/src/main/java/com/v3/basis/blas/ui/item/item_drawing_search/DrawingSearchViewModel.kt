@@ -35,9 +35,9 @@ class DrawingSearchViewModel(
     private val unselectedString = "----------"
 
     private val drawingsController: DrawingsController = DrawingsController(context, projectId)
-    private val selectedCategory = MutableLiveData<DrawingCategory>()
-    private val selectedSubCategory = MutableLiveData<DrawingSubCategory>()
-    private val selectedDrawing = MutableLiveData<Drawing>()
+    val selectedCategory = MutableLiveData<DrawingCategory>()
+    val selectedSubCategory = MutableLiveData<DrawingSubCategory>()
+    val selectedDrawing = MutableLiveData<Drawing>()
 
     private val categories: MutableLiveData<List<DrawingCategory>> by lazy {
         MutableLiveData<List<DrawingCategory>>().also {
