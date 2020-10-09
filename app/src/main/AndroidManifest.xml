@@ -62,8 +62,7 @@
         </activity>
         <activity
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-            android:name=".activity.DrawingSearchActivity"
-            android:screenOrientation="landscape" />
+            android:name=".activity.DrawingSearchActivity"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"
