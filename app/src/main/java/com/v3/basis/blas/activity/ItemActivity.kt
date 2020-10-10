@@ -1,6 +1,7 @@
 package com.v3.basis.blas.activity
 
 import android.Manifest
+import android.app.Activity
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -25,12 +26,15 @@ import android.os.Handler
 import android.os.Looper
 import android.os.ResultReceiver
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
+import com.v3.basis.blas.activity.ItemImageActivity.Companion.createIntent
 import com.v3.basis.blas.blasclass.service.FetchAddressIntentService
 import com.v3.basis.blas.blasclass.service.LocationConstants
 import com.v3.basis.blas.ui.terminal.BottomNavButton
@@ -121,12 +125,22 @@ class ItemActivity : AppCompatActivity() {
         setBlasCustomView()
 
         navi_item_drawing_seach.setOnClickListener {
+            val startForResult =
+                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult? ->
+                    if (result?.resultCode == Activity.RESULT_OK) {
+                        result.data?.let { data: Intent ->
+                            val freeWord = data.getStringExtra(DrawingSearchActivity.SEARCH_FREEWORD)
+                            searchFreeWord = freeWord
+                            reloard()
+                        }
+                    }
+                }
             val intent = Intent(this, DrawingSearchActivity::class.java)
             val token:String = this.intent.extras?.get("token") as String? ?: ""
             intent.putExtra("token", token)
             val projectId:String = this.intent.extras?.get("project_id") as String? ?: ""
             intent.putExtra("project_id", projectId)
-            startActivity(intent)
+            startForResult.launch(intent)
         }
     }
 

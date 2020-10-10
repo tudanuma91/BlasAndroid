@@ -2,22 +2,16 @@ package com.v3.basis.blas.activity
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.graphics.drawable.toBitmap
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableField
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.v3.basis.blas.R
 import com.v3.basis.blas.databinding.ActivityDrawingBinding
 import com.v3.basis.blas.databinding.ViewLabelBinding
@@ -31,6 +25,9 @@ import kotlinx.android.synthetic.main.activity_drawing.*
 
 
 class DrawingSearchActivity : AppCompatActivity() {
+    companion object {
+        val SEARCH_FREEWORD: String = "search_freeword"
+    }
 
     private lateinit var bind: ActivityDrawingBinding
     private val topMargin = 200
@@ -168,8 +165,8 @@ class DrawingSearchActivity : AppCompatActivity() {
 
                 val labels = drawingImage.spots.map {
                     LabelModel().apply {
-                        this.name.set(it.name)
-                        this.color.set(it.color)
+                        this.name = it.name
+                        this.color = it.color
                         this.x = (it.x * scaleOfOriginalImage).toInt()
                         this.y = (it.y * scaleOfOriginalImage).toInt()
                     }
@@ -243,17 +240,16 @@ class DrawingSearchActivity : AppCompatActivity() {
     }
 
     fun clickLabel(model: LabelModel) {
-        //TODO ラベル名で検索
-        val data = Intent()
-        data.putExtra("drawing", model.name)
-        setResult(Activity.RESULT_OK, data)
+        val intent = Intent()
+        intent.putExtra(SEARCH_FREEWORD, model.name)
+        setResult(Activity.RESULT_OK, intent)
         finish()
     }
 
     inner class LabelModel {
         var layout: View? = null
-        val name: ObservableField<String> = ObservableField("")
-        val color: ObservableField<String> = ObservableField("")
+        var name: String = ""
+        var color: String = ""
         var x: Int = 0
         var y: Int = 0
     }
