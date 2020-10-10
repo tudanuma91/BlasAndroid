@@ -29,7 +29,7 @@
 
         <TextView
             android:id="@+id/navi_item_drawing_seach"
-            android:drawableTop="@drawable/ic_search_black_24dp"
+            android:drawableTop="@drawable/ic_search_gray_24dp"
             android:background="@android:color/transparent"
             android:textColor="@color/colorGray2"
             android:paddingTop="8dp"
