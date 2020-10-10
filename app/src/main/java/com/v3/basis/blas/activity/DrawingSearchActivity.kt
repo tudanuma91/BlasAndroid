@@ -2,7 +2,9 @@ package com.v3.basis.blas.activity
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
+import android.text.TextUtils
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -11,7 +13,6 @@ import android.widget.ArrayAdapter
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.databinding.ObservableField
 import com.v3.basis.blas.R
 import com.v3.basis.blas.databinding.ActivityDrawingBinding
 import com.v3.basis.blas.databinding.ViewLabelBinding
@@ -26,7 +27,7 @@ import kotlinx.android.synthetic.main.activity_drawing.*
 
 class DrawingSearchActivity : AppCompatActivity() {
     companion object {
-        val SEARCH_FREEWORD: String = "search_freeword"
+        const val SEARCH_FREEWORD: String = "search_freeword"
     }
 
     private lateinit var bind: ActivityDrawingBinding
@@ -178,6 +179,15 @@ class DrawingSearchActivity : AppCompatActivity() {
                     val txt = DataBindingUtil.inflate<ViewLabelBinding>(layoutInflater, R.layout.view_label, null, false)
                     txt.activity = this
                     txt.model = it
+
+                    if (it.color == "yellow") {
+                        // 黄色のラベルの文字色は黒色
+                        txt.label.setTextColor(Color.BLACK)
+                    }
+                    txt.label.maxEms = 10   // 最大10文字まで表示
+                    txt.label.ellipsize = TextUtils.TruncateAt.END  // ラベルが11文字以上の時は末尾に「...」を表示
+                    txt.label.setSingleLine()   // 1行表示に指定
+
                     it.layout = txt.parent
                     bind.labelContainer.addView(txt.root)
                 }
@@ -203,7 +213,13 @@ class DrawingSearchActivity : AppCompatActivity() {
 
         mViewModel.getDrawingImage().observe(this, androidx.lifecycle.Observer { drawingImage ->
             Log.d("DEBUG", "onCreate: mViewModel Image Load")
-            drawingImageEvent.onNext(drawingImage)
+            if (drawingImage == null) {
+                this.labels.clear()
+                bind.labelContainer.removeAllViews()
+                bind.photoView.setImageBitmap(null)
+            } else {
+                drawingImageEvent.onNext(drawingImage)
+            }
         })
     }
 

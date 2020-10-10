@@ -154,6 +154,10 @@ class DrawingSearchViewModel(
 
     private fun loadDrawingImage(data: MutableLiveData<DrawingImage>) {
         selectedDrawing.value?.let {
+            if (it.id == 0) {
+                data.postValue(null)
+                return@let // 図面無しを選択している場合は処理終了
+            }
             val spots = getSpots()
             // 対象のデータがローカルにあるか確認
             val bmp:Bitmap? = drawingsController.loadImageFromLocal( it.drawingFile )
