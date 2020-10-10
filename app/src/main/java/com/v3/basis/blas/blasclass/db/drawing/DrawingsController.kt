@@ -1,7 +1,16 @@
 package com.v3.basis.blas.blasclass.db.drawing
 
+import android.content.ContentValues
 import android.content.Context
+import android.graphics.Bitmap
+import com.v3.basis.blas.blasclass.component.DrawingImageComponent
+import com.v3.basis.blas.blasclass.component.ImageComponent
 import com.v3.basis.blas.blasclass.db.BaseController
+import com.v3.basis.blas.blasclass.db.data.Images
+import com.v3.basis.blas.blasclass.db.data.Items
+import com.v3.basis.blas.ui.item.item_image.model.ItemImage
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class DrawingsController(context: Context, projectId: String): BaseController(context, projectId) {
@@ -98,6 +107,30 @@ class DrawingsController(context: Context, projectId: String): BaseController(co
         cursor?.close()
 
         return ret
+    }
+
+    /**
+     * [説明]
+     * 画像をローカルに保存する
+     * [引数]
+     * filename:ファイル名
+     * bmp: 画像データ
+     */
+    fun saveImageToLocal(filename: String, bmp: Bitmap): Boolean {
+        bmp.setHasAlpha(true)   // アルファチャンネルを有効にする（黒塗り画像の回避）
+        val hash: String = DrawingImageComponent().saveBmp2Local(context, projectId, filename, bmp)
+        return hash.isNotEmpty()
+    }
+
+    /**
+     * [説明]
+     * 画像をローカルから取得する
+     * [引数]
+     * filename:ファイル名
+     * bmp: 画像データ
+     */
+    fun loadImageFromLocal(filename: String): Bitmap? {
+        return DrawingImageComponent().readBmpFromLocal(context, projectId, filename)
     }
 }
 

@@ -57,7 +57,7 @@ open class ImageComponent {
      * 画像ファイルのハッシュ値
      *
      */
-    fun saveBmp2Local(context: Context, projectId:String, fileName:String, bmp:Bitmap):String {
+    open fun saveBmp2Local(context: Context, projectId:String, fileName:String, bmp:Bitmap):String {
         var hash = ""
         if(context == null) {
             Log.d("blas", "contextがnullです")

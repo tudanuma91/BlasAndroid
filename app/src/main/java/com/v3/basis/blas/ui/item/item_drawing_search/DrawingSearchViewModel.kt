@@ -156,11 +156,7 @@ class DrawingSearchViewModel(
         selectedDrawing.value?.let {
             val spots = getSpots()
             // 対象のデータがローカルにあるか確認
-            val bmp = DrawingImageComponent().readBmpFromLocal(
-                context,
-                it.id.toString(),
-                it.drawingFile
-            )
+            val bmp:Bitmap? = drawingsController.loadImageFromLocal( it.drawingFile )
             if (bmp != null) {
                 Log.d(
                     TAG,
@@ -179,6 +175,8 @@ class DrawingSearchViewModel(
                     val bmp =
                         BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
                     data.postValue(DrawingImage(bmp,spots))
+                    // 画像データをローカルストレージに保存する
+                    drawingsController.saveImageToLocal(it.drawingFile ,bmp)
                 },
                 funcError = { i: Int, i1: Int ->
                     Log.d(TAG, "loadDrawingImage: REMOTE ERROR")
