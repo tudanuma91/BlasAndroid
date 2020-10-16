@@ -150,4 +150,12 @@ dependencies {
     implementation "androidx.tonyodev.fetch2:xfetch2:3.1.5"
 
     debugImplementation 'com.amitshekhar.android:debug-db:1.0.6'
+
+    //バーコードで必要なライブラリ
+    def camerax_version = "1.0.0-beta03"
+    implementation "androidx.camera:camera-core:$camerax_version"
+    implementation "androidx.camera:camera-camera2:$camerax_version"
+    implementation "androidx.camera:camera-lifecycle:$camerax_version"
+    implementation "androidx.camera:camera-view:1.0.0-alpha10"
+    implementation 'com.google.android.gms:play-services-vision:20.1.2'
 }

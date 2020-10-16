@@ -49,7 +49,8 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
         super.onViewCreated(view, savedInstanceState)
-
+       // userName.setText("konishiadmin")
+       // password.setText("afd0279c")
         setListener(btnLogin, ::loginSuccess, ::loginError)
     }
 
@@ -69,21 +70,6 @@ class LoginFragment : Fragment() {
                 BlasRestAuth(payload, login, error).execute()
             }
         }
-
-        //sample worker
-//        workerSample.setOnClickListener {
-//            WorkerHelper.startDownload<SampleWorker>(this, "", "") {state, progress ->
-//
-//                when (state) {
-//                    WorkInfo.State.ENQUEUED -> {
-//                        Log.d("foreground worker", "enqueued")
-//                    }
-//                    WorkInfo.State.RUNNING -> {
-//                        Log.d("foreground worker", "running, progress: $progress")
-//                    }
-//                }
-//            }
-//        }
     }
 
     /**
