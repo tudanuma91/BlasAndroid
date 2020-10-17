@@ -7,19 +7,38 @@ import java.io.ByteArrayOutputStream
 import java.io.FileOutputStream
 import java.security.MessageDigest
 
+/**
+ * 図面の画像データを扱うコンポーネントクラス。
+ */
 class DrawingImageComponent: ImageComponent() {
+    private val TAG="DrawingImageComponent"
+
+    /**
+     * 画像データの保存先のファイルパスを取得する。
+     * @param context コンテキスト
+     * @param projectId プロジェクトID
+     * @return 保存先のファイルパス
+     */
     override fun getSavedDir(context: Context, projectId:String):String {
         return context.dataDir.path + "/drawings/${projectId}/"
     }
 
+    /**
+     * ローカルストレージに画像データを保存する。
+     * @param context コンテキスト
+     * @param projectId プロジェクトID
+     * @param fileName 保存するファイル名
+     * @param bmp 保存する画像データ
+     * @return 画像データのMD5ハッシュ文字列。エラーの場合は空文字列が設定される。
+     */
     override fun saveBmp2Local(context: Context, projectId:String, fileName:String, bmp: Bitmap):String {
         var hash = ""
         if(context == null) {
-            Log.d("blas", "contextがnullです")
+            Log.d(TAG, "saveBmp2Local: contextがnullです")
             return hash
         }
         if(bmp == null) {
-            Log.d("blas", "bmpがnullです")
+            Log.d(TAG, "saveBmp2Local : bmpがnullです")
             return hash
         }
 
@@ -46,13 +65,22 @@ class DrawingImageComponent: ImageComponent() {
         return hash
     }
 
+    /**
+     * ファイル名から拡張子を判定し、対応するBitmap.CompressFormatタイプを返す。
+     * 対応フォーマットは、jpeg,pngおよびwebpとし、それ以外はjpegとして扱う。
+     * @param filename ファイル名
+     * @return 対応するBitmap.CompressFormatタイプ
+     */
     private fun getCompressFormat(filename: String): Bitmap.CompressFormat {
         return when(getExt(filename).toUpperCase()){
             "JPEG" -> Bitmap.CompressFormat.JPEG
             "JPG" -> Bitmap.CompressFormat.JPEG
             "PNG" -> Bitmap.CompressFormat.PNG
             "WEBP" -> Bitmap.CompressFormat.WEBP
-            else -> Bitmap.CompressFormat.JPEG
+            else -> {
+                Log.d(TAG, "This extension is not supported: filename=${getExt(filename)}")
+                Bitmap.CompressFormat.JPEG
+            }
         }
     }
 }

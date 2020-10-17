@@ -124,17 +124,21 @@ class ItemActivity : AppCompatActivity() {
 
         setBlasCustomView()
 
+        // ナビゲーション内の図面検索がクリックされた時の処理
         navi_item_drawing_seach.setOnClickListener {
+            // DrawingSearchActivityの実行結果をハンドリングするための記述
             val startForResult =
                 registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult? ->
                     if (result?.resultCode == Activity.RESULT_OK) {
                         result.data?.let { data: Intent ->
+                            // DrawingSearchActivityの実行結果から検索フリーワードを取得し、アイテムの検索を実行する
                             val freeWord = data.getStringExtra(DrawingSearchActivity.SEARCH_FREEWORD)
                             searchFreeWord = freeWord
                             reloard()
                         }
                     }
                 }
+            // DrawingSearchActivityを起動するためのインテントを設定する
             val intent = Intent(this, DrawingSearchActivity::class.java)
             val token:String = this.intent.extras?.get("token") as String? ?: ""
             intent.putExtra("token", token)

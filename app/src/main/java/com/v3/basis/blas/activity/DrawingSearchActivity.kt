@@ -23,16 +23,18 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.subjects.PublishSubject
 import kotlinx.android.synthetic.main.activity_drawing.*
+import kotlin.math.abs
 
-
+/**
+ * 図面検索のアクティビティクラス
+ */
 class DrawingSearchActivity : AppCompatActivity() {
     companion object {
         const val SEARCH_FREEWORD: String = "search_freeword"
     }
 
+    private val TAG: String = "DrawingSearchActivity"
     private lateinit var bind: ActivityDrawingBinding
-    private val topMargin = 200
-    private val leftMargin = 300
 
     private var scale: Float = 0.0f // 図面のズームインアウトに使用するスケール変数
     private val disposables: CompositeDisposable = CompositeDisposable()
@@ -79,11 +81,11 @@ class DrawingSearchActivity : AppCompatActivity() {
             }
         }
 
-        bind.photoView.setOnSingleFlingListener { e1, e2, velocityX, velocityY ->
+        bind.photoView.setOnSingleFlingListener { _, _, velocityX, velocityY ->
             val nextPos = drawingSpinner.selectedItemPosition + 1
             val prevPos = drawingSpinner.selectedItemPosition - 1
-            val left = Math.abs(velocityX) > Math.abs(velocityY) && velocityX > 0
-            val right = Math.abs(velocityX) > Math.abs(velocityY) && velocityX <= 0
+            val left = abs(velocityX) > abs(velocityY) && velocityX > 0
+            val right = abs(velocityX) > abs(velocityY) && velocityX <= 0
             if (right && nextPos < drawings.size) {
                 drawingSpinner.setSelection(nextPos)
             } else if (left && prevPos >= 0) {
@@ -92,16 +94,17 @@ class DrawingSearchActivity : AppCompatActivity() {
             false
         }
 
-        //  スピナーの項目選択時のイベント設定
+        //  スピナーの初期化と項目選択時のイベント設定
         setSpinners()
 
         //  カテゴリー取得コールバック
         categoryEvent
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
+            .subscribeBy { list ->
+                Log.d(TAG, "categoryEvent: start ")
                 categories.clear()
-                categories.addAll(it)
-                categorySpinner.adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, it.map { it.name })
+                categories.addAll(list)
+                categorySpinner.adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, list.map { it.name })
 
                 // 画面回転時の選択状態をViewModelから取得する
                 val selectedCategory = mViewModel.selectedCategory.value
@@ -112,16 +115,18 @@ class DrawingSearchActivity : AppCompatActivity() {
                         }
                     }
                 }
+                Log.d(TAG, "categoryEvent: end ")
             }
             .addTo(disposables)
 
         //  サブカテゴリー取得コールバック
         subCategoryEvent
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
+            .subscribeBy { list ->
+                Log.d(TAG, "subCategoryEvent: start ")
                 subCategories.clear()
-                subCategories.addAll(it)
-                subCategorySpinner.adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, it.map { it.name })
+                subCategories.addAll(list)
+                subCategorySpinner.adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, list.map { it.name })
 
                 // 画面回転時の選択状態をViewModelから取得する
                 val selectedSubCategory = mViewModel.selectedSubCategory.value
@@ -132,16 +137,18 @@ class DrawingSearchActivity : AppCompatActivity() {
                         }
                     }
                 }
+                Log.d(TAG, "subCategoryEvent: end ")
             }
             .addTo(disposables)
 
         //  図面取得コールバック
         drawingsEvent
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
+            .subscribeBy { list ->
+                Log.d(TAG, "drawingsEvent: start ")
                 drawings.clear()
-                drawings.addAll(it)
-                drawingSpinner.adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, it.map { it.name })
+                drawings.addAll(list)
+                drawingSpinner.adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, list.map { it.name })
 
                 // 画面回転時の選択状態をViewModelから取得する
                 val selectedDrawing = mViewModel.selectedDrawing.value
@@ -152,6 +159,7 @@ class DrawingSearchActivity : AppCompatActivity() {
                         }
                     }
                 }
+                Log.d(TAG, "drawingsEvent: end ")
             }
             .addTo(disposables)
 
@@ -159,9 +167,9 @@ class DrawingSearchActivity : AppCompatActivity() {
         drawingImageEvent
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy { drawingImage ->
+                Log.d(TAG, "drawingImageEvent: start ")
                 // ラベルデータのセット
                 val scaleOfOriginalImage = bind.photoView.width.toFloat() / drawingImage.bitmap.width
-                Log.d("DEBUG", "drawingImageEvent: $scaleOfOriginalImage ")
                 bind.labelContainer.removeAllViews()
 
                 val labels = drawingImage.spots.map {
@@ -193,27 +201,29 @@ class DrawingSearchActivity : AppCompatActivity() {
                 }
                 // 画像データのセット
                 bind.photoView.setImageBitmap(drawingImage.bitmap)
+                Log.d(TAG, "drawingImageEvent: end ")
             }
             .addTo(disposables)
 
+        // ViewModelのカテゴリに対する監視
         mViewModel.getCategories().observe(this, androidx.lifecycle.Observer { categories ->
-            Log.d("DEBUG", "onCreate: mViewModel Update UI")
             categoryEvent.onNext(categories)
         })
 
+        // ViewModelのサブカテゴリに対する監視
         mViewModel.getSubCategories().observe(this, androidx.lifecycle.Observer { subcategories ->
-            Log.d("DEBUG", "onCreate: mViewModel Update UI")
             subCategoryEvent.onNext(subcategories)
         })
 
+        // ViewModelの図面に対する監視
         mViewModel.getDrawings().observe(this, androidx.lifecycle.Observer { drawings ->
-            Log.d("DEBUG", "onCreate: mViewModel Update UI")
             drawingsEvent.onNext(drawings)
         })
 
+        // ViewModelの図面画像に対する監視
         mViewModel.getDrawingImage().observe(this, androidx.lifecycle.Observer { drawingImage ->
-            Log.d("DEBUG", "onCreate: mViewModel Image Load")
             if (drawingImage == null) {
+                Log.d(TAG, "Erase labels and image ")
                 this.labels.clear()
                 bind.labelContainer.removeAllViews()
                 bind.photoView.setImageBitmap(null)
@@ -223,7 +233,9 @@ class DrawingSearchActivity : AppCompatActivity() {
         })
     }
 
-    //  カテゴリー、サブカテゴリー、図面名をスピナーにセットする
+    /**
+     * カテゴリー、サブカテゴリー、図面名をスピナーにセットする
+     */
     private fun setSpinners() {
 
         //  都道府県
@@ -231,6 +243,7 @@ class DrawingSearchActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
 
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                Log.d(TAG, "Category selected: position=$position ")
                 mViewModel.selectCategory(categories[position])
             }
         }
@@ -240,6 +253,7 @@ class DrawingSearchActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
 
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                Log.d(TAG, "SubCategory selected: position=$position ")
                 mViewModel.selectSubCategory(subCategories[position])
             }
         }
@@ -249,19 +263,29 @@ class DrawingSearchActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
 
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                Log.d(TAG, "Drawing selected: position=$position ")
                 val drawing = drawings[position]
                 mViewModel.selectDrawing(drawing)
             }
         }
     }
 
+    /**
+     * 選択したラベルの情報を呼び出し元のアクティビティに渡し、このアクティビティを終了する。
+     *
+     * @param model ユーザーに選択されたラベルモデルオブジェクト
+     */
     fun clickLabel(model: LabelModel) {
+        Log.d(TAG, "Label selected: name=${model.name} ")
         val intent = Intent()
         intent.putExtra(SEARCH_FREEWORD, model.name)
         setResult(Activity.RESULT_OK, intent)
         finish()
     }
 
+    /**
+     * ラベルモデルクラス
+     */
     inner class LabelModel {
         var layout: View? = null
         var name: String = ""

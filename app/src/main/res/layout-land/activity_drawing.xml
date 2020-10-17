@@ -149,20 +149,6 @@
                 android:layout_height="match_parent"
                 />
 
-<!--            <TextView-->
-<!--                android:id="@+id/label1"-->
-<!--                android:text="ラベル１"-->
-<!--                android:textSize="12dp"-->
-<!--                android:paddingStart="10dp"-->
-<!--                android:textColor="@color/colorWhite"-->
-<!--                android:gravity="center_vertical"-->
-<!--                android:layout_width="80dp"-->
-<!--                android:layout_height="20dp"-->
-<!--                android:layout_marginTop="200px"-->
-<!--                android:layout_marginStart="300px"-->
-<!--                android:background="@color/colorAccent"-->
-<!--                />-->
-
         </FrameLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
