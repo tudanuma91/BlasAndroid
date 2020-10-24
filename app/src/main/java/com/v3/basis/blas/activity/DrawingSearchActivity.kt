@@ -24,6 +24,7 @@ import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.subjects.PublishSubject
 import kotlinx.android.synthetic.main.activity_drawing.*
 import kotlin.math.abs
+import kotlin.math.min
 
 /**
  * 図面検索のアクティビティクラス
@@ -169,7 +170,8 @@ class DrawingSearchActivity : AppCompatActivity() {
             .subscribeBy { drawingImage ->
                 Log.d(TAG, "drawingImageEvent: start ")
                 // ラベルデータのセット
-                val scaleOfOriginalImage = bind.photoView.width.toFloat() / drawingImage.bitmap.width
+                // 端末上に表示されるサイズとビットマップのサイズからラベルに適するスケールを計算
+                val scaleOfOriginalImage = min(bind.photoView.width.toFloat() / drawingImage.bitmap.width, bind.photoView.height.toFloat() / drawingImage.bitmap.height)
                 bind.labelContainer.removeAllViews()
 
                 val labels = drawingImage.spots.map {
