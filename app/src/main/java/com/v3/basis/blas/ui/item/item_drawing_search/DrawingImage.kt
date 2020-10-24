@@ -11,6 +11,20 @@ import android.graphics.Bitmap
 data class DrawingImage(
     val bitmap: Bitmap,
     val spots: List<DrawingSpot>) {
+
+    init {
+        // 設置箇所未定（Int.MIN_VALUE）を図面中央に配置する
+        val initX = bitmap.width / 2
+        val initY = bitmap.height / 2
+        spots.forEach {
+            if (it.x == Int.MIN_VALUE) {
+                it.x = initX
+            }
+            if (it.y == Int.MIN_VALUE) {
+                it.y = initY
+            }
+        }
+    }
 }
 
 /**
@@ -24,6 +38,6 @@ data class DrawingImage(
 data class DrawingSpot(
     val name: String,
     val color: String,
-    val x: Int,
-    val y: Int) {
+    var x: Int,
+    var y: Int) {
 }

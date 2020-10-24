@@ -279,8 +279,18 @@ class DrawingSearchViewModel(
             Log.d(TAG, "Spot got: $it ")
             val name = it["name"] ?: ""
             val color = it["shape_color"] ?: ""
-            val x = it["abscissa"]?.toFloat() ?: 0.0f
-            val y = it["ordinate"]?.toFloat() ?: 0.0f
+            val x :Float = if (it["abscissa"]?.isNotBlank()!!) {
+                it["abscissa"]?.toFloat()!!
+            } else {
+                // 設置箇所未定（Int.MIN_VALUE）
+                Int.MIN_VALUE.toFloat()
+            }
+            val y :Float = if (it["ordinate"]?.isNotBlank()!!) {
+                it["ordinate"]?.toFloat()!!
+            } else {
+                // 設置箇所未定（Int.MIN_VALUE）
+                Int.MIN_VALUE.toFloat()
+            }
             list.plusAssign(DrawingSpot(name, color, x.toInt(), y.toInt()))
         }
         Log.d(TAG, "getSpots: end ")
