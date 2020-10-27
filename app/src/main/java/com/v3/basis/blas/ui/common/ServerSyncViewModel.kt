@@ -3,7 +3,7 @@ package com.v3.basis.blas.ui.common
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.v3.basis.blas.blasclass.db.data.ItemsController
-import com.v3.basis.blas.blasclass.db.fixture.FixtureController
+import com.v3.basis.blas.blasclass.controller.FixtureController
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable

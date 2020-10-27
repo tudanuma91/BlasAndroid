@@ -2,7 +2,7 @@ package com.v3.basis.blas.blasclass.sync
 
 import android.util.Log
 import com.v3.basis.blas.blasclass.db.BaseController
-import com.v3.basis.blas.blasclass.db.fixture.FixtureController
+import com.v3.basis.blas.blasclass.controller.FixtureController
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
 import com.v3.basis.blas.ui.fixture.fixture_view.FixtureCellModel
 import org.json.JSONObject
@@ -40,7 +40,11 @@ class Kenpin( model: FixtureCellModel ,fixture : LdbFixtureRecord ) : SyncFixtur
         Log.d("fixture_id","new:" + new_fixture_id + " org:" + org_fixture_id)
 
         // SQLite tableを更新する
-        val fixtureController = FixtureController(  model.context, model.project_id.toString())
+        val fixtureController =
+            FixtureController(
+                model.context,
+                model.project_id.toString()
+            )
         fixtureController.updateFixtureId(org_fixture_id,new_fixture_id)
 
     }

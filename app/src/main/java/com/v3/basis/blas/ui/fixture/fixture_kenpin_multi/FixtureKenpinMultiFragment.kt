@@ -13,16 +13,11 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.fragment_fixture_kenpin_multi.*
 import com.v3.basis.blas.R
-import com.v3.basis.blas.blasclass.db.fixture.FixtureController
+import com.v3.basis.blas.blasclass.controller.FixtureController
 import com.v3.basis.blas.ui.ext.addTitleWithProjectName
 import com.v3.basis.blas.ui.fixture.FixtureBaseFragment
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_fixture_kenpin_multi.view.*
 import org.reactivestreams.Subscriber
@@ -38,8 +33,9 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class FixtureKenpinMultiFragment : FixtureBaseFragment() {
-    val disposables = CompositeDisposable()
+    //val disposables = CompositeDisposable()
     var barcodeReader:MultiQrBarcodeReader? = null
+    var barcodeSubscriber:BarCodeSubScriber<String>? = null
 
     private val PERMISSIONS_REQUEST_CODE = 1234
     private val PERMISSIONS_REQUIRED = arrayOf(
@@ -73,22 +69,21 @@ class FixtureKenpinMultiFragment : FixtureBaseFragment() {
              * カメラを非同期で動作させる。
              * 読み取ったバーコードの値を発行し、購読者に提供する
              */
-            flow.observeOn(Schedulers.newThread())
-                .subscribeOn(Schedulers.newThread())
-                .subscribeBy(
-                    onNext = {barcode->
-                        context?.let { it -> setBarCode(barcode) }
-                    },
-                    onError = {},
-                    onComplete = {}
-                )
-                .addTo(disposables)
+            barcodeSubscriber = context?.let { BarCodeSubScriber(it, projectId) }
+            if(barcodeSubscriber != null) {
+                flow.observeOn(Schedulers.newThread())
+                    .subscribeOn(Schedulers.newThread())
+                    .subscribe(barcodeSubscriber)
+            }
         }
     }
 
     fun setBarCode(barcode:String) {
         context?.let {context->
-            FixtureController(context, projectId.toString()).kenpin(barcode)
+            FixtureController(
+                context,
+                projectId.toString()
+            ).kenpin(barcode)
         }
     }
 
@@ -133,7 +128,7 @@ class FixtureKenpinMultiFragment : FixtureBaseFragment() {
 
     override fun onPause() {
         barcodeReader?.unbindAll()
-        disposables.dispose()
+        barcodeSubscriber?.dispose()
         super.onPause()
 
     }
@@ -152,5 +147,34 @@ class FixtureKenpinMultiFragment : FixtureBaseFragment() {
         }else{
             Toast.makeText(getActivity(), "アクセス権限がありません。QRコード読み取りを実行できません。", Toast.LENGTH_LONG).show()
         }
+    }
+}
+
+class BarCodeSubScriber<String>(context:Context, projectId:String): Subscriber<String> {
+    var subscription:Subscription? = null
+    var controller = FixtureController(
+        context,
+        projectId.toString()
+    )
+
+    override fun onComplete() {
+    }
+
+    override fun onSubscribe(s: Subscription?) {
+        //一個だけデータください
+        subscription = s
+        subscription?.request(1)
+    }
+
+    override fun onNext(t: String) {
+        controller.kenpin(t.toString())
+        subscription?.request(1)
+    }
+
+    override fun onError(t: Throwable?) {
+    }
+
+    fun dispose() {
+        subscription?.cancel()
     }
 }

@@ -4,7 +4,7 @@ import android.os.VibrationEffect
 import android.util.Log
 import androidx.databinding.ObservableField
 import com.v3.basis.blas.blasclass.db.BaseController
-import com.v3.basis.blas.blasclass.db.fixture.FixtureController
+import com.v3.basis.blas.blasclass.controller.FixtureController
 import com.v3.basis.blas.blasclass.sync.Kenpin
 import com.v3.basis.blas.blasclass.sync.Rtn
 import com.v3.basis.blas.blasclass.sync.SyncFixtureBase
@@ -32,7 +32,11 @@ class FixtureListViewModel: ServerSyncViewModel() {
         Log.d("project_id",model.project_id.toString())
         Log.d("fixture_id",model.fixture_id.toString())
 
-        val fixtureController = FixtureController( model.context, model.project_id.toString())
+        val fixtureController =
+            FixtureController(
+                model.context,
+                model.project_id.toString()
+            )
       /*  fixtureController
             .errorMessageEvent
             .observeOn(AndroidSchedulers.mainThread())

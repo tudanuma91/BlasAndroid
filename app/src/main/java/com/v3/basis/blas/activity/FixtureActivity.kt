@@ -6,9 +6,11 @@ import android.graphics.Color
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.*
+import android.util.AttributeSet
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentActivity
@@ -22,7 +24,7 @@ import com.journeyapps.barcodescanner.CompoundBarcodeView
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.app.BlasMsg
-import com.v3.basis.blas.blasclass.db.fixture.FixtureController
+import com.v3.basis.blas.blasclass.controller.FixtureController
 import com.v3.basis.blas.ui.ext.setBlasCustomView
 import com.v3.basis.blas.ui.ext.showBackKeyForActionBar
 import com.v3.basis.blas.ui.fixture.ARG_PROJECT_ID
@@ -85,10 +87,10 @@ class FixtureActivity : AppCompatActivity() {
         setContentView(R.layout.activity_fixture)
 
         //フラグメントが使用する画面遷移(ナビゲーション)の定義を持ったコントローラーを取得する
-        val navController = findNavController(R.id.nav_host_fragment_fixture)
+        //val navController = findNavController(R.id.nav_host_fragment_fixture)
 
         //ボトムナビゲーションにもフラグメントが使用するナビゲーションのコントローラーをボトムにも設定する
-        setupWithNavController(bottom_navigation_fixture, navController)
+        //setupWithNavController(bottom_navigation_fixture, navController)
 
         bottom_navigation_fixture.setOnNavigationItemSelectedListener {
             //ボトムナビゲーションをクリックしたときのフラグメントの切り替え
@@ -98,16 +100,14 @@ class FixtureActivity : AppCompatActivity() {
         //戻るボタン表示
         showBackKeyForActionBar()
 
-        /**
-         * 戻るボタンが非表示になる問題の修正
-         * [setupActionBarWithNavController]内部で[setDisplayHomeAsUpEnabled]をfalseにする処理が走るため、
-         * リスナーにて再度[setDisplayHomeAsUpEnabled]trueとする。
-         */
-        navController.addOnDestinationChangedListener{ _, destination, _ ->
-            showBackKeyForActionBar()
-            supportActionBar?.title = destination.label
-        }
         setBlasCustomView()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        supportFragmentManager.beginTransaction()
+            .add(R.id.nav_host_fragment_fixture, FixtureViewFragment.newInstance().apply { arguments = bundle})
+            .commitNow()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -128,7 +128,7 @@ class FixtureActivity : AppCompatActivity() {
                 prevFragmentId = R.id.navi_fixture_config
 
                 supportFragmentManager.beginTransaction()
-                    .replace(R.id.fixture_container, FixtureConfigFragment.newInstance().apply { arguments = bundle })
+                    .replace(R.id.nav_host_fragment_fixture, FixtureConfigFragment.newInstance().apply { arguments = bundle })
                     .commitNow()
             }
 
@@ -151,19 +151,17 @@ class FixtureActivity : AppCompatActivity() {
 
     private fun ChangeFragment(naviId:Int) {
 
-
-
         when(naviId) {
             R.id.navi_fixture_kenpin-> {
                 //検品ボタン押下時
                 if(isKenpinSingle()) {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.fixture_container, FixtureKenpinFragment.newInstance().apply { arguments = bundle})
+                        .replace(R.id.nav_host_fragment_fixture, FixtureKenpinFragment.newInstance().apply { arguments = bundle})
                         .commitNow()
                 }
                 else {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.fixture_container, FixtureKenpinMultiFragment.newInstance().apply { arguments = bundle})
+                        .replace(R.id.nav_host_fragment_fixture, FixtureKenpinMultiFragment.newInstance().apply { arguments = bundle})
                         .commitNow()
                 }
             }
@@ -171,27 +169,27 @@ class FixtureActivity : AppCompatActivity() {
             R.id.navi_fixture_motidasi -> {
                 //持ち出し押下時
                 supportFragmentManager.beginTransaction()
-                    .replace(R.id.fixture_container, FixtureTakeOutFragment.newInstance().apply { arguments = bundle})
+                    .replace(R.id.nav_host_fragment_fixture, FixtureTakeOutFragment.newInstance().apply { arguments = bundle})
                     .commitNow()
             }
 
             R.id.navi_fixture_return -> {
                 //返却押下時
                 supportFragmentManager.beginTransaction()
-                    .replace(R.id.fixture_container, FixtureReturnFragment.newInstance().apply { arguments = bundle})
+                    .replace(R.id.nav_host_fragment_fixture, FixtureReturnFragment.newInstance().apply { arguments = bundle})
                     .commitNow()
             }
 
             R.id.navi_fixture_kenpin_search -> {
                 //検索押下時
                 supportFragmentManager.beginTransaction()
-                    .replace(R.id.fixture_container, FixtureSearchFragment.newInstance().apply { arguments = bundle})
+                    .replace(R.id.nav_host_fragment_fixture, FixtureSearchFragment.newInstance().apply { arguments = bundle})
                     .commitNow()
             }
 
             R.id.navi_fixture_view -> {
                 supportFragmentManager.beginTransaction()
-                    .replace(R.id.fixture_container, FixtureViewFragment.newInstance().apply { arguments = bundle})
+                    .replace(R.id.nav_host_fragment_fixture, FixtureViewFragment.newInstance().apply { arguments = bundle})
                     .commitNow()
             }
         }
@@ -276,7 +274,11 @@ class FixtureActivity : AppCompatActivity() {
     private fun saveLocalDB(payload: Map<String, String?>, qrCode: String, type: String, projectId: String?) {
 
 //        val controller = FixtureController(this@FixtureActivity, projectId!!)
-        val controller = FixtureController( BlasApp.applicationContext(), projectId!!)
+        val controller =
+            FixtureController(
+                BlasApp.applicationContext(),
+                projectId!!
+            )
 
         controller.errorMessageEvent
             .observeOn(AndroidSchedulers.mainThread())

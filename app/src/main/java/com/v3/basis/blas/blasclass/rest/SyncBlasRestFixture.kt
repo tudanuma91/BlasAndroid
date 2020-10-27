@@ -1,10 +1,6 @@
 package com.v3.basis.blas.blasclass.rest
 
-import android.content.Context
 import android.util.Log
-import com.v3.basis.blas.blasclass.db.BaseController
-import com.v3.basis.blas.blasclass.db.fixture.FixtureController
-import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
 import org.json.JSONObject
 
 class SyncBlasRestFixture(

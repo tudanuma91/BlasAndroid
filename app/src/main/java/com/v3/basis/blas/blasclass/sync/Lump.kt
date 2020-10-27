@@ -5,7 +5,7 @@ import android.util.Log
 import com.v3.basis.blas.blasclass.controller.ImagesController
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.ItemsController
-import com.v3.basis.blas.blasclass.db.fixture.FixtureController
+import com.v3.basis.blas.blasclass.controller.FixtureController
 import com.v3.basis.blas.ui.fixture.fixture_view.FixtureCellModel
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -63,7 +63,10 @@ class Lump(
 
     private fun syncFixture() {
 
-        val fixtures = FixtureController(context,projectId.toString()).search(null,true)
+        val fixtures = FixtureController(
+            context,
+            projectId.toString()
+        ).search(null,true)
         var sucCnt = 0
 
         fixtures.forEach {fixture ->

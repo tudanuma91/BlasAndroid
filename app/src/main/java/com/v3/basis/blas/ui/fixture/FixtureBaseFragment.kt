@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasApp
-import com.v3.basis.blas.blasclass.db.fixture.FixtureController
+import com.v3.basis.blas.blasclass.controller.FixtureController
 
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 public const val ARG_TOKEN = "token"
@@ -23,7 +23,7 @@ open class FixtureBaseFragment : Fragment() {
     protected lateinit var token: String
     protected lateinit var projectId:String
     protected lateinit var  projectName:String
-    protected lateinit var fixtureController:FixtureController
+    protected lateinit var fixtureController: FixtureController
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,7 +35,11 @@ open class FixtureBaseFragment : Fragment() {
         }
 
         //コントローラーの生成
-        fixtureController = FixtureController( BlasApp.applicationContext(), projectId)
+        fixtureController =
+            FixtureController(
+                BlasApp.applicationContext(),
+                projectId
+            )
     }
 
     override fun onCreateView(

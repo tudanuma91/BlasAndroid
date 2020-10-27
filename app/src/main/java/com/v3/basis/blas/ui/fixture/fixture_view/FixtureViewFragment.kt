@@ -24,7 +24,7 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusFinishInst
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusNotTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
-import com.v3.basis.blas.blasclass.db.fixture.FixtureController
+import com.v3.basis.blas.blasclass.controller.FixtureController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
 import com.v3.basis.blas.blasclass.rest.BlasRest
@@ -91,12 +91,6 @@ class FixtureViewFragment : Fragment() {
 
     private val groupAdapter = GroupAdapter<GroupieViewHolder<*>>()
 
-//    private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
-//        override fun onClickRow(tappedView: View, rowModel: com.v3.basis.blas.ui.fixture.fixture_view.RowModel) {
-//            //カードタップ時の処理
-//        }
-//
-//    })
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -112,7 +106,11 @@ class FixtureViewFragment : Fragment() {
 
         checkSearchMap()
 
-        fixtureController = FixtureController(requireContext(), project_id)
+        fixtureController =
+            FixtureController(
+                requireContext(),
+                project_id
+            )
         fixtureController.errorMessageEvent
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
