@@ -33,12 +33,25 @@ fun Fragment.getStringExtra(key: String) : String? {
 }
 
 fun Fragment.addTitle(extraName: String) {
-
+    //後で消す
     (requireActivity() as AppCompatActivity).supportActionBar?.also {
         getStringExtra(extraName)?.run {
             it.customView.findViewById<TextView>(R.id.title)?.text = it.title
             it.customView.findViewById<TextView>(R.id.projectName)?.text = this
         }
+    }
+}
+
+fun Fragment.addTitleWithProjectName(viewName: String) {
+
+    (requireActivity() as AppCompatActivity).supportActionBar?.also {
+
+        it.customView.findViewById<TextView>(R.id.title)?.text = viewName
+
+        getStringExtra("project_name")?.run {
+            it.customView.findViewById<TextView>(R.id.projectName)?.text = this
+        }
+
     }
 }
 
@@ -155,28 +168,6 @@ fun Fragment.addDownloadTask(vm: DownloadViewModel, model: DownloadModel, unzipP
             }
             WorkInfo.State.SUCCEEDED -> {
                 vm.setFinishDownloading(model)
-                /**
-                //テスト
-                Completable
-                    .fromAction {
-                        val ctl = FixtureController(requireContext(), projectId)
-                        val records = ctl.searchDisp()
-
-                        records.forEach { rec ->
-                            rec::class.memberProperties.forEach {prop ->
-                                Log.d("prop:",prop.name + ":" + prop.call(rec).toString())
-                            }
-                        }
-
-//                        val _join = ctl.joinTest()
-//                        Log.d("FixtureController", "list:" + _join.first { it.username != null })
-//                        val join = UsersController(requireContext(), projectId).joinTest()
-//                        Log.d("JoinTest", "list:" + join.toString())
-                    }
-                    .subscribeOn(Schedulers.newThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe()
-                **/
             }
             WorkInfo.State.FAILED -> {
 //                WorkerHelper.stopDownload(requireContext(), id)

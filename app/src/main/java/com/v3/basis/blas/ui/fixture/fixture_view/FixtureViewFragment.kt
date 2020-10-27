@@ -31,7 +31,7 @@ import com.v3.basis.blas.blasclass.rest.BlasRest
 import com.v3.basis.blas.blasclass.sync.Lump
 import com.v3.basis.blas.databinding.FragmentFixtureViewBinding
 
-import com.v3.basis.blas.ui.ext.addTitle
+import com.v3.basis.blas.ui.ext.addTitleWithProjectName
 import com.v3.basis.blas.ui.ext.getStringExtra
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
@@ -43,7 +43,6 @@ import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_fixture_view.*
 import kotlinx.android.synthetic.main.fragment_fixture_view.allSyncButton
-import kotlinx.android.synthetic.main.fragment_item_view.*
 import kotlinx.android.synthetic.main.fragment_item_view.recyclerView
 import org.json.JSONArray
 import org.json.JSONObject
@@ -80,13 +79,14 @@ class FixtureViewFragment : Fragment() {
 
     companion object {
         const val CREATE_UNIT = 20
+        fun newInstance() = FixtureViewFragment()
     }
 
     private lateinit var viewModel: FixtureListViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        addTitle("project_name")
+        addTitleWithProjectName("機器一覧画面")
     }
 
     private val groupAdapter = GroupAdapter<GroupieViewHolder<*>>()

@@ -26,7 +26,6 @@ class TerminalFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-//        vm = ViewModelProviders.of(this).get(TerminalViewModel::class.java)
         val view = inflater.inflate(R.layout.fragment_terminal, container, false)
         view.pager.adapter = TerminalPagerAdapter(childFragmentManager) // childFragmentManager?
         view.pager.offscreenPageLimit = 5
@@ -34,8 +33,11 @@ class TerminalFragment : Fragment() {
 
         view.pager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             var disable = false
+
             override fun onPageScrollStateChanged(state: Int) {}
+
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
+
             override fun onPageSelected(position: Int) {
                 BottomNavButton.find(position).apply {
                     if (disable.not()) {
@@ -62,15 +64,6 @@ class TerminalFragment : Fragment() {
             }
             true
         }
-
-       /*
-       バッジを表示する処理。values/stylesの変更をしたらできる。
-       view.nav_view.menu.getItem(4).itemId.let {
-            view.nav_view.getOrCreateBadge(it).apply {
-                number = 10
-            }
-
-        }*/
 
         return view
     }

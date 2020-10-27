@@ -76,7 +76,7 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
             Result.success()
         } catch (e: Exception) {
             traceLog("Failed to download task, ${e::class.java.name}")
-            Log.d("error!!!!!!!!!!!!",e.message)
+            Log.d("download error",e.message)
             //  failureを返すと、永久に再ダウンロードできなくなる
             Result.success(workDataOf(KEY_RESULT_SUCCEEDED to false))
         }

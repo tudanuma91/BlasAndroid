@@ -7,16 +7,12 @@ import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.*
 import android.util.Log
+import android.view.Menu
 import android.view.MenuItem
-import android.widget.PopupMenu
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.get
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.NavigationUI.setupWithNavController
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.google.zxing.ResultPoint
@@ -25,16 +21,20 @@ import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.CompoundBarcodeView
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasApp
-import com.v3.basis.blas.blasclass.app.BlasDef
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
-import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
-import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.ui.ext.setBlasCustomView
 import com.v3.basis.blas.ui.ext.showBackKeyForActionBar
+import com.v3.basis.blas.ui.fixture.ARG_PROJECT_ID
+import com.v3.basis.blas.ui.fixture.ARG_PROJECT_NAME
+import com.v3.basis.blas.ui.fixture.ARG_TOKEN
+import com.v3.basis.blas.ui.fixture.fixture_config.FixtureConfigFragment
 import com.v3.basis.blas.ui.fixture.fixture_kenpin.FixtureKenpinFragment
+import com.v3.basis.blas.ui.fixture.fixture_kenpin_multi.FixtureKenpinMultiFragment
 import com.v3.basis.blas.ui.fixture.fixture_return.FixtureReturnFragment
+import com.v3.basis.blas.ui.fixture.fixture_search.FixtureSearchFragment
 import com.v3.basis.blas.ui.fixture.fixture_takeout.FixtureTakeOutFragment
+import com.v3.basis.blas.ui.fixture.fixture_view.FixtureViewFragment
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
@@ -51,8 +51,14 @@ class FixtureActivity : AppCompatActivity() {
     )
     private var tone: ToneGenerator? = null
     private var realTime = false
+    private var prevFragmentId:Int = R.id.navi_fixture_view
 
     private val disposable = CompositeDisposable()
+
+    private lateinit var argToken:String
+    private lateinit var argProjectId:String
+    private lateinit var argProjectName:String
+    val bundle = Bundle()
 
    /* QRコード読を読み取りました</string>
     <string name="error_create_qr">すでに登録済のQRコードです</string>
@@ -60,23 +66,37 @@ class FixtureActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
+        val extras = this.intent?.extras
+        if (extras?.getString("token") != null) {
+            argToken = extras.getString(ARG_TOKEN).toString()
+        }
+        if (extras?.getString("project_id") != null) {
+            argProjectId = extras.getString(ARG_PROJECT_ID).toString()
+        }
+        if (extras?.getString("project_name") != null) {
+            argProjectName = extras.getString(ARG_PROJECT_NAME).toString()
+        }
+        //フラグメントに渡す引数
+        bundle.putString("token", argToken)
+        bundle.putString("project_id", argProjectId)
+        bundle.putString("project_name", argProjectName)
+
         setContentView(R.layout.activity_fixture)
+
+        //フラグメントが使用する画面遷移(ナビゲーション)の定義を持ったコントローラーを取得する
         val navController = findNavController(R.id.nav_host_fragment_fixture)
+
+        //ボトムナビゲーションにもフラグメントが使用するナビゲーションのコントローラーをボトムにも設定する
         setupWithNavController(bottom_navigation_fixture, navController)
 
-        //タイトルバーの名称を変更する処理
-        val appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.navi_fixture_view,
-                R.id.navi_fixture_kenpin,
-                R.id.navi_fixture_motidasi,
-                R.id.navi_fixture_return,
-                R.id.navi_fixture_search
-            )
-        )
-        setupActionBarWithNavController(navController, appBarConfiguration)
+        bottom_navigation_fixture.setOnNavigationItemSelectedListener {
+            //ボトムナビゲーションをクリックしたときのフラグメントの切り替え
+            ChangeFragment(it.itemId)
+            true//戻り値
+        }
+        //戻るボタン表示
+        showBackKeyForActionBar()
 
         /**
          * 戻るボタンが非表示になる問題の修正
@@ -87,28 +107,108 @@ class FixtureActivity : AppCompatActivity() {
             showBackKeyForActionBar()
             supportActionBar?.title = destination.label
         }
-
         setBlasCustomView()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment_fixture)
         when (item.itemId) {
             android.R.id.home -> {
-
-                if (navController.currentDestination?.id == R.id.navi_fixture_view) {
+                //←ボタン押下時
+                if(prevFragmentId == R.id.navi_fixture_config) {
+                    ChangeFragment(R.id.navi_fixture_kenpin)
+                    prevFragmentId = R.id.navi_fixture_kenpin
+                }
+                else {
                     this.finish()
                     return true
-                } else {
-                    //  ルート以外の画面なら、ルート画面に遷移させる！
-                    val menu = PopupMenu(this, null).menu
-                    menuInflater.inflate(R.menu.bottom_navigation_menu_fixture, menu)
-                    NavigationUI.onNavDestinationSelected(menu.get(0), navController)
                 }
             }
+            R.id.menu_fixture_config-> {
+                //検品の設定画面を開く
+                prevFragmentId = R.id.navi_fixture_config
+
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fixture_container, FixtureConfigFragment.newInstance().apply { arguments = bundle })
+                    .commitNow()
+            }
+
             else -> return super.onOptionsItemSelected(item)
         }
         return false
+    }
+
+    /*
+    アクションバー上部のオプションメニューの設定(3点リーダーのアイコン)
+     */
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+
+        val inflater = menuInflater
+        //メニューのリソース選択
+        inflater.inflate(R.menu.config_menu_fixture, menu)
+        return true
+    }
+
+    private fun ChangeFragment(naviId:Int) {
+
+
+
+        when(naviId) {
+            R.id.navi_fixture_kenpin-> {
+                //検品ボタン押下時
+                if(isKenpinSingle()) {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fixture_container, FixtureKenpinFragment.newInstance().apply { arguments = bundle})
+                        .commitNow()
+                }
+                else {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fixture_container, FixtureKenpinMultiFragment.newInstance().apply { arguments = bundle})
+                        .commitNow()
+                }
+            }
+
+            R.id.navi_fixture_motidasi -> {
+                //持ち出し押下時
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fixture_container, FixtureTakeOutFragment.newInstance().apply { arguments = bundle})
+                    .commitNow()
+            }
+
+            R.id.navi_fixture_return -> {
+                //返却押下時
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fixture_container, FixtureReturnFragment.newInstance().apply { arguments = bundle})
+                    .commitNow()
+            }
+
+            R.id.navi_fixture_kenpin_search -> {
+                //検索押下時
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fixture_container, FixtureSearchFragment.newInstance().apply { arguments = bundle})
+                    .commitNow()
+            }
+
+            R.id.navi_fixture_view -> {
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fixture_container, FixtureViewFragment.newInstance().apply { arguments = bundle})
+                    .commitNow()
+            }
+        }
+    }
+
+    /**
+     * trueを返したときはシングルの検品
+     * falseを返したときはマルチの検品
+     */
+    public fun isKenpinSingle(): Boolean {
+
+        var prefs = applicationContext?.getSharedPreferences(applicationContext.getString(R.string.BlasAppConfig), Context.MODE_PRIVATE)
+        var isSingle = true
+        if(prefs != null) {
+            isSingle = prefs.getBoolean("singleCamera", true)
+        }
+        return isSingle
     }
 
     /**

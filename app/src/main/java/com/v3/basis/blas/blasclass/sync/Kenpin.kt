@@ -2,7 +2,6 @@ package com.v3.basis.blas.blasclass.sync
 
 import android.util.Log
 import com.v3.basis.blas.blasclass.db.BaseController
-import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
 import com.v3.basis.blas.ui.fixture.fixture_view.FixtureCellModel

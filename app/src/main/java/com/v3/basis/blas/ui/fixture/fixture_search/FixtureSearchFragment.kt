@@ -21,9 +21,10 @@ import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.app.searchAndroid
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
-import com.v3.basis.blas.ui.ext.addTitle
+import com.v3.basis.blas.ui.ext.addTitleWithProjectName
 import com.v3.basis.blas.ui.ext.getStringExtra
 import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
+import com.v3.basis.blas.ui.fixture.fixture_kenpin_multi.FixtureKenpinMultiFragment
 import kotlinx.android.synthetic.main.fragment_fixture_search.*
 import org.json.JSONObject
 import java.lang.Exception
@@ -55,6 +56,11 @@ class FixtureSearchFragment : Fragment() {
     lateinit var root : View
 
 
+    companion object {
+        fun newInstance() = FixtureSearchFragment()
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val extras = activity?.intent?.extras
@@ -66,7 +72,7 @@ class FixtureSearchFragment : Fragment() {
             projectId = extras.getString("project_id").toString()
         }
 
-        addTitle("project_name")
+        addTitleWithProjectName("検索画面")
     }
 
     override fun onCreateView(

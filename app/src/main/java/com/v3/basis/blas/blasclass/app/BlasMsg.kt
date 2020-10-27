@@ -54,7 +54,8 @@ open class BlasMsg() {
             901 to res.getString(R.string.apl_queue_max),
             1001 to res.getString(R.string.network_error),
             2001 to res.getString(R.string.json_parse_error),
-            3001 to res.getString(R.string.file_read_error)
+            3001 to res.getString(R.string.file_read_error),
+            10001 to res.getString(R.string.version_error)
         )
     }
 

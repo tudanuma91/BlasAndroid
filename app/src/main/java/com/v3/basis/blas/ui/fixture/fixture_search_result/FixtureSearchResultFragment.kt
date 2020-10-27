@@ -24,7 +24,7 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
 import com.v3.basis.blas.blasclass.rest.BlasRestErrCode
 import com.v3.basis.blas.blasclass.rest.BlasRestFixture
-import com.v3.basis.blas.ui.ext.addTitle
+import com.v3.basis.blas.ui.ext.addTitleWithProjectName
 import com.v3.basis.blas.ui.ext.getStringExtra
 import kotlinx.android.synthetic.main.fragment_fixture_search_result.*
 import kotlinx.android.synthetic.main.fragment_fixture_search_result.progressBar
@@ -49,7 +49,7 @@ class FixtureSearchResultFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        addTitle("project_name")
+        addTitleWithProjectName("検索結果画面")
     }
 
     private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {

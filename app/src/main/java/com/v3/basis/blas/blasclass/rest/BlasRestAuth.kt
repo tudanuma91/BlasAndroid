@@ -66,20 +66,28 @@ open class BlasRestAuth(val payload:Map<String, String?>, val loginSuccess:(JSON
             userNameRest = payload["name"]
             passwordRest = payload["password"]
 
+            if(!records_json.has("salt")) {
+                loginError(10001)//バージョンエラー
+                return
+            }
+
             // passwordで実現するのは無理だった…
-            val org = records_json.getString("salt") +  payload["password"]
-
-            BlasApp.key = MessageDigest.getInstance("SHA1")
-                .digest(org?.toByteArray())
-                .joinToString(separator = "") {
-                    "%02x".format(it)
-                }
-
-            loginSuccess(json)
+            val saltPassword = records_json.getString("salt") +  payload["password"]
+            if(saltPassword != null) {
+                BlasApp.key = MessageDigest.getInstance("SHA1")
+                    .digest(saltPassword.toByteArray())
+                    .joinToString(separator = "") {
+                        "%02x".format(it)
+                    }
+                loginSuccess(json)
+            }
+            else {
+                loginError(10001)//バージョンエラー
+                return
+            }
         }
         else {
             loginError(error_code)
         }
     }
-
 }

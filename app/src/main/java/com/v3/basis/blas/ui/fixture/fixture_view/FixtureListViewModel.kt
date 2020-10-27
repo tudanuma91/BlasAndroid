@@ -3,7 +3,6 @@ package com.v3.basis.blas.ui.fixture.fixture_view
 import android.os.VibrationEffect
 import android.util.Log
 import androidx.databinding.ObservableField
-import androidx.lifecycle.ViewModel
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.fixture.FixtureController
 import com.v3.basis.blas.blasclass.sync.Kenpin
@@ -12,10 +11,7 @@ import com.v3.basis.blas.blasclass.sync.SyncFixtureBase
 import com.v3.basis.blas.blasclass.sync.Takeout
 import com.v3.basis.blas.ui.common.ServerSyncModel
 import com.v3.basis.blas.ui.common.ServerSyncViewModel
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.subjects.PublishSubject
 import org.json.JSONObject
 import java.lang.Exception

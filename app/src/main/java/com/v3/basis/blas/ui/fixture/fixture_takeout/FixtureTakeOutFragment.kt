@@ -17,8 +17,9 @@ import androidx.fragment.app.FragmentActivity
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
-import com.v3.basis.blas.ui.ext.addTitle
+import com.v3.basis.blas.ui.ext.addTitleWithProjectName
 import com.v3.basis.blas.ui.ext.permissionChk
+import com.v3.basis.blas.ui.fixture.fixture_kenpin_multi.FixtureKenpinMultiFragment
 import kotlinx.android.synthetic.main.fragment_fixture_takeout.*
 import kotlinx.android.synthetic.main.fragment_qr.qr_view
 
@@ -34,6 +35,7 @@ import kotlinx.android.synthetic.main.fragment_qr.qr_view
 class FixtureTakeOutFragment : Fragment() {
     companion object {
         const val REQUEST_CAMERA_PERMISSION:Int = 1
+        fun newInstance() = FixtureTakeOutFragment()
     }
 
 
@@ -57,7 +59,7 @@ class FixtureTakeOutFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        addTitle("project_name")
+        addTitleWithProjectName("持ち出し確認画面")
     }
 
     override fun onCreateView(

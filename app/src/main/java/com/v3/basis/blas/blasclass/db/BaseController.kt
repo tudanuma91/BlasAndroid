@@ -60,7 +60,6 @@ abstract class BaseController(
         SQLiteDatabase.loadLibs(context)
         db = openSQLiteDatabase()
         db?.rawQuery("PRAGMA foreign_keys=1",null)
-
     }
 
 

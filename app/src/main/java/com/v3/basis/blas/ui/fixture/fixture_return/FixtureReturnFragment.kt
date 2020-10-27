@@ -18,10 +18,11 @@ import androidx.fragment.app.FragmentActivity
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
-import com.v3.basis.blas.ui.ext.addTitle
+import com.v3.basis.blas.ui.ext.addTitleWithProjectName
 import com.v3.basis.blas.ui.ext.checkPermissions
 import com.v3.basis.blas.ui.ext.permissionChk
 import com.v3.basis.blas.ui.fixture.fixture_kenpin.FixtureKenpinFragment
+import com.v3.basis.blas.ui.fixture.fixture_kenpin_multi.FixtureKenpinMultiFragment
 import kotlinx.android.synthetic.main.fragment_fixture_return.*
 import kotlinx.android.synthetic.main.fragment_qr.qr_view
 
@@ -32,6 +33,7 @@ class FixtureReturnFragment : Fragment() {
 
     companion object {
         const val REQUEST_CAMERA_PERMISSION:Int = 1
+        fun newInstance() = FixtureReturnFragment()
     }
     lateinit var token:String
     lateinit var projectName:String
@@ -48,7 +50,7 @@ class FixtureReturnFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        addTitle("project_name")
+        addTitleWithProjectName("返却画面")
     }
 
     override fun onCreateView(
@@ -83,17 +85,11 @@ class FixtureReturnFragment : Fragment() {
 
 
         val btn_light = root.findViewById<ImageButton>(R.id.returnBtnLight)
-        McameraManager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager?
+        McameraManager = requireActivity().getSystemService(Context.CAMERA_SERVICE) as CameraManager?
 
 
         //ボタンがタップされたときの処理
         btn_light.setOnClickListener{
-           /*
-           使用していないためコメントアウトします
-            if(McameraID == null){
-                Log.d("null","nullだったよ")
-            }
-            */
             try {
                 if(SW == false){
                     //SWがfalseならばトーチモードをtrueにしてLDEオン

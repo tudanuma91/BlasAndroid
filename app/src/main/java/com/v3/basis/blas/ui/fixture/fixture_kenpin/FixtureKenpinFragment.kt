@@ -19,7 +19,7 @@ import androidx.fragment.app.FragmentActivity
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
-import com.v3.basis.blas.ui.ext.addTitle
+import com.v3.basis.blas.ui.ext.addTitleWithProjectName
 import com.v3.basis.blas.ui.ext.checkPermissions
 import com.v3.basis.blas.ui.ext.getStringExtra
 import com.v3.basis.blas.ui.ext.permissionChk
@@ -34,6 +34,7 @@ class FixtureKenpinFragment : Fragment() {
 
     companion object {
         const val REQUEST_CAMERA_PERMISSION:Int = 1
+        fun newInstance() = FixtureKenpinFragment()
     }
     private lateinit var token: String
     private lateinit var projectId: String
@@ -41,17 +42,13 @@ class FixtureKenpinFragment : Fragment() {
     private var parentChk :Boolean = true
     private val toastErrorLen = Toast.LENGTH_LONG
     private var cameraManager: CameraManager? = null
-    //使用していないため、コメントアウトします
-    //private var cameraID: String? = null
     private var SW: Boolean = false
-    private var oldResult:String? =null
     private var msg = BlasMsg()
-    private val counter = true
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        addTitle("project_name")
+        addTitleWithProjectName("検品画面")
     }
 
     override fun onCreateView(
@@ -81,12 +78,6 @@ class FixtureKenpinFragment : Fragment() {
 
         //ボタンがタップされたときの処理
         kenpinBtnLight.setOnClickListener{
-            /*
-            使用していないため、コメントアウトします
-            if(cameraID == null){
-                Log.d("null","ライトが存在しない")
-            }
-            */
             try {
                 if(SW == false){
                     //SWがfalseならばトーチモードをtrueにしてLDEオン

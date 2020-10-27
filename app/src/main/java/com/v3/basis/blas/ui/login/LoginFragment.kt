@@ -49,8 +49,8 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
         super.onViewCreated(view, savedInstanceState)
-       // userName.setText("konishiadmin")
-       // password.setText("afd0279c")
+        userName.setText("konishiadmin")
+        password.setText("afd0279c")
         setListener(btnLogin, ::loginSuccess, ::loginError)
     }
 
