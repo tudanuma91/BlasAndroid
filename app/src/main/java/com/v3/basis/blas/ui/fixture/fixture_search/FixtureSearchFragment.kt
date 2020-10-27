@@ -28,6 +28,7 @@ import com.v3.basis.blas.ui.fixture.FixtureBaseFragment
 import com.v3.basis.blas.ui.fixture.fixture_kenpin_multi.FixtureKenpinMultiFragment
 import com.v3.basis.blas.ui.fixture.fixture_view.FixtureViewFragment
 import kotlinx.android.synthetic.main.fragment_fixture_search.*
+import kotlinx.android.synthetic.main.fragment_fixture_search.view.*
 import org.json.JSONObject
 import java.lang.Exception
 import java.util.*
@@ -81,27 +82,80 @@ class FixtureSearchFragment : FixtureBaseFragment() {
     ): View? {
         root = inflater.inflate(R.layout.fragment_fixture_search, container, false)
 
-        //配列に入力フォームを格納する。
-//        formMap.set("freeWord", root.findViewById<EditText>(R.id.fixFreeWordValue))
-        formMap.set("serialNumber", root.findViewById<EditText>(R.id.fixSerialNumberSelect))
-        formMap.set("dataId", root.findViewById<EditText>(R.id.fixDataIdSelect))
+        //フォームのマップを作成する
+        createFormMap()
+
+        val btnSearch = root.fixSerchBtn
+
+        try {
+            if(token != null && projectId != null) {
+                //検索ボタンタップ処理
+                btnSearch.setOnClickListener {
+
+                    if (errorList.size > 0) {
+                        errorList.forEach {
+                            titleRecover(it)
+                        }
+                    }
+
+                    errorList.clear()
+
+                    if (validateParams()) {
+                        //エラーケース
+                        errorList.forEach {
+                            errorTitleCreate(it)
+                        }
+                    } else {
+                        //正常ケース
+                        startSearch()
+                    }
+                }
+            }else{
+                throw Exception("Failed to receive internal data ")
+            }
+        }catch (e:Exception){
+            val errorMessage = msg.createErrorMessage("getFail")
+            Toast.makeText(activity, errorMessage, toastErrorLen).show()
+            btnSearch.setOnClickListener {
+                AlertDialog.Builder(activity)
+                    .setTitle("メッセージ")
+                    .setMessage("内部データの取得に失敗しました。検索を実行できません")
+                    .setPositiveButton("YES") { dialog, which ->
+                        //TODO YESを押したときの処理
+                    }
+                    .show()
+
+            }
+        }
+
+        return root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        scrollView.hideKeyboardWhenTouch(this)
+    }
+
+    private fun createFormMap() {
+        formMap.set("serialNumber", root.fixSerialNumberSelect)
+        formMap.set("dataId", root.fixDataIdSelect)
         //ステータスは別口で取得すること
-        formMap.set("kenpinOrg", root.findViewById<EditText>(R.id.fixKenpinOrgSelect))
-        formMap.set("kenpinUser", root.findViewById<EditText>(R.id.fixKenpinUserSelect))
-        formMap.set("kenpinDayMin", root.findViewById<EditText>(R.id.fixKenpinDayMin))
-        formMap.set("kenpinDayMax", root.findViewById<EditText>(R.id.fixKenpinDayMax))
-        formMap.set("takeOutOrg", root.findViewById<EditText>(R.id.fixTakeoutOrgSelect))
-        formMap.set("takeOutUser", root.findViewById<EditText>(R.id.fixTakeoutUserSelect))
-        formMap.set("takeOutDayMin", root.findViewById<EditText>(R.id.fixTakeoutDayMin))
-        formMap.set("takeOutDayMax", root.findViewById<EditText>(R.id.fixTakeoutDayMax))
-        formMap.set("returnOrg", root.findViewById<EditText>(R.id.fixReturnOrgSelect))
-        formMap.set("returnUser", root.findViewById<EditText>(R.id.fixReturnUserSelect))
-        formMap.set("returnDayMin", root.findViewById<EditText>(R.id.fixReturnDayMin))
-        formMap.set("returnDayMax", root.findViewById<EditText>(R.id.fixReturnDayMax))
-        formMap.set("itemOrg", root.findViewById<EditText>(R.id.fixItemOrgSelect))
-        formMap.set("itemUser", root.findViewById<EditText>(R.id.fixItemUserSelect))
-        formMap.set("itemDayMin", root.findViewById<EditText>(R.id.fixItemDayMin))
-        formMap.set("itemDayMax", root.findViewById<EditText>(R.id.fixItemDayMax))
+        formMap.set("kenpinOrg", root.fixKenpinOrgSelect)
+        formMap.set("kenpinUser", root.fixKenpinUserSelect)
+        formMap.set("kenpinDayMin", root.fixKenpinDayMin)
+        formMap.set("kenpinDayMax", root.fixKenpinDayMax)
+        formMap.set("takeOutOrg", root.fixTakeoutOrgSelect)
+        formMap.set("takeOutUser", root.fixTakeoutUserSelect)
+        formMap.set("takeOutDayMin", root.fixTakeoutDayMin)
+        formMap.set("takeOutDayMax", root.fixTakeoutDayMax)
+        formMap.set("returnOrg", root.fixReturnOrgSelect)
+        formMap.set("returnUser", root.fixReturnUserSelect)
+        formMap.set("returnDayMin", root.fixReturnDayMin)
+        formMap.set("returnDayMax", root.fixReturnDayMax)
+        formMap.set("itemOrg", root.fixItemOrgSelect)
+        formMap.set("itemUser", root.fixItemUserSelect)
+        formMap.set("itemDayMin", root.fixItemDayMin)
+        formMap.set("itemDayMax", root.fixItemDayMax)
 
         //検品日付最小値タップ処理
         val kenpinDayMin = formMap["kenpinDayMin"]
@@ -150,62 +204,7 @@ class FixtureSearchFragment : FixtureBaseFragment() {
         if (ItemDayMax != null) {
             setDateTimeAction(ItemDayMax)
         }
-
-        val btnSearch = root.findViewById<Button>(R.id.fixSerchBtn)
-
-        try {
-            if(token != null && projectId != null) {
-                //検索ボタンタップ処理
-                btnSearch.setOnClickListener {
-
-                    if (errorList.size > 0) {
-                        errorList.forEach {
-                            titleRecover(it)
-                        }
-
-                    }
-
-                    errorList.clear()
-
-                    val errorFlg = checkSearchValueManager()
-                    if (errorFlg) {
-                        //エラーケース
-                        errorList.forEach {
-                            errorTitleCreate(it)
-                        }
-                    } else {
-                        //正常ケース
-//                        val freeWordEdit = root.findViewById<EditText>(R.id.fixFreeWordValue)
-//                        freeWord = freeWordEdit.text.toString()
-                        startSearch()
-                    }
-                }
-            }else{
-                throw Exception("Failed to receive internal data ")
-            }
-        }catch (e:Exception){
-            val errorMessage = msg.createErrorMessage("getFail")
-            Toast.makeText(activity, errorMessage, toastErrorLen).show()
-            btnSearch.setOnClickListener {
-                AlertDialog.Builder(activity)
-                    .setTitle("メッセージ")
-                    .setMessage("内部データの取得に失敗しました。検索を実行できません")
-                    .setPositiveButton("YES") { dialog, which ->
-                        //TODO YESを押したときの処理
-                    }
-                    .show()
-
-            }
-        }
-
-        return root
     }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        scrollView.hideKeyboardWhenTouch(this)
-    }
-
 
     private fun startSearch() {
         //検索フィールドの値処理
@@ -218,7 +217,7 @@ class FixtureSearchFragment : FixtureBaseFragment() {
             Log.d("機器管理検索画面","key = ${it.key}, value = ${it.value.text}")
         }
         //edittext以外のフォームはここで個別で格納。（増えてきたらなんか策考えます。）
-        val statusSpinner = root.findViewById<Spinner>(R.id.fixSelectStatus)
+        val statusSpinner = root.fixSelectStatus
         searchValueMap.set("status",statusSpinner.selectedItem.toString())
         Log.d("機器管理検索画面","value = ${statusSpinner.selectedItem}")
 
@@ -282,7 +281,7 @@ class FixtureSearchFragment : FixtureBaseFragment() {
     }
 
 
-    private fun checkSearchValueManager(): Boolean {
+    private fun validateParams(): Boolean {
         //検索フィールドの値処理
         var errorFlg = false
 

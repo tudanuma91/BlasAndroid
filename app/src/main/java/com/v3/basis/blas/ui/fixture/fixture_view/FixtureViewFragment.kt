@@ -95,7 +95,7 @@ class FixtureViewFragment : FixtureBaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         super.onCreateView(inflater, container, savedInstanceState)
 
-        checkSearchMap()
+        getSearchParams()
 
         fixtureController.errorMessageEvent
             .observeOn(AndroidSchedulers.mainThread())
@@ -131,7 +131,7 @@ class FixtureViewFragment : FixtureBaseFragment() {
         return bind.root
     }
 
-    private fun checkSearchMap() {
+    private fun getSearchParams() {
         arguments?.let {
             searchValueMap.set("freeWord",it.getString("freeWord"))
             searchValueMap.set("serial_number",it.getString("serialNumber"))
@@ -154,29 +154,7 @@ class FixtureViewFragment : FixtureBaseFragment() {
             searchValueMap.set("itemDayMax",it.getString("itemDayMax"))
             searchValueMap.set("status",it.getString("status"))
         }
-        /*
-        searchValueMap.set("freeWord",getStringExtra("freeWord"))
-        searchValueMap.set("serial_number",getStringExtra("serialNumber"))
-        searchValueMap.set("fixture_id",getStringExtra("dataId"))
-        searchValueMap.set("FixOrg",getStringExtra("kenpinOrg"))
-        searchValueMap.set("FixUser",getStringExtra("kenpinUser"))
-        searchValueMap.set("kenpinDayMin",getStringExtra("kenpinDayMin"))
-        searchValueMap.set("kenpinDayMax",getStringExtra("kenpinDayMax"))
-        searchValueMap.set("TakeOutOrg",getStringExtra("takeOutOrg"))
-        searchValueMap.set("TakeOutUser",getStringExtra("takeOutUser"))
-        searchValueMap.set("takeOutDayMin",getStringExtra("takeOutDayMin"))
-        searchValueMap.set("takeOutDayMax",getStringExtra("takeOutDayMax"))
-        searchValueMap.set("RtnOrg",getStringExtra("returnOrg"))
-        searchValueMap.set("RtnUser",getStringExtra("returnUser"))
-        searchValueMap.set("returnDayMin",getStringExtra("returnDayMin"))
-        searchValueMap.set("returnDayMax",getStringExtra("returnDayMax"))
-        searchValueMap.set("ItemOrg",getStringExtra("itemOrg"))
-        searchValueMap.set("ItemUser",getStringExtra("itemUser"))
-        searchValueMap.set("itemDayMin",getStringExtra("itemDayMin"))
-        searchValueMap.set("itemDayMax",getStringExtra("itemDayMax"))
-        searchValueMap.set("status",getStringExtra("status"))
 
-         */
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
