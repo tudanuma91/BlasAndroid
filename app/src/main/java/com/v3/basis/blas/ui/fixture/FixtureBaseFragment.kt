@@ -35,11 +35,7 @@ open class FixtureBaseFragment : Fragment() {
         }
 
         //コントローラーの生成
-        fixtureController =
-            FixtureController(
-                BlasApp.applicationContext(),
-                projectId
-            )
+        fixtureController = FixtureController(BlasApp.applicationContext(), projectId)
     }
 
     override fun onCreateView(

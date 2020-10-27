@@ -33,6 +33,10 @@ import com.v3.basis.blas.databinding.FragmentFixtureViewBinding
 
 import com.v3.basis.blas.ui.ext.addTitleWithProjectName
 import com.v3.basis.blas.ui.ext.getStringExtra
+import com.v3.basis.blas.ui.fixture.ARG_PROJECT_ID
+import com.v3.basis.blas.ui.fixture.ARG_PROJECT_NAME
+import com.v3.basis.blas.ui.fixture.ARG_TOKEN
+import com.v3.basis.blas.ui.fixture.FixtureBaseFragment
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
 import io.reactivex.Single
@@ -52,10 +56,7 @@ import java.lang.Exception
 /**
  * A simple [Fragment] subclass.
  */
-class FixtureViewFragment : Fragment() {
-
-    lateinit var token:String
-    lateinit var project_id:String
+class FixtureViewFragment : FixtureBaseFragment() {
     private var dataListAll = mutableListOf<FixtureListCell>()
     private var dataList = mutableListOf<FixtureListCell>()
     private var valueMap : MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
@@ -65,7 +66,6 @@ class FixtureViewFragment : Fragment() {
     private var helper = RestHelper()
 
     private var jsonParseList : JSONArray? = null
-    private lateinit var fixtureController: FixtureController
     private val disposables = CompositeDisposable()
 
     private var paresUnitNum = 100
@@ -93,24 +93,10 @@ class FixtureViewFragment : Fragment() {
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-
         super.onCreateView(inflater, container, savedInstanceState)
-        Log.d("【onCreateView】","呼ばれた")
-        val extras = activity?.intent?.extras
-        if (extras?.getString("token") != null) {
-            token = extras.getString("token").toString()
-        }
-        if (extras?.getString("project_id") != null) {
-            project_id = extras.getString("project_id").toString()
-        }
 
         checkSearchMap()
 
-        fixtureController =
-            FixtureController(
-                requireContext(),
-                project_id
-            )
         fixtureController.errorMessageEvent
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
@@ -146,7 +132,29 @@ class FixtureViewFragment : Fragment() {
     }
 
     private fun checkSearchMap() {
-
+        arguments?.let {
+            searchValueMap.set("freeWord",it.getString("freeWord"))
+            searchValueMap.set("serial_number",it.getString("serialNumber"))
+            searchValueMap.set("fixture_id",it.getString("dataId"))
+            searchValueMap.set("FixOrg",it.getString("kenpinOrg"))
+            searchValueMap.set("FixUser",it.getString("kenpinUser"))
+            searchValueMap.set("kenpinDayMin",it.getString("kenpinDayMin"))
+            searchValueMap.set("kenpinDayMax",it.getString("kenpinDayMax"))
+            searchValueMap.set("TakeOutOrg",it.getString("takeOutOrg"))
+            searchValueMap.set("TakeOutUser",it.getString("takeOutUser"))
+            searchValueMap.set("takeOutDayMin",it.getString("takeOutDayMin"))
+            searchValueMap.set("takeOutDayMax",it.getString("takeOutDayMax"))
+            searchValueMap.set("RtnOrg",it.getString("returnOrg"))
+            searchValueMap.set("RtnUser",it.getString("returnUser"))
+            searchValueMap.set("returnDayMin",it.getString("returnDayMin"))
+            searchValueMap.set("returnDayMax",it.getString("returnDayMax"))
+            searchValueMap.set("ItemOrg",it.getString("itemOrg"))
+            searchValueMap.set("ItemUser",it.getString("itemUser"))
+            searchValueMap.set("itemDayMin",it.getString("itemDayMin"))
+            searchValueMap.set("itemDayMax",it.getString("itemDayMax"))
+            searchValueMap.set("status",it.getString("status"))
+        }
+        /*
         searchValueMap.set("freeWord",getStringExtra("freeWord"))
         searchValueMap.set("serial_number",getStringExtra("serialNumber"))
         searchValueMap.set("fixture_id",getStringExtra("dataId"))
@@ -167,6 +175,8 @@ class FixtureViewFragment : Fragment() {
         searchValueMap.set("itemDayMin",getStringExtra("itemDayMin"))
         searchValueMap.set("itemDayMax",getStringExtra("itemDayMax"))
         searchValueMap.set("status",getStringExtra("status"))
+
+         */
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -178,13 +188,13 @@ class FixtureViewFragment : Fragment() {
             allSyncButton.isEnabled = false
             Log.d("フローティングボタン Fixture","Click!!!!")
 
-            Lump(requireContext(),project_id,token,0){
+            Lump(requireContext(),projectId,token,0){
                 (requireActivity() as FixtureActivity).reloard()
             }.exec()
         }
 
         try {
-            if(token != null && project_id != null) {
+            if(token != null && projectId != null) {
                 Log.d("lifeCycle", "onViewCreated")
                 //リサイクラ-viewを取得
                 //基本的にデータはまだ到着していないため、空のアクティビティとadapterだけ設定しておく
@@ -268,7 +278,7 @@ class FixtureViewFragment : Fragment() {
                     // itを全部渡してもいいような気もするが辞めておく・・・
                     val model = FixtureCellModel(
                         token
-                        ,project_id.toInt()
+                        ,projectId.toInt()
                         ,it.fixture_id
                         , title.toString()
                         , value

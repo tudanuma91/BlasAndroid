@@ -13,9 +13,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.fragment.app.FragmentManager
 
 import com.v3.basis.blas.R
-import com.v3.basis.blas.activity.FixtureSearchResultActivity
 import com.v3.basis.blas.activity.ItemSearchResultActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.app.searchAndroid
@@ -24,7 +24,9 @@ import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.ui.ext.addTitleWithProjectName
 import com.v3.basis.blas.ui.ext.getStringExtra
 import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
+import com.v3.basis.blas.ui.fixture.FixtureBaseFragment
 import com.v3.basis.blas.ui.fixture.fixture_kenpin_multi.FixtureKenpinMultiFragment
+import com.v3.basis.blas.ui.fixture.fixture_view.FixtureViewFragment
 import kotlinx.android.synthetic.main.fragment_fixture_search.*
 import org.json.JSONObject
 import java.lang.Exception
@@ -38,10 +40,8 @@ import java.util.*
  * Use the [FixtureSearchFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class FixtureSearchFragment : Fragment() {
+class FixtureSearchFragment : FixtureBaseFragment() {
 
-    lateinit var token:String
-    lateinit var projectId:String
     lateinit var freeWord:String
     private val formMap :MutableMap<String,EditText> = mutableMapOf()
     private var errorList:MutableList<String> = mutableListOf()
@@ -223,31 +223,40 @@ class FixtureSearchFragment : Fragment() {
         Log.d("機器管理検索画面","value = ${statusSpinner.selectedItem}")
 
 
-        val intent = Intent(activity, FixtureSearchResultActivity::class.java)
-        intent.putExtra("token",token)
-        intent.putExtra("project_id",projectId)
-        intent.putExtra("freeWord",searchValueMap["freeWord"].toString())
-        intent.putExtra("serialNumber",searchValueMap["serialNumber"].toString())
-        intent.putExtra("dataId",searchValueMap["dataId"].toString())
-        intent.putExtra("kenpinOrg",searchValueMap["kenpinOrg"].toString())
-        intent.putExtra("kenpinUser",searchValueMap["kenpinUser"].toString())
-        intent.putExtra("kenpinDayMin",searchValueMap["kenpinDayMin"].toString())
-        intent.putExtra("kenpinDayMax",searchValueMap["kenpinDayMax"].toString())
-        intent.putExtra("takeOutOrg",searchValueMap["takeOutOrg"].toString())
-        intent.putExtra("takeOutUser",searchValueMap["takeOutUser"].toString())
-        intent.putExtra("takeOutDayMin",searchValueMap["takeOutDayMin"].toString())
-        intent.putExtra("takeOutDayMax",searchValueMap["takeOutDayMax"].toString())
-        intent.putExtra("returnOrg",searchValueMap["returnOrg"].toString())
-        intent.putExtra("returnUser",searchValueMap["returnUser"].toString())
-        intent.putExtra("returnDayMin",searchValueMap["returnDayMin"].toString())
-        intent.putExtra("returnDayMax",searchValueMap["returnDayMax"].toString())
-        intent.putExtra("itemOrg",searchValueMap["itemOrg"].toString())
-        intent.putExtra("itemUser",searchValueMap["itemUser"].toString())
-        intent.putExtra("itemDayMin",searchValueMap["itemDayMin"].toString())
-        intent.putExtra("itemDayMax",searchValueMap["itemDayMax"].toString())
-        intent.putExtra("status",searchValueMap["status"].toString())
+        //val intent = Intent(activity, FixtureSearchResultActivity::class.java)
+        var bundle = Bundle()
+        bundle.putString("token",token)
+        bundle.putString("project_id",projectId)
+        bundle.putString("freeWord",searchValueMap["freeWord"].toString())
+        bundle.putString("serialNumber",searchValueMap["serialNumber"].toString())
+        bundle.putString("dataId",searchValueMap["dataId"].toString())
+        bundle.putString("kenpinOrg",searchValueMap["kenpinOrg"].toString())
+        bundle.putString("kenpinUser",searchValueMap["kenpinUser"].toString())
+        bundle.putString("kenpinDayMin",searchValueMap["kenpinDayMin"].toString())
+        bundle.putString("kenpinDayMax",searchValueMap["kenpinDayMax"].toString())
+        bundle.putString("takeOutOrg",searchValueMap["takeOutOrg"].toString())
+        bundle.putString("takeOutUser",searchValueMap["takeOutUser"].toString())
+        bundle.putString("takeOutDayMin",searchValueMap["takeOutDayMin"].toString())
+        bundle.putString("takeOutDayMax",searchValueMap["takeOutDayMax"].toString())
+        bundle.putString("returnOrg",searchValueMap["returnOrg"].toString())
+        bundle.putString("returnUser",searchValueMap["returnUser"].toString())
+        bundle.putString("returnDayMin",searchValueMap["returnDayMin"].toString())
+        bundle.putString("returnDayMax",searchValueMap["returnDayMax"].toString())
+        bundle.putString("itemOrg",searchValueMap["itemOrg"].toString())
+        bundle.putString("itemUser",searchValueMap["itemUser"].toString())
+        bundle.putString("itemDayMin",searchValueMap["itemDayMin"].toString())
+        bundle.putString("itemDayMax",searchValueMap["itemDayMax"].toString())
+        bundle.putString("status",searchValueMap["status"].toString())
 
-        startActivity(intent)
+        //startActivity(intent)
+
+        bundle.putString("token", token)
+        bundle.putString("project_id", projectId)
+        bundle.putString("project_name", projectName)
+
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.nav_host_fragment_fixture, FixtureViewFragment.newInstance().apply { arguments = bundle})
+            .commitNow()
 
     }
 
