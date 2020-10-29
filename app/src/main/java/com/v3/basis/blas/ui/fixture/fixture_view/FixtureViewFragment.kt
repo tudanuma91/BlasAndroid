@@ -33,10 +33,10 @@ import com.v3.basis.blas.databinding.FragmentFixtureViewBinding
 
 import com.v3.basis.blas.ui.ext.addTitleWithProjectName
 import com.v3.basis.blas.ui.ext.getStringExtra
-import com.v3.basis.blas.ui.fixture.ARG_PROJECT_ID
-import com.v3.basis.blas.ui.fixture.ARG_PROJECT_NAME
-import com.v3.basis.blas.ui.fixture.ARG_TOKEN
-import com.v3.basis.blas.ui.fixture.FixtureBaseFragment
+import com.v3.basis.blas.ui.common.ARG_PROJECT_ID
+import com.v3.basis.blas.ui.common.ARG_PROJECT_NAME
+import com.v3.basis.blas.ui.common.ARG_TOKEN
+import com.v3.basis.blas.ui.common.FixtureBaseFragment
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
 import io.reactivex.Single
@@ -45,6 +45,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.activity_fixture.*
 import kotlinx.android.synthetic.main.fragment_fixture_view.*
 import kotlinx.android.synthetic.main.fragment_fixture_view.allSyncButton
 import kotlinx.android.synthetic.main.fragment_item_view.recyclerView

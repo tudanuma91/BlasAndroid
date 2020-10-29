@@ -58,6 +58,7 @@
     <string name="navi_title_fixture_return">機器返却</string>
     <string name="navi_title_fixture_view">機器一覧</string>
     <string name="menu_title_fixture_config">検品の設定</string>
+
     <!--WebView-->
     <string name="navi_title_webview">WebView</string>
     <!--共通-->

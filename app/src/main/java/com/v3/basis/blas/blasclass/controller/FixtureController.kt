@@ -13,6 +13,13 @@ import kotlin.Exception
 
 class FixtureController(context: Context, projectId: String): BaseController(context, projectId) {
 
+    companion object {
+        val NORMAL = 0           //0:正常
+        val ALREADY_ENTRY = 1    //1:すでに登録済み
+        val UPDATE_ERROR = 3     //3:更新失敗
+        val INSERT_ERROR = 4     //4:新規追加失敗
+    }
+
     /**
      * 機器一覧を表示するためのSQL
      */
@@ -74,7 +81,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         if( 0 == fixtureDispRange ) {
             // projectの設定に従う
-            val showData = getProjectVlue("show_data")
+            val showData = getProjectValue("show_data")
             if( 1 == showData ) {
                 // 自分の会社分しか見れない
                 val myOrgId = user?.org_id
@@ -248,25 +255,6 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         return ret
     }
 
-    /*
-    //  BlasRestFixture.createはアプリからも使ってない。
-    fun create(fixtures: Fixtures): Boolean {
-
-        return true
-    }
-
-    //  BlasRestFixture.updateはアプリからも使ってない。
-    fun update(fixtures: Fixtures): Boolean {
-
-        return false
-    }
-
-    //  BlasRestFixture.deleteはアプリからも使ってない。
-    fun delete(fixtures: Fixtures): Boolean {
-        return false
-    }
-     */
-
     /**
      * シリアルナンバーがDB中に存在するか確認する
      */
@@ -381,7 +369,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
     /**
      * 指定されたシリアルナンバーのFixtureレコードを返す
      */
-    private fun getEqualFixtureInfo(serial_number: String )  : LdbFixtureRecord? {
+    private fun getRecordBySerial(serial_number: String )  : LdbFixtureRecord? {
 
         val sql = "select * from fixtures where serial_number = ?"
         val cursor = db?.rawQuery(sql, arrayOf(serial_number))
@@ -405,7 +393,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
      */
     fun passPurser( serial_number:String ) : MutableList<String> {
 
-        val purserType = getProjectVlue("purser_type")
+        val purserType = getProjectValue("purser_type")
 
         lateinit var newSerialNumber:MutableList<String>
         if( 0 == purserType ) {
@@ -439,51 +427,63 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
     /**
      * 検品処理
+     * [引数]
+     * srcSerialNumber
+     * 　QRコード、またはバーコードを読んだときの生データ。
+     * 　とくにQRコードは1234,4567,7890のようにカンマ区切りなどで複数のシリアルナンバーを持つことがある。
+     * 　そのため、PassPurserで分解する。分解方法はBLASのプロジェクトの「QRコードの設定」に従う。
+     * [戻り値]
+     * 0:正常
+     * 1:すでに登録済み
+     * 2:検品不可
+     * 3:更新失敗
+     * 4:新規追加失敗
      */
-    fun kenpin( serial_number: String): Boolean {
-        Log.d("kenpin","start")
-        var ret = false
+    fun kenpin( rawSerialNumber: String): MutableMap<String, Int> {
+        val results = mutableMapOf<String, Int>()
 
-        val serial_numbers = passPurser( serial_number )
-
-        serial_numbers.forEach {
+        val serial_numbers = passPurser( rawSerialNumber )
+        serial_numbers.forEach {serial->
             // fixtureテーブル 同じserial_numberが存在しないかを確認
-            if (checkExistSerial(it)) {
+            if (checkExistSerial(serial)) {
                 // ある場合
                 Log.d("kenpin", "同一シリアルが登録済み")
-                var user: LdbUserRecord? = getUserInfo()
+                var user = getUserInfo()
                 if (null == user) {
                     user = LdbUserRecord()
                     user.user_id = 1
                     user.org_id = 1
                 }
 
-                var fixture = getEqualFixtureInfo(it)
+                var fixture = getRecordBySerial(serial)
 
                 if (fixture?.fix_org_id != user?.org_id && 0 == fixture?.status) {
                     Log.d("kenpin", "他社検品を異動")
                     // 他社が検品、持ち出し可なら ⇒ 異動
-                    ret = kenpin_update(it, fixture, user)
-
-                    return ret
+                    if(!kenpin_update(serial, fixture, user)) {
+                        results[serial] = UPDATE_ERROR
+                    }
+                    else {
+                        results[serial] = NORMAL
+                    }
                 } else {
-                    // 検品不可
+                    //検品済み
                     Log.d("kenpin", "検品済みです")
                     errorMessageEvent.onNext("検品済みです")
-
-                    return false
+                    results[serial] = ALREADY_ENTRY
                 }
-                // なければ新規追加
-                Log.d("kenpin", "存在しないシリアルなので新規作成する")
-                errorMessageEvent.onNext("")
             }
-            ret = kenpin_insert(it)
-            if(!ret) {
-                return false
+            else {
+                if(!kenpin_insert(serial)) {
+                    results[serial] = INSERT_ERROR
+                }
+                else {
+                    results[serial] = NORMAL
+                }
             }
         }
 
-        return ret
+        return results
     }
 
     /**
@@ -540,7 +540,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         serial_numbers.forEach {
             // 該当シリアルナンバーの機器情報を取得
-            var fixture = getEqualFixtureInfo(it)
+            var fixture = getRecordBySerial(it)
             var user: LdbUserRecord? = getUserInfo()
             if (null == user) {
                 user = LdbUserRecord()
@@ -641,7 +641,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         serial_numbers.forEach {
             // 該当シリアルナンバーの機器情報を取得
-            var fixture = getEqualFixtureInfo(it)
+            var fixture = getRecordBySerial(it)
             var user : LdbUserRecord? = getUserInfo()
             if(null == user) {
                 user = LdbUserRecord()

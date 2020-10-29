@@ -2,10 +2,7 @@ package com.v3.basis.blas.ui.fixture.fixture_search
 
 import android.app.AlertDialog
 import android.app.DatePickerDialog
-import android.content.Context
-import android.content.Intent
 import android.graphics.Color
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -13,23 +10,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.fragment.app.FragmentManager
 
 import com.v3.basis.blas.R
-import com.v3.basis.blas.activity.ItemSearchResultActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
-import com.v3.basis.blas.blasclass.app.searchAndroid
 import com.v3.basis.blas.blasclass.config.FieldType
-import com.v3.basis.blas.blasclass.rest.BlasRestFixture
 import com.v3.basis.blas.ui.ext.addTitleWithProjectName
-import com.v3.basis.blas.ui.ext.getStringExtra
 import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
-import com.v3.basis.blas.ui.fixture.FixtureBaseFragment
-import com.v3.basis.blas.ui.fixture.fixture_kenpin_multi.FixtureKenpinMultiFragment
+import com.v3.basis.blas.ui.common.FixtureBaseFragment
 import com.v3.basis.blas.ui.fixture.fixture_view.FixtureViewFragment
 import kotlinx.android.synthetic.main.fragment_fixture_search.*
 import kotlinx.android.synthetic.main.fragment_fixture_search.view.*
-import org.json.JSONObject
 import java.lang.Exception
 import java.util.*
 
@@ -256,7 +246,7 @@ class FixtureSearchFragment : FixtureBaseFragment() {
         parentFragmentManager.beginTransaction()
             .replace(R.id.nav_host_fragment_fixture, FixtureViewFragment.newInstance().apply { arguments = bundle})
             .commitNow()
-
+        //bottom_navigation_fixture.selectedItemId = R.id.navi_fixture_view
     }
 
 

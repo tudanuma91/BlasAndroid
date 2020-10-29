@@ -11,11 +11,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_fixture_kenpin_multi.*
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.controller.FixtureController
 import com.v3.basis.blas.ui.ext.addTitleWithProjectName
-import com.v3.basis.blas.ui.fixture.FixtureBaseFragment
+import com.v3.basis.blas.ui.common.FixtureBaseFragment
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.schedulers.Schedulers
@@ -36,25 +37,9 @@ class FixtureKenpinMultiFragment : FixtureBaseFragment() {
     //val disposables = CompositeDisposable()
     var barcodeReader:MultiQrBarcodeReader? = null
     var barcodeSubscriber:BarCodeSubScriber<String>? = null
-
-    private val PERMISSIONS_REQUEST_CODE = 1234
-    private val PERMISSIONS_REQUIRED = arrayOf(
-        Manifest.permission.CAMERA,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        Manifest.permission.READ_EXTERNAL_STORAGE
-    )
-
     companion object {
         fun newInstance() = FixtureKenpinMultiFragment()
     }
-
-    /**
-     * 権限チェック　関数に関数を代入する。
-     */
-    private fun hasPermissions(context: Context) = PERMISSIONS_REQUIRED.all {
-        ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
-    }
-
 
     /**
      * カメラの初期化
@@ -77,16 +62,6 @@ class FixtureKenpinMultiFragment : FixtureBaseFragment() {
             }
         }
     }
-
-    fun setBarCode(barcode:String) {
-        context?.let {context->
-            FixtureController(
-                context,
-                projectId.toString()
-            ).kenpin(barcode)
-        }
-    }
-
 
     /**
      * オーバーライド関数
@@ -150,12 +125,15 @@ class FixtureKenpinMultiFragment : FixtureBaseFragment() {
     }
 }
 
-class BarCodeSubScriber<String>(context:Context, projectId:String): Subscriber<String> {
+
+class BarCodeSubScriber<String>(val context:Context, val projectId:String): Subscriber<String> {
     var subscription:Subscription? = null
-    var controller = FixtureController(
+    val cacheResults:MutableMap<kotlin.String, Int> = mutableMapOf<kotlin.String, Int>()
+    val controller = FixtureController(
         context,
         projectId.toString()
     )
+
 
     override fun onComplete() {
     }
@@ -166,15 +144,32 @@ class BarCodeSubScriber<String>(context:Context, projectId:String): Subscriber<S
         subscription?.request(1)
     }
 
-    override fun onNext(t: String) {
-        controller.kenpin(t.toString())
+    override fun onNext(barCode: String) {
+        val results:MutableMap<kotlin.String, Int> = controller.kenpin(barCode.toString())
+
+        results.forEach{key, value->
+            cacheResults[key] = value
+        }
+
         subscription?.request(1)
     }
 
     override fun onError(t: Throwable?) {
     }
 
+    fun saveCache() {
+        context.openFileOutput("BarCodeListLog", Context.MODE_APPEND).use {
+            var str = Gson().toJson(cacheResults)
+            it.write(str.toByteArray())
+        }
+    }
+
+    fun resetCache() {
+        cacheResults.clear()
+    }
+
     fun dispose() {
+        saveCache()
         subscription?.cancel()
     }
 }

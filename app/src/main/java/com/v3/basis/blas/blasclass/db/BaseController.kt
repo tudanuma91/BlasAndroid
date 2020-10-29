@@ -245,7 +245,7 @@ abstract class BaseController(
     /**
      * show_dataの値を取得する
      */
-    protected fun getProjectVlue(columnName:String ) : Int {
+    protected fun getProjectValue(columnName:String ) : Int {
 
         val sql = "select "+ columnName + " from projects"
         val cursor = db?.rawQuery(sql,null)

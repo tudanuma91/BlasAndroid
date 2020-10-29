@@ -1,4 +1,4 @@
-package com.v3.basis.blas.ui.fixture
+package com.v3.basis.blas.ui.common
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.controller.FixtureController
+
 
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 public const val ARG_TOKEN = "token"
@@ -19,7 +20,7 @@ public const val ARG_PROJECT_NAME = "project_name"
  * Use the [FixtureBaseFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-open class FixtureBaseFragment : Fragment() {
+open class FixtureBaseFragment : QRCameraFragment() {
     protected lateinit var token: String
     protected lateinit var projectId:String
     protected lateinit var  projectName:String
@@ -45,6 +46,7 @@ open class FixtureBaseFragment : Fragment() {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_fixture_base, container, false)
     }
+
 
     companion object {
         /**

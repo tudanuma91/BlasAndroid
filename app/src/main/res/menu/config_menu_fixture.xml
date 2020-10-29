@@ -4,4 +4,9 @@
         android:id="@+id/menu_fixture_config"
         android:title="@string/menu_title_fixture_config">
     </item>
+    <item
+        android:id="@+id/menu_fixture_search"
+        android:title="@string/navi_title_fixture_search">
+    </item>
+
 </menu>

@@ -1,19 +1,16 @@
 package com.v3.basis.blas.ui.fixture.fixture_config
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.v3.basis.blas.R
 import com.v3.basis.blas.databinding.FragmentFixtureConfigBinding
 import com.v3.basis.blas.ui.ext.addTitleWithProjectName
-import com.v3.basis.blas.ui.fixture.FixtureBaseFragment
+import com.v3.basis.blas.ui.common.FixtureBaseFragment
 import kotlinx.android.synthetic.main.fragment_fixture_config.*
 
 
