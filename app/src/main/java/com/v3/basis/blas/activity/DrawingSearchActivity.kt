@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.ProgressBar
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -36,6 +37,7 @@ class DrawingSearchActivity : AppCompatActivity() {
 
     private val TAG: String = "DrawingSearchActivity"
     private lateinit var bind: ActivityDrawingBinding
+    private lateinit var progressBar: ProgressBar
 
     private var scale: Float = 0.0f // 図面のズームインアウトに使用するスケール変数
     private val disposables: CompositeDisposable = CompositeDisposable()
@@ -67,6 +69,10 @@ class DrawingSearchActivity : AppCompatActivity() {
         backButton.setOnClickListener {
             finish()
         }
+
+        // プログレスバー
+        progressBar = findViewById<ProgressBar>(R.id.progressBarLoadDrawing)
+        progressBar.visibility = android.widget.ProgressBar.INVISIBLE
 
         //  画像の大きさが変わったら呼ばれるイベント
         bind.photoView.setOnMatrixChangeListener { rect ->
@@ -169,6 +175,7 @@ class DrawingSearchActivity : AppCompatActivity() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy { drawingImage ->
                 Log.d(TAG, "drawingImageEvent: start ")
+                progressBar.visibility = android.widget.ProgressBar.INVISIBLE
                 // ラベルデータのセット
                 // 端末上に表示されるサイズとビットマップのサイズからラベルに適するスケールを計算
                 val scaleOfOriginalImage = min(bind.photoView.width.toFloat() / drawingImage.bitmap.width, bind.photoView.height.toFloat() / drawingImage.bitmap.height)
@@ -226,6 +233,7 @@ class DrawingSearchActivity : AppCompatActivity() {
         mViewModel.getDrawingImage().observe(this, androidx.lifecycle.Observer { drawingImage ->
             if (drawingImage == null) {
                 Log.d(TAG, "Erase labels and image ")
+                progressBar.visibility = android.widget.ProgressBar.INVISIBLE
                 this.labels.clear()
                 bind.labelContainer.removeAllViews()
                 bind.photoView.setImageBitmap(null)
@@ -266,6 +274,7 @@ class DrawingSearchActivity : AppCompatActivity() {
 
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 Log.d(TAG, "Drawing selected: position=$position ")
+                progressBar.visibility = android.widget.ProgressBar.VISIBLE
                 val drawing = drawings[position]
                 mViewModel.selectDrawing(drawing)
             }
