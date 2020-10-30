@@ -82,7 +82,6 @@ class ItemViewFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        addTitle("projectName")
     }
 
     private val groupAdapter = GroupAdapter<GroupieViewHolder<*>>()
@@ -103,6 +102,7 @@ class ItemViewFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         super.onCreateView(inflater, container, savedInstanceState)
+        addTitle("projectName")
 
         val root = inflater.inflate(R.layout.fragment_item_view, container, false)
         rootView = root

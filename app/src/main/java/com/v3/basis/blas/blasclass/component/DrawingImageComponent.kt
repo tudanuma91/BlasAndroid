@@ -47,16 +47,16 @@ class DrawingImageComponent: ImageComponent() {
         val imgFullPath = getSavedDir(context, projectId) + fileName
         //画像ファイル名のフルパス作成
         try {
-            val byteArrOutputStream = ByteArrayOutputStream()
-            val fileOutputStream = FileOutputStream(imgFullPath)
-            bmp!!.compress(getCompressFormat(fileName), 100, byteArrOutputStream)
-            fileOutputStream.write(byteArrOutputStream.toByteArray())
-            val digest: MessageDigest = MessageDigest.getInstance("MD5")
-            hash = digest.digest(byteArrOutputStream.toByteArray()).joinToString(separator = "") {
-                "%02x".format(it)
+            ByteArrayOutputStream().use { baos ->
+                FileOutputStream(imgFullPath).use { fos ->
+                    bmp!!.compress(getCompressFormat(fileName), 100, baos)
+                    fos.write(baos.toByteArray())
+                    val digest: MessageDigest = MessageDigest.getInstance("MD5")
+                    hash = digest.digest(baos.toByteArray()).joinToString(separator = "") {
+                        "%02x".format(it)
+                    }
+                }
             }
-            fileOutputStream.close()
-
         }
         catch (e:Exception){
             e.printStackTrace()

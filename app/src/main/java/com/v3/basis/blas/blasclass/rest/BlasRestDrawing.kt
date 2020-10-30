@@ -2,18 +2,23 @@ package com.v3.basis.blas.blasclass.rest
 import android.util.Log
 import android.widget.Toast
 import com.google.gson.Gson
+import com.google.gson.stream.JsonReader
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.ByteArrayInputStream
+import java.io.InputStreamReader
 
 
 /**
  * BLASのデータにアクセスするクラス
  */
-open class BlasRestDrawing(val crud:String = "index",
-                           val payload:Map<String, String?>,
-                           val funcSuccess:(DrawingResponse)->Unit,
-                           val funcError:(Int,Int)->Unit) : BlasRest() {
+open class BlasRestDrawing(
+    val crud: String = "index",
+    val payload: Map<String, String?>,
+    val funcSuccess: (DrawingResponse) -> Unit,
+    val funcError: (Int, Int) -> Unit
+) : BlasRest() {
 
     var method = "GET"
     var aplCode:Int = 0
@@ -28,20 +33,20 @@ open class BlasRestDrawing(val crud:String = "index",
         var blasUrl = URL + "drawing_images"
 
         when(crud) {
-            "index"->{
+            "index" -> {
                 method = "GET"
                 blasUrl = URL + "drawing_images"
             }
-            "view"->{
+            "view" -> {
                 method = "GET"
                 blasUrl = URL + "drawing_images/${payload["drawing_id"]}"
             }
         }
 
         try {
-            response = super.getResponseData(payload,method, blasUrl)
+            response = super.getResponseData(payload, method, blasUrl)
         }
-        catch(e: Exception) {
+        catch (e: Exception) {
             Log.d("blas-log", e.message)
             funcError(BlasRestErrCode.NETWORK_ERROR, APL_OK)
         }
@@ -90,10 +95,13 @@ open class BlasRestDrawing(val crud:String = "index",
         if(json == null) {
             funcError(BlasRestErrCode.JSON_PARSE_ERROR, aplCode)
         } else if(errorCode == 0) {
-            val response = Gson().fromJson(json.toString(), DrawingResponse::class.java)
-            funcSuccess(response)
+            ByteArrayInputStream(result.toByteArray()).use {
+                val reader = InputStreamReader(it)
+                val response = Gson().fromJson(reader, DrawingResponse::class.java)
+                funcSuccess(response)
+            }
         } else {
-            funcError(errorCode , aplCode)
+            funcError(errorCode, aplCode)
         }
     }
 }
@@ -101,7 +109,8 @@ open class BlasRestDrawing(val crud:String = "index",
 class DrawingResponse(
     val error_code: Int, // 0
     val message: String, // None
-    val records: List<DrawingRecord>) {
+    val records: List<DrawingRecord>
+) {
 
     inner class DrawingRecord(
         val Drawing: DrawingObject
