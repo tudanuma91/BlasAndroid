@@ -85,6 +85,8 @@ class DrawingSearchViewModel(
         }
     }
 
+    private val error: MutableLiveData<String> = MutableLiveData<String>()
+
     /**
      * 図面カテゴリー一覧のデータホルダーを取得する。
      */
@@ -111,6 +113,13 @@ class DrawingSearchViewModel(
      */
     fun getDrawingImage(): LiveData<DrawingImage> {
         return drawingImage
+    }
+
+    /**
+     * エラーメッセージのデータホルダーを取得する。
+     */
+    fun getError(): LiveData<String> {
+        return error
     }
 
     /**
@@ -259,6 +268,7 @@ class DrawingSearchViewModel(
                 },
                 funcError = { _: Int, _: Int ->
                     Log.d(TAG, "Failed to read data from remote server ")
+                    error.postValue("図面のダウンロードに失敗しました")
                 }
             ).execute()
         }

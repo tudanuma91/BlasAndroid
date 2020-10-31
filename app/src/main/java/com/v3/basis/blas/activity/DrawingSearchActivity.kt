@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -227,6 +228,12 @@ class DrawingSearchActivity : AppCompatActivity() {
         // ViewModelの図面に対する監視
         mViewModel.getDrawings().observe(this, androidx.lifecycle.Observer { drawings ->
             drawingsEvent.onNext(drawings)
+        })
+
+        // ViewModelのエラーメッセージに対する監視
+        mViewModel.getError().observe(this, androidx.lifecycle.Observer { error ->
+            progressBar.visibility = android.widget.ProgressBar.INVISIBLE
+            Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
         })
 
         // ViewModelの図面画像に対する監視
