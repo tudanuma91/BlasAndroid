@@ -19,7 +19,7 @@ import java.lang.Exception
 class FixtureListViewModel: ServerSyncViewModel() {
 
     private lateinit var model: FixtureCellModel
-    val errorEvent: PublishSubject<String> = PublishSubject.create()
+   // val errorEvent: PublishSubject<String> = PublishSubject.create()
     private val disposable = CompositeDisposable()
 
     val sendCount: ObservableField<Int> = ObservableField(0)
@@ -35,6 +35,7 @@ class FixtureListViewModel: ServerSyncViewModel() {
         val fixtureController =
             FixtureController(
                 model.context,
+                model.token,
                 model.project_id.toString()
             )
       /*  fixtureController

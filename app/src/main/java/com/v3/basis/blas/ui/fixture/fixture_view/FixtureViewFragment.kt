@@ -47,7 +47,6 @@ import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_fixture.*
 import kotlinx.android.synthetic.main.fragment_fixture_view.*
-import kotlinx.android.synthetic.main.fragment_fixture_view.allSyncButton
 import kotlinx.android.synthetic.main.fragment_item_view.recyclerView
 import org.json.JSONArray
 import org.json.JSONObject
@@ -97,7 +96,8 @@ class FixtureViewFragment : FixtureBaseFragment() {
         super.onCreateView(inflater, container, savedInstanceState)
 
         getSearchParams()
-
+        viewModel = ViewModelProviders.of(this).get(FixtureListViewModel::class.java)
+        /*
         fixtureController.errorMessageEvent
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
@@ -115,7 +115,6 @@ class FixtureViewFragment : FixtureBaseFragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
                 val count = dataList.filter { it.model.syncVisible.get() && it.model.syncedToServer.get().not() }.size
-                allSyncButton.text = "未送信\n${count}件"
             }
             .addTo(disposables)
 
@@ -125,7 +124,7 @@ class FixtureViewFragment : FixtureBaseFragment() {
                 Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
             }
             .addTo(disposables)
-
+        */
         bind = DataBindingUtil.inflate(inflater, R.layout.fragment_fixture_view, container, false)
         bind.vm = viewModel
 
@@ -160,17 +159,6 @@ class FixtureViewFragment : FixtureBaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        //全て同期のボタン
-        allSyncButton.setOnClickListener {
-            //  連打禁止！！
-            allSyncButton.isEnabled = false
-            Log.d("フローティングボタン Fixture","Click!!!!")
-
-            Lump(requireContext(),projectId,token,0){
-                (requireActivity() as FixtureActivity).reloard()
-            }.exec()
-        }
 
         try {
             if(token != null && projectId != null) {

@@ -53,7 +53,7 @@ class FixtureKenpinMultiFragment : FixtureBaseFragment() {
              * カメラを非同期で動作させる。
              * 読み取ったバーコードの値を発行し、購読者に提供する
              */
-            barcodeSubscriber = context?.let { BarCodeSubScriber(it, projectId) }
+            barcodeSubscriber = context?.let { BarCodeSubScriber(it, token, projectId) }
             if(barcodeSubscriber != null) {
                 flow.observeOn(Schedulers.newThread())
                     .subscribeOn(Schedulers.newThread())
@@ -132,12 +132,13 @@ class FixtureKenpinMultiFragment : FixtureBaseFragment() {
 /**
  * バーコードを購読するクラス。
  */
-class BarCodeSubScriber<String>(val context:Context, val projectId:String): Subscriber<String> {
+class BarCodeSubScriber<String>(val context:Context, val token:String, val projectId:String): Subscriber<String> {
     var subscription:Subscription? = null
     val cacheResults:MutableMap<kotlin.String, Int> = mutableMapOf<kotlin.String, Int>()
    // val listFragment = FixtureKenpinItemsFragment.newInstance()
     val controller = FixtureController(
         context,
+        token.toString(),
         projectId.toString()
     )
 

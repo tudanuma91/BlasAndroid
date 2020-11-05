@@ -28,8 +28,8 @@ import kotlin.reflect.full.starProjectedType
  * SQLiteのDBを管理するクラス。
  */
 abstract class BaseController(
-     val context: Context
-    ,val projectId: String
+     val context: Context,
+     val projectId: String
 ) {
 
     companion object {

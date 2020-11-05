@@ -136,7 +136,6 @@ class ItemViewFragment : Fragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
                 val count = dataList.filter { it.model.syncVisible.get() && it.model.syncedToServer.get().not() }.size
-                allSyncButton.text = "未送信\n${count}件"
             }
             .addTo(disposables)
 
@@ -234,23 +233,6 @@ class ItemViewFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        //全て同期のボタン
-        allSyncButton.setOnClickListener {
-            try{
-                progressBarFlg = true
-                chkProgress(progressBarFlg,rootView)
-                Log.d("フローティングボタン Item","Click!!!!")
-                Lump(requireContext(),projectId,token,1){
-                    progressBarFlg = false
-                    (requireActivity() as ItemActivity).reloard()
-                }.exec()
-            }
-            catch(e:Exception) {
-                Log.d("konishi", "ItemActivityなし")
-            }
-
-        }
 
         //リサイクラ-viewを取得
         //基本的にデータはまだ到着していないため、空のアクティビティとadapterだけ設定しておく
@@ -632,7 +614,6 @@ class ItemViewFragment : Fragment() {
 
         dataList.add(ItemsListCell(viewModel, model))
         val count = dataList.filter { it.model.syncVisible.get() }.size
-        allSyncButton.text = "未送信\n${count}件"
         Log.d("チェック!!","dataListの値 => ${dataList}")
     }
 

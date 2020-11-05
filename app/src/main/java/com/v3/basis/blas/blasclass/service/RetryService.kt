@@ -4,8 +4,9 @@ import android.content.Context
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
-import android.os.IBinder
+import android.os.*
 import android.util.Log
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.TerminalActivity
@@ -15,15 +16,28 @@ import com.v3.basis.blas.blasclass.sync.Kenpin
 import com.v3.basis.blas.blasclass.sync.Rtn
 import com.v3.basis.blas.blasclass.sync.Takeout
 
+class SenderHandler(val context: Context): Handler() {
+    override fun handleMessage(msg: Message) {
+        super.handleMessage(msg)
+        Toast.makeText(context, "Messageを受信しました", Toast.LENGTH_SHORT).show()
+    }
+}
+
 class RetryService : Service() {
+    private lateinit var messenger: Messenger
+
     companion object {
         var lock:Object = Object()
     }
+
+
     override fun onBind(intent: Intent?): IBinder? {
-        return null
+        return messenger.binder
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        messenger = Messenger(SenderHandler(applicationContext))
+
         val openIntent = Intent(this, TerminalActivity::class.java).let {
             PendingIntent.getActivity(this, 0, it, 0)
         }
@@ -72,15 +86,17 @@ class RetryService : Service() {
         return ret
     }
 
-    fun sendFixture(projectId:String) {
+    fun sendFixture(token: String, projectId: String) {
 
         val fixtureController = FixtureController(
             applicationContext,
+            token,
             projectId.toString()
         )
         val fixtureRecords = fixtureController.search(null,true)
         fixtureRecords.forEach {record ->
             //BLASに送信していないレコードを送信する
+            /*
             when( record.status ) {
                 BaseController.KENPIN_FIN -> {
                     sync = Kenpin(model,fixture)
@@ -97,7 +113,7 @@ class RetryService : Service() {
                     Log.d("ERROR!!!","パラメータ異常")
                     return
                 }
-            }
+            }*/
         }
     }
 }

@@ -7,11 +7,12 @@ import com.v3.basis.blas.blasclass.db.*
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
 import com.v3.basis.blas.blasclass.ldb.LdbUserRecord
+import com.v3.basis.blas.blasclass.rest.SyncBlasRestFixture
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.Exception
 
-class FixtureController(context: Context, projectId: String): BaseController(context, projectId) {
+class FixtureController(context: Context, token: String, projectId: String): BaseController(context, projectId) {
 
     companion object {
         val NORMAL = 0           //0:正常
@@ -469,7 +470,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
                 } else {
                     //検品済み
                     Log.d("kenpin", "検品済みです")
-                    errorMessageEvent.onNext("検品済みです")
+                    //errorMessageEvent.onNext("検品済みです")
                     results[serial] = ALREADY_ENTRY
                 }
             }
@@ -483,7 +484,6 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             }
         }
 
-        //TODO:ここでpostする処理を入れる
         return results
     }
 

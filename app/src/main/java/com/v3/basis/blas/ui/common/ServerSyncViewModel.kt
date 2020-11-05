@@ -51,41 +51,6 @@ abstract class ServerSyncViewModel: ViewModel() {
         disposableMap.put(serverModel.uniqueId, disposables)
     }
 
-    fun clickCancel(model: ServerSyncModel) {
-        /*
-        model.progress.set(false)
-        model.syncEnable.set(true)
-        model.status.set("サーバーに登録待ちです")
-        */
-        //DB同期スレッドをキャンセルする！！
-        if (disposableMap.containsKey(model.uniqueId)) {
-            disposableMap[model.uniqueId]?.dispose()
-            disposableMap.remove(model.uniqueId)
-        }
-
-        val className = model::class.simpleName
-        if(className == "FixtureCellModel") {
-            if(model.uniqueId < 0) {
-                //仮登録で負のIDだったら削除する。
-                //例外返ったときにキチンとキャッチすること
-                try {
-                    FixtureController(
-                        model.context,
-                        model.project_id.toString()
-                    ).delete(model.uniqueId)
-                }
-                catch(e:Exception) {
-                }
-            }
-
-            //仮登録で正のIDだったら、サーバと同期する
-        }
-        else if (className == "ItemsCellModel") {
-            Log.d("konishi", className)
-            //例外返ったときにキチンとキャッチすること
-            ItemsController(model.context, model.project_id.toString()).delete(model.uniqueId)
-        }
-    }
 
     private fun setError(errorMessage: String, model: ServerSyncModel) {
         model.progress.set(false)

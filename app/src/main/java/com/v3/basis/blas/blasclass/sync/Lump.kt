@@ -65,6 +65,7 @@ class Lump(
 
         val fixtures = FixtureController(
             context,
+            token,
             projectId.toString()
         ).search(null,true)
         var sucCnt = 0
