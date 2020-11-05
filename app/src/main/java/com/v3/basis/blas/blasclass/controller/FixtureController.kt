@@ -67,7 +67,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
     /**
      * 自社だけ表示を判断
      */
-    private fun chgeckLimitMyOrg() {
+    private fun checkLimitMyOrg() {
         val user = getUserInfo()
         var groupId = 1
 
@@ -179,7 +179,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         additionList = arrayOf<String>()
         plHolder = arrayOf<String>()
 
-        chgeckLimitMyOrg()
+        checkLimitMyOrg()
         createAddition(searchMap)
 
         // where文を生成
@@ -211,7 +211,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
     /**
      * (内部処理用:ユーザー、会社の結付なし)機器一覧情報の取得
      */
-    fun search( fixture_id : Long? = null,syncFlg : Boolean = false) : List<LdbFixtureRecord> {
+    fun search( fixture_id: Long? = null, syncFlg: Boolean = false) : List<LdbFixtureRecord> {
 
         val addList = mutableListOf<String>()
         var sqlAddition = ""
@@ -483,6 +483,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             }
         }
 
+        //TODO:ここでpostする処理を入れる
         return results
     }
 

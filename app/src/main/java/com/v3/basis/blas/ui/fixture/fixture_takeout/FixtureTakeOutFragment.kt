@@ -32,7 +32,7 @@ import java.lang.Exception
 class FixtureTakeOutFragment : FixtureBaseFragment() {
 
     companion object {
-        fun newInstance() = FixtureKenpinFragment()
+        fun newInstance() = FixtureTakeOutFragment()
     }
 
     private val toastErrorLen = Toast.LENGTH_LONG
@@ -43,7 +43,7 @@ class FixtureTakeOutFragment : FixtureBaseFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        addTitleWithProjectName("検品画面")
+        addTitleWithProjectName("持ち出し画面")
     }
 
     override fun onCreateView(
@@ -85,14 +85,14 @@ class FixtureTakeOutFragment : FixtureBaseFragment() {
                 //プロジェクト名をここで入れる。
                 //requireActivityのパーミッションチェックがエラー原因だった
                 //  requireActivity().checkPermissions()
-                kenpin_project_name.text = projectName
+                takeout_project_name.text = projectName
                 startCamera(qr_view, ::takeOutCallBack)
             }else{
                 throw Exception("Failed to receive internal data ")
             }
         }catch (e: Exception){
-            kenpin_result_text.setTextColor(Color.RED)
-            kenpin_result_text.text = "内部データの取得に失敗しました。検品を実行できません"
+            takeout_result_text.setTextColor(Color.RED)
+            takeout_result_text.text = "内部データの取得に失敗しました。検品を実行できません"
             val errorMessage = msg.createErrorMessage("getFail")
             Toast.makeText(activity, errorMessage, toastErrorLen).show()
         }

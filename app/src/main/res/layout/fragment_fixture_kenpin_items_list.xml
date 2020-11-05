@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/item_total"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="読み取り完了数:0件">
+    </TextView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/list"
+        android:name="com.v3.basis.blas.ui.fixture.fixture_kenpin_multi.FixtureKenpinItemsFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        app:layoutManager="LinearLayoutManager"
+        tools:context=".ui.fixture.fixture_kenpin_multi.FixtureKenpinItemsFragment"
+        tools:listitem="@layout/fragment_fixture_kenpin_items" />
+
+</LinearLayout>

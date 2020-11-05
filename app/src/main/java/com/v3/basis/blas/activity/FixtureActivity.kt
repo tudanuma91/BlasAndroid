@@ -17,6 +17,7 @@ import com.v3.basis.blas.ui.common.ARG_TOKEN
 import com.v3.basis.blas.ui.fixture.fixture_config.FixtureConfigFragment
 import com.v3.basis.blas.ui.fixture.fixture_kenpin.FixtureKenpinFragment
 import com.v3.basis.blas.ui.fixture.fixture_kenpin_multi.FixtureKenpinMultiFragment
+import com.v3.basis.blas.ui.fixture.fixture_kenpin_multi.FixtureSlideFragment
 import com.v3.basis.blas.ui.fixture.fixture_return.FixtureReturnFragment
 import com.v3.basis.blas.ui.fixture.fixture_search.FixtureSearchFragment
 import com.v3.basis.blas.ui.fixture.fixture_takeout.FixtureTakeOutFragment
@@ -142,7 +143,7 @@ class FixtureActivity : AppCompatActivity() {
                 //検品ボタン押下時
                 if(isKenpinSingle()) {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.nav_host_fragment_fixture, FixtureKenpinFragment.newInstance().apply { arguments = bundle})
+                        .replace(R.id.nav_host_fragment_fixture, FixtureSlideFragment.newInstance().apply { arguments = bundle})
                         .commitNow()
                 }
                 else {
@@ -154,6 +155,7 @@ class FixtureActivity : AppCompatActivity() {
 
             R.id.navi_fixture_motidasi -> {
                 //持ち出し押下時
+                FixtureKenpinMultiFragment.newInstance().onPause()
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.nav_host_fragment_fixture, FixtureTakeOutFragment.newInstance().apply { arguments = bundle})
                     .commitNow()
@@ -161,12 +163,14 @@ class FixtureActivity : AppCompatActivity() {
 
             R.id.navi_fixture_return -> {
                 //返却押下時
+                FixtureKenpinMultiFragment.newInstance().onPause()
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.nav_host_fragment_fixture, FixtureReturnFragment.newInstance().apply { arguments = bundle})
                     .commitNow()
             }
 
             R.id.navi_fixture_view -> {
+                FixtureKenpinMultiFragment.newInstance().onPause()
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.nav_host_fragment_fixture, FixtureViewFragment.newInstance().apply { arguments = bundle})
                     .commitNow()

@@ -102,39 +102,6 @@ class Lump(
                 }
             }
             sync.exec()
-            /*
-            try {
-                sync.exec()
-             //   FixtureController(context,projectId.toString()).resetSyncStatus(fixture.fixture_id.toString())
-             //   FixtureController(context,projectId.toString()).setErrorMsg(fixture.fixture_id.toString(), "")
-            }
-            catch(e:Exception) {
-                e.message?.let {
-                    FixtureController(context,projectId.toString()).setErrorMsg(fixture.fixture_id.toString(),
-                        it
-                    )
-                }
-                Log.d("error", "syncFixture() exception")
-            }*/
-            /*
-            val dis = CompositeDisposable()
-            sync.eventCompleted
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeBy {
-
-                    if( 0 == callType  ) {
-                        sucCnt ++
-                        if( sucCnt == fixtures.count() ) {
-                            callBack.invoke(it)
-                            dis.dispose()
-                        }
-                    }
-
-                }
-                .addTo(dis)
-
-            sync.exec()
-            */
         }
 
     }
@@ -155,25 +122,8 @@ class Lump(
                     Log.d("error", "syncItem() exception")
                 }
 
-                /*
-                val dis = CompositeDisposable()
-                sync.eventCompleted
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeBy {
-                        if( 1 == callType) {
-                            sucCnt ++
-                            if( sucCnt == items.count() ) {
-                                callBack.invoke(it)
-                                dis.dispose()
-                            }
-                        }
-                    }
-                    .addTo(dis)
-
-                sync.exec()*/
             }
         }
-
     }
 
     fun syncImages() {

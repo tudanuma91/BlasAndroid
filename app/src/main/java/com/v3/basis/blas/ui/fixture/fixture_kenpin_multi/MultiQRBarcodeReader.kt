@@ -41,7 +41,8 @@ class MultiQrBarcodeReader(val activity: FragmentActivity, var preview1: android
     private var appExecutor: Executor
     lateinit var vibrationEffect : VibrationEffect
     private var tone : ToneGenerator? = null
-    var vibrator : Vibrator? = null
+    private var vibrator : Vibrator? = null
+    private var barCodeCount = 0
     //RXKotlin対応
     private lateinit var flowableEmitter: FlowableEmitter<String>
 
@@ -274,7 +275,7 @@ class MultiQrBarcodeReader(val activity: FragmentActivity, var preview1: android
                     try {
                         //5回同じ値が読めたら、誤検出ではないと判断して保存する。
                         //insertSerial(value)
-                        //fixtureController.kenpin(value)
+                        barCodeCount++
                         flowableEmitter.onNext(value)
                     }
                     catch (e:java.lang.Exception) {
@@ -290,6 +291,9 @@ class MultiQrBarcodeReader(val activity: FragmentActivity, var preview1: android
             c.drawRect(rect, paint)
             c.drawText("${value}", rect.left.toFloat(), rect.top.toFloat(), fontPaint)
         }
+
+        fontPaint.setColor(Color.argb(255, 255, 0, 255))
+        c.drawText("読み込んだ数:${barCodeCount}", 10.0f, 60.0f, fontPaint)
 
         return bitmap
     }

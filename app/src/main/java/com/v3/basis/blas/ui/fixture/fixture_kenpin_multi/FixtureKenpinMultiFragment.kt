@@ -34,7 +34,6 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class FixtureKenpinMultiFragment : FixtureBaseFragment() {
-    //val disposables = CompositeDisposable()
     var barcodeReader:MultiQrBarcodeReader? = null
     var barcodeSubscriber:BarCodeSubScriber<String>? = null
     companion object {
@@ -89,6 +88,11 @@ class FixtureKenpinMultiFragment : FixtureBaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+    }
+
+    override fun onResume() {
+        super.onResume()
         //カメラの権限設定
         context?.let {
             if(!hasPermissions(it)) {
@@ -125,10 +129,13 @@ class FixtureKenpinMultiFragment : FixtureBaseFragment() {
     }
 }
 
-
+/**
+ * バーコードを購読するクラス。
+ */
 class BarCodeSubScriber<String>(val context:Context, val projectId:String): Subscriber<String> {
     var subscription:Subscription? = null
     val cacheResults:MutableMap<kotlin.String, Int> = mutableMapOf<kotlin.String, Int>()
+   // val listFragment = FixtureKenpinItemsFragment.newInstance()
     val controller = FixtureController(
         context,
         projectId.toString()
@@ -145,10 +152,13 @@ class BarCodeSubScriber<String>(val context:Context, val projectId:String): Subs
     }
 
     override fun onNext(barCode: String) {
+        //バーコード受信処理
         val results:MutableMap<kotlin.String, Int> = controller.kenpin(barCode.toString())
 
         results.forEach{key, value->
             cacheResults[key] = value
+            //リストビューにデータを流す。
+            FixtureSlideFragment.listFragment.setItems(key, value)
         }
 
         subscription?.request(1)

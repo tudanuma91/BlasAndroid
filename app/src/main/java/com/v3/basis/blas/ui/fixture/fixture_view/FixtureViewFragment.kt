@@ -182,40 +182,21 @@ class FixtureViewFragment : FixtureBaseFragment() {
                 recyclerView.layoutManager = LinearLayoutManager(activity)
                 recyclerView.adapter = groupAdapter
                 recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-
+                    //画面がスクロールされたときに呼び出す
                     override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                         super.onScrollStateChanged(recyclerView, newState)
-//                        if (valueMap.isNotEmpty()) {
-//                            val notOverSize = currentIndex < dataListAll.size
-                            //100件のみ表示処理。
-                            //val notOverSize = currentIndex <= dataListAll.size
-                            if (!recyclerView.canScrollVertically(1) && progressBar.visibility == View.INVISIBLE) {
-                                progressBar.visibility = View.VISIBLE
-                                offset += CREATE_UNIT
+                        //100件のみ表示処理。
+                        if (!recyclerView.canScrollVertically(1) && progressBar.visibility == View.INVISIBLE) {
+                            progressBar.visibility = View.VISIBLE
+                            offset += CREATE_UNIT
 
-                                /*100件のみ表示の処理。
-                                if(currentIndex % paresUnitNum == 0){
-                                    parseJson()
-                                }*/
-                                searchAsync()
-//                                setAdapter()
-                            }
-//                        }
+                            getRecords()
+                        }
                     }
                 })
 
                 //呼ぶタイミングを確定させる！！
-                searchAsync()
-//                val payload2 = mapOf("token" to token, "project_id" to project_id)
-//                Log.d("testtest", "取得する")
-//                val list = FixtureController(requireContext(), project_id).search()
-//                Log.d("FixtureViewTest", list.toString())
-//                BlasRestFixture(
-//                    "search",
-//                    payload2,
-//                    ::fixtureGetSuccess,
-//                    ::fixtureGetError
-//                ).execute()
+                getRecords()
             }else{
                 throw java.lang.Exception("Failed to receive internal data ")
             }
@@ -231,7 +212,7 @@ class FixtureViewFragment : FixtureBaseFragment() {
         }
     }
 
-    private fun searchAsync() {
+    private fun getRecords() {
 
         Single.fromCallable { fixtureController.searchDisp(offset = offset, searchMap = searchValueMap) }
             .subscribeOn(Schedulers.newThread())
@@ -279,15 +260,6 @@ class FixtureViewFragment : FixtureBaseFragment() {
 
     private fun createDataList() {
         //データ管理のループ
-        Log.d("ここで死んでいる","")
-//        if(currentIndex < parseStartNum) {
-//            dataList.addAll(dataListAll.filterIndexed { index, mutableMap ->
-//                (index >= currentIndex) && (index < currentIndex + CREATE_UNIT)
-//            }.toMutableList())
-//            dataList.forEach{
-//                Log.d("あたいチェック","datalist id =${it.title}")
-//            }
-//        }
         val filteredList = dataListAll.filterIndexed { index, mutableMap ->
             (index >= currentIndex) && (index < currentIndex + CREATE_UNIT)
         }
