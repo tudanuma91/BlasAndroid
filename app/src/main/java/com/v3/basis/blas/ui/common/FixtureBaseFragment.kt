@@ -36,7 +36,7 @@ open class FixtureBaseFragment : QRCameraFragment() {
         }
 
         //コントローラーの生成
-        fixtureController = FixtureController(BlasApp.applicationContext(), token, projectId)
+        fixtureController = FixtureController(BlasApp.applicationContext(), projectId)
     }
 
     override fun onCreateView(

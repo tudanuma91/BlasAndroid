@@ -35,7 +35,6 @@ class FixtureListViewModel: ServerSyncViewModel() {
         val fixtureController =
             FixtureController(
                 model.context,
-                model.token,
                 model.project_id.toString()
             )
       /*  fixtureController

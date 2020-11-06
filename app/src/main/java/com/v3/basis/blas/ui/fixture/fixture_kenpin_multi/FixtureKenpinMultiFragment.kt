@@ -15,6 +15,7 @@ import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_fixture_kenpin_multi.*
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.controller.FixtureController
+import com.v3.basis.blas.blasclass.service.BlasSyncMessenger
 import com.v3.basis.blas.ui.ext.addTitleWithProjectName
 import com.v3.basis.blas.ui.common.FixtureBaseFragment
 import io.reactivex.BackpressureStrategy
@@ -138,7 +139,6 @@ class BarCodeSubScriber<String>(val context:Context, val token:String, val proje
    // val listFragment = FixtureKenpinItemsFragment.newInstance()
     val controller = FixtureController(
         context,
-        token.toString(),
         projectId.toString()
     )
 
@@ -161,6 +161,7 @@ class BarCodeSubScriber<String>(val context:Context, val token:String, val proje
             //リストビューにデータを流す。
             FixtureSlideFragment.listFragment.setItems(key, value)
         }
+        BlasSyncMessenger.notifyBlasFixtures(token.toString(), projectId.toString())
 
         subscription?.request(1)
     }

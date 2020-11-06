@@ -1,5 +1,7 @@
 package com.v3.basis.blas.blasclass.ldb
 
+import com.v3.basis.blas.blasclass.db.BaseController
+
 
 open class LdbSyncBase {
     var sync_status: Int = 0 //何も弄ってない0 仮登録中(新規追加)1、仮登録中(編集)2、仮登録集(削除)3,送信待ち4, 送信完了5
@@ -23,9 +25,44 @@ open class LdbFixtureRecord : LdbSyncBase() {
     var item_user_id: Int = 0           //設置したユーザのＩＤ
     var item_date: String = ""             //設置した日時
     var serial_number: String = ""     //シリアルナンバー
-    var status: Int = 0                       //0:検品済み(持ち出し可), 1:持ち出し中,2:設置済み, 3:持出不可
+    var status: Int = 0                       //0:検品済み(持ち出し可), 1:持ち出し中,2:設置済み, 3:持出不可 4:返却
     var create_date: String = ""         //レコード作成日付
     var update_date: String = ""         //レコード更新日付
+
+    fun toPayLoad():MutableMap<String, String> {
+        val payload = mutableMapOf<String, String>()
+        payload["fixture_id"] = fixture_id.toString()
+        payload["project_id"] = project_id.toString()
+        payload["serial_number"] = serial_number
+        payload["update_date"] = update_date
+        payload["sync_status"] = sync_status.toString()
+
+        when(status){
+            BaseController.KENPIN_FIN -> {
+                payload["fix_org_id"] = fix_org_id.toString()
+                payload["fix_user_id"] =  fix_user_id.toString()
+                payload["fix_date"] =  fix_date
+            }
+            BaseController.TAKING_OUT ->{
+                payload["takeout_org_id"] = takeout_org_id.toString()
+                payload["takeout_user_id"] = takeout_user_id.toString()
+                payload["takeout_date"] = takeout_date
+            }
+            BaseController.RTN->{
+                payload["rtn_org_id"] = rtn_org_id.toString()
+                payload["rtn_user_id"] = rtn_user_id.toString()
+                payload["rtn_date"] = rtn_date
+            }
+        }
+
+
+        if( BaseController.SYNC_STATUS_NEW  == sync_status ) {
+            payload["create_date"] = create_date
+        }
+
+        return payload
+    }
+
 }
 
 class LdbFixtureDispRecord : LdbFixtureRecord() {

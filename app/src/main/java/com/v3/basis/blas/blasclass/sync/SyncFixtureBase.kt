@@ -23,7 +23,6 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
         val json = SyncBlasRestFixture(crud).execute(payload)
         val ctl = FixtureController(
             model.context,
-            model.token,
             model.project_id.toString()
         )
         if(json != null) {
@@ -66,7 +65,6 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
         val fixtureController =
             FixtureController(
                 model.context,
-                model.token,
                 model.project_id.toString()
             )
         fixtureController.resetSyncStatus(fixture.fixture_id.toString())
@@ -120,7 +118,6 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
         val fixtureController =
             FixtureController(
                 model.context,
-                model.token,
                 model.project_id.toString()
             )
         fixtureController.setErrorMsg(fixture.fixture_id.toString(),errMsg)

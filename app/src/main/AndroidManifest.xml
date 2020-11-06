@@ -71,7 +71,7 @@
         <service
             android:name=".blasclass.service.FetchAddressIntentService"
             android:exported="false"/>
-        <service android:name=".blasclass.service.RetryService" />
+        <service android:name=".blasclass.service.BlasSyncService" />
     </application>
 
 </manifest>

@@ -43,7 +43,6 @@ class Kenpin( model: FixtureCellModel ,fixture : LdbFixtureRecord ) : SyncFixtur
         val fixtureController =
             FixtureController(
                 model.context,
-                model.token,
                 model.project_id.toString()
             )
         fixtureController.updateFixtureId(org_fixture_id,new_fixture_id)

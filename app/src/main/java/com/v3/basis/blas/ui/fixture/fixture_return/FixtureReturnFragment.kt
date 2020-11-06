@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasMsg
+import com.v3.basis.blas.blasclass.service.BlasSyncMessenger
 import com.v3.basis.blas.ui.common.FixtureBaseFragment
 import com.v3.basis.blas.ui.ext.addTitleWithProjectName
 import com.v3.basis.blas.ui.common.QRCameraFragment
@@ -101,5 +102,7 @@ class FixtureReturnFragment : FixtureBaseFragment() {
         fixtureController.rtn(code)
         //読み取った値を画面に表示する
         return_result_text.text = code
+        //BLASにデータ送信の合図を送る
+        BlasSyncMessenger.notifyBlasFixtures(token, projectId)
     }
 }

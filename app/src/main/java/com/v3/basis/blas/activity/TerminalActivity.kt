@@ -23,7 +23,7 @@ import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.controller.LocationController
 import com.v3.basis.blas.blasclass.controller.LocationController.getLocation
 import com.v3.basis.blas.blasclass.controller.QueueController
-import com.v3.basis.blas.blasclass.service.RetryService
+import com.v3.basis.blas.blasclass.service.BlasSyncService
 import com.v3.basis.blas.ui.ext.setBlasCustomView
 import com.v3.basis.blas.ui.terminal.BottomNavButton
 import com.v3.basis.blas.ui.terminal.TerminalFragment

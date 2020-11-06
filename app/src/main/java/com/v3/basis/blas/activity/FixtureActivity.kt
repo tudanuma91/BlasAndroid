@@ -143,12 +143,12 @@ class FixtureActivity : AppCompatActivity() {
                 //検品ボタン押下時
                 if(isKenpinSingle()) {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.nav_host_fragment_fixture, FixtureSlideFragment.newInstance().apply { arguments = bundle})
+                        .replace(R.id.nav_host_fragment_fixture, FixtureKenpinFragment.newInstance().apply { arguments = bundle})
                         .commitNow()
                 }
                 else {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.nav_host_fragment_fixture, FixtureKenpinMultiFragment.newInstance().apply { arguments = bundle})
+                        .replace(R.id.nav_host_fragment_fixture, FixtureSlideFragment.newInstance().apply { arguments = bundle})
                         .commitNow()
                 }
             }

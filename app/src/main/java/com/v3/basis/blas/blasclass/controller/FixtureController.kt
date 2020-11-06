@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.Exception
 
-class FixtureController(context: Context, token: String, projectId: String): BaseController(context, projectId) {
+class FixtureController(context: Context, projectId: String): BaseController(context, projectId) {
 
     companion object {
         val NORMAL = 0           //0:正常
@@ -735,6 +735,43 @@ class FixtureController(context: Context, token: String, projectId: String): Bas
 
     }
 
+    fun setErrorMsg(fixtureId: String, errorCode:Int) {
+        var errMsg = ""
+        when( errorCode ) {
+            400 -> {
+                errMsg = "持出登録が行われていません"
+            }
+            401 -> {
+                errMsg = "設置者と作業者が異なります"
+            }
+            402 -> {
+                errMsg = "すでに設置済みです"
+            }
+            403 -> {
+                errMsg = "検品済みです"
+            }
+            404 -> {
+                errMsg = "持出しできない機器です"
+            }
+            405 -> {
+                errMsg = "未登録のシリアルナンバーです"
+            }
+            406 -> {
+                errMsg = "すでに持出中です"
+            }
+            407 -> {
+                errMsg = "指定されたＩＤ(" + fixtureId +")は登録されていません"
+            }
+            408 -> {
+                errMsg = "すでに返却済みです"
+            }
+            else -> {
+                errMsg = "サーバー同期エラー"
+            }
+        }
+
+        setErrorMsg(fixtureId, errMsg)
+    }
     fun setErrorMsg( fixtureId: String,errMsg : String ) {
 
         val cv = ContentValues()

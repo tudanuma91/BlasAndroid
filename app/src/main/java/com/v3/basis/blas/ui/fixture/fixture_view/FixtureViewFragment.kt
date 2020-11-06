@@ -2,6 +2,7 @@ package com.v3.basis.blas.ui.fixture.fixture_view
 
 
 import android.os.Bundle
+import android.os.Message
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -28,7 +29,6 @@ import com.v3.basis.blas.blasclass.controller.FixtureController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
 import com.v3.basis.blas.blasclass.rest.BlasRest
-import com.v3.basis.blas.blasclass.sync.Lump
 import com.v3.basis.blas.databinding.FragmentFixtureViewBinding
 
 import com.v3.basis.blas.ui.ext.addTitleWithProjectName
@@ -97,34 +97,7 @@ class FixtureViewFragment : FixtureBaseFragment() {
 
         getSearchParams()
         viewModel = ViewModelProviders.of(this).get(FixtureListViewModel::class.java)
-        /*
-        fixtureController.errorMessageEvent
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                //エラーのため、データを初期化する
-                valueMap.clear()
 
-                Log.d("取得失敗","$it")
-                progressBar.visibility = View.INVISIBLE
-            }
-            .addTo(disposables)
-
-        viewModel = ViewModelProviders.of(this).get(FixtureListViewModel::class.java)
-
-        viewModel.serverSyncedEvent
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                val count = dataList.filter { it.model.syncVisible.get() && it.model.syncedToServer.get().not() }.size
-            }
-            .addTo(disposables)
-
-        viewModel.errorEvent
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
-            }
-            .addTo(disposables)
-        */
         bind = DataBindingUtil.inflate(inflater, R.layout.fragment_fixture_view, container, false)
         bind.vm = viewModel
 
