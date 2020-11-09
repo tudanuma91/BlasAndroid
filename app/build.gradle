@@ -83,6 +83,11 @@ android {
     dataBinding {
         enabled = true
     }
+
+    viewBinding{
+        enabled = true
+    }
+
 }
 
 dependencies {
@@ -168,4 +173,5 @@ dependencies {
     implementation "androidx.camera:camera-lifecycle:$camerax_version"
     implementation "androidx.camera:camera-view:1.0.0-alpha10"
     implementation 'com.google.android.gms:play-services-vision:20.1.2'
+    implementation 'com.github.bumptech.glide:glide:4.4.0'
 }

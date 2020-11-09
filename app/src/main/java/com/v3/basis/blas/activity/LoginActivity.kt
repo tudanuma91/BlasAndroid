@@ -7,13 +7,17 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.*
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.v3.basis.blas.R
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.core.app.NotificationCompat
 import com.v3.basis.blas.blasclass.service.RetryService
 import com.v3.basis.blas.ui.ext.showBackKeyForActionBar
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 //ログイン画面を表示する処理
@@ -56,6 +60,8 @@ class LoginActivity : AppCompatActivity(), ServiceConnection {
                 NotificationManager.IMPORTANCE_DEFAULT).apply {
                 description = "お知らせを通知します。"
             }
+
+
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
@@ -89,6 +95,8 @@ class LoginActivity : AppCompatActivity(), ServiceConnection {
     fun send() {
         messenger.send(Message.obtain(null, 0, "hoge"))
     }
+
+
 }
 
 
