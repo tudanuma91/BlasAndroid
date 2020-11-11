@@ -12,6 +12,7 @@ import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.LoginActivity
 import com.v3.basis.blas.blasclass.controller.FixtureController
 import com.v3.basis.blas.blasclass.controller.ImagesController
+import com.v3.basis.blas.blasclass.extra.trivia.TriviaList
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestFixture
 import com.v3.basis.blas.blasclass.service.SenderHandler.Companion.FIXTURE
 import com.v3.basis.blas.blasclass.service.SenderHandler.Companion.IMAGE
@@ -156,11 +157,17 @@ class BlasSyncService() : Service() {
             PendingIntent.getActivity(this, 0, it, 0)
         }
 
+        val trivia = greetingMsg()
+        var title = ""
+        var msg = ""
+        trivia.forEach { t, u ->
+            title = t
+            msg = u  }
 
         var notification = NotificationCompat.Builder(this, 1234.toString())
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("BlasJ")
-            .setContentText(greetingMsg())
+            .setContentTitle("BlasJ " + title)
+            .setContentText(msg)
             .setContentIntent(openIntent)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .build()
@@ -195,24 +202,13 @@ class BlasSyncService() : Service() {
         return super.stopService(name)
     }
 
-    fun greetingMsg(): String {
-        val current = LocalDateTime.now()
-        val formatter = DateTimeFormatter.ofPattern("HH")
-        val formatted = current.format(formatter).toInt()
-        var greeting = ""
-        if((formatted >=4) and (formatted < 7)) {
-            greeting = "おはようございます。朝早くからご苦労様です。"
-        }
-        else if((formatted >=7) and (formatted < 12)) {
-            greeting = "おはようございます"
-        }
-        else if((formatted >=12) and (formatted <= 17)) {
-            greeting = "こんにちは。事故には気を付けて、お仕事頑張ってください"
-        }
-        else {
-            greeting = "こんばんわ"
-        }
+    fun greetingMsg(): MutableMap<String, String> {
+        val trivia = TriviaList()
+        val num = trivia.size()
+        val r = (0..num-1).random()
 
-        return greeting
+        val map = trivia.getTrivia(r)
+
+        return map
     }
 }

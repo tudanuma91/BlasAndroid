@@ -54,7 +54,7 @@
             android:name=".activity.TerminalActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.LoginActivity"
+            android:name=".activity.SplashActivity"
             android:label="@string/app_name"
             android:theme="@style/NoBarTheme"
             android:screenOrientation="portrait">
