@@ -7,15 +7,18 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.*
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.v3.basis.blas.R
 import android.view.MenuItem
 import com.v3.basis.blas.ui.ext.showBackKeyForActionBar
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 //ログイン画面を表示する処理
 class LoginActivity : AppCompatActivity(), ServiceConnection {
-    private var messenger: Messenger? = null
+    private lateinit var messenger: Messenger
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
