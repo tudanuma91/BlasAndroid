@@ -6,12 +6,18 @@
 
     <data>
         <import type="android.view.View" />
+
         <variable
             name="item"
             type="com.v3.basis.blas.ui.item.item_image.ItemImageCellItem" />
+
         <variable
             name="vm"
-            type="com.v3.basis.blas.ui.item.item_image.ItemImageViewModel" />
+            type="com.v3.basis.blas.blasclass.db.data.ItemImage" />
+
+        <variable
+            name="image_view"
+            type="com.v3.basis.blas.ui.item.item_image.ItemImageFragment" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -20,15 +26,15 @@
         android:layout_height="wrap_content">
 
         <TextView
-            android:id="@+id/title"
+            android:id="@+id/image_name"
             android:textSize="20dp"
-            android:text="@{item.title}"
+            android:text="@{vm.name}"
             android:gravity="center"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"
             />
-
+        <!--
         <ImageView
             android:id="@+id/image"
             android:layout_width="match_parent"
@@ -47,6 +53,7 @@
             tools:src="@drawable/ic_build_black_24dp"
             />
 
+
         <Button
             android:id="@+id/delete"
             android:layout_width="0dp"
@@ -58,7 +65,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             />
-
+-->
 <!--        <Button-->
 <!--            android:id="@+id/rightRotate"-->
 <!--            android:layout_width="0dp"-->
@@ -82,7 +89,29 @@
 <!--            app:layout_constraintStart_toEndOf="@id/rightRotate"-->
 <!--            app:layout_constraintEnd_toEndOf="parent"-->
 <!--            />-->
+        <ImageView
+            android:id="@+id/image"
+            android:layout_width="match_parent"
+            android:layout_height="140dp"
+            android:longClickable="true"
+            app:layout_constraintTop_toBottomOf="@id/image_name"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:src="@drawable/ic_build_black_24dp"
+            />
 
+        <ProgressBar
+            android:id="@+id/progressbar"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_margin="30dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            style="@android:style/Widget.ProgressBar.Large" />
+
+        <!--
         <TextView
             android:id="@+id/blank"
             android:textSize="20dp"
@@ -109,6 +138,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             style="@android:style/Widget.ProgressBar.Large" />
-
+    -->
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

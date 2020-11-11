@@ -79,6 +79,7 @@ open class BlasRestAuth(val payload:Map<String, String?>, val loginSuccess:(JSON
                     .joinToString(separator = "") {
                         "%02x".format(it)
                     }
+                Log.d("konishi", "password is ${BlasApp.key}")
                 loginSuccess(json)
             }
             else {

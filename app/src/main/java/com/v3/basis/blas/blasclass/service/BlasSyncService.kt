@@ -11,6 +11,7 @@ import androidx.core.app.NotificationCompat
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.LoginActivity
 import com.v3.basis.blas.blasclass.controller.FixtureController
+import com.v3.basis.blas.blasclass.controller.ImagesController
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestFixture
 import com.v3.basis.blas.blasclass.service.SenderHandler.Companion.FIXTURE
 import com.v3.basis.blas.blasclass.service.SenderHandler.Companion.IMAGE
@@ -53,15 +54,40 @@ class SenderHandler(val context: Context): Handler() {
 
                     if((sendType and ITEM) == ITEM) {
                         //データを送信する
+
                     }
 
                     if((sendType and IMAGE) == IMAGE) {
                         //画像を送信する
+
                     }
                 }
             }).start()
     }
 
+    /**
+     * 画像の未送信データをBLASに送信する
+     */
+    private fun syncImage(context:Context, token:String, projectId:String):Int{
+        var ret = 0
+        val controller = ImagesController(context, projectId)
+
+        val imageList = controller.search(true)
+
+        imageList.forEach {
+            var payload = it.toPayLoad().also{
+                it["token"] = token
+            }
+        }
+
+
+
+        return ret
+    }
+
+    /**
+     * 機器管理の未送信データをBLASに送信する
+     */
     private fun syncFixture(context:Context, token:String, projectId:String):Int{
         var ret = 0
         val controller = FixtureController(

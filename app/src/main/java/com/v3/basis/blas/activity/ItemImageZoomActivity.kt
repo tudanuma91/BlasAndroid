@@ -23,7 +23,6 @@ import com.v3.basis.blas.blasclass.rest.SyncBlasRestImage
 import com.v3.basis.blas.databinding.ActivityItemImageZoomBinding
 import com.v3.basis.blas.ui.ext.rotateLeft
 import com.v3.basis.blas.ui.ext.rotateRight
-import com.v3.basis.blas.ui.item.item_image.model.ItemImage
 import com.v3.basis.blas.ui.item.item_image.model.ItemImageWithLink
 import com.v3.basis.blas.ui.item.item_image_zoom.custom_view.CustomImageView
 import io.reactivex.Completable
@@ -161,7 +160,7 @@ class ItemImageZoomActivity : AppCompatActivity() {
 
     //  URLから画像を取得して、Viewにセットする
     private fun setImage(url: String?) {
-
+        /*
         if (url.isNullOrBlank().not()) {
             Glide.with(this)
                 .asBitmap()
@@ -176,12 +175,12 @@ class ItemImageZoomActivity : AppCompatActivity() {
                     override fun onLoadCleared(placeholder: Drawable?) {
                     }
                 })
-        }
+        }*/
     }
 
     //画像を右回転する
     fun rightRotate() {
-
+        /*
         if (bind.loading == true || mImageCustomView.mBitmap == null) {
             return
         }
@@ -197,12 +196,12 @@ class ItemImageZoomActivity : AppCompatActivity() {
                     setResult(Activity.RESULT_OK)
                 }
             )
-            .addTo(disposable)
+            .addTo(disposable)*/
     }
 
     //  画像を左回転する
     fun leftRotate() {
-
+        /*
         if (bind.loading == true || mImageCustomView.mBitmap == null) {
             return
         }
@@ -218,16 +217,17 @@ class ItemImageZoomActivity : AppCompatActivity() {
                     setResult(Activity.RESULT_OK)
                 }
             )
-            .addTo(disposable)
+            .addTo(disposable)*/
     }
 
     //  画像を左回転
+    /*
     private fun updateLocalImage(bitmap: Bitmap) {
         Single
             .fromCallable {
                 //リモートから画像をダウンロードできているので、imageIdは必ずある。
                 //リモートからダウンロードした画像は本登録する。
-                val itemRecord = ItemImage(
+                val itemRecord = ItemImageModel(
                     image_id=imageId,
                     item_id = itemId,
                     moved="0",
@@ -249,18 +249,19 @@ class ItemImageZoomActivity : AppCompatActivity() {
                 }
             )
             .addTo(disposable)
-    }
+    }*/
 
     //ローカルに画像を保存する（デカイ画像）
-    private fun save2DB(record: ItemImage, status: Int) {
+    /*
+    private fun save2DB(record: ItemImageModel, status: Int) {
         Completable
             .fromAction {
-                imageController.save2LDB(record, status)
+             //   imageController.save2LDB(record, status)
             }
             .subscribeOn(Schedulers.io())
             .subscribe()
             .addTo(disposable)
-    }
+    }*/
 
     //矢印ボタンで戻るを実行する処理
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
