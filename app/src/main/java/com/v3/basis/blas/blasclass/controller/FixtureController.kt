@@ -732,7 +732,6 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             ex.printStackTrace()
             false
         }
-
     }
 
     fun setErrorMsg(fixtureId: String, errorCode:Int) {
@@ -772,6 +771,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         setErrorMsg(fixtureId, errMsg)
     }
+
     fun setErrorMsg( fixtureId: String,errMsg : String ) {
 
         val cv = ContentValues()

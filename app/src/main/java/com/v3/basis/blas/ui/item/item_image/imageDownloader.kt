@@ -6,9 +6,10 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.controller.ImagesController
-import com.v3.basis.blas.blasclass.db.data.ItemImage
+import com.v3.basis.blas.blasclass.db.BaseController
 import io.reactivex.FlowableEmitter
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
+import com.v3.basis.blas.blasclass.ldb.LdbItemImageRecord
 import io.reactivex.FlowableOnSubscribe
 
 
@@ -16,7 +17,7 @@ class ImageDownLoader(val r: Resources,
                       val token:String,
                       val projectId:String,
                       val item_id:String,
-                      val imageList: MutableList<ItemImage>) : FlowableOnSubscribe<ItemImage> {
+                      val imageList: MutableList<LdbItemImageRecord>) : FlowableOnSubscribe<LdbItemImageRecord> {
     val controller = ImagesController(context, projectId)
     val downloadQueue = mutableListOf<Thread>()
 
@@ -26,7 +27,7 @@ class ImageDownLoader(val r: Resources,
         }
     }
 
-    override fun subscribe(emitter: FlowableEmitter<ItemImage>) {
+    override fun subscribe(emitter: FlowableEmitter<LdbItemImageRecord>) {
         //ここに画像ダウンロードの処理を書く
         val MAX_THREAD_NUM=4
         try {
@@ -74,7 +75,7 @@ class ImageDownLoader(val r: Resources,
     inner class imageDownloader(val controller: ImagesController,
                                 val token:String,
                                 val item_id:String,
-                                val itemImage: ItemImage): Thread() {
+                                val itemImage: LdbItemImageRecord): Thread() {
 
         override fun run() {
             super.run()
@@ -100,10 +101,21 @@ class ImageDownLoader(val r: Resources,
 
                 if(bitmap != null) {
                     itemImage.bitmap = bitmap
+                    //ローカルDBにダウンロード済みとして保存
+                    val projectId = itemImage.project_id
+                    val controller = ImagesController(context, projectId.toString())
+                    try{
+                        itemImage.sync_status = BaseController.SYNC_STATUS_SYNC
+                        controller?.save2LDB(itemImage)
+                    }
+                    catch(e: java.lang.Exception) {
+                        e.printStackTrace()
+                    }
                 }
                 else {
                     itemImage.bitmap = BitmapFactory.decodeResource(r, R.drawable.imageselect)
                 }
+
                 itemImage.downloadProgress = false
             }
             catch(e: InterruptedException) {

@@ -10,15 +10,20 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.LoginActivity
+import com.v3.basis.blas.blasclass.app.getHash
 import com.v3.basis.blas.blasclass.controller.FixtureController
 import com.v3.basis.blas.blasclass.controller.ImagesController
+import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.MINI_IMAGE
+import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.ORIGINAL_IMAGE
 import com.v3.basis.blas.blasclass.extra.trivia.TriviaList
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestFixture
+import com.v3.basis.blas.blasclass.rest.SyncBlasRestImage
 import com.v3.basis.blas.blasclass.service.SenderHandler.Companion.FIXTURE
 import com.v3.basis.blas.blasclass.service.SenderHandler.Companion.IMAGE
 import com.v3.basis.blas.blasclass.service.SenderHandler.Companion.ITEM
 import org.json.JSONObject
 import java.io.File
+import java.lang.Exception
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -46,22 +51,27 @@ class SenderHandler(val context: Context): Handler() {
         //メッセージ受信スレッド
         Thread(
             Runnable {
-                synchronized(lock) {
-                    //ここに送信処理を入れる
-                    if((sendType and FIXTURE) == FIXTURE) {
-                        Log.d("konishi", "syncFixture start")
-                        syncFixture(context, token, projectId)
+                try {
+                    synchronized(lock) {
+                        //ここに送信処理を入れる
+                        if ((sendType and FIXTURE) == FIXTURE) {
+                            Log.d("konishi", "syncFixture start")
+                            syncFixture(context, token, projectId)
+                        }
+
+                        if ((sendType and ITEM) == ITEM) {
+                            //データを送信する
+
+                        }
+
+                        if ((sendType and IMAGE) == IMAGE) {
+                            //画像を送信する
+                            syncImage(context, token, projectId)
+
+                        }
                     }
-
-                    if((sendType and ITEM) == ITEM) {
-                        //データを送信する
-
-                    }
-
-                    if((sendType and IMAGE) == IMAGE) {
-                        //画像を送信する
-
-                    }
+                }catch(e:Exception) {
+                    e.printStackTrace()
                 }
             }).start()
     }
@@ -72,17 +82,52 @@ class SenderHandler(val context: Context): Handler() {
     private fun syncImage(context:Context, token:String, projectId:String):Int{
         var ret = 0
         val controller = ImagesController(context, projectId)
-
+        Log.d("konishi", "画像を送信します")
         val imageList = controller.search(true)
 
-        imageList.forEach {
-            var payload = it.toPayLoad().also{
+
+        imageList.forEach {image_record->
+            val imageId = image_record.image_id
+            var payload = image_record.toPayLoad().also{
                 it["token"] = token
+
+                val base64Img = controller.getBase64File(image_record.item_id.toString(),
+                                                       image_record.project_image_id.toString(),
+                                                       ORIGINAL_IMAGE)
+
+                val extNum = controller.getExtNumber(image_record.item_id.toString(),
+                                                     image_record.project_image_id.toString())
+                it["image_type"] = extNum.toString()
+                it["image"] = base64Img
+                it["hash"] = getHash(base64Img)
+            }
+
+            var json: JSONObject? = null
+            //BLASに送信する
+            json = SyncBlasRestImage().upload(payload)
+            if(json != null) {
+                val errorCode = json.getInt("error_code")
+                val msg = json.getString("message")
+                if(errorCode == 0) {
+                    if(imageId < 0) {
+                        val records = json.getJSONObject("records")
+                        val newImageId = records.getString("new_image_id")
+                        val oldImageId = records.getString("temp_image_id")
+                        controller.updateImageId(oldImageId, newImageId)
+                    }
+                    else {
+                        controller.resetSyncStatus(imageId.toString())
+                    }
+                }
+                else {
+                    controller.setErrorMsg(imageId.toString(), msg)
+                }
+            }
+            else {
+                controller.setErrorMsg(imageId.toString(), "通信エラー系。ここはあとで直す")
             }
         }
-
-
-
+        Log.d("konishi", "画像を送信しました")
         return ret
     }
 

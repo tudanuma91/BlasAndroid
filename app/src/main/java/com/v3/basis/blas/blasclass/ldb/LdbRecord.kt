@@ -1,6 +1,8 @@
 package com.v3.basis.blas.blasclass.ldb
 
+import android.graphics.Bitmap
 import com.v3.basis.blas.blasclass.db.BaseController
+import com.v3.basis.blas.blasclass.db.BaseController.Companion.SYNC_STATUS_SYNC
 
 
 open class LdbSyncBase {
@@ -154,22 +156,59 @@ class LdbFieldRecord(
     var edit_id:Int? = 0
 )
 
-class LdbImageRecord(
-    var image_id: Long? = 0,
-    var project_id: Int? = 0,
-    var project_image_id: Int? = 0,
-    var item_id: Long? = 0,
-    var filename: String = "",
-    var hash: String = "",
-    var moved: Int? = 0,
-    var create_date: String = "",
-    var sync_status: Int? = 0,
-    var error_msg:String = ""
-){
+/* project_imagesテーブルと、imagesテーブルの検索結果を
+　　保持するデータクラス
+ */
+data class LdbItemImageRecord (
+    //project_imagesテーブルより
+    var project_image_id:Long=0,
+    var project_id:Int=0,
+    var list:Int=0,
+    var field_id:Int=0,
+    var name:String?="",  //カラム名
+    //imagesテーブルより
+    var image_id:Long?=0,
+    var filename:String?="",  //画像ファイル名
+    var item_id:Long?=0,
+    var moved:Int?=0,
+    var rank:Int?=-1,
+    var create_date:String?="",
+    var bitmap: Bitmap? = null, //画像を取得したら入る
+    var downloadProgress:Boolean = true
+):LdbSyncBase()
+
+/**
+ * 画像のキュー情報
+ */
+class LdbImageQueueRecord() {
+    var id:Int = 0//主キー。BLASに関係ない。
+    var image_id:Long = 0
+    var item_id: Long = 0
+    var project_image_id: Int = 0
+    var filename:String = ""
+    var retry_count = 0
+    var message = ""
+    var error_code = 0
+}
+
+/**
+ * 画像レコード
+ */
+class LdbImageRecord:LdbSyncBase() {
+    var image_id: Long = 0
+    var project_id: Int? = 0
+    var project_image_id: Int? = 0
+    var item_id: Long? = 0
+    var filename: String = ""
+    var hash: String = ""
+    var moved: Int? = 0
+    var create_date: String = ""
+
     fun toPayLoad():MutableMap<String, String> {
         val payload = mutableMapOf<String, String>()
         payload["image_id"] = image_id.toString()
         payload["project_id"] = project_id.toString()
+        payload["project_image_id"] = project_image_id.toString()
         payload["item_id"] = item_id.toString()
         payload["filename"] = filename
         payload["hash"] = hash
@@ -177,6 +216,7 @@ class LdbImageRecord(
         payload["create_date"] = create_date
         payload["sync_status"] = sync_status.toString()
         payload["error_msg"] = error_msg
+        //payload["image"] =
 
         return payload
     }

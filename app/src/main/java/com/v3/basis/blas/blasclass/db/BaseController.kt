@@ -95,7 +95,7 @@ abstract class BaseController(
                     Log.d("prop.name is empty!!!!!",prop.name)
                     return@forEach
                 }
-                Log.d("setProperty()","propName:" + prop.name + "  value:" + value)
+                //Log.d("setProperty()","propName:" + prop.name + "  value:" + value)
 
                 if( value.isNullOrEmpty() ) {
                     return@forEach

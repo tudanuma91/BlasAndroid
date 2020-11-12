@@ -88,7 +88,10 @@ open class QRCameraFragment:
         }
     }
 
-
+    /**
+     * startCameraは子クラスが呼び出す。
+     * 呼び出すとカメラが起動する。
+     */
     public fun startCamera(preview:CompoundBarcodeView, userCallBack:(barcode:String)->Unit) {
         cameraPreview = preview
         this.userCallBack = userCallBack

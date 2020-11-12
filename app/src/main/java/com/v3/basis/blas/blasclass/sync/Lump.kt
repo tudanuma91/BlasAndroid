@@ -127,13 +127,13 @@ class Lump(
     }
 
     fun syncImages() {
-        Log.d("Lump.syncImages()","start")
+     /*   Log.d("Lump.syncImages()","start")
         //同期されていないレコードを取得する
         val images = ImagesController(context,projectId).searchNosyncRecords()
         images.forEach{
             it.item_id?.let { it1 ->
                 SyncImage(context,token,projectId, it1).exec()
             }
-        }
+        }*/
     }
 }

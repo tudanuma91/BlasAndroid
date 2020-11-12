@@ -114,7 +114,7 @@ class FixtureKenpinMultiFragment : FixtureBaseFragment() {
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        //super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         var chkPermission = true
 
         grantResults.forEach {
