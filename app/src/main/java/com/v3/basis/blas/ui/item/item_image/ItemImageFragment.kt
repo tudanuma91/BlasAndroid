@@ -2,8 +2,6 @@ package com.v3.basis.blas.ui.item.item_image
 
 
 import android.Manifest
-import android.Manifest.permission.READ_EXTERNAL_STORAGE
-import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
@@ -16,7 +14,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -33,12 +30,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.controller.ImagesController
-import com.v3.basis.blas.blasclass.db.data.ItemImage
+import com.v3.basis.blas.blasclass.db.BaseController.Companion.SYNC_STATUS_NEW
+import com.v3.basis.blas.blasclass.db.BaseController.Companion.SYNC_STATUS_SYNC
+import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
+import com.v3.basis.blas.blasclass.ldb.LdbItemImageRecord
+import com.v3.basis.blas.blasclass.service.BlasSyncMessenger
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.cell_item_image.view.*
 import kotlinx.android.synthetic.main.fragment_item_image.*
 import org.reactivestreams.Subscriber
 import org.reactivestreams.Subscription
@@ -49,7 +49,7 @@ import java.lang.Exception
  * スレッドで実装してしまうと、notifyDataSetChangedはメインスレッド以外から
  * コールできないため、エラーになる。
  */
-class ImageSubscriber<ItemImage>(val count:Long, val recycleView:RecyclerView) : Subscriber<ItemImage> {
+class ImageSubscriber<LdbItemImageRecord>(val count:Long, val recycleView:RecyclerView) : Subscriber<LdbItemImageRecord> {
     var subscription:Subscription? = null
     override fun onComplete() {
         //notifyDataSetChangedはメインスレッドから呼ぶ必要がある
@@ -62,7 +62,7 @@ class ImageSubscriber<ItemImage>(val count:Long, val recycleView:RecyclerView) :
         subscription?.request(count)
     }
 
-    override fun onNext(t: ItemImage) {
+    override fun onNext(t: LdbItemImageRecord) {
         //notifyDataSetChangedはメインスレッドから呼ぶ必要がある
         recycleView.adapter?.notifyDataSetChanged()
     }
@@ -110,13 +110,13 @@ class ItemImageFragment : Fragment() {
         get() = arguments?.getString(ITEM_ID) ?: ""
 
     private lateinit var viewModel: ItemImageViewModel
-    private var imageFields: MutableList<ItemImage>? = null
+    private var imageFields: MutableList<LdbItemImageRecord>? = null
 
     var controller:ImagesController? = null
-    var imageSubscriber:ImageSubscriber<ItemImage>? = null
+    var imageSubscriber:ImageSubscriber<LdbItemImageRecord>? = null
     //filechooserで渡す引数
     var imageUri:Uri?=null
-    var fcItem:ItemImage? = null
+    var fcItem:LdbItemImageRecord? = null
 
 
     protected val PERMISSIONS_REQUEST_CODE = 1234
@@ -146,7 +146,7 @@ class ItemImageFragment : Fragment() {
     }
 
     /* アダプタクラス */
-    private inner class RecyclerListAdapter(private val listData:MutableList<ItemImage>):
+    private inner class RecyclerListAdapter(private val listData:MutableList<LdbItemImageRecord>):
         RecyclerView.Adapter<RecyclerListViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerListViewHolder {
@@ -160,7 +160,12 @@ class ItemImageFragment : Fragment() {
         override fun onBindViewHolder(holder: RecyclerListViewHolder, position: Int) {
             val item = listData[position]
             holder.imageFieldText.text = item.name
+
             holder.progressBar.isVisible = item.downloadProgress //グルグル表示
+            if(item.sync_status == SYNC_STATUS_NEW) {
+                //まだ画像が送信されていない場合は、更新させない
+                holder.progressBar.isVisible
+            }
             if(item.bitmap != null) {
                 holder.imageView.setImageBitmap(item.bitmap)
             }
@@ -175,6 +180,11 @@ class ItemImageFragment : Fragment() {
                     }
                     else {
                         fcItem = item
+                        if(item.sync_status == SYNC_STATUS_NEW) {
+                            Toast.makeText(context, """画像がまだBLASに送信できていません。
+|                                                      しばらくしてから再度更新してください""".trimMargin(),
+                                Toast.LENGTH_LONG).show()
+                        }
                         startFileChoicer()
                     }
                 }
@@ -276,9 +286,9 @@ class ItemImageFragment : Fragment() {
         val imageFieldNum: Int? = imageFields?.size
         if(imageFieldNum != null) {
             //購読者の作成（画像がダウンロードされるたびに呼ばれる)
-            imageSubscriber = ImageSubscriber<ItemImage>(imageFieldNum.toLong(), recyclerView)
+            imageSubscriber = ImageSubscriber<LdbItemImageRecord>(imageFieldNum.toLong(), recyclerView)
             //画像を別スレッドでダウンロードする
-            val flow = Flowable.create<ItemImage>(imageDownLoader, BackpressureStrategy.BUFFER)
+            val flow = Flowable.create<LdbItemImageRecord>(imageDownLoader, BackpressureStrategy.BUFFER)
             //ダウンロード開始
             flow.observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.newThread())
@@ -286,10 +296,10 @@ class ItemImageFragment : Fragment() {
         }
     }
 
-    /**
-     * 画面終了時
-     */
-    override fun onPause() {
+    override fun onDestroyView() {
+        super.onDestroyView()
+        //サーバーに画像送信のイベントを送信する
+        BlasSyncMessenger.notifyBlasImages(token, projectId)
         super.onPause()
         imageSubscriber?.dispose()
     }
@@ -313,7 +323,7 @@ class ItemImageFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 
-        var ret:Boolean? = false
+        var ret = false
 
         if (requestCode == REQUEST_CHOOSER && resultCode == Activity.RESULT_OK) {
             /* タップしてファイルダイアログを開いた場合 */
@@ -371,18 +381,19 @@ class ItemImageFragment : Fragment() {
                     }
                 }
 
-                //レコードを保存する
+                //レコードを保存する(仮登録のまま、もう一度保存すると、二重登録になってしまう）
+                //キューファイルを作成する
+                //projectIdがキュー名、item_id,project_image_id,filenameがレコードになる。
                 if (item != null) {
+                    var ret:Pair<Boolean, Long>? = null
+                    item.sync_status = SYNC_STATUS_NEW
                     ret = controller?.save2LDB(item)
-                    if(ret == true) {
-
+                    if(ret?.first == true) {
+                        item.image_id = ret.second
+                        //画面を更新する
+                        recyclerView.adapter?.notifyDataSetChanged()
                     }
                 }
-
-                //画面を更新する
-                recyclerView.adapter?.notifyDataSetChanged()
-
-                //サーバーにイベントを送信する
 
             }
 

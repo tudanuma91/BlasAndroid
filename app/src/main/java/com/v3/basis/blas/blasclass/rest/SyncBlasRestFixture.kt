@@ -58,7 +58,4 @@ class SyncBlasRestFixture(val crud:String) : SyncBlasRest() {
         return json
 
     }
-
-
-
 }

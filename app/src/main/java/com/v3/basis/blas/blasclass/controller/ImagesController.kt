@@ -4,20 +4,21 @@ import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Base64
 import android.util.Log
+import com.google.android.datatransport.runtime.util.PriorityMapping.toInt
+import com.tonyodev.fetch2core.getFile
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.component.ImageComponent
 import com.v3.basis.blas.blasclass.db.BaseController
-import com.v3.basis.blas.blasclass.db.data.Images
-import com.v3.basis.blas.blasclass.db.data.ItemImage
-import com.v3.basis.blas.blasclass.db.data.Items
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
+import com.v3.basis.blas.blasclass.ldb.LdbImageQueueRecord
 import com.v3.basis.blas.blasclass.ldb.LdbImageRecord
+import com.v3.basis.blas.blasclass.ldb.LdbItemImageRecord
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestImage
-import com.v3.basis.blas.ui.item.item_image.ItemImageCellItem
 import org.json.JSONObject
-import java.io.BufferedInputStream
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.net.URL
 import java.text.SimpleDateFormat
@@ -52,10 +53,10 @@ class ImagesController (context: Context, projectId: String): BaseController(con
             var notLast = c_now.moveToFirst()
             while (notLast) {
                 val image = LdbImageRecord()
-                image.image_id = c_now.getLong(1)
-                image.project_id = c_now.getInt(2)
-                image.project_image_id = c_now.getInt(3)
-                image.item_id = c_now.getLong(4)
+                image.image_id = c_now.getLong(0)
+                image.project_id = c_now.getInt(1)
+                image.project_image_id = c_now.getInt(2)
+                image.item_id = c_now.getLong(3)
                 resultList.add(image)
                 notLast = c_now.moveToNext()
             }
@@ -65,6 +66,129 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         return resultList
     }
 
+    /*
+    fun queueInit():Boolean {
+        var ret = true
+        val sql = """
+            create table if not exists imageQueue
+            (
+                id integer primary key  autoincrement,
+                image_id integer,
+                item_id integer,
+                project_image_id integer,
+                filename text,
+                retry_count integer,
+                message text,
+                error_count integer
+            )"""
+        try {
+            db?.execSQL(sql)
+        }
+        catch(e:java.lang.Exception) {
+            e.printStackTrace()
+            ret = false
+        }
+
+        return ret
+    }
+
+    fun queueAdd(imageId:String, itemId:String, projectImageId:String, fileName:String):Boolean{
+        var ret = true
+        val values = ContentValues()
+        values.put("image_id", imageId)
+        values.put("item_id", itemId)
+        values.put("projectImageId", projectImageId)
+        values.put("filename", fileName)
+        values.put("retry_count", 0)
+        values.put("message", "")
+        values.put("error_count", 0)
+
+        if(!queueInit()) {
+            ret = false
+            Log.d("konishi", "Queueの初期化に失敗しました")
+            return ret
+        }
+
+        try {
+            db?.beginTransaction()
+            db?.insert("ImageQueue",null,values)
+            db?.setTransactionSuccessful()
+            Log.d("konishi","imageQueue登録")
+        } catch (e: Exception) {
+            //とりあえず例外をキャッチして、Falseを返す？
+            Log.d("konishi", e.message)
+            e.printStackTrace()
+            ret = false
+        }
+        finally {
+            db?.endTransaction()
+        }
+        return ret
+    }
+
+    fun getQueue():MutableList<LdbImageQueueRecord>{
+        val resultList = mutableListOf<LdbImageQueueRecord>()
+        val sql = """select id, 
+|                           image_id,
+|                           item_id,
+|                           project_image_id,
+|                           filename,
+|                           retry_count,
+|                           message,
+|                           error_code
+|                    from ImageQueue"""
+
+        val cursor = db?.rawQuery(sql, arrayOf())
+
+        if( 0 == cursor?.count ) {
+            return resultList
+        }
+
+        cursor?.also { c_now ->
+            var notLast = c_now.moveToFirst()
+            while (notLast) {
+                val record = LdbImageQueueRecord()
+                record.id = c_now.getInt(0)
+                record.image_id = c_now.getLong(1)
+                record.item_id = c_now.getLong(2)
+                record.project_image_id = c_now.getInt(3)
+                record.filename = c_now.getString(4)
+                record.retry_count = c_now.getInt(5)
+                record.message = c_now.getString(6)
+                record.error_code = c_now.getInt(7)
+                resultList.add(record)
+                notLast = c_now.moveToNext()
+            }
+        }
+        cursor?.close()
+
+        return resultList
+    }
+
+    fun queueDel(id:Int):Boolean{
+        var ret = true
+
+        try {
+            db?.beginTransaction()
+            db?.delete("ImageQueue",
+                "id=?",
+                       arrayOf<String>(id.toString()))
+
+            db?.setTransactionSuccessful()
+
+            Log.d("konishi","imageQueue登録")
+        } catch (e: Exception) {
+            //とりあえず例外をキャッチして、Falseを返す？
+            Log.d("konishi",e.message)
+            e.printStackTrace()
+            ret = false
+        }
+        finally {
+            db?.endTransaction()
+        }
+        return ret
+    }
+*/
     /**
      * [説明]
      * 画像をLDBに新規追加する
@@ -75,22 +199,28 @@ class ImagesController (context: Context, projectId: String): BaseController(con
      * fileName: 画像ファイルのフルパス名。
      * imageId: imagesテーブルの主キー。nullの場合は新規追加、null以外の場合は更新する
      */
-    fun save2LDB(itemImage: ItemImage):Boolean{
+    fun save2LDB(itemImage: LdbItemImageRecord):Pair<Boolean, Long>{
         var ret = true
-        val image = Images()
+        var lastId = 0L
+        val image = LdbImageRecord()
         val fileName = getFileName(itemImage.item_id.toString(), itemImage.project_image_id.toString(), ORIGINAL_IMAGE)
 
         if(itemImage.image_id == 0L) {
             //新規追加の場合 仮IDを発行する
+            //ここに入る条件をはっきりさせないと。
+            //1.BLASに画像がないとき
+            //2.BLASから画像をダウンロードした時点で、本来ならIDがあるべきところが、今はない。
+            //ローカルに画像があるときは、IDは少なくともマイナスの値であるはず。
             image.image_id = createTempId()
+            lastId = image.image_id
         }
 
         image.project_id = itemImage.project_id
         image.project_image_id = itemImage.project_image_id?.toInt()
         image.item_id = itemImage.item_id //仮IDが入ることがあるため
-        image.filename = fileName //サーバーには送らないので、適当でよい
+        image.filename = "" //サーバーには送らないので、適当でよい
         image.create_date = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
-        image.sync_status = SYNC_STATUS_NEW;//仮登録
+        image.sync_status = itemImage.sync_status;//仮登録 これが仮登録とは限らない問題があるのか…。
 
         try {
             //SQL作成
@@ -116,7 +246,71 @@ class ImagesController (context: Context, projectId: String): BaseController(con
 
         itemImage.image_id = image.image_id
 
+        return Pair(ret, lastId)
+    }
+
+    /**
+     * 仮IDをサーバーから取得した正しいIDに直す
+     */
+    fun updateImageId( oldImageId:String, newImageId:String) : Boolean {
+        var ret = true
+        val cv = ContentValues()
+        cv.put("image_id",newImageId)
+        cv.put("sync_status", SYNC_STATUS_SYNC)
+        cv.put("error_msg", "")
+
+        try {
+            db?.beginTransaction()
+            db?.update("images",cv,"image_id = ?", arrayOf(oldImageId))
+            db?.setTransactionSuccessful()
+            db?.endTransaction()
+            Log.d("update","成功！！")
+        }
+        catch ( ex : Exception ) {
+            ex.printStackTrace()
+            ret = false
+        }
+
         return ret
+    }
+
+    /**
+     * sqliteのsync_status(同期状況)を0(何もなし)に戻す
+     */
+    fun resetSyncStatus( imageId:String ) : Boolean {
+
+        val cv = ContentValues()
+        cv.put("sync_status", SYNC_STATUS_SYNC)
+
+        return try {
+            db?.beginTransaction()
+            db?.update("images",cv,"image_id = ?", arrayOf(imageId))
+            db?.setTransactionSuccessful()
+            db?.endTransaction()
+            Log.d("sync_status reset","成功！！")
+            true
+        }
+        catch ( ex : Exception ) {
+            ex.printStackTrace()
+            false
+        }
+    }
+
+    fun setErrorMsg( fixtureId: String,errMsg : String ) {
+
+        val cv = ContentValues()
+        cv.put("error_msg",errMsg)
+
+        return try {
+            db?.beginTransaction()
+            db?.update("fixtures",cv,"fixture_id = ?", arrayOf(fixtureId))
+            db?.setTransactionSuccessful()
+            db?.endTransaction()!!
+        }
+        catch ( ex : Exception ) {
+            ex.printStackTrace()
+            throw ex
+        }
     }
 
 
@@ -176,9 +370,9 @@ class ImagesController (context: Context, projectId: String): BaseController(con
      * [説明]
      * 指定されたデータIDのレコードのうち、サーバと同期していない画像レコードを返却する
      */
-    fun searchNosyncRecord(itemId:Long):MutableList<Images>{
+    fun searchNosyncRecord(itemId:Long):MutableList<LdbImageRecord>{
         //item_idとsync_statusが0以外の画像レコードを探す
-        var resultList:MutableList<Images> = mutableListOf()
+        var resultList:MutableList<LdbImageRecord> = mutableListOf()
         try {
             db?.beginTransaction()
             val sql = "select image_id, project_id, project_image_id, item_id, filename, hash, moved, create_date, sync_status from images where item_id=? and sync_status!=?"
@@ -186,17 +380,17 @@ class ImagesController (context: Context, projectId: String): BaseController(con
             cursor?.also { c->
                 var notLast = cursor?.moveToFirst()
                 while(notLast) {
-                    val image_record = Images(
-                        image_id = c.getLong(0),
-                        project_id = c.getInt(1),
-                        project_image_id = c.getInt(2),
-                        item_id = c.getLong(3),
-                        filename = c.getString(4),
-                        hash = c.getString(5),
-                        moved = c.getInt(6),
-                        create_date = c.getString(7),
-                        sync_status = c.getInt(8)
-                    )
+                    val image_record = LdbImageRecord()
+                    image_record.image_id = c.getLong(0)
+                    image_record.project_id = c.getInt(1)
+                    image_record.project_image_id = c.getInt(2)
+                    image_record.item_id = c.getLong(3)
+                    image_record.filename = c.getString(4)
+                    image_record.hash = c.getString(5)
+                    image_record.moved = c.getInt(6)
+                    image_record.create_date = c.getString(7)
+                    image_record.sync_status = c.getInt(8)
+
                     resultList.add(image_record)
                     //リストに追加する
                     notLast = c.moveToNext()
@@ -265,6 +459,7 @@ class ImagesController (context: Context, projectId: String): BaseController(con
      * [備考]
      * 数万件あったらどうしようか
      */
+    /*
     fun searchNosyncRecords():List<Images>{
         var resultList:MutableList<Images> = mutableListOf()
         try {
@@ -301,7 +496,7 @@ class ImagesController (context: Context, projectId: String): BaseController(con
 
         return resultList
     }
-
+    */
     fun reserveDeleteImg(imageId:Long) : Boolean {
         //画像管理テーブルを削除中に変更する。
         //実際の画像ファイル削除は本登録完了後に行う
@@ -337,8 +532,8 @@ class ImagesController (context: Context, projectId: String): BaseController(con
      * 画像項目と各項目の画像フィールドを返す。
      * imagesレコードがない場合は、該当項目はNULLとなる。
      */
-    fun getItemImages(itemId:String):MutableList<ItemImage> {
-        val resultList:MutableList<ItemImage> = mutableListOf()
+    fun getItemImages(itemId:String):MutableList<LdbItemImageRecord> {
+        val resultList:MutableList<LdbItemImageRecord> = mutableListOf()
         try {
             db?.beginTransaction()
             val sql = """select
@@ -352,7 +547,8 @@ class ImagesController (context: Context, projectId: String): BaseController(con
                             images.filename,
                             images.item_id,
                             images.moved,
-                            images.create_date
+                            images.create_date,
+                            images.sync_status
                         from project_images 
                         left outer join (select * from images where item_id=?) AS images
                         on project_images.project_image_id = images.project_image_id where project_images.project_id=?
@@ -363,7 +559,7 @@ class ImagesController (context: Context, projectId: String): BaseController(con
             cursor?.also { c->
                 var notLast = cursor?.moveToFirst()
                 while(notLast) {
-                    val record = ItemImage(
+                    val record = LdbItemImageRecord(
                         project_image_id = c.getLong(0),
                         project_id = c.getInt(1),
                         list = c.getInt(2),
@@ -507,5 +703,69 @@ class ImagesController (context: Context, projectId: String): BaseController(con
 
         var bitmap = BitmapFactory.decodeFile(cacheFileName)
         return bitmap
+    }
+
+    /**
+     * ファイル名から画像を取得する
+     */
+    fun getBase64File(fileName:String):String{
+        var base64Img = ""
+        try{
+            val file = File(fileName)
+            FileInputStream(file).use {
+                val bytes = ByteArray(file.length().toInt())
+                it.read(bytes)
+                val flag = Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING
+                base64Img = Base64.encodeToString(bytes, flag)
+            }
+        }catch(e:Exception) {
+            e.printStackTrace()
+        }
+
+        return base64Img
+    }
+
+    /**
+     * IDからファイル名を特定してBase64の画像ファイルを返す
+     */
+    fun getBase64File(itemId:String, projectImageId:String, sizeType:Int):String{
+        var base64Img = ""
+        val fileName = getFileName(itemId, projectImageId, sizeType)
+        try{
+            val file = File(fileName)
+            FileInputStream(file).use {
+                val bytes = ByteArray(file.length().toInt())
+                it.read(bytes)
+                val flag = Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING
+                base64Img = Base64.encodeToString(bytes, flag)
+            }
+        }catch(e:Exception) {
+            e.printStackTrace()
+        }
+
+        return base64Img
+    }
+
+    fun getExtNumber(itemId:String, projectImageId:String):Int {
+        val fileName = getFileName(itemId, projectImageId)
+        val ext = File(fileName).extension.toLowerCase()
+        var value = 0
+        if((ext == "jpg") or (ext == "jpeg")) {
+            value = 0
+        }
+        else if(ext == "png") {
+            value = 1
+        }
+        else if(ext == "gif") {
+            value = 2
+        }
+        else {
+            Log.d("konishi", "拡張子が不正")
+            value = 0
+        }
+
+        return value
+
+
     }
 }

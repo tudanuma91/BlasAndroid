@@ -13,7 +13,7 @@
 
         <variable
             name="vm"
-            type="com.v3.basis.blas.blasclass.db.data.ItemImage" />
+            type="com.v3.basis.blas.blasclass.ldb.LdbItemImageRecord" />
 
         <variable
             name="image_view"
