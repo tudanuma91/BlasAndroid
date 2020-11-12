@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.v3.basis.blas.R
@@ -43,6 +44,19 @@ class FixtureConfigFragment : FixtureBaseFragment() {
             Log.d("konishi", "observer called single")
             context?.let {
                 viewModel.saveViewModel(it)
+
+                //一つずつ読むがしっかり生成されている時
+                if(viewModel.isCheckedSingle.value != null){
+                    //値によって処理を変更
+                    if(viewModel.isCheckedSingle.value!!){
+                        //一つずつ読むチェック時=>リスト非表示
+                        barcode_list_view?.isVisible = false
+                    }else{
+                        //一つずつ読む非チェック時=>リスト表示
+                        barcode_list_view?.isVisible = true
+                    }
+                }
+
             }
         }
         viewModel.isCheckedSingle.observe(this, isCheckedSingleObserver)
@@ -95,6 +109,7 @@ class FixtureConfigFragment : FixtureBaseFragment() {
             )
         }
 
+        //barcode_list_view?.isVisible = false
         barcode_list_view?.adapter = adapter
     }
 }
