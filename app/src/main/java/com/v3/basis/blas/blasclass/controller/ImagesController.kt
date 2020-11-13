@@ -202,37 +202,40 @@ class ImagesController (context: Context, projectId: String): BaseController(con
     fun save2LDB(itemImage: LdbItemImageRecord):Pair<Boolean, Long>{
         var ret = true
         var lastId = 0L
-        val image = LdbImageRecord()
         val fileName = getFileName(itemImage.item_id.toString(), itemImage.project_image_id.toString(), ORIGINAL_IMAGE)
-
-        if(itemImage.image_id == 0L) {
-            //新規追加の場合 仮IDを発行する
-            //ここに入る条件をはっきりさせないと。
-            //1.BLASに画像がないとき
-            //2.BLASから画像をダウンロードした時点で、本来ならIDがあるべきところが、今はない。
-            //ローカルに画像があるときは、IDは少なくともマイナスの値であるはず。
-            image.image_id = createTempId()
-            lastId = image.image_id
+        if(itemImage.image_id == null) {
+            return Pair(false, 0)
         }
 
-        image.project_id = itemImage.project_id
-        image.project_image_id = itemImage.project_image_id?.toInt()
-        image.item_id = itemImage.item_id //仮IDが入ることがあるため
-        image.filename = "" //サーバーには送らないので、適当でよい
-        image.create_date = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
-        image.sync_status = itemImage.sync_status;//仮登録 これが仮登録とは限らない問題があるのか…。
+        itemImage.image_id?.let {
+            lastId = it
+        }
 
         try {
             //SQL作成
-            val cv = createConvertValue(image)
             db?.beginTransaction()
             //画像データの登録
             if(itemImage.image_id == 0L) {
-                    //新規登録
-                    db?.insert("images", null, cv)
+                //新規登録
+                val cv = ContentValues()
+                lastId = createTempId()
+                cv.put("image_id", lastId)
+                cv.put("project_id", itemImage.project_id)
+                cv.put("project_image_id", itemImage.project_image_id)
+                cv.put("item_id", itemImage.item_id)
+                cv.put("filename", fileName)
+                cv.put("create_date", SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
+                cv.put("sync_status", itemImage.sync_status)
+
+                db?.insert("images", null, cv)
             }
             else {
                 //IDもあって、画像もあるので更新
+                val cv = ContentValues()
+                cv.put("filename", fileName)
+                cv.put("create_date", SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
+                cv.put("sync_status", itemImage.sync_status)
+
                 db?.update("images",cv, "image_id =?", arrayOf(itemImage.image_id.toString()))
             }
             db?.setTransactionSuccessful()
@@ -244,7 +247,6 @@ class ImagesController (context: Context, projectId: String): BaseController(con
             db?.endTransaction()
         }
 
-        itemImage.image_id = image.image_id
 
         return Pair(ret, lastId)
     }
@@ -528,6 +530,27 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         return true
     }
 
+    fun getImageStatus(imageId:String):Int {
+        var retStatus = SYNC_STATUS_SYNC
+        val sql = "select sync_status from images where image_id=?"
+        try {
+            db?.beginTransaction()
+            val cursor = db?.rawQuery(sql, arrayOf(imageId))
+            cursor?.also { c ->
+                var notLast = cursor?.moveToFirst()
+                if (notLast) {
+                    retStatus = c.getInt(0)
+                }
+            }
+        }
+        catch(e:java.lang.Exception) {
+            e.printStackTrace()
+        }
+        finally {
+            db?.endTransaction()
+        }
+        return retStatus
+    }
     /**
      * 画像項目と各項目の画像フィールドを返す。
      * imagesレコードがない場合は、該当項目はNULLとなる。
@@ -548,7 +571,8 @@ class ImagesController (context: Context, projectId: String): BaseController(con
                             images.item_id,
                             images.moved,
                             images.create_date,
-                            images.sync_status
+                            images.sync_status,
+                            images.error_msg
                         from project_images 
                         left outer join (select * from images where item_id=?) AS images
                         on project_images.project_image_id = images.project_image_id where project_images.project_id=?
@@ -570,7 +594,9 @@ class ImagesController (context: Context, projectId: String): BaseController(con
                         filename = c.getString(7),
                         item_id = c.getLong(8),
                         moved = c.getInt(9),
-                        create_date = c.getString(10)
+                        create_date = c.getString(10),
+                        sync_status = c.getInt(11),
+                        error_msg = c.getString(12)
                     )
                     resultList.add(record)
                     //リストに追加する

@@ -9,8 +9,10 @@ import androidx.work.workDataOf
 import com.google.gson.Gson
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.app.deleteDir
 import com.v3.basis.blas.blasclass.db.BaseController.Companion.db
 import com.v3.basis.blas.blasclass.db.BlasLdbHandleManager
+import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
 import com.v3.basis.blas.blasclass.rest.BlasRestCache
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestCache
 import com.v3.basis.blas.ui.ext.traceLog
@@ -141,6 +143,11 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
         if (dbPath != null) {
             BlasLdbHandleManager.closeDB(dbPath)
         }
+
+        //画像のキャッシュファイルも削除する
+        val cacheImagePath = context.dataDir.path + "/images/${projectId}"
+        deleteDir(cacheImagePath)
+
 
         // UnZip
         if (unzip(localPath, unZipPath)) {

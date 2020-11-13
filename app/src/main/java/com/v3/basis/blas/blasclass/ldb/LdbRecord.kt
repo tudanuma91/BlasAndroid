@@ -174,8 +174,10 @@ data class LdbItemImageRecord (
     var rank:Int?=-1,
     var create_date:String?="",
     var bitmap: Bitmap? = null, //画像を取得したら入る
+    var sync_status:Int?=0,
+    var error_msg:String?="",
     var downloadProgress:Boolean = true
-):LdbSyncBase()
+)
 
 /**
  * 画像のキュー情報
@@ -195,7 +197,7 @@ class LdbImageQueueRecord() {
  * 画像レコード
  */
 class LdbImageRecord:LdbSyncBase() {
-    var image_id: Long = 0
+    var image_id: Long? = 0
     var project_id: Int? = 0
     var project_image_id: Int? = 0
     var item_id: Long? = 0

@@ -81,7 +81,7 @@ class ImageDownLoader(val r: Resources,
             super.run()
             var bitmap: Bitmap? = null
             try {
-                for (i in 0 until 3) {
+                for (i in 0 until 3) {//リトライループ
                     try {
                         bitmap =
                             controller.getSmallImage(
@@ -101,6 +101,13 @@ class ImageDownLoader(val r: Resources,
 
                 if(bitmap != null) {
                     itemImage.bitmap = bitmap
+                }
+                else {
+                    itemImage.bitmap = BitmapFactory.decodeResource(r, R.drawable.imageselect)
+                }
+                /*
+                if(bitmap != null) {
+                    itemImage.bitmap = bitmap
                     //ローカルDBにダウンロード済みとして保存
                     val projectId = itemImage.project_id
                     val controller = ImagesController(context, projectId.toString())
@@ -114,7 +121,7 @@ class ImageDownLoader(val r: Resources,
                 }
                 else {
                     itemImage.bitmap = BitmapFactory.decodeResource(r, R.drawable.imageselect)
-                }
+                }*/
 
                 itemImage.downloadProgress = false
             }

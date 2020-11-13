@@ -26,6 +26,8 @@ import java.io.File
 import java.lang.Exception
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 data class MsgParams(
     val token:String,
@@ -35,7 +37,7 @@ data class MsgParams(
 
 class SenderHandler(val context: Context): Handler() {
     companion object {
-        var lock:Object = Object()
+        var lock = ReentrantLock()
         val FIXTURE = 0x00000001
         val ITEM    = 0x00000010
         val IMAGE   = 0x00000100
@@ -81,51 +83,62 @@ class SenderHandler(val context: Context): Handler() {
      */
     private fun syncImage(context:Context, token:String, projectId:String):Int{
         var ret = 0
+        var imageId = 0L
         val controller = ImagesController(context, projectId)
         Log.d("konishi", "画像を送信します")
         val imageList = controller.search(true)
 
+        Log.d("konishi", "imageList size:${imageList.size}")
 
-        imageList.forEach {image_record->
-            val imageId = image_record.image_id
-            var payload = image_record.toPayLoad().also{
-                it["token"] = token
-
-                val base64Img = controller.getBase64File(image_record.item_id.toString(),
-                                                       image_record.project_image_id.toString(),
-                                                       ORIGINAL_IMAGE)
-
-                val extNum = controller.getExtNumber(image_record.item_id.toString(),
-                                                     image_record.project_image_id.toString())
-                it["image_type"] = extNum.toString()
-                it["image"] = base64Img
-                it["hash"] = getHash(base64Img)
-            }
-
-            var json: JSONObject? = null
-            //BLASに送信する
-            json = SyncBlasRestImage().upload(payload)
-            if(json != null) {
-                val errorCode = json.getInt("error_code")
-                val msg = json.getString("message")
-                if(errorCode == 0) {
-                    if(imageId < 0) {
-                        val records = json.getJSONObject("records")
-                        val newImageId = records.getString("new_image_id")
-                        val oldImageId = records.getString("temp_image_id")
-                        controller.updateImageId(oldImageId, newImageId)
-                    }
-                    else {
-                        controller.resetSyncStatus(imageId.toString())
-                    }
+        imageList.forEach { image_record ->
+            Log.d("konishi", "syncImage lock開始")
+            lock.withLock {
+                Log.d("konishi", "syncImage lock通過")
+                image_record.image_id?.let {
+                    imageId = it
                 }
-                else {
-                    controller.setErrorMsg(imageId.toString(), msg)
+
+                var payload = image_record.toPayLoad().also {
+                    it["token"] = token
+
+                    val base64Img = controller.getBase64File(
+                        image_record.item_id.toString(),
+                        image_record.project_image_id.toString(),
+                        ORIGINAL_IMAGE
+                    )
+
+                    val extNum = controller.getExtNumber(
+                        image_record.item_id.toString(),
+                        image_record.project_image_id.toString()
+                    )
+                    it["image_type"] = extNum.toString()
+                    it["image"] = base64Img
+                    it["hash"] = getHash(base64Img)
+                }
+
+                var json: JSONObject? = null
+                //BLASに送信する
+                json = SyncBlasRestImage().upload(payload)
+                if (json != null) {
+                    val errorCode = json.getInt("error_code")
+                    val msg = json.getString("message")
+                    if (errorCode == 0) {
+                        if (imageId < 0) {
+                            val records = json.getJSONObject("records")
+                            val newImageId = records.getString("new_image_id")
+                            val oldImageId = records.getString("temp_image_id")
+                            controller.updateImageId(oldImageId, newImageId)
+                        } else {
+                            controller.resetSyncStatus(imageId.toString())
+                        }
+                    } else {
+                        controller.setErrorMsg(imageId.toString(), msg)
+                    }
+                } else {
+                    controller.setErrorMsg(imageId.toString(), "通信エラー系。ここはあとで直す")
                 }
             }
-            else {
-                controller.setErrorMsg(imageId.toString(), "通信エラー系。ここはあとで直す")
-            }
+            Log.d("konishi", "syncImage lock終了")
         }
         Log.d("konishi", "画像を送信しました")
         return ret

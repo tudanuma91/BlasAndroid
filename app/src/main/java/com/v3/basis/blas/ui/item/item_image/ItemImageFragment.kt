@@ -14,6 +14,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,11 +31,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.controller.ImagesController
+import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.MINI_IMAGE
+import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.ORIGINAL_IMAGE
 import com.v3.basis.blas.blasclass.db.BaseController.Companion.SYNC_STATUS_NEW
-import com.v3.basis.blas.blasclass.db.BaseController.Companion.SYNC_STATUS_SYNC
-import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
 import com.v3.basis.blas.blasclass.ldb.LdbItemImageRecord
 import com.v3.basis.blas.blasclass.service.BlasSyncMessenger
+import com.v3.basis.blas.blasclass.service.SenderHandler
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -43,6 +45,7 @@ import kotlinx.android.synthetic.main.fragment_item_image.*
 import org.reactivestreams.Subscriber
 import org.reactivestreams.Subscription
 import java.lang.Exception
+import kotlin.concurrent.withLock
 
 /**
  * 画像を受信したら、notifyを通知するだけのサブスクライバ。
@@ -179,13 +182,18 @@ class ItemImageFragment : Fragment() {
                         requestPermissions(PERMISSIONS_REQUIRED, PERMISSIONS_REQUEST_CODE)
                     }
                     else {
+                        val newStatus = controller?.getImageStatus(item.image_id.toString())
+                        item.sync_status = newStatus
                         fcItem = item
                         if(item.sync_status == SYNC_STATUS_NEW) {
-                            Toast.makeText(context, """画像がまだBLASに送信できていません。
-|                                                      しばらくしてから再度更新してください""".trimMargin(),
-                                Toast.LENGTH_LONG).show()
+                            //DBが更新されていないか再チェック
+                           // Toast.makeText(context, "画像がまだBLASに送信できていません。しばらくしてから再度更新してください",
+                           //     Toast.LENGTH_LONG).show()
+                            startFileChoicer()
                         }
-                        startFileChoicer()
+                        else {
+                            startFileChoicer()
+                        }
                     }
                 }
             }
@@ -321,321 +329,97 @@ class ItemImageFragment : Fragment() {
         }
     }
 
+    /**
+     * 写真撮影した場合に呼ばれる。
+     */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-
         var ret = false
-
+        var bmp: Bitmap? = null
         if (requestCode == REQUEST_CHOOSER && resultCode == Activity.RESULT_OK) {
             /* タップしてファイルダイアログを開いた場合 */
             val uri = data?.data ?: imageUri
-            uri?.also {
-
+            if(uri != null){
+                //画像の取得
                 // ギャラリーへスキャンを促す
                 MediaScannerConnection.scanFile(
                     requireContext(),
-                    arrayOf(it.path),
+                    arrayOf(uri.path),
                     arrayOf("image/jpeg"),
                     null
                 )
                 val resolver = requireContext().contentResolver
-                var bmp: Bitmap? = null
+
                 //bitmap取得
                 if (Build.VERSION.SDK_INT < 28) {
-                    bmp = MediaStore.Images.Media.getBitmap(resolver, it)
+                    bmp = MediaStore.Images.Media.getBitmap(resolver, uri)
                 } else {
-                    val source = ImageDecoder.createSource(resolver, it)
+                    val source = ImageDecoder.createSource(resolver, uri)
                     bmp = ImageDecoder.decodeBitmap(source)
                 }
+            }
 
-                //どの画像が更新されたかを調べる
-                val item = imageFields?.firstOrNull { it == fcItem }
+            //どの画像が更新されたかを調べる
+            val item = imageFields?.firstOrNull { it == fcItem }
 
+            Log.d("konishi", "itemImageFragment ロック開始")
+            SenderHandler.lock.withLock {
+                Log.d("konishi", "itemImageFragment ロック通過")
                 //画像を保存する
-                if (bmp != null) {
-                    try {
-                        //オリジナルサイズの画像を保存する
-                        controller?.saveBitmap(bmp,
-                                               item?.item_id.toString(),
-                                               item?.project_image_id.toString(),
-                                               ImagesController.ORIGINAL_IMAGE)
+                if ((bmp != null) && (item != null)) {
+                    //表示用(幅230)の小さいアイコンを作成して保存
+                    val smallBmp = saveImage(
+                        bmp,
+                        item?.item_id.toString(),
+                        item?.project_image_id.toString(),
+                        230.0f, MINI_IMAGE
+                    )
+                    item?.bitmap = smallBmp
 
-                        //小さいファイルに圧縮する
-                        var rate = (bmp.width / 230).toInt()
-                        if(rate == 0) {
-                            rate = 1
-                        }
-                        val dstWidth = (bmp.width / rate).toInt()
-                        val dstHeight = (bmp.height / rate).toInt()
-                        val smallBmp = Bitmap.createScaledBitmap(bmp, dstWidth, dstHeight, true)
-                        controller?.saveBitmap(smallBmp,
-                                               item?.item_id.toString(),
-                                               item?.project_image_id.toString(),
-                                               ImagesController.MINI_IMAGE)
+                    //1080の大きな画像を保存する
+                    saveImage(
+                        bmp,
+                        item?.item_id.toString(),
+                        item?.project_image_id.toString(),
+                        1080.0f, ORIGINAL_IMAGE
+                    )
 
-                        item?.bitmap = smallBmp
-
-                    }
-                    catch(e:Exception) {
-                        e.printStackTrace()
-                        return
-                    }
-                }
-
-                //レコードを保存する(仮登録のまま、もう一度保存すると、二重登録になってしまう）
-                //キューファイルを作成する
-                //projectIdがキュー名、item_id,project_image_id,filenameがレコードになる。
-                if (item != null) {
-                    var ret:Pair<Boolean, Long>? = null
+                    //未送信フラグセット
                     item.sync_status = SYNC_STATUS_NEW
-                    ret = controller?.save2LDB(item)
-                    if(ret?.first == true) {
-                        item.image_id = ret.second
+
+                    //保存
+
+                    var ret = controller?.save2LDB(item) //戻り値はPair型。(ステータス,保存時のＩＤ)
+                    val status = ret?.first
+                    val imageId = ret?.second
+                    if (status == true) {
+                        item.image_id = imageId
                         //画面を更新する
                         recyclerView.adapter?.notifyDataSetChanged()
+                        BlasSyncMessenger.notifyBlasImages(token, projectId)
                     }
                 }
-
             }
-
-        }
-    }
-    /**
-     * カメラが起動した後にコールバックされる
-     */
-    /*
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-
-        if (requestCode == REQUEST_CHOOSER && resultCode == Activity.RESULT_OK) {
-            /* タップしてファイルダイアログを開いた場合 */
-            val uri = data?.data ?: imageUri
-            uri?.also {
-
-                // ギャラリーへスキャンを促す
-                MediaScannerConnection.scanFile(
-                    requireContext(),
-                    arrayOf(it.path),
-                    arrayOf("image/jpeg"),
-                    null
-                )
-
-                val resolver = requireContext().contentResolver
-                val bmp = if (Build.VERSION.SDK_INT < 28) {
-                    MediaStore.Images.Media.getBitmap(resolver, it)
-                } else {
-                    val source = ImageDecoder.createSource(resolver, it)
-                    ImageDecoder.decodeBitmap(source)
-                }
-
-                val mime = resolver.getType(it) ?: ""
-                val item = adapterCellItems.first { it.item.id == uploadId }.item
-                item.image.set(bmp)
-                item.loading.set(true)
-                item.empty.set(false)
-                item.ext = mime
-                val error: (errorCode: Int, aplCode:Int) -> Unit = { i: Int, i1: Int ->
-                    item.loading.set(false)
-                    item.image.set(null)
-                    item.empty.set(true)
-                    message = BlasMsg().getMessage(i, i1)
-                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
-                    Log.d("upload", "upload error")
-                }
-
-                //ここが画像の保存パス！！！
-                val imgCon =
-                    ImagesController(
-                        requireContext(),
-                        projectId
-                    )
-                //ここでbmpにファイル名を付けてキャッシュディレクトリに保存する
-                val itemRecord = ItemImage(
-                    create_date= SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()),
-                    ext = mime,
-                    image_id=item.imageId,
-                    item_id = itemId,
-                    moved="0",
-                    project_id=projectId,
-                    project_image_id = item.id)
-                itemRecord.bitmap = bmp
-                //仮登録で保存する
-                imgCon.save2LDB(itemRecord, BaseController.SYNC_STATUS_NEW)
-                //本登録のときに画像を送信するように変更
-                viewModel.fetchImage(item)
-                //viewModel.upload(bmp, mime, item, error)
-            }
-        }
-    }*/
-    /*
-    private fun createAdapter(field: ImageFieldModel) {
-        val list = field.records.map { records -> records.ProjectImage }.map {
-            AdapterCellItem(viewModel, it.mapToItemImageCellItem()).apply {
-                this.item.imageId=""
-                viewModel.fetchImage(this.item)
-            }
-        }
-        adapterCellItems.clear()
-        adapterCellItems.addAll(list)
-
-        val gAdapter = GroupAdapter<GroupieViewHolder<*>>()
-        recyclerView.adapter = gAdapter
-        gAdapter.update(adapterCellItems.toList())
-        recyclerView.hasPendingAdapterUpdates()
-    }
-
-
-
-
-    private fun initCameraPermission(): Boolean {
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
-
-        val permissions = listOf(READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, CAMERA)
-        if (permissions.all { ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED}) {
-            startFileChoicer()
-        } else {
-            requestPermissions(arrayOf(CAMERA,WRITE_EXTERNAL_STORAGE), REQUEST_CAMERA_PERMISSION)
-        }
-
-        return false
-    }
-
-    /**
-     * [説明]
-     * 画像を新規追加、または更新する場合に呼ばれる。
-     */
-    private fun startFileChoicer() {
-
-        //カメラの起動Intentの用意
-        val photoName = System.currentTimeMillis().toString() + ".jpg"
-        val contentValues = ContentValues()
-        contentValues.put(MediaStore.Images.Media.TITLE, photoName)
-        contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-        imageUri = requireActivity().contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-
-        val intentCamera = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        intentCamera.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
-
-        // ギャラリー用のIntent作成
-        val intentGallery: Intent
-        if (Build.VERSION.SDK_INT < 19) {
-            intentGallery = Intent(Intent.ACTION_GET_CONTENT)
-            intentGallery.type = "image/*"
-        } else {
-            intentGallery = Intent(Intent.ACTION_OPEN_DOCUMENT)
-            intentGallery.addCategory(Intent.CATEGORY_OPENABLE)
-            intentGallery.type = "*/*"
-            intentGallery.putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/jpeg", "image/png"))
-        }
-        val intent = Intent.createChooser(intentCamera, "画像選択")
-        intent.putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(intentGallery))
-        startActivityForResult(intent, REQUEST_CHOOSER)
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when(requestCode) {
-            REQUEST_CAMERA_PERMISSION -> {
-
-                permissions.forEach {
-                    val notGranted = ContextCompat.checkSelfPermission(requireContext(), it) != PackageManager.PERMISSION_GRANTED
-                    if (notGranted && !ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), it)) {
-                        if ( !deniedPermission ) {
-                            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                            val uri: Uri = Uri.fromParts("package", requireContext().packageName, null)
-                            intent.data = uri
-                            startActivityForResult(intent, REQUEST_CAMERA_PERMISSION)
-                            deniedPermission = true
-                            return
-                        }
-                    }
-                }
-
-                val allGranted = grantResults.firstOrNull { it == -1 }?.let { false } ?: true
-                if (allGranted) {
-                    startFileChoicer()
-                }
-            }
+            Log.d("konishi", "itemImageFragment ロック終了")
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-
-        if (requestCode == REQUEST_ZOOM && resultCode == Activity.RESULT_OK) {
-            //画像の再取得処理
-            viewModel.setup(requireContext(), token, projectId, itemId)
-        } else if (requestCode == REQUEST_CHOOSER && resultCode == Activity.RESULT_OK) {
-
-            val uri = data?.data ?: imageUri
-            uri?.also {
-
-                // ギャラリーへスキャンを促す
-                MediaScannerConnection.scanFile(
-                    requireContext(),
-                    arrayOf(it.path),
-                    arrayOf("image/jpeg"),
-                    null
-                )
-
-                val resolver = requireContext().contentResolver
-                val bmp = if (Build.VERSION.SDK_INT < 28) {
-                    MediaStore.Images.Media.getBitmap(resolver, it)
-                } else {
-                    val source = ImageDecoder.createSource(resolver, it)
-                    ImageDecoder.decodeBitmap(source)
-                }
-
-                val mime = resolver.getType(it) ?: ""
-                val item = adapterCellItems.first { it.item.id == uploadId }.item
-                item.image.set(bmp)
-                item.loading.set(true)
-                item.empty.set(false)
-                item.ext = mime
-                val error: (errorCode: Int, aplCode:Int) -> Unit = { i: Int, i1: Int ->
-                    item.loading.set(false)
-                    item.image.set(null)
-                    item.empty.set(true)
-                    message = BlasMsg().getMessage(i, i1)
-                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
-                    Log.d("upload", "upload error")
-                }
-
-                //ここが画像の保存パス！！！
-                val imgCon =
-                    ImagesController(
-                        requireContext(),
-                        projectId
-                    )
-                //ここでbmpにファイル名を付けてキャッシュディレクトリに保存する
-                val itemRecord = ItemImage(
-                    create_date= SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()),
-                    ext = mime,
-                    image_id=item.imageId,
-                    item_id = itemId,
-                    moved="0",
-                    project_id=projectId,
-                    project_image_id = item.id)
-                itemRecord.bitmap = bmp
-                //仮登録で保存する
-                imgCon.save2LDB(itemRecord, BaseController.SYNC_STATUS_NEW)
-                //本登録のときに画像を送信するように変更
-                viewModel.fetchImage(item)
-                //viewModel.upload(bmp, mime, item, error)
-            }
+    private fun saveImage(bmp:Bitmap, itemId:String, projectImageId:String, width:Float, sizeType:Int):Bitmap? {
+        var rate = 1.0f
+        var rtnBmp:Bitmap? = null
+        try {
+            //オリジナルサイズの画像を保存する
+            rate = (bmp.width / width)
+            var dstWidth = (bmp.width / rate).toInt()
+            var dstHeight = (bmp.height / rate).toInt()
+            rtnBmp = Bitmap.createScaledBitmap(bmp, dstWidth, dstHeight, true)
+            controller?.saveBitmap(rtnBmp,
+                                   itemId,
+                                   projectImageId,
+                                   sizeType)
         }
+        catch(e:Exception) {
+            e.printStackTrace()
+        }
+        return rtnBmp
     }
-
-    override fun onStop() {
-        ItemActivity.setRestartFlag()
-        super.onStop()
-    }
-
-    override fun onDestroyView() {
-        recyclerView.adapter = null
-        //画面破棄のときにItemActivityをリロードする
-        ItemActivity.setRestartFlag()
-        requireActivity().finish()
-        disposables.dispose()
-        super.onDestroyView()
-    }
-*/
 }
