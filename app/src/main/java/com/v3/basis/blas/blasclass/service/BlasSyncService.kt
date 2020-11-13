@@ -221,9 +221,8 @@ class BlasSyncService() : Service() {
         Thread(
             Runnable {
                 while(true){
+                    Thread.sleep(1*60*1000)
                     Log.d("konishi", "Timer start")
-                    Thread.sleep(10*60*1000)
-
                     val dbPath = applicationContext.dataDir.path + "/databases/"
                     //ディレクトリ名からプロジェクトIDを取得する
                     val fileList = File(dbPath).listFiles()
