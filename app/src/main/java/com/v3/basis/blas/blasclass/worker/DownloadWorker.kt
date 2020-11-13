@@ -9,6 +9,8 @@ import androidx.work.workDataOf
 import com.google.gson.Gson
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.db.BaseController.Companion.db
+import com.v3.basis.blas.blasclass.db.BlasLdbHandleManager
 import com.v3.basis.blas.blasclass.rest.BlasRestCache
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestCache
 import com.v3.basis.blas.ui.ext.traceLog
@@ -132,6 +134,13 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
         output.flush()
         output.close()
         input.close()
+
+        //DBをクローズする。ここで閉じるべきは、自分自身だけ。他のDBはリトライが使用している可能性がある。
+        //閉じないと、ダウンロードし直したときにDBを上書きできない。
+        val dbPath = getSavedPath(projectId)
+        if (dbPath != null) {
+            BlasLdbHandleManager.closeDB(dbPath)
+        }
 
         // UnZip
         if (unzip(localPath, unZipPath)) {

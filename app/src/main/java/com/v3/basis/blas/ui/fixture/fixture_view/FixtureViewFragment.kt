@@ -225,9 +225,7 @@ class FixtureViewFragment : FixtureBaseFragment() {
             (index >= currentIndex) && (index < currentIndex + CREATE_UNIT)
         }
         dataList.addAll(filteredList.toMutableList())
-        dataList.forEach{
-            Log.d("あたいチェック","datalist id =${it.model.fixture_id}")
-        }
+
         // update
         if (dataList.isNotEmpty()) {
             currentIndex += CREATE_UNIT

@@ -149,11 +149,12 @@ class BarCodeSubScriber<String>(val context:Context, val token:String, val proje
     override fun onSubscribe(s: Subscription?) {
         //一個だけデータください
         subscription = s
-        subscription?.request(1)
+        subscription?.request(10000)
     }
 
     override fun onNext(barCode: String) {
         //バーコード受信処理
+        Log.d("konishi", "barcode: ${barCode}")
         val results:MutableMap<kotlin.String, Int> = controller.kenpin(barCode.toString())
 
         results.forEach{key, value->
@@ -163,7 +164,7 @@ class BarCodeSubScriber<String>(val context:Context, val token:String, val proje
         }
         BlasSyncMessenger.notifyBlasFixtures(token.toString(), projectId.toString())
 
-        subscription?.request(1)
+        subscription?.request(10000)
     }
 
     override fun onError(t: Throwable?) {

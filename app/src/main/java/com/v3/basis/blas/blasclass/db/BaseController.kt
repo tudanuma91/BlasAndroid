@@ -47,19 +47,18 @@ abstract class BaseController(
         const val RTN = 4
         const val REMOVE = 5
 
+        var db:SQLiteDatabase?=null
     }
 
     // 使うときはerrorMessageEvent.onNext("メッセージ")とする
     val errorMessageEvent: PublishSubject<String> = PublishSubject.create()
 
-    var db:SQLiteDatabase?
-
     var db_path:String? = null
 
     init {
-        SQLiteDatabase.loadLibs(context)
-        db = openSQLiteDatabase()
-        db?.rawQuery("PRAGMA foreign_keys=1",null)
+            SQLiteDatabase.loadLibs(context)
+            db = openSQLiteDatabase()
+            db?.rawQuery("PRAGMA foreign_keys=1", null)
     }
 
 
@@ -67,10 +66,11 @@ abstract class BaseController(
     fun openSQLiteDatabase(): SQLiteDatabase? {
 
         db_path = DownloadWorker.getSavedPath(projectId)
-        Log.d("SqliteDB Path:",db_path.toString())
 
+        Log.d("SqliteDB Path:",db_path.toString())
         val helper = db_path?.let {
-            SQLiteDatabase.openDatabase(db_path, BlasApp.key,null, SQLiteDatabase.OPEN_READWRITE)
+            //SQLiteDatabase.openDatabase(db_path, BlasApp.key,null, SQLiteDatabase.OPEN_READWRITE)
+            BlasLdbHandleManager.openDB(it)
         }
         return helper
     }
