@@ -146,9 +146,23 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
 
         //画像のキャッシュファイルも削除する
         val cacheImagePath = context.dataDir.path + "/images/${projectId}"
-        deleteDir(cacheImagePath)
+        try {
+            deleteDir(cacheImagePath)
+        }
+        catch(e:java.lang.Exception) {
+            //エラーでも問題なし
+            e.printStackTrace()
+        }
 
-
+        //古いDBが残っていたら削除する
+        val cacheDbPath = context.dataDir.path + "/databases/${projectId}"
+        try {
+            deleteDir(cacheDbPath)
+        }
+        catch(e:java.lang.Exception) {
+            //エラーでも問題なし
+            e.printStackTrace()
+        }
         // UnZip
         if (unzip(localPath, unZipPath)) {
             //  DeleteZipFile

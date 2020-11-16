@@ -66,97 +66,24 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         return resultList
     }
 
-    /*
-    fun queueInit():Boolean {
-        var ret = true
-        val sql = """
-            create table if not exists imageQueue
-            (
-                id integer primary key  autoincrement,
-                image_id integer,
-                item_id integer,
-                project_image_id integer,
-                filename text,
-                retry_count integer,
-                message text,
-                error_count integer
-            )"""
-        try {
-            db?.execSQL(sql)
-        }
-        catch(e:java.lang.Exception) {
-            e.printStackTrace()
-            ret = false
-        }
+    fun search(itemId:String, projectImageId:String):MutableList<LdbImageRecord> {
+        var sql = ""
 
-        return ret
-    }
+        sql = """select image_id, project_id, project_image_id, item_id, sync_status
+                 from images where item_id=? and project_image_id=?
+              """
+        val cursor = db?.rawQuery(sql, arrayOf<String>(itemId, projectImageId))
 
-    fun queueAdd(imageId:String, itemId:String, projectImageId:String, fileName:String):Boolean{
-        var ret = true
-        val values = ContentValues()
-        values.put("image_id", imageId)
-        values.put("item_id", itemId)
-        values.put("projectImageId", projectImageId)
-        values.put("filename", fileName)
-        values.put("retry_count", 0)
-        values.put("message", "")
-        values.put("error_count", 0)
-
-        if(!queueInit()) {
-            ret = false
-            Log.d("konishi", "Queueの初期化に失敗しました")
-            return ret
-        }
-
-        try {
-            db?.beginTransaction()
-            db?.insert("ImageQueue",null,values)
-            db?.setTransactionSuccessful()
-            Log.d("konishi","imageQueue登録")
-        } catch (e: Exception) {
-            //とりあえず例外をキャッチして、Falseを返す？
-            Log.d("konishi", e.message)
-            e.printStackTrace()
-            ret = false
-        }
-        finally {
-            db?.endTransaction()
-        }
-        return ret
-    }
-
-    fun getQueue():MutableList<LdbImageQueueRecord>{
-        val resultList = mutableListOf<LdbImageQueueRecord>()
-        val sql = """select id, 
-|                           image_id,
-|                           item_id,
-|                           project_image_id,
-|                           filename,
-|                           retry_count,
-|                           message,
-|                           error_code
-|                    from ImageQueue"""
-
-        val cursor = db?.rawQuery(sql, arrayOf())
-
-        if( 0 == cursor?.count ) {
-            return resultList
-        }
-
+        val resultList = mutableListOf<LdbImageRecord>()
         cursor?.also { c_now ->
             var notLast = c_now.moveToFirst()
             while (notLast) {
-                val record = LdbImageQueueRecord()
-                record.id = c_now.getInt(0)
-                record.image_id = c_now.getLong(1)
-                record.item_id = c_now.getLong(2)
-                record.project_image_id = c_now.getInt(3)
-                record.filename = c_now.getString(4)
-                record.retry_count = c_now.getInt(5)
-                record.message = c_now.getString(6)
-                record.error_code = c_now.getInt(7)
-                resultList.add(record)
+                val image = LdbImageRecord()
+                image.image_id = c_now.getLong(0)
+                image.project_id = c_now.getInt(1)
+                image.project_image_id = c_now.getInt(2)
+                image.item_id = c_now.getLong(3)
+                resultList.add(image)
                 notLast = c_now.moveToNext()
             }
         }
@@ -165,30 +92,6 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         return resultList
     }
 
-    fun queueDel(id:Int):Boolean{
-        var ret = true
-
-        try {
-            db?.beginTransaction()
-            db?.delete("ImageQueue",
-                "id=?",
-                       arrayOf<String>(id.toString()))
-
-            db?.setTransactionSuccessful()
-
-            Log.d("konishi","imageQueue登録")
-        } catch (e: Exception) {
-            //とりあえず例外をキャッチして、Falseを返す？
-            Log.d("konishi",e.message)
-            e.printStackTrace()
-            ret = false
-        }
-        finally {
-            db?.endTransaction()
-        }
-        return ret
-    }
-*/
     /**
      * [説明]
      * 画像をLDBに新規追加する
@@ -205,6 +108,13 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         val fileName = getFileName(itemImage.item_id.toString(), itemImage.project_image_id.toString(), ORIGINAL_IMAGE)
         if(itemImage.image_id == null) {
             return Pair(false, 0)
+        }
+
+        //バックグランドで更新されていないか、再度確認
+        val dupCheckRecord = search(itemImage.item_id.toString(), itemImage.project_image_id.toString())
+        if(dupCheckRecord.size > 0) {
+            val record = dupCheckRecord.first()
+            itemImage.image_id = record.image_id
         }
 
         itemImage.image_id?.let {
@@ -236,7 +146,11 @@ class ImagesController (context: Context, projectId: String): BaseController(con
                 cv.put("create_date", SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
                 cv.put("sync_status", itemImage.sync_status)
 
-                db?.update("images",cv, "image_id =?", arrayOf(itemImage.image_id.toString()))
+                //IDがないからエラーこいているだけっぽい？
+                //これが事実なら、更新されないので、未送信レコードが出るはず。
+                db?.update("images",cv, "item_id=? and project_image_id=?",
+                           arrayOf(itemImage.item_id.toString(),itemImage.project_image_id.toString()))
+                //db?.update("images",cv, "image_id =?", arrayOf(99.toString()))
             }
             db?.setTransactionSuccessful()
         } catch (e: Exception) {

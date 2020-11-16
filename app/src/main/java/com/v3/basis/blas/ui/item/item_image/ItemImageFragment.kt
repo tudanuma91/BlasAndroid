@@ -385,9 +385,8 @@ class ItemImageFragment : Fragment() {
 
                     //未送信フラグセット
                     item.sync_status = SYNC_STATUS_NEW
-
                     //保存
-
+                    controller?.search(false)
                     var ret = controller?.save2LDB(item) //戻り値はPair型。(ステータス,保存時のＩＤ)
                     val status = ret?.first
                     val imageId = ret?.second
