@@ -18,10 +18,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -30,13 +27,16 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.v3.basis.blas.R
+import com.v3.basis.blas.activity.ItemImageZoomActivity
 import com.v3.basis.blas.blasclass.controller.ImagesController
-import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.MINI_IMAGE
-import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.ORIGINAL_IMAGE
+import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.SMALL_IMAGE
+import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.BIG_IMAGE
 import com.v3.basis.blas.blasclass.db.BaseController.Companion.SYNC_STATUS_NEW
 import com.v3.basis.blas.blasclass.ldb.LdbItemImageRecord
 import com.v3.basis.blas.blasclass.service.BlasSyncMessenger
 import com.v3.basis.blas.blasclass.service.SenderHandler
+import com.v3.basis.blas.ui.ext.rotateLeft
+import com.v3.basis.blas.ui.ext.rotateRight
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -44,6 +44,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_item_image.*
 import org.reactivestreams.Subscriber
 import org.reactivestreams.Subscription
+import java.io.File
 import java.lang.Exception
 import kotlin.concurrent.withLock
 
@@ -141,10 +142,16 @@ class ItemImageFragment : Fragment() {
         var imageFieldText : TextView
         var progressBar : ProgressBar
         var imageView: ImageView
+        //var lRotateButton: Button
+        //var rRotateButton: Button
+
         init {
             imageFieldText = itemView.findViewById(R.id.image_name)
             progressBar = itemView.findViewById(R.id.progressbar)
             imageView = itemView.findViewById(R.id.image)
+          //  lRotateButton = itemView.findViewById(R.id.leftRotate)
+          //  rRotateButton = itemView.findViewById(R.id.rightRotate)
+
         }
     }
 
@@ -165,14 +172,12 @@ class ItemImageFragment : Fragment() {
             holder.imageFieldText.text = item.name
 
             holder.progressBar.isVisible = item.downloadProgress //グルグル表示
-            if(item.sync_status == SYNC_STATUS_NEW) {
-                //まだ画像が送信されていない場合は、更新させない
-                holder.progressBar.isVisible
-            }
+
             if(item.bitmap != null) {
                 holder.imageView.setImageBitmap(item.bitmap)
+                //holder.lRotateButton.isVisible = true
+                //holder.rRotateButton.isVisible = true
             }
-
 
             holder.imageView.setOnClickListener {
                 //画像ファイルをタップされたら、画像ダイアログを開く。
@@ -185,24 +190,101 @@ class ItemImageFragment : Fragment() {
                         val newStatus = controller?.getImageStatus(item.image_id.toString())
                         item.sync_status = newStatus
                         fcItem = item
-                        if(item.sync_status == SYNC_STATUS_NEW) {
-                            //DBが更新されていないか再チェック
-                           // Toast.makeText(context, "画像がまだBLASに送信できていません。しばらくしてから再度更新してください",
-                           //     Toast.LENGTH_LONG).show()
-                            startFileChoicer()
-                        }
-                        else {
-                            startFileChoicer()
-                        }
+                        //ファイルダイアログを開く
+                        startFileChoicer()
                     }
                 }
             }
 
             holder.imageView.setOnLongClickListener {
-                Toast.makeText(context, "Long呼ばれました",Toast.LENGTH_SHORT).show()
-                //画像を拡大表示する
+                //まず、画像があるのかないのかチェックする
+                val fileName = controller?.getFileName(item.item_id.toString(), item.project_image_id.toString())
+                if(File(fileName).exists()) {
+                    //画像を拡大表示する
+                    val intent = Intent(context, ItemImageZoomActivity::class.java)
+                    //パラメータ―の設定
+                    intent.putExtra(ItemImageZoomActivity.ITEM_ID, item.item_id.toString())
+                    intent.putExtra(ItemImageZoomActivity.PROJECT_ID, item.project_id.toString())
+                    intent.putExtra(
+                        ItemImageZoomActivity.PROJECT_IMG_ID,
+                        item.project_image_id.toString()
+                    )
+                    intent.putExtra(ItemImageZoomActivity.IMG_ID, item.image_id.toString())
+                    intent.putExtra(ItemImageZoomActivity.TITLE, item.name)
+                    intent.putExtra(ItemImageZoomActivity.TOKEN, token)
+                    startActivity(intent)
+                }
+
                 true
             }
+
+            /*
+            holder.lRotateButton.setOnClickListener {
+                //左回転をボタンを押したとき
+                SenderHandler.lock.withLock {
+                    //小さな画像を読み込んで回転し、保存する
+                    var lminiBmp = controller?.getBitmap(item.item_id.toString(), item.project_image_id.toString(), MINI_IMAGE)
+                    lminiBmp = lminiBmp?.rotateLeft()
+                    if (lminiBmp != null) {
+                        controller?.saveBitmap(lminiBmp, item.item_id.toString(), item.project_image_id.toString(), MINI_IMAGE)
+                    }
+
+                    //大きな画像を読み込んで回転し、保存する
+                    var lbigBmp = controller?.getBitmap(item.item_id.toString(), item.project_image_id.toString(), ORIGINAL_IMAGE)
+                    lbigBmp = lbigBmp?.rotateLeft()
+                    if (lbigBmp != null) {
+                        controller?.saveBitmap(lbigBmp, item.item_id.toString(), item.project_image_id.toString(), ORIGINAL_IMAGE)
+                    }
+
+                    //表示用画像を回転する
+                    item.bitmap = item.bitmap?.rotateLeft()
+                    item.sync_status = SYNC_STATUS_NEW
+                    //レコードのステータス変更
+                    controller?.save2LDB(item)
+                }
+                //画面更新
+                notifyItemChanged(position)
+
+                //再送信のイベントを送る
+                BlasSyncMessenger.notifyBlasImages(token, projectId)
+            }
+
+            holder.rRotateButton.setOnClickListener {
+                //右回転ボタンを押したとき
+                SenderHandler.lock.withLock {
+                    //小さな画像を読み込んで回転し、保存する
+                    var rminiBmp = controller?.getBitmap(item.item_id.toString(), item.project_image_id.toString(), MINI_IMAGE)
+                    rminiBmp = rminiBmp?.rotateRight()
+                    if (rminiBmp != null) {
+                        controller?.saveBitmap(rminiBmp, item.item_id.toString(), item.project_image_id.toString(), MINI_IMAGE)
+                    }
+
+                    //大きな画像を読み込んで回転し、保存する
+                    //しかしながら、必ずしも大きな画像があるとは限らない。
+                    //表示用にダウンロードしただけの場合、小さな画像はあるが、大きな画像はない。
+                    //Restの回転について確認するしかない。
+                    //確認するのは、小さい画像だけ回転したら、大元も回転するAPIってあるのかないのか。
+                    //やり方としては、画像がなかったらダウンロードしてから回転する。
+                    //画像を大きく表示したときに回転する。→多分こっちのほうがよい。
+                    var rbigBmp = controller?.getBitmap(item.item_id.toString(), item.project_image_id.toString(), ORIGINAL_IMAGE)
+                    rbigBmp = rbigBmp?.rotateRight()
+                    if (rbigBmp != null) {
+                        controller?.saveBitmap(rbigBmp, item.item_id.toString(), item.project_image_id.toString(), ORIGINAL_IMAGE)
+                    }
+
+                    //表示用画像を回転する
+                    item.bitmap = item.bitmap?.rotateLeft()
+                    item.sync_status = SYNC_STATUS_NEW
+
+                    //レコードのステータス変更
+                    controller?.save2LDB(item)
+                }
+                //画面更新
+                notifyItemChanged(position)
+
+                //再送信のイベントを送る
+                BlasSyncMessenger.notifyBlasImages(token, projectId)
+            }*/
         }
 
         override fun getItemCount(): Int {
@@ -371,7 +453,7 @@ class ItemImageFragment : Fragment() {
                         bmp,
                         item?.item_id.toString(),
                         item?.project_image_id.toString(),
-                        230.0f, MINI_IMAGE
+                        230.0f, SMALL_IMAGE
                     )
                     item?.bitmap = smallBmp
 
@@ -380,7 +462,7 @@ class ItemImageFragment : Fragment() {
                         bmp,
                         item?.item_id.toString(),
                         item?.project_image_id.toString(),
-                        1080.0f, ORIGINAL_IMAGE
+                        1080.0f, BIG_IMAGE
                     )
 
                     //未送信フラグセット

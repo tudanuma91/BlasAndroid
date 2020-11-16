@@ -29,8 +29,8 @@ class ImageControllerException(val errorCode:Int, val msg:String): Exception(msg
 class ImagesController (context: Context, projectId: String): BaseController(context, projectId) {
     val cacheImagePath = context.dataDir.path + "/images/${projectId}/"
     companion object {
-        val MINI_IMAGE = 0
-        val ORIGINAL_IMAGE = 1
+        val SMALL_IMAGE = 0
+        val BIG_IMAGE = 1
 
     }
 
@@ -66,15 +66,14 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         return resultList
     }
 
-    fun search(itemId:String, projectImageId:String):MutableList<LdbImageRecord> {
+    fun search(itemId:String, projectImageId:String):LdbImageRecord? {
         var sql = ""
-
+        var imageRecord:LdbImageRecord? = null
         sql = """select image_id, project_id, project_image_id, item_id, sync_status
                  from images where item_id=? and project_image_id=?
               """
         val cursor = db?.rawQuery(sql, arrayOf<String>(itemId, projectImageId))
-
-        val resultList = mutableListOf<LdbImageRecord>()
+        //何故ここがNULLになる？ダウンロードした直後なら、本データは保存していないのでNULLになる。
         cursor?.also { c_now ->
             var notLast = c_now.moveToFirst()
             while (notLast) {
@@ -83,13 +82,13 @@ class ImagesController (context: Context, projectId: String): BaseController(con
                 image.project_id = c_now.getInt(1)
                 image.project_image_id = c_now.getInt(2)
                 image.item_id = c_now.getLong(3)
-                resultList.add(image)
+                imageRecord = image
                 notLast = c_now.moveToNext()
             }
         }
         cursor?.close()
 
-        return resultList
+        return imageRecord
     }
 
     /**
@@ -105,15 +104,15 @@ class ImagesController (context: Context, projectId: String): BaseController(con
     fun save2LDB(itemImage: LdbItemImageRecord):Pair<Boolean, Long>{
         var ret = true
         var lastId = 0L
-        val fileName = getFileName(itemImage.item_id.toString(), itemImage.project_image_id.toString(), ORIGINAL_IMAGE)
+        val fileName = getFileName(itemImage.item_id.toString(), itemImage.project_image_id.toString(), BIG_IMAGE)
         if(itemImage.image_id == null) {
             return Pair(false, 0)
         }
 
         //バックグランドで更新されていないか、再度確認
         val dupCheckRecord = search(itemImage.item_id.toString(), itemImage.project_image_id.toString())
-        if(dupCheckRecord.size > 0) {
-            val record = dupCheckRecord.first()
+        if(dupCheckRecord != null) {
+            val record = dupCheckRecord
             itemImage.image_id = record.image_id
         }
 
@@ -146,10 +145,69 @@ class ImagesController (context: Context, projectId: String): BaseController(con
                 cv.put("create_date", SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
                 cv.put("sync_status", itemImage.sync_status)
 
-                //IDがないからエラーこいているだけっぽい？
-                //これが事実なら、更新されないので、未送信レコードが出るはず。
                 db?.update("images",cv, "item_id=? and project_image_id=?",
                            arrayOf(itemImage.item_id.toString(),itemImage.project_image_id.toString()))
+                //db?.update("images",cv, "image_id =?", arrayOf(99.toString()))
+            }
+            db?.setTransactionSuccessful()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            ret = false
+        }
+        finally {
+            db?.endTransaction()
+        }
+
+
+        return Pair(ret, lastId)
+    }
+
+    fun save2LDB(image: LdbImageRecord):Pair<Boolean, Long>{
+        var ret = true
+        var lastId = 0L
+        val fileName = getFileName(image.item_id.toString(), image.project_image_id.toString(), BIG_IMAGE)
+        if(image.image_id == null) {
+            return Pair(false, 0)
+        }
+
+        //バックグランドで更新されていないか、再度確認
+        val dupCheckRecord = search(image.item_id.toString(), image.project_image_id.toString())
+        if(dupCheckRecord != null) {
+            val record = dupCheckRecord
+            image.image_id = record.image_id
+        }
+
+        image.image_id?.let {
+            lastId = it
+        }
+
+        try {
+            //SQL作成
+            db?.beginTransaction()
+            //画像データの登録
+            if(image.image_id == 0L) {
+                //新規登録
+                val cv = ContentValues()
+                lastId = createTempId()
+                cv.put("image_id", lastId)
+                cv.put("project_id", image.project_id)
+                cv.put("project_image_id", image.project_image_id)
+                cv.put("item_id", image.item_id)
+                cv.put("filename", fileName)
+                cv.put("create_date", SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
+                cv.put("sync_status", image.sync_status)
+
+                db?.insert("images", null, cv)
+            }
+            else {
+                //IDもあって、画像もあるので更新
+                val cv = ContentValues()
+                cv.put("filename", fileName)
+                cv.put("create_date", SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
+                cv.put("sync_status", image.sync_status)
+
+                db?.update("images",cv, "item_id=? and project_image_id=?",
+                    arrayOf(image.item_id.toString(),image.project_image_id.toString()))
                 //db?.update("images",cv, "image_id =?", arrayOf(99.toString()))
             }
             db?.setTransactionSuccessful()
@@ -528,21 +586,23 @@ class ImagesController (context: Context, projectId: String): BaseController(con
     }
 
     /**
-     * BLASから表示用の小さな画像(230)を取得する。
+     * BLASから画像を取得する。
      * ローカルにキャッシュがあれば、キャッシュを返却する。
      * キャッシュがない場合は、BLASからダウンロードする
+     * ダウンロードした画像はキャッシュする点に注意
      */
-    fun getSmallImage(token:String, item_id:String, project_image_id:String):Bitmap? {
+    fun getImage(token:String, item_id:String, project_image_id:String, size:Int=SMALL_IMAGE):Pair<Bitmap?, Long> {
         var json:JSONObject? = null
         var bitmap:Bitmap? = null
         val payload = mutableMapOf<String, String>()
+        var imageId = 0L
 
         payload["token"] = token
         payload["item_id"] = item_id
         payload["project_image_id"] = project_image_id
 
         //キャッシュファイルの読み込み
-        bitmap = getBitmap(item_id, project_image_id, 0)
+        bitmap = getCacheBitmap(item_id, project_image_id, size)
         if(bitmap == null) {
             //キャッシュファイルがない場合
             //画像のURLを取得する
@@ -550,36 +610,43 @@ class ImagesController (context: Context, projectId: String): BaseController(con
             if (json?.getInt("error_code") != 0) {
                 val msg = json?.getString("message")
                 Log.d("konishi", msg)
-                return null
+                return Pair(null, -1)
             }
 
             //画像をダウンロードする
             val jsonRecord = json?.getJSONArray("records").getJSONObject(0)
             val jsonImage = jsonRecord.getJSONObject("Image")
-            val smallImagePath = jsonImage.getString("small_image")
-
+            var ImagePath = ""
+            if(size == SMALL_IMAGE) {
+                ImagePath = jsonImage.getString("small_image")
+            }
+            else {
+                ImagePath = jsonImage.getString("image")
+            }
+            imageId = jsonImage.getLong("image_id")
             //smallImageUrlから画像をダウンロードする
-            val smallImageUrl = URL(BuildConfig.HOST + smallImagePath)
-            val imageInputStream = smallImageUrl.openStream()
+            val ImageUrl = URL(BuildConfig.HOST + ImagePath)
+            val imageInputStream = ImageUrl.openStream()
 
             bitmap = BitmapFactory.decodeStream(imageInputStream)
             if(bitmap != null) {
                 //画像を所定のパスに保存する
-                saveBitmap(bitmap, item_id, project_image_id, MINI_IMAGE)
+                saveBitmap(bitmap, item_id, project_image_id, size)
             }
         }
 
-        return bitmap
+        //imageIdが0Lのときは、キャッシュから読み込んだとき。
+        return Pair(bitmap, imageId)
     }
 
     /**
      * 画像のファイルの保存先ディレクトリを取得する
-     * sizeTypeがMINI_IMAGEの場合、以下のパスを返却する
+     * sizeTypeがSMALL_IMAGEの場合、以下のパスを返却する
      * aplicationPath/images/project_id/item_id/230/
-     * sizeTypeがORIGINAL_IMAGEの場合、以下のパスを返却する
+     * sizeTypeがBIG_IMAGEの場合、以下のパスを返却する
      * aplicationPath/images/project_id/item_id/original/
      * */
-    fun getDirName(itemId:String, sizeType:Int=MINI_IMAGE):String {
+    fun getDirName(itemId:String, sizeType:Int=SMALL_IMAGE):String {
         var dirName = ""
         if(sizeType == 0) {
             dirName = cacheImagePath + "${itemId}/230/"
@@ -593,12 +660,12 @@ class ImagesController (context: Context, projectId: String): BaseController(con
 
     /**
      * 画像のファイルパスを取得する
-     * sizeTypeがMINI_IMAGEの場合、以下のパスを返却する
+     * sizeTypeがSMALL_IMAGEの場合、以下のパスを返却する
      * aplicationPath/images/project_id/item_id/230/project_image_id.jpg
      * sizeTypeがORIGINAL_IMAGEの場合、以下のパスを返却する
      * aplicationPath/images/project_id/item_id/original/project_image_id.jpg
      */
-    fun getFileName(itemId:String, projectImageId:String, sizeType:Int=MINI_IMAGE):String {
+    fun getFileName(itemId:String, projectImageId:String, sizeType:Int=SMALL_IMAGE):String {
         var dirName = getDirName(itemId, sizeType)
 
         return dirName + "${projectImageId}.jpg"
@@ -606,12 +673,12 @@ class ImagesController (context: Context, projectId: String): BaseController(con
 
     /**
      * 画像を保存する
-     * sizeTypeがMINI_IMAGEの場合、以下のパスに画像を保存する
+     * sizeTypeがSMALL_IMAGEの場合、以下のパスに画像を保存する
      * aplicationPath/images/project_id/item_id/230/project_image_id.jpg
      * sizeTypeがORIGINAL_IMAGEの場合、以下のパスに画像を保存する
      * aplicationPath/images/project_id/item_id/original/project_image_id.jpg
      */
-    fun saveBitmap(bmp:Bitmap, itemId:String, projectImageId:String, sizeType:Int=MINI_IMAGE) {
+    fun saveBitmap(bmp:Bitmap, itemId:String, projectImageId:String, sizeType:Int=SMALL_IMAGE) {
         var saveDirName = getDirName(itemId, sizeType)
 
         val saveDir = File(saveDirName)
@@ -627,7 +694,7 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         }
     }
 
-    fun getBitmap(itemId:String, projectImageId:String, sizeType:Int=MINI_IMAGE):Bitmap? {
+    fun getCacheBitmap(itemId:String, projectImageId:String, sizeType:Int=SMALL_IMAGE):Bitmap? {
         var cacheDirName = getDirName(itemId, sizeType)
 
         val saveDir = File(cacheDirName)

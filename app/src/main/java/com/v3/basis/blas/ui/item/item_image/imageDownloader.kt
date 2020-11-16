@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.controller.ImagesController
+import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.SMALL_IMAGE
 import com.v3.basis.blas.blasclass.db.BaseController
 import io.reactivex.FlowableEmitter
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
@@ -79,15 +80,16 @@ class ImageDownLoader(val r: Resources,
 
         override fun run() {
             super.run()
-            var bitmap: Bitmap? = null
+            var ret:Pair<Bitmap?, Long>? = null
             try {
                 for (i in 0 until 3) {//リトライループ
                     try {
-                        bitmap =
-                            controller.getSmallImage(
+                        ret =
+                            controller.getImage(
                                 token,
                                 item_id,
-                                itemImage.project_image_id.toString()
+                                itemImage.project_image_id.toString(),
+                                SMALL_IMAGE
                             )
                         break
                     } catch (e: java.lang.Exception) {
@@ -99,8 +101,8 @@ class ImageDownLoader(val r: Resources,
                     }
                 }
 
-                if(bitmap != null) {
-                    itemImage.bitmap = bitmap
+                if(ret?.first != null) {
+                    itemImage.bitmap = ret?.first
                 }
                 else {
                     itemImage.bitmap = BitmapFactory.decodeResource(r, R.drawable.imageselect)

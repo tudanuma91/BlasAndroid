@@ -13,8 +13,8 @@ import com.v3.basis.blas.activity.LoginActivity
 import com.v3.basis.blas.blasclass.app.getHash
 import com.v3.basis.blas.blasclass.controller.FixtureController
 import com.v3.basis.blas.blasclass.controller.ImagesController
-import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.MINI_IMAGE
-import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.ORIGINAL_IMAGE
+import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.SMALL_IMAGE
+import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.BIG_IMAGE
 import com.v3.basis.blas.blasclass.extra.trivia.TriviaList
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestFixture
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestImage
@@ -104,7 +104,7 @@ class SenderHandler(val context: Context): Handler() {
                     val base64Img = controller.getBase64File(
                         image_record.item_id.toString(),
                         image_record.project_image_id.toString(),
-                        ORIGINAL_IMAGE
+                        BIG_IMAGE
                     )
 
                     val extNum = controller.getExtNumber(

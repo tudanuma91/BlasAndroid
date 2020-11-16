@@ -17,9 +17,17 @@ import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.controller.ImageControllerException
 import com.v3.basis.blas.blasclass.controller.ImagesController
+import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.BIG_IMAGE
+import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.SMALL_IMAGE
 import com.v3.basis.blas.blasclass.db.BaseController
+import com.v3.basis.blas.blasclass.db.BaseController.Companion.SYNC_STATUS_NEW
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
+import com.v3.basis.blas.blasclass.ldb.LdbImageRecord
+import com.v3.basis.blas.blasclass.ldb.LdbItemImageRecord
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestImage
+import com.v3.basis.blas.blasclass.service.BlasSyncMessenger
+import com.v3.basis.blas.blasclass.service.BlasSyncService
+import com.v3.basis.blas.blasclass.service.SenderHandler
 import com.v3.basis.blas.databinding.ActivityItemImageZoomBinding
 import com.v3.basis.blas.ui.ext.rotateLeft
 import com.v3.basis.blas.ui.ext.rotateRight
@@ -33,6 +41,7 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import java.lang.Exception
+import kotlin.concurrent.withLock
 
 class ItemImageZoomActivity : AppCompatActivity() {
     companion object {
@@ -47,7 +56,7 @@ class ItemImageZoomActivity : AppCompatActivity() {
     private val projectImgId: String
         get() = intent.extras?.getString(PROJECT_IMG_ID) ?: ""
 
-    private val imageId: String
+    private var imageId: String = ""
         get() = intent.extras?.getString(IMG_ID) ?: ""
 
     private val projectId: String
@@ -67,6 +76,7 @@ class ItemImageZoomActivity : AppCompatActivity() {
     private lateinit var bind: ActivityItemImageZoomBinding
     private lateinit var imageController: ImagesController
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_item_image_zoom)
@@ -74,7 +84,7 @@ class ItemImageZoomActivity : AppCompatActivity() {
         imageController = ImagesController(applicationContext, projectId)
 
         bind = DataBindingUtil.setContentView(this, R.layout.activity_item_image_zoom)
-        bind.loading = false
+        bind.loading = true
         bind.activity = this
 
         supportActionBar?.title = title
@@ -83,185 +93,134 @@ class ItemImageZoomActivity : AppCompatActivity() {
         //layoutに埋め込んだCustomImageViewを取得する
         mImageCustomView = findViewById(R.id.customView)
         //画像の取得処理
-        fetchImage()
-
-    }
-
-    //画像取得処理
-    fun fetchImage() {
-        val imageController = ImagesController(context, projectId)
-        // ローカルから画像ファイルを取得する
-        Single.fromCallable { imageController.searchFromLocal(context, itemId, projectImgId) }
-            .subscribeOn(Schedulers.io())
-            .observeOn(Schedulers.io())
+        Single.fromCallable {
+            SenderHandler.lock.withLock {
+                //通信エラーのテストが不十分
+                this.fetchImage()
+            }
+        }.subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
-                onError = {
-                    if (it is ImageControllerException) {
-                        if (it.errorCode == 1) {
-                            //ローカルにもリモートにも画像なし
-                            createToast()
-                            Log.d("ImageZoom[fetchImage()]","errorCode = 1")
-                        } else if (it.errorCode == 2) {
-                            //リモート問い合わせ
-                            getImageUrl()
-                            createToast()
-                            Log.d("ImageZoom[fetchImage()]","errorCode = 2")
-                        }
-                        else {
-                            //その他エラー
-                            createToast()
-                            Log.d("ImageZoom[fetchImage()]","errorCode = 3")
-                        }
-                    } else {
-                        //想定外のエラー
-                        createToast()
-                        Log.d("ImageZoom[fetchImage()]","errorCode = 4")
-                    }
-                },
                 onSuccess = {
-                    //searchFromLocalで取得した画像を表示する
-                    try {
-                        //findViewById<ImageView>(R.id.image).setImageBitmap(it.first)
-                        if (it.first.width <= 230) {
-                            getImageUrl()
-                            Log.d("ImageZoom[fetchImage()]","サムネイル画像しかないため、リモートから取り直し")
-                        } else {
-                            mImageCustomView.setBitMap(it.first)
-                            mImageCustomView.invalidate()
-                            Log.d("ImageZoom[fetchImage()]","画像取得成功")
-                        }
-                    }catch (e:Exception){
-                        createToast()
-                        Log.d("ImageZoom[fetchImage()]","ローカルで取得失敗")
-                    }
+                    mImageCustomView.setBitMap(it)
+                    mImageCustomView.invalidate()
+                    bind.loading = false
+                },
+                onError = {
+                    Toast.makeText(context, "画像のダウンロードに失敗しました", Toast.LENGTH_LONG).show()
                 }
-            ).addTo(disposable)
-    }
-
-    //  画像URLをリモートから取得する
-    private fun getImageUrl() {
-
-        val payload = mapOf("token" to token, "item_id" to itemId, "project_image_id" to projectImgId)
-        Single
-            .fromCallable {
-                val json = SyncBlasRestImage().getUrl(payload)
-                Gson().fromJson(json.toString(), ItemImageWithLink::class.java)
-            }
-            .subscribeOn(Schedulers.newThread())
-            .doOnError {
-                //とりあえず呼び出し側に通知
-            }
-            .doOnSuccess {
-                setImage( it.records.firstOrNull()?.Image?.image )
-            }
-            .subscribe()
+            )
             .addTo(disposable)
     }
 
-    //  URLから画像を取得して、Viewにセットする
-    private fun setImage(url: String?) {
-        /*
-        if (url.isNullOrBlank().not()) {
-            Glide.with(this)
-                .asBitmap()
-                .load(BuildConfig.HOST + url)
-                .into(object : CustomTarget<Bitmap>(){
-                    override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                        mImageCustomView.setBitMap(resource)
-                        mImageCustomView.invalidate()
-                        updateLocalImage(resource)
-                        Log.d("ImageZoom[fetchImage()]","リモートから画像取得成功")
-                    }
-                    override fun onLoadCleared(placeholder: Drawable?) {
-                    }
-                })
-        }*/
+    fun fetchImage():Bitmap {
+        //大きな画像はあるか？
+        val ret = imageController.getImage(token, itemId, projectImgId, BIG_IMAGE)
+        val bmp = ret.first
+        imageId = ret.second.toString()
+        if(bmp != null) {
+            //imageController.saveBitmap(bmp, itemId, projectImgId, BIG_IMAGE)
+            val imageRecord = LdbImageRecord()
+            imageRecord.image_id = imageId.toLong()
+            imageRecord.project_id = projectId.toInt()
+            imageRecord.item_id = itemId.toLong()
+            imageRecord.project_image_id = projectImgId.toInt()
+            //ダウンロードしただけなので、sync済みとする
+            imageRecord.sync_status = BaseController.SYNC_STATUS_SYNC
+            if (imageRecord != null) {
+                /*
+                    レコードを保存するとき、仮IDで保存してしまうのはおかしい…。
+                 */
+                val ret = imageController.save2LDB(imageRecord)
+                if (!ret.first) {
+                    Log.d("konishi", "画像の保存に失敗しました")
+                    Toast.makeText(context, "画像の取得に失敗しました", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        else {
+            throw ImageControllerException(3, "画像の読み込みに失敗しましたこ")
+        }
+        return bmp
     }
+
 
     //画像を右回転する
     fun rightRotate() {
-        /*
-        if (bind.loading == true || mImageCustomView.mBitmap == null) {
-            return
-        }
+        //右回転ボタンを押したとき
+        SenderHandler.lock.withLock {
+            //小さな画像を読み込んで回転して保存する
+            var rminiBmp = imageController?.getCacheBitmap(itemId, projectImgId, SMALL_IMAGE)
+            rminiBmp = rminiBmp?.rotateRight()
+            if (rminiBmp != null) {
+                imageController?.saveBitmap(rminiBmp, itemId, projectImgId, SMALL_IMAGE)
+            }
 
-        bind.loading = true
-        Single.fromCallable { mImageCustomView.mBitmap!!.rotateRight() }
-            .subscribeOn(Schedulers.newThread())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy(
-                onError = { bind.loading = false },
-                onSuccess = {
-                    updateLocalImage(it)
-                    setResult(Activity.RESULT_OK)
-                }
-            )
-            .addTo(disposable)*/
+            //大きな画像を回転して保存する
+            var rbigBmp = imageController?.getCacheBitmap( itemId, projectImgId, BIG_IMAGE)
+            rbigBmp = rbigBmp?.rotateRight()
+            if (rbigBmp != null) {
+                imageController?.saveBitmap(rbigBmp, itemId, projectImgId, BIG_IMAGE)
+            }
+
+            //表示用画像を回転する
+            if (rbigBmp != null) {
+
+                val imageRecord = LdbImageRecord()
+                imageRecord.image_id = imageId.toLong()
+                imageRecord.project_id = projectId.toInt()
+                imageRecord.item_id = itemId.toLong()
+                imageRecord.project_image_id = projectImgId.toInt()
+                imageRecord.sync_status = SYNC_STATUS_NEW
+                imageController?.save2LDB(imageRecord)
+
+                //画像表示の更新
+                mImageCustomView.setBitMap(rbigBmp)
+                mImageCustomView.invalidate()
+                //再送信のイベントを送る
+                BlasSyncMessenger.notifyBlasImages(token, projectId)
+            }
+        }
     }
 
     //  画像を左回転する
     fun leftRotate() {
-        /*
-        if (bind.loading == true || mImageCustomView.mBitmap == null) {
-            return
-        }
+        //右回転ボタンを押したとき
+        SenderHandler.lock.withLock {
+            //小さな画像を読み込んで回転して保存する
+            var rminiBmp = imageController?.getCacheBitmap(itemId, projectImgId, SMALL_IMAGE)
+            rminiBmp = rminiBmp?.rotateLeft()
+            if (rminiBmp != null) {
+                imageController?.saveBitmap(rminiBmp, itemId, projectImgId, SMALL_IMAGE)
+            }
 
-        bind.loading = true
-        Single.fromCallable { mImageCustomView.mBitmap!!.rotateLeft() }
-            .subscribeOn(Schedulers.newThread())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy(
-                onError = { bind.loading = false },
-                onSuccess = {
-                    updateLocalImage(it)
-                    setResult(Activity.RESULT_OK)
-                }
-            )
-            .addTo(disposable)*/
+            //大きな画像を回転して保存する
+            var rbigBmp = imageController?.getCacheBitmap( itemId, projectImgId, BIG_IMAGE)
+            rbigBmp = rbigBmp?.rotateLeft()
+            if (rbigBmp != null) {
+                imageController?.saveBitmap(rbigBmp, itemId, projectImgId, BIG_IMAGE)
+            }
+
+            //表示用画像を回転する
+            if (rbigBmp != null) {
+
+                val imageRecord = LdbImageRecord()
+                imageRecord.image_id = imageId.toLong()
+                imageRecord.project_id = projectId.toInt()
+                imageRecord.item_id = itemId.toLong()
+                imageRecord.project_image_id = projectImgId.toInt()
+                imageRecord.sync_status = SYNC_STATUS_NEW
+                imageController?.save2LDB(imageRecord)
+
+                //画像表示の更新
+                mImageCustomView.setBitMap(rbigBmp)
+                mImageCustomView.invalidate()
+                //再送信のイベントを送る
+                BlasSyncMessenger.notifyBlasImages(token, projectId)
+            }
+        }
     }
 
-    //  画像を左回転
-    /*
-    private fun updateLocalImage(bitmap: Bitmap) {
-        Single
-            .fromCallable {
-                //リモートから画像をダウンロードできているので、imageIdは必ずある。
-                //リモートからダウンロードした画像は本登録する。
-                val itemRecord = ItemImageModel(
-                    image_id=imageId,
-                    item_id = itemId,
-                    moved="0",
-                    project_id=projectId,
-                    project_image_id = projectImgId)
-
-                itemRecord.bitmap = bitmap
-                save2DB(itemRecord, BaseController.SYNC_STATUS_NEW)
-                bitmap
-            }
-            .subscribeOn(Schedulers.newThread())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy(
-                onError = { bind.loading = false },
-                onSuccess = {
-                    bind.loading = false
-                    mImageCustomView.setBitMap(it)
-                    mImageCustomView.invalidate()
-                }
-            )
-            .addTo(disposable)
-    }*/
-
-    //ローカルに画像を保存する（デカイ画像）
-    /*
-    private fun save2DB(record: ItemImageModel, status: Int) {
-        Completable
-            .fromAction {
-             //   imageController.save2LDB(record, status)
-            }
-            .subscribeOn(Schedulers.io())
-            .subscribe()
-            .addTo(disposable)
-    }*/
 
     //矢印ボタンで戻るを実行する処理
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -270,13 +229,4 @@ class ItemImageZoomActivity : AppCompatActivity() {
         }
         return super.onOptionsItemSelected(item)
     }
-
-
-    //エラー時のトースト作成処理
-    private fun createToast(){
-        val text = getString(R.string.error_image_get)
-        Toast.makeText(context,text,Toast.LENGTH_SHORT).show()
-    }
-
-
 }
