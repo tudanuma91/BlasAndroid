@@ -126,7 +126,7 @@ class SenderHandler(val context: Context): Handler() {
             var json: JSONObject? = null
 
             //BLASに送信する
-            BlasLog.trace("I","画像を送信します　${payload}")
+            BlasLog.trace("I","画像を送信します")
             json = SyncBlasRestImage().upload(payload)
             if (json != null) {
                 val errorCode = json.getInt("error_code")
@@ -254,7 +254,7 @@ class BlasSyncService() : Service() {
         Thread(
             Runnable {
                 while(true){
-                    Thread.sleep(1*60*1000)
+                    Thread.sleep(1*10*1000)
                     BlasLog.trace("I", "再送開始")
                     val dbPath = applicationContext.dataDir.path + "/databases/"
                     //ディレクトリ名からプロジェクトIDを取得する

@@ -10,7 +10,6 @@ import com.google.gson.Gson
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.app.deleteDir
-import com.v3.basis.blas.blasclass.db.BaseController.Companion.db
 import com.v3.basis.blas.blasclass.db.BlasLdbHandleManager
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
 import com.v3.basis.blas.blasclass.rest.BlasRestCache

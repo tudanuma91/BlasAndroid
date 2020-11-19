@@ -384,7 +384,7 @@ class ItemImageFragment : Fragment() {
                     //保存
                     Log.d("send", item.toString())
                     var ret:Pair<Boolean, Long>? = null
-                    imagesController = context?.let { ImagesController(it, projectId) }
+
                     ret = imagesController?.save2LDB(item) //戻り値はPair型。(ステータス,保存時のＩＤ)
                     if(ret?.first == true) {
                         val status = ret?.first

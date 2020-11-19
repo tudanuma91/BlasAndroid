@@ -3,6 +3,7 @@ package com.v3.basis.blas.blasclass.db
 import android.util.Log
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
+import com.v3.basis.blas.blasclass.log.BlasLog
 import net.sqlcipher.database.SQLiteDatabase
 import java.lang.Exception
 
@@ -19,9 +20,8 @@ object BlasLdbHandleManager {
 
     fun openDB(dbPath:String):SQLiteDatabase? {
         var dbHandle: SQLiteDatabase? = null
-
+        BlasLog.trace("I", "openDB ${dbPath}")
         if(handlers.containsKey(dbPath)) {
-            Log.d("send", "openDB1 ${dbPath}")
             dbHandle = handlers[dbPath]
             if(dbHandle != null) {
                 if(!dbHandle.isOpen()) {
@@ -66,6 +66,8 @@ object BlasLdbHandleManager {
                 }
             }
             catch(e:Exception) {
+                BlasLog.trace("E", "例外が発生しました")
+                e.message?.let { BlasLog.trace("E", it) }
                 e.printStackTrace()
             }
         }

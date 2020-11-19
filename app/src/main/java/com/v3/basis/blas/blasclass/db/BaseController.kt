@@ -46,13 +46,11 @@ abstract class BaseController(
         const val DONT_TAKE_OUT = 3
         const val RTN = 4
         const val REMOVE = 5
-
-        var db:SQLiteDatabase?=null
     }
 
     // 使うときはerrorMessageEvent.onNext("メッセージ")とする
     val errorMessageEvent: PublishSubject<String> = PublishSubject.create()
-
+    var db:SQLiteDatabase?=null
     var db_path:String? = null
 
     init {
