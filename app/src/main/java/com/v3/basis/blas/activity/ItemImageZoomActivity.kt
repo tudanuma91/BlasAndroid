@@ -139,7 +139,7 @@ class ItemImageZoomActivity : AppCompatActivity() {
             }
         }
         else {
-            throw ImageControllerException(3, "画像の読み込みに失敗しましたこ")
+            throw ImageControllerException(3, "画像の読み込みに失敗しました")
         }
         return bmp
     }

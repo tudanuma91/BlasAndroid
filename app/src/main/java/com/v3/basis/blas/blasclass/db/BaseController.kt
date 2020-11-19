@@ -56,9 +56,9 @@ abstract class BaseController(
     var db_path:String? = null
 
     init {
-            SQLiteDatabase.loadLibs(context)
+            //SQLiteDatabase.loadLibs(context)
             db = openSQLiteDatabase()
-            db?.rawQuery("PRAGMA foreign_keys=1", null)
+           // db?.rawQuery("PRAGMA foreign_keys=1", null)
     }
 
 

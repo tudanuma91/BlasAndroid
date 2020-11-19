@@ -11,8 +11,11 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.app.BlasMsg
+import com.v3.basis.blas.blasclass.controller.FixtureController
 import com.v3.basis.blas.blasclass.service.BlasSyncMessenger
+import com.v3.basis.blas.blasclass.service.SenderHandler
 import com.v3.basis.blas.ui.common.FixtureBaseFragment
 import com.v3.basis.blas.ui.ext.addTitleWithProjectName
 import com.v3.basis.blas.ui.common.QRCameraFragment
@@ -21,6 +24,7 @@ import kotlinx.android.synthetic.main.fragment_fixture_kenpin.*
 import kotlinx.android.synthetic.main.fragment_fixture_return.*
 import kotlinx.android.synthetic.main.fragment_qr.qr_view
 import java.lang.Exception
+import kotlin.concurrent.withLock
 
 /**
  * A simple [Fragment] subclass.
@@ -99,9 +103,12 @@ class FixtureReturnFragment : FixtureBaseFragment() {
      */
     private fun rtnCallBack(code:String) {
         //検品データをLDBに保存する
-        fixtureController.rtn(code)
-        //読み取った値を画面に表示する
-        return_result_text.text = code
+        SenderHandler.lock.withLock {
+            val fixtureController = FixtureController(BlasApp.applicationContext(), projectId)
+            fixtureController.rtn(code)
+            //読み取った値を画面に表示する
+            return_result_text.text = code
+        }
         //BLASにデータ送信の合図を送る
         BlasSyncMessenger.notifyBlasFixtures(token, projectId)
     }

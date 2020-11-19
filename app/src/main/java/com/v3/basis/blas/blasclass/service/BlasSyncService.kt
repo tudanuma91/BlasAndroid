@@ -49,30 +49,45 @@ class SenderHandler(val context: Context): Handler() {
         val token = msgParam.token
         var projectId = msgParam.projectId
         val sendType = msgParam.sendType
-        Log.d("konishi", "handleMessage start")
+
         //メッセージ受信スレッド
+
+        //ロック中だったら次回の再送間隔待ち
+        Log.d("send", "handleMessage start")
         Thread(
             Runnable {
                 try {
-                    synchronized(lock) {
-                        //ここに送信処理を入れる
-                        if ((sendType and FIXTURE) == FIXTURE) {
-                            Log.d("konishi", "syncFixture start")
+                    //ここに送信処理を入れる
+                    if ((sendType and FIXTURE) == FIXTURE) {
+                        Log.d("konishi", "syncFixture start")
+                        if(lock.tryLock()) {
                             syncFixture(context, token, projectId)
+                            Log.d("send", "syncFixture ロックを解除します")
+                            lock.unlock()
                         }
-
-                        if ((sendType and ITEM) == ITEM) {
-                            //データを送信する
-
-                        }
-
-                        if ((sendType and IMAGE) == IMAGE) {
-                            //画像を送信する
-                            syncImage(context, token, projectId)
-
+                        else {
+                            Log.d("send", "syncFixture すでにロック中のためスキップします")
                         }
                     }
-                }catch(e:Exception) {
+
+                    if ((sendType and ITEM) == ITEM) {
+                        //データを送信する
+                    }
+
+                    if ((sendType and IMAGE) == IMAGE) {
+                        //画像を送信する
+                        if(lock.tryLock()) {
+                            Log.d("send", "retry projectId:${projectId}")
+                            syncImage(context, token, projectId)
+                            Log.d("send", "syncImage ロックを解除します")
+                            lock.unlock()
+                        }
+                        else {
+                            Log.d("send", "syncImage すでにロック中のためスキップします")
+                        }
+                    }
+                } catch (e: Exception) {
+                    lock.unlock()
                     e.printStackTrace()
                 }
             }).start()
@@ -85,19 +100,20 @@ class SenderHandler(val context: Context): Handler() {
         var ret = 0
         var imageId = 0L
         val controller = ImagesController(context, projectId)
-        Log.d("konishi", "画像を送信します")
+        Log.d("send", "画像を送信します")
         val imageList = controller.search(true)
 
-        Log.d("konishi", "imageList size:${imageList.size}")
+        Log.d("send", "imageList size:${imageList.size}")
 
         imageList.forEach { image_record ->
-            Log.d("konishi", "syncImage lock開始")
-            lock.withLock {
-                Log.d("konishi", "syncImage lock通過")
+            Log.d("send", "syncImage lock開始")
+
+                Log.d("send", "syncImage lock通過")
+
                 image_record.image_id?.let {
                     imageId = it
                 }
-
+                Log.d("send", image_record.toString())
                 var payload = image_record.toPayLoad().also {
                     it["token"] = token
 
@@ -129,18 +145,26 @@ class SenderHandler(val context: Context): Handler() {
                             val oldImageId = records.getString("temp_image_id")
                             controller.updateImageId(oldImageId, newImageId)
                         } else {
+                            //Log.d("send", "syncImage lock エラー3 ${imageId}")
                             controller.resetSyncStatus(imageId.toString())
                         }
                     } else {
+                        Log.d("send", "syncImage lock エラー2")
+                        if(msg != null) {
+                            Log.d("send", msg)
+                        }
+                        Log.d("send", "error_code:${errorCode}")
+
                         controller.setErrorMsg(imageId.toString(), msg)
                     }
                 } else {
+                    Log.d("send", "syncImage lock エラー1")
                     controller.setErrorMsg(imageId.toString(), "通信エラー系。ここはあとで直す")
                 }
-            }
-            Log.d("konishi", "syncImage lock終了")
+
+            Log.d("send", "syncImage lock終了")
         }
-        Log.d("konishi", "画像を送信しました")
+        Log.d("send", "画像を送信しました")
         return ret
     }
 
@@ -167,6 +191,7 @@ class SenderHandler(val context: Context): Handler() {
             var json: JSONObject? = null
             val crud = it.status.toString()
             //BLASに送信する
+            Log.d("send", payload.toString())
             json = SyncBlasRestFixture(crud).execute(payload)
             if(json != null) {
                 val errorCode = json.getInt("error_code")
@@ -182,6 +207,8 @@ class SenderHandler(val context: Context): Handler() {
                     }
                 }
                 else {
+                    val msg = json.getString("message")
+                    Log.d("konishi", msg)
                     controller.setErrorMsg(fixtureId.toString(), errorCode)
                 }
             }
@@ -235,7 +262,7 @@ class BlasSyncService() : Service() {
             Runnable {
                 while(true){
                     Thread.sleep(1*60*1000)
-                    Log.d("konishi", "Timer start")
+                    Log.d("send", "Timer start")
                     val dbPath = applicationContext.dataDir.path + "/databases/"
                     //ディレクトリ名からプロジェクトIDを取得する
                     val fileList = File(dbPath).listFiles()
@@ -243,8 +270,8 @@ class BlasSyncService() : Service() {
                         if (it.isDirectory()) {
                             val projectId = it.name
                             if (token != null) {
-                                messenger?.send(Message.obtain(null, 0, MsgParams(token, projectId, FIXTURE or ITEM or IMAGE))
-                                )
+                                Log.d("send", it.absolutePath)
+                                messenger?.send(Message.obtain(null, 0, MsgParams(token, projectId, FIXTURE or ITEM or IMAGE)))
                             }
                         }
                     }

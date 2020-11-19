@@ -1,6 +1,8 @@
 package com.v3.basis.blas.blasclass.db
 
+import android.util.Log
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
 import net.sqlcipher.database.SQLiteDatabase
 import java.lang.Exception
 
@@ -19,11 +21,13 @@ object BlasLdbHandleManager {
         var dbHandle: SQLiteDatabase? = null
 
         if(handlers.containsKey(dbPath)) {
+            Log.d("send", "openDB1 ${dbPath}")
             dbHandle = handlers[dbPath]
             if(dbHandle != null) {
                 if(!dbHandle.isOpen()) {
                     //ハンドルは登録されているが、何らかの理由で勝手に閉じてしまっているとき
                     try {
+                        SQLiteDatabase.loadLibs(context)
                         dbHandle = SQLiteDatabase.openDatabase(
                             dbPath,
                             BlasApp.key,
@@ -31,23 +35,33 @@ object BlasLdbHandleManager {
                             SQLiteDatabase.OPEN_READWRITE
                         )
                         if (dbHandle != null) {
+                            dbHandle.rawQuery("PRAGMA foreign_keys=1", null)
                             handlers[dbPath] = dbHandle
+                            Log.d("send", "openDB1 すでにあるハンドル ${dbPath}")
                         }
                     }catch(e :Exception) {
+                        Log.d("send", "openDB1 error ${dbPath}")
                         e.printStackTrace()
                     }
                 }
             }
+            else {
+                Log.d("send", "openDB2 ${dbPath}")
+            }
         }
         else {
             try {
+                Log.d("send", "openDB3 ${dbPath}")
+                SQLiteDatabase.loadLibs(context)
                 dbHandle = SQLiteDatabase.openDatabase(
                     dbPath,
                     BlasApp.key,
                     null,
                     SQLiteDatabase.OPEN_READWRITE
                 )
+
                 if(dbHandle != null) {
+                    dbHandle.rawQuery("PRAGMA foreign_keys=1", null)
                     handlers[dbPath] = dbHandle
                 }
             }
@@ -77,10 +91,14 @@ object BlasLdbHandleManager {
     fun closeDB(dbPath:String) {
         /*リトライ中にクローズしたら、どうなるんだろな… */
         if(handlers.containsKey(dbPath)) {
+            Log.d("send", "cloeDB1 ${dbPath}")
             var dbHandle = handlers[dbPath]
             //クローズ前にロックはかかっているみたい
             dbHandle?.close()
             handlers.remove(dbPath)
+        }
+        else {
+            Log.d("send", "cloeDB2 ${dbPath}")
         }
     }
 }

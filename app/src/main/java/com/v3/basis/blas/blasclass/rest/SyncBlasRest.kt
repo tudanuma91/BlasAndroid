@@ -110,9 +110,7 @@ open class SyncBlasRest() {
             val url = java.net.URL(targetUrl)
             val con = url.openConnection() as HttpURLConnection
 
-            Log.d("konishi", "connect Ok")
             //POSTするデータの作成
-
             var postData: String = ""
 
             for ((k, v) in payload) {
@@ -120,8 +118,6 @@ open class SyncBlasRest() {
             }
 
             postData = postData.substring(0, postData.length - 1)
-
-            Log.d("【rest/BlasRest】", "postData:${postData}")
 
             //タイムアウトとメソッドの設定
             con.requestMethod = method

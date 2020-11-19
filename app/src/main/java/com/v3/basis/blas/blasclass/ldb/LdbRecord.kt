@@ -222,4 +222,19 @@ class LdbImageRecord:LdbSyncBase() {
 
         return payload
     }
+
+    override fun toString():String {
+        val str = mutableMapOf<String, String>()
+        str["image_id"] = image_id.toString()
+        str["project_id"] = project_id.toString()
+        str["project_image_id"] = project_image_id.toString()
+        str["item_id"] = item_id.toString()
+        str["filename"] = filename
+        str["hash"] = hash
+        str["moved"] = moved.toString()
+        str["create_date"] = create_date
+        str["sync_status"] = sync_status.toString()
+        str["error_msg"] = error_msg
+        return str.toString()
+    }
 }

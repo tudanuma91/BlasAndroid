@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureActivity
+import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.canTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.finishInstall
@@ -174,7 +175,7 @@ class FixtureViewFragment : FixtureBaseFragment() {
     }
 
     private fun getRecords() {
-
+        val fixtureController = FixtureController(BlasApp.applicationContext(), projectId)
         Single.fromCallable { fixtureController.searchDisp(offset = offset, searchMap = searchValueMap) }
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
@@ -253,64 +254,6 @@ class FixtureViewFragment : FixtureBaseFragment() {
         }
     }
 
-    /**
-     * 機器管理取得時
-     */
-    private fun fixtureGetSuccess(result: JSONObject) {
-        //カラム順に並べ替える
-       jsonParseList = helper.createJsonArray(result)
-       // Log.d("配列の中身","jsonParseList => ${jsonParseList}")
-       /* for(i in 0 .. jsonParseList!!.length()-1){
-            val fields = JSONObject(jsonParseList!![i].toString())
-            val fixture = fields.getJSONObject("Fixture")
-            val fixtureId = fixture.getInt("fixture_id")
-            Log.d("配列の中身","ID => ${fixtureId}")
-        }*/
-        //Log.d("配列の中身","jsonParseList => ${jsonParseList!!.length()}")
-        if(jsonParseList != null) {
-            parseJson()
-            if (valueMap.isNotEmpty()) {
-                valueMap.forEach {
-
-                    Log.d("配列の中身","key = ${it.key}")
-
-                    //カラムの定義取得
-//                    val fixture_id = it.key
-//                    val fixture_value = it.value
-//                    val value = createValue(fixture_value)
-//
-//                    val rowModel = RowModel().also {
-//                        if (fixture_id != null) {
-//                            it.title = fixture_id.toString()
-//                        }
-//                        if (value != null) {
-//                            it.detail = value
-//                        }
-//                    }
-//                    dataListAll.add(rowModel)
-                }
-                setAdapter()
-            }
-        }
-    }
-
-    /**
-     * フィールド取得失敗時
-     */
-    private fun fixtureGetError(errorCode: Int, aplCode:Int) {
-
-        var message:String? = null
-
-        message = BlasMsg().getMessage(errorCode,aplCode)
-
-        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
-
-        //エラーのため、データを初期化する
-        valueMap.clear()
-
-        Log.d("取得失敗","${errorCode}")
-        progressBar.visibility = View.INVISIBLE
-    }
 
     /**
      * 表示する値を作成する

@@ -861,7 +861,10 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
 
     public fun deleteDir(dirName:String) {
         var files = File(dirName)
-        files.listFiles().forEach {
+        if(files == null) {
+            return
+        }
+        files.listFiles()?.forEach {
             if(it.isDirectory()) {
                 deleteDir(it.absolutePath)
             }
@@ -869,5 +872,5 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
                 it.delete()
             }
         }
-        files.delete()
+        files?.delete()
     }

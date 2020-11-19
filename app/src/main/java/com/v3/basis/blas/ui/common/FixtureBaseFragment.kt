@@ -24,7 +24,7 @@ open class FixtureBaseFragment : QRCameraFragment() {
     protected lateinit var token: String
     protected lateinit var projectId:String
     protected lateinit var  projectName:String
-    protected lateinit var fixtureController: FixtureController
+   // protected lateinit var fixtureController: FixtureController
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,7 +36,7 @@ open class FixtureBaseFragment : QRCameraFragment() {
         }
 
         //コントローラーの生成
-        fixtureController = FixtureController(BlasApp.applicationContext(), projectId)
+      //  fixtureController = FixtureController(BlasApp.applicationContext(), projectId)
     }
 
     override fun onCreateView(

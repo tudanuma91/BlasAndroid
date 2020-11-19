@@ -283,6 +283,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
      * 検品に伴う新規レコード作成
      */
     private fun kenpin_insert( serial_number: String) : Boolean {
+        var ret = true
         // user情報を取得する
         val user = getUserInfo()
 
@@ -312,30 +313,31 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 //        val exceptList = listOf("fixture_id")
         val cv = createConvertValue(new_fixture)
 
-        return try {
+        try {
             db?.beginTransaction()
             //db.execSQL("INSERT into fixtures(serial_number) values (?)", arrayOf(serial_number))
-            db?.insert("fixtures",null,cv)
+            db?.insertOrThrow("fixtures",null,cv)
 
             db?.setTransactionSuccessful()
             Log.d("kenpin","insert 成功！！")
-            true
         } catch (e: Exception) {
             //とりあえず例外をキャッチして、Falseを返す？
             Log.d("kenpin","Exception 発生！！！ " + e.message)
             e.printStackTrace()
-            false
+            ret = false
         }
         finally {
             db?.endTransaction()
         }
 
+        return ret
     }
 
     /**
      * 既存レコードに対する再検品(他社異動など)
      */
     private fun kenpin_update( serial_number: String,fixture:LdbFixtureRecord,user:LdbUserRecord ) : Boolean {
+        var ret = true
 
         if( null != user?.user_id )
             fixture.fix_user_id = user.user_id
@@ -351,20 +353,22 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         val cv = createConvertValue(fixture,null)
 
-        return try {
+        try {
             db?.beginTransaction()
             db?.update("fixtures",cv,"serial_number = ?", arrayOf(serial_number))
             db?.setTransactionSuccessful()
             Log.d("kenpin","update 成功！！")
-            true
         }
         catch ( ex : Exception) {
-            false
+            ex.printStackTrace()
+            Log.d("konishi", ex.message)
+            ret = false
         }
         finally {
             db?.endTransaction()
         }
 
+        return ret
     }
 
     /**

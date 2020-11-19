@@ -2,6 +2,7 @@ package com.v3.basis.blas.blasclass.controller
 
 import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
@@ -46,22 +47,33 @@ class ImagesController (context: Context, projectId: String): BaseController(con
                      from images
                    """
         }
-        val cursor = db?.rawQuery(sql, arrayOf<String>())
-
+        var cursor: Cursor? = null
         val resultList = mutableListOf<LdbImageRecord>()
-        cursor?.also { c_now ->
-            var notLast = c_now.moveToFirst()
-            while (notLast) {
-                val image = LdbImageRecord()
-                image.image_id = c_now.getLong(0)
-                image.project_id = c_now.getInt(1)
-                image.project_image_id = c_now.getInt(2)
-                image.item_id = c_now.getLong(3)
-                resultList.add(image)
-                notLast = c_now.moveToNext()
+        try {
+            //SQL作成
+            db?.beginTransaction()
+            cursor = db?.rawQuery(sql, arrayOf<String>())
+
+            cursor?.also { c_now ->
+                var notLast = c_now.moveToFirst()
+                while (notLast) {
+                    val image = LdbImageRecord()
+                    image.image_id = c_now.getLong(0)
+                    image.project_id = c_now.getInt(1)
+                    image.project_image_id = c_now.getInt(2)
+                    image.item_id = c_now.getLong(3)
+                    resultList.add(image)
+                    notLast = c_now.moveToNext()
+                }
             }
         }
-        cursor?.close()
+        catch(e:java.lang.Exception) {
+            e.printStackTrace()
+        }
+        finally {
+            cursor?.close()
+            db?.endTransaction()
+        }
 
         return resultList
     }
@@ -72,21 +84,33 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         sql = """select image_id, project_id, project_image_id, item_id, sync_status
                  from images where item_id=? and project_image_id=?
               """
-        val cursor = db?.rawQuery(sql, arrayOf<String>(itemId, projectImageId))
-        //何故ここがNULLになる？ダウンロードした直後なら、本データは保存していないのでNULLになる。
-        cursor?.also { c_now ->
-            var notLast = c_now.moveToFirst()
-            while (notLast) {
-                val image = LdbImageRecord()
-                image.image_id = c_now.getLong(0)
-                image.project_id = c_now.getInt(1)
-                image.project_image_id = c_now.getInt(2)
-                image.item_id = c_now.getLong(3)
-                imageRecord = image
-                notLast = c_now.moveToNext()
+        var cursor: Cursor? = null
+
+        try {
+            db?.beginTransaction()
+
+            cursor = db?.rawQuery(sql, arrayOf<String>(itemId, projectImageId))
+            //何故ここがNULLになる？ダウンロードした直後なら、本データは保存していないのでNULLになる。
+            cursor?.also { c_now ->
+                var notLast = c_now.moveToFirst()
+                while (notLast) {
+                    val image = LdbImageRecord()
+                    image.image_id = c_now.getLong(0)
+                    image.project_id = c_now.getInt(1)
+                    image.project_image_id = c_now.getInt(2)
+                    image.item_id = c_now.getLong(3)
+                    imageRecord = image
+                    notLast = c_now.moveToNext()
+                }
             }
+            cursor?.close()
         }
-        cursor?.close()
+        catch(e:Exception) {
+            e.printStackTrace()
+        }
+        finally {
+            db?.endTransaction()
+        }
 
         return imageRecord
     }
@@ -104,6 +128,7 @@ class ImagesController (context: Context, projectId: String): BaseController(con
     fun save2LDB(itemImage: LdbItemImageRecord):Pair<Boolean, Long>{
         var ret = true
         var lastId = 0L
+
         val fileName = getFileName(itemImage.item_id.toString(), itemImage.project_image_id.toString(), BIG_IMAGE)
         if(itemImage.image_id == null) {
             return Pair(false, 0)
@@ -136,7 +161,9 @@ class ImagesController (context: Context, projectId: String): BaseController(con
                 cv.put("create_date", SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()))
                 cv.put("sync_status", itemImage.sync_status)
 
-                db?.insert("images", null, cv)
+                Log.d("send", cv.toString())
+                val newId = db?.insertOrThrow("images", null, cv)
+                Log.d("send", "newId:${newId}")
             }
             else {
                 //IDもあって、画像もあるので更新
@@ -149,8 +176,11 @@ class ImagesController (context: Context, projectId: String): BaseController(con
                            arrayOf(itemImage.item_id.toString(),itemImage.project_image_id.toString()))
                 //db?.update("images",cv, "image_id =?", arrayOf(99.toString()))
             }
+
             db?.setTransactionSuccessful()
         } catch (e: Exception) {
+            Log.d("send", "insert or update error")
+            Log.d("send", e.message)
             e.printStackTrace()
             ret = false
         }

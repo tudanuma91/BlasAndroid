@@ -16,6 +16,7 @@ import kotlinx.android.synthetic.main.fragment_fixture_kenpin_multi.*
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.controller.FixtureController
 import com.v3.basis.blas.blasclass.service.BlasSyncMessenger
+import com.v3.basis.blas.blasclass.service.SenderHandler
 import com.v3.basis.blas.ui.ext.addTitleWithProjectName
 import com.v3.basis.blas.ui.common.FixtureBaseFragment
 import io.reactivex.BackpressureStrategy
@@ -24,6 +25,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_fixture_kenpin_multi.view.*
 import org.reactivestreams.Subscriber
 import org.reactivestreams.Subscription
+import kotlin.concurrent.withLock
 
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
@@ -136,18 +138,13 @@ class FixtureKenpinMultiFragment : FixtureBaseFragment() {
 class BarCodeSubScriber<String>(val context:Context, val token:String, val projectId:String): Subscriber<String> {
     var subscription:Subscription? = null
     val cacheResults:MutableMap<kotlin.String, Int> = mutableMapOf<kotlin.String, Int>()
-   // val listFragment = FixtureKenpinItemsFragment.newInstance()
-    val controller = FixtureController(
-        context,
-        projectId.toString()
-    )
 
 
     override fun onComplete() {
     }
 
     override fun onSubscribe(s: Subscription?) {
-        //一個だけデータください
+        //最初はとりあえず10000個予約。
         subscription = s
         subscription?.request(10000)
     }
@@ -155,16 +152,19 @@ class BarCodeSubScriber<String>(val context:Context, val token:String, val proje
     override fun onNext(barCode: String) {
         //バーコード受信処理
         Log.d("konishi", "barcode: ${barCode}")
-        val results:MutableMap<kotlin.String, Int> = controller.kenpin(barCode.toString())
-
-        results.forEach{key, value->
-            cacheResults[key] = value
-            //リストビューにデータを流す。
-            FixtureSlideFragment.listFragment.setItems(key, value)
+        SenderHandler.lock.withLock {
+            val fixtureController = FixtureController(context, projectId.toString())
+            val results: MutableMap<kotlin.String, Int> = fixtureController.kenpin(barCode.toString())
+            results.forEach{key, value->
+                cacheResults[key] = value
+                //リストビューにデータを流す。
+                FixtureSlideFragment.listFragment.setItems(key, value)
+            }
+            BlasSyncMessenger.notifyBlasFixtures(token.toString(), projectId.toString())
         }
-        BlasSyncMessenger.notifyBlasFixtures(token.toString(), projectId.toString())
 
-        subscription?.request(10000)
+
+        subscription?.request(1)
     }
 
     override fun onError(t: Throwable?) {
