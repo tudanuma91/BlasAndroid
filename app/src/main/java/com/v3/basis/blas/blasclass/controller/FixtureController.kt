@@ -7,7 +7,7 @@ import com.v3.basis.blas.blasclass.db.*
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
 import com.v3.basis.blas.blasclass.ldb.LdbUserRecord
-import com.v3.basis.blas.blasclass.rest.SyncBlasRestFixture
+import com.v3.basis.blas.blasclass.log.BlasLog
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.Exception
@@ -282,7 +282,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
     /**
      * 検品に伴う新規レコード作成
      */
-    private fun kenpin_insert( serial_number: String) : Boolean {
+    private fun kenpinInsert(serial_number: String) : Boolean {
         var ret = true
         // user情報を取得する
         val user = getUserInfo()
@@ -315,7 +315,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         try {
             db?.beginTransaction()
-            //db.execSQL("INSERT into fixtures(serial_number) values (?)", arrayOf(serial_number))
+            BlasLog.trace("I", "機器情報追加 $cv")
             db?.insertOrThrow("fixtures",null,cv)
 
             db?.setTransactionSuccessful()
@@ -336,7 +336,8 @@ class FixtureController(context: Context, projectId: String): BaseController(con
     /**
      * 既存レコードに対する再検品(他社異動など)
      */
-    private fun kenpin_update( serial_number: String,fixture:LdbFixtureRecord,user:LdbUserRecord ) : Boolean {
+    private fun kenpinUpdate(serial_number: String, fixture:LdbFixtureRecord, user:LdbUserRecord ) : Boolean {
+
         var ret = true
 
         if( null != user?.user_id )
@@ -352,16 +353,15 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         fixture.sync_status = SYNC_STATUS_EDIT
 
         val cv = createConvertValue(fixture,null)
-
+        BlasLog.trace("I", "機器情報更新 $cv")
         try {
             db?.beginTransaction()
             db?.update("fixtures",cv,"serial_number = ?", arrayOf(serial_number))
             db?.setTransactionSuccessful()
-            Log.d("kenpin","update 成功！！")
         }
         catch ( ex : Exception) {
             ex.printStackTrace()
-            Log.d("konishi", ex.message)
+            ex.message?.let { BlasLog.trace("E", it) }
             ret = false
         }
         finally {
@@ -452,7 +452,6 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             // fixtureテーブル 同じserial_numberが存在しないかを確認
             if (checkExistSerial(serial)) {
                 // ある場合
-                Log.d("kenpin", "同一シリアルが登録済み")
                 var user = getUserInfo()
                 if (null == user) {
                     user = LdbUserRecord()
@@ -463,9 +462,9 @@ class FixtureController(context: Context, projectId: String): BaseController(con
                 var fixture = getRecordBySerial(serial)
 
                 if (fixture?.fix_org_id != user?.org_id && 0 == fixture?.status) {
-                    Log.d("kenpin", "他社検品を異動")
+                    BlasLog.trace("I","${serial}は他社に移動しました")
                     // 他社が検品、持ち出し可なら ⇒ 異動
-                    if(!kenpin_update(serial, fixture, user)) {
+                    if(!kenpinUpdate(serial, fixture, user)) {
                         results[serial] = UPDATE_ERROR
                     }
                     else {
@@ -473,13 +472,13 @@ class FixtureController(context: Context, projectId: String): BaseController(con
                     }
                 } else {
                     //検品済み
-                    Log.d("kenpin", "検品済みです")
-                    //errorMessageEvent.onNext("検品済みです")
+                    BlasLog.trace("I","${serial}は検品済みです")
                     results[serial] = ALREADY_ENTRY
                 }
             }
             else {
-                if(!kenpin_insert(serial)) {
+                if(!kenpinInsert(serial)) {
+                    BlasLog.trace("E", "${serial}のDB書き込みに失敗しました")
                     results[serial] = INSERT_ERROR
                 }
                 else {

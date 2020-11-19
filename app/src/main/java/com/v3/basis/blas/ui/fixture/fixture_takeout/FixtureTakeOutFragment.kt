@@ -108,6 +108,7 @@ class FixtureTakeOutFragment : FixtureBaseFragment() {
      * カメラがQRコードを読み込んだときにコールバックされる
      */
     private fun takeOutCallBack(code:String) {
+
         SenderHandler.lock.withLock {
             //検品データをLDBに保存する
             val fixtureController = FixtureController(BlasApp.applicationContext(), projectId)

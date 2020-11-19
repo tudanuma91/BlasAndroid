@@ -15,6 +15,7 @@ import com.google.zxing.ResultPoint
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.CompoundBarcodeView
+import com.v3.basis.blas.blasclass.log.BlasLog
 import java.lang.RuntimeException
 
 open class QRCameraFragment:
@@ -48,6 +49,7 @@ open class QRCameraFragment:
         }
         catch(e: RuntimeException) {
             vibrator = null
+            BlasLog.trace("E", "バイブレーションを使用できません")
             Toast.makeText(context, "バイブレーションを使用できません", Toast.LENGTH_SHORT).show()
         }
 
@@ -57,19 +59,28 @@ open class QRCameraFragment:
         }
         catch(e: RuntimeException) {
             tone = null
+            BlasLog.trace("E", "ビープ音を使用できません")
             Toast.makeText(context, "ビープ音を使用できません", Toast.LENGTH_SHORT).show()
         }
     }
 
     override  fun onResume() {
+       // BlasLog.trace("I", "onResume start")
         cameraPreview?.resume()    // カメラ起動
         super.onResume()
 
     }
 
     override  fun onPause() {
+        //BlasLog.trace("I", "onPause start")
         cameraPreview?.pause()    // カメラ停止
         super.onPause()
+    }
+
+    override fun onStop() {
+        cameraPreview?.pause()
+        //BlasLog.trace("I", "onStop start")
+        super.onStop()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -84,7 +95,8 @@ open class QRCameraFragment:
         if(chkPermission){
             initBarcodeReader()
         }else{
-            Toast.makeText(getActivity(), "アクセス権限がありません。QRコード読み取りを実行できません。", Toast.LENGTH_LONG).show()
+            BlasLog.trace("E", "アクセス権限がありません。QRコード読み取りを実行できません")
+            Toast.makeText(getActivity(), "アクセス権限がありません。QRコード読み取りを実行できません", Toast.LENGTH_LONG).show()
         }
     }
 

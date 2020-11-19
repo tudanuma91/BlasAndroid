@@ -15,6 +15,7 @@ import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_fixture_kenpin_multi.*
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.controller.FixtureController
+import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.blasclass.service.BlasSyncMessenger
 import com.v3.basis.blas.blasclass.service.SenderHandler
 import com.v3.basis.blas.ui.ext.addTitleWithProjectName
@@ -47,6 +48,8 @@ class FixtureKenpinMultiFragment : FixtureBaseFragment() {
      * カメラの初期化
      */
     private fun initBarcodeReader() {
+        BlasLog.trace("I","カメラの初期化を行います")
+
         barcodeReader = activity?.let { MultiQrBarcodeReader(it, preview1, imageView) }
 
         if(barcodeReader != null) {
@@ -91,6 +94,7 @@ class FixtureKenpinMultiFragment : FixtureBaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        BlasLog.trace("I", "マルチバーコードリーダー 起動")
 
     }
 
@@ -109,10 +113,18 @@ class FixtureKenpinMultiFragment : FixtureBaseFragment() {
     }
 
     override fun onPause() {
+        BlasLog.trace("I", "マルチバーコードリーダー onPause")
         barcodeReader?.unbindAll()
         barcodeSubscriber?.dispose()
         super.onPause()
 
+    }
+
+    override fun onStop() {
+        BlasLog.trace("I", "マルチバーコードリーダー onStop")
+        barcodeReader?.unbindAll()
+        barcodeSubscriber?.dispose()
+        super.onStop()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -151,8 +163,9 @@ class BarCodeSubScriber<String>(val context:Context, val token:String, val proje
 
     override fun onNext(barCode: String) {
         //バーコード受信処理
-        Log.d("konishi", "barcode: ${barCode}")
+        BlasLog.trace("I","バーコードを読み取りました(${barCode})")
         SenderHandler.lock.withLock {
+            BlasLog.trace("I","ロックを取得しました")
             val fixtureController = FixtureController(context, projectId.toString())
             val results: MutableMap<kotlin.String, Int> = fixtureController.kenpin(barCode.toString())
             results.forEach{key, value->
@@ -161,6 +174,7 @@ class BarCodeSubScriber<String>(val context:Context, val token:String, val proje
                 FixtureSlideFragment.listFragment.setItems(key, value)
             }
             BlasSyncMessenger.notifyBlasFixtures(token.toString(), projectId.toString())
+            BlasLog.trace("I","サービスにイベントを通知しました")
         }
 
 
@@ -168,21 +182,21 @@ class BarCodeSubScriber<String>(val context:Context, val token:String, val proje
     }
 
     override fun onError(t: Throwable?) {
+        BlasLog.trace("E","エラーが発生しました ${t?.message}")
     }
 
+    /*
     fun saveCache() {
         context.openFileOutput("BarCodeListLog", Context.MODE_APPEND).use {
             var str = Gson().toJson(cacheResults)
             it.write(str.toByteArray())
         }
-    }
+    }*/
 
-    fun resetCache() {
-        cacheResults.clear()
-    }
 
     fun dispose() {
-        saveCache()
+       // saveCache()
+        BlasLog.trace("I","購読をキャンセルします")
         subscription?.cancel()
     }
 }

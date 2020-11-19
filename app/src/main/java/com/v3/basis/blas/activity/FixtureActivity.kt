@@ -9,6 +9,7 @@ import android.view.MenuItem
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.ui.ext.setBlasCustomView
 import com.v3.basis.blas.ui.ext.showBackKeyForActionBar
 import com.v3.basis.blas.ui.common.ARG_PROJECT_ID
@@ -26,14 +27,6 @@ import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.activity_fixture.*
 
 class FixtureActivity : AppCompatActivity() {
-    private lateinit var messageText:TextView
-    private var oldResult:String? =null
-    private lateinit var vibrator:Vibrator
-    private var vibrationEffect = VibrationEffect.createOneShot(300,
-        VibrationEffect.DEFAULT_AMPLITUDE
-    )
-    private var tone: ToneGenerator? = null
-    private var realTime = false
     private var prevFragmentId:Int = R.id.navi_fixture_view
 
     private val disposable = CompositeDisposable()
@@ -87,7 +80,7 @@ class FixtureActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         supportFragmentManager.beginTransaction()
-            .add(R.id.nav_host_fragment_fixture, FixtureViewFragment.newInstance().apply { arguments = bundle})
+            .replace(R.id.nav_host_fragment_fixture, FixtureViewFragment.newInstance().apply { arguments = bundle})
             .commitNow()
     }
 
@@ -194,19 +187,10 @@ class FixtureActivity : AppCompatActivity() {
 
     override fun onRestart() {
         super.onRestart()
+        BlasLog.trace("I", "onRestart")
        // reloard()
     }
 
-    //検索結果から戻った時に走る処理
-    fun reloard(){
-        val intent = intent
-        overridePendingTransition(0, 0)
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-        finish()
-
-        overridePendingTransition(0, 0)
-        startActivity(intent)
-    }
 
     override fun onDestroy() {
         super.onDestroy()

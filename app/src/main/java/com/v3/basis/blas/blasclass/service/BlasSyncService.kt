@@ -16,6 +16,7 @@ import com.v3.basis.blas.blasclass.controller.ImagesController
 import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.SMALL_IMAGE
 import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.BIG_IMAGE
 import com.v3.basis.blas.blasclass.extra.trivia.TriviaList
+import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestFixture
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestImage
 import com.v3.basis.blas.blasclass.service.SenderHandler.Companion.FIXTURE
@@ -53,20 +54,16 @@ class SenderHandler(val context: Context): Handler() {
         //メッセージ受信スレッド
 
         //ロック中だったら次回の再送間隔待ち
-        Log.d("send", "handleMessage start")
+        BlasLog.trace("I","イベントを受信しました(projectId:${projectId}, event:${sendType}")
         Thread(
             Runnable {
                 try {
                     //ここに送信処理を入れる
                     if ((sendType and FIXTURE) == FIXTURE) {
-                        Log.d("konishi", "syncFixture start")
-                        if(lock.tryLock()) {
+                        lock.withLock {
+                            BlasLog.trace("I","ロックを獲得しました")
                             syncFixture(context, token, projectId)
-                            Log.d("send", "syncFixture ロックを解除します")
-                            lock.unlock()
-                        }
-                        else {
-                            Log.d("send", "syncFixture すでにロック中のためスキップします")
+                            BlasLog.trace("I","ロックを解除します")
                         }
                     }
 
@@ -76,18 +73,15 @@ class SenderHandler(val context: Context): Handler() {
 
                     if ((sendType and IMAGE) == IMAGE) {
                         //画像を送信する
-                        if(lock.tryLock()) {
-                            Log.d("send", "retry projectId:${projectId}")
+                        lock.withLock {
+                            BlasLog.trace("I","ロックを獲得しました")
                             syncImage(context, token, projectId)
-                            Log.d("send", "syncImage ロックを解除します")
-                            lock.unlock()
-                        }
-                        else {
-                            Log.d("send", "syncImage すでにロック中のためスキップします")
+                            BlasLog.trace("I","ロックを解除します")
                         }
                     }
                 } catch (e: Exception) {
-                    lock.unlock()
+                    BlasLog.trace("E","例外が発生しました")
+                    BlasLog.trace("E","${e.message}")
                     e.printStackTrace()
                 }
             }).start()
@@ -100,71 +94,69 @@ class SenderHandler(val context: Context): Handler() {
         var ret = 0
         var imageId = 0L
         val controller = ImagesController(context, projectId)
-        Log.d("send", "画像を送信します")
+        BlasLog.trace("I","画像を送信します")
         val imageList = controller.search(true)
 
-        Log.d("send", "imageList size:${imageList.size}")
+        BlasLog.trace("I","imageList size:${imageList.size}")
 
         imageList.forEach { image_record ->
-            Log.d("send", "syncImage lock開始")
+            image_record.image_id?.let {
+                imageId = it
+            }
+            BlasLog.trace("I",image_record.toString())
 
-                Log.d("send", "syncImage lock通過")
+            var payload = image_record.toPayLoad().also {
+                it["token"] = token
 
-                image_record.image_id?.let {
-                    imageId = it
-                }
-                Log.d("send", image_record.toString())
-                var payload = image_record.toPayLoad().also {
-                    it["token"] = token
+                val base64Img = controller.getBase64File(
+                    image_record.item_id.toString(),
+                    image_record.project_image_id.toString(),
+                    BIG_IMAGE
+                )
 
-                    val base64Img = controller.getBase64File(
-                        image_record.item_id.toString(),
-                        image_record.project_image_id.toString(),
-                        BIG_IMAGE
-                    )
+                val extNum = controller.getExtNumber(
+                    image_record.item_id.toString(),
+                    image_record.project_image_id.toString()
+                )
+                it["image_type"] = extNum.toString()
+                it["image"] = base64Img
+                it["hash"] = getHash(base64Img)
+            }
 
-                    val extNum = controller.getExtNumber(
-                        image_record.item_id.toString(),
-                        image_record.project_image_id.toString()
-                    )
-                    it["image_type"] = extNum.toString()
-                    it["image"] = base64Img
-                    it["hash"] = getHash(base64Img)
-                }
+            var json: JSONObject? = null
 
-                var json: JSONObject? = null
-                //BLASに送信する
-                json = SyncBlasRestImage().upload(payload)
-                if (json != null) {
-                    val errorCode = json.getInt("error_code")
-                    val msg = json.getString("message")
-                    if (errorCode == 0) {
-                        if (imageId < 0) {
-                            val records = json.getJSONObject("records")
-                            val newImageId = records.getString("new_image_id")
-                            val oldImageId = records.getString("temp_image_id")
-                            controller.updateImageId(oldImageId, newImageId)
-                        } else {
-                            //Log.d("send", "syncImage lock エラー3 ${imageId}")
-                            controller.resetSyncStatus(imageId.toString())
-                        }
+            //BLASに送信する
+            BlasLog.trace("I","画像を送信します　${payload}")
+            json = SyncBlasRestImage().upload(payload)
+            if (json != null) {
+                val errorCode = json.getInt("error_code")
+                val msg = json.getString("message")
+                if (errorCode == 0) {
+                    BlasLog.trace("I","画像の送信に成功しました")
+                    if (imageId < 0) {
+                        val records = json.getJSONObject("records")
+                        val newImageId = records.getString("new_image_id")
+                        val oldImageId = records.getString("temp_image_id")
+
+                        BlasLog.trace("I","IDを同期します ${oldImageId} ${newImageId}")
+                        controller.updateImageId(oldImageId, newImageId)
                     } else {
-                        Log.d("send", "syncImage lock エラー2")
-                        if(msg != null) {
-                            Log.d("send", msg)
-                        }
-                        Log.d("send", "error_code:${errorCode}")
-
-                        controller.setErrorMsg(imageId.toString(), msg)
+                        BlasLog.trace("I","IDを同期します ${imageId}")
+                        controller.resetSyncStatus(imageId.toString())
                     }
                 } else {
-                    Log.d("send", "syncImage lock エラー1")
-                    controller.setErrorMsg(imageId.toString(), "通信エラー系。ここはあとで直す")
+                    BlasLog.trace("E","BLASからエラーが返されました errorCode:${errorCode}")
+                    if(msg != null) {
+                        BlasLog.trace("E", msg)
+                    }
+                     controller.setErrorMsg(imageId.toString(), msg)
                 }
-
-            Log.d("send", "syncImage lock終了")
+            } else {
+                BlasLog.trace("E","送信に失敗しました")
+                controller.setErrorMsg(imageId.toString(), "送信に失敗しました")
+            }
         }
-        Log.d("send", "画像を送信しました")
+
         return ret
     }
 
@@ -181,7 +173,7 @@ class SenderHandler(val context: Context): Handler() {
 
         fixtures.forEach {
             val fixtureId = it.fixture_id
-            Log.d("konishi",it.serial_number)
+            BlasLog.trace("I","シリアルナンバーを送信します ${it.serial_number}")
             //ここに自力で送信する処理を作るしかない
 
             var payload = it.toPayLoad().also{
@@ -191,7 +183,8 @@ class SenderHandler(val context: Context): Handler() {
             var json: JSONObject? = null
             val crud = it.status.toString()
             //BLASに送信する
-            Log.d("send", payload.toString())
+            BlasLog.trace("I","シリアルナンバーを送信します ${payload}")
+
             json = SyncBlasRestFixture(crud).execute(payload)
             if(json != null) {
                 val errorCode = json.getInt("error_code")
@@ -262,7 +255,7 @@ class BlasSyncService() : Service() {
             Runnable {
                 while(true){
                     Thread.sleep(1*60*1000)
-                    Log.d("send", "Timer start")
+                    BlasLog.trace("I", "再送開始")
                     val dbPath = applicationContext.dataDir.path + "/databases/"
                     //ディレクトリ名からプロジェクトIDを取得する
                     val fileList = File(dbPath).listFiles()
