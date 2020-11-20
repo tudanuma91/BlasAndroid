@@ -32,6 +32,7 @@ import com.v3.basis.blas.blasclass.controller.ImagesController
 import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.SMALL_IMAGE
 import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.BIG_IMAGE
 import com.v3.basis.blas.blasclass.db.BaseController.Companion.SYNC_STATUS_NEW
+import com.v3.basis.blas.blasclass.db.BlasSQLDataBase
 import com.v3.basis.blas.blasclass.ldb.LdbItemImageRecord
 import com.v3.basis.blas.blasclass.service.BlasSyncMessenger
 import com.v3.basis.blas.blasclass.service.SenderHandler
@@ -39,7 +40,12 @@ import com.v3.basis.blas.ui.ext.rotateLeft
 import com.v3.basis.blas.ui.ext.rotateRight
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
+import io.reactivex.Single
+import io.reactivex.SingleOnSubscribe
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_item_image.*
 import org.reactivestreams.Subscriber
@@ -121,6 +127,7 @@ class ItemImageFragment : Fragment() {
     //filechooserで渡す引数
     var imageUri:Uri?=null
     var fcItem:LdbItemImageRecord? = null
+    private var disposable = CompositeDisposable()
 
 
     protected val PERMISSIONS_REQUEST_CODE = 1234
@@ -357,51 +364,24 @@ class ItemImageFragment : Fragment() {
 
             Log.d("send", "itemImageFragment ロック開始")
 
-            SenderHandler.lock.withLock {
-                Log.d("send", "itemImageFragment ロック通過")
-
-                //画像を保存する
-                if ((bmp != null) && (item != null)) {
-                    //表示用(幅230)の小さいアイコンを作成して保存
-                    val smallBmp = saveImage(
-                        bmp,
-                        item?.item_id.toString(),
-                        item?.project_image_id.toString(),
-                        230.0f, SMALL_IMAGE)
-
-                    item?.bitmap = smallBmp
-
-                    //1080の大きな画像を保存する
-                    saveImage(
-                        bmp,
-                        item?.item_id.toString(),
-                        item?.project_image_id.toString(),
-                        1080.0f, BIG_IMAGE
-                    )
-
-                    //未送信フラグセット
-                    item.sync_status = SYNC_STATUS_NEW
-                    //保存
-                    Log.d("send", item.toString())
-                    var ret:Pair<Boolean, Long>? = null
-
-                    ret = imagesController?.save2LDB(item) //戻り値はPair型。(ステータス,保存時のＩＤ)
-                    if(ret?.first == true) {
-                        val status = ret?.first
-                        val imageId = ret?.second
-                        if (status) {
-                            item.image_id = imageId
-                            //画面を更新する
-                            recyclerView.adapter?.notifyDataSetChanged()
-                            BlasSyncMessenger.notifyBlasImages(token, projectId)
-                        }
-                    }
-                    else {
-                        Log.d("send", "データベースの保存に失敗しました")
+            Single.fromCallable {
+                if ((item != null) && (bmp != null)) {
+                    SenderHandler.lock.withLock {
+                        //画像を保存して、LDBにレコードを書き込む
+                        sendToService(bmp, item)
                     }
                 }
-            }
-            Log.d("send", "itemImageFragment ロック終了")
+            }.subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeBy(
+                    onSuccess = {
+                        recyclerView.adapter?.notifyDataSetChanged()
+                        BlasSyncMessenger.notifyBlasImages(token, projectId)
+                    },
+                    onError = {
+                        Toast.makeText(BlasSQLDataBase.context, "画像の更新に失敗しました", Toast.LENGTH_LONG).show()
+                    }
+                ).addTo(disposable)
         }
         else if(requestCode == REQUEST_ZOOM) {
             /* 画像の拡大表示が終わった後 */
@@ -419,6 +399,51 @@ class ItemImageFragment : Fragment() {
         }
     }
 
+    private fun sendToService(bmp:Bitmap, item:LdbItemImageRecord ) {
+        SenderHandler.lock.withLock {
+            Log.d("send", "itemImageFragment ロック通過")
+
+            //画像を保存する
+            if ((bmp != null) && (item != null)) {
+                //表示用(幅230)の小さいアイコンを作成して保存
+                val smallBmp = saveImage(
+                    bmp,
+                    item?.item_id.toString(),
+                    item?.project_image_id.toString(),
+                    230.0f, SMALL_IMAGE)
+
+                item?.bitmap = smallBmp
+
+                //1080の大きな画像を保存する
+                saveImage(
+                    bmp,
+                    item?.item_id.toString(),
+                    item?.project_image_id.toString(),
+                    1080.0f, BIG_IMAGE
+                )
+
+                //未送信フラグセット
+                item.sync_status = SYNC_STATUS_NEW
+                //保存
+                Log.d("send", item.toString())
+                var ret:Pair<Boolean, Long>? = null
+
+                ret = imagesController?.save2LDB(item) //戻り値はPair型。(ステータス,保存時のＩＤ)
+                if(ret?.first == true) {
+                    val status = ret?.first
+                    val imageId = ret?.second
+                    if (status) {
+                        item.image_id = imageId
+                        //画面を更新する
+
+                    }
+                }
+                else {
+                    Log.d("send", "データベースの保存に失敗しました")
+                }
+            }
+        }
+    }
 
     /**
      * 引数widthに指定した幅の画像を保存する。

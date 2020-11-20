@@ -91,7 +91,6 @@ class FixtureTakeOutFragment : FixtureBaseFragment() {
                 //requireActivityのパーミッションチェックがエラー原因だった
                 //  requireActivity().checkPermissions()
                 takeout_project_name.text = projectName
-                startCamera(qr_view, ::takeOutCallBack)
             }else{
                 throw Exception("Failed to receive internal data ")
             }
@@ -103,21 +102,27 @@ class FixtureTakeOutFragment : FixtureBaseFragment() {
         }
     }
 
+    override fun onResume() {
+        startCamera(qr_view, ::takeOutCallBack)
+        super.onResume()
+    }
 
     /**
      * カメラがQRコードを読み込んだときにコールバックされる
      */
     private fun takeOutCallBack(code:String) {
+        //読み取った値を画面に表示する
+        takeout_result_text.text = code
 
-        SenderHandler.lock.withLock {
-            //検品データをLDBに保存する
-            val fixtureController = FixtureController(BlasApp.applicationContext(), projectId)
-            fixtureController.takeout(code)
-            //読み取った値を画面に表示する
-            takeout_result_text.text = code
-        }
+        Thread(Runnable {
+            SenderHandler.lock.withLock {
+                //検品データをLDBに保存する
+                val fixtureController = FixtureController(BlasApp.applicationContext(), projectId)
+                fixtureController.takeout(code)
+            }
+            //BLASにデータ送信の合図を送る
+            BlasSyncMessenger.notifyBlasFixtures(token, projectId)
+        }).start()
 
-        //BLASにデータ送信の合図を送る
-        BlasSyncMessenger.notifyBlasFixtures(token, projectId)
     }
 }

@@ -99,12 +99,15 @@ class SenderHandler(val context: Context): Handler() {
 
         BlasLog.trace("I","imageList size:${imageList.size}")
 
-        imageList.forEach { image_record ->
+        for(i in 0 until imageList.size){
+            var image_record = imageList[i]
             image_record.image_id?.let {
                 imageId = it
             }
+
             BlasLog.trace("I",image_record.toString())
 
+            //送信パラメーターの作成
             var payload = image_record.toPayLoad().also {
                 it["token"] = token
 
@@ -145,6 +148,7 @@ class SenderHandler(val context: Context): Handler() {
                         controller.resetSyncStatus(imageId.toString())
                     }
                 } else {
+                    //論理エラーが発生
                     BlasLog.trace("E","BLASからエラーが返されました errorCode:${errorCode}")
                     if(msg != null) {
                         BlasLog.trace("E", msg)
@@ -152,8 +156,10 @@ class SenderHandler(val context: Context): Handler() {
                      controller.setErrorMsg(imageId.toString(), msg)
                 }
             } else {
-                BlasLog.trace("E","送信に失敗しました")
+                //通信エラーが発生しているので、このターンでのリトライは打ち切り
+                BlasLog.trace("E","送信に失敗しました。1分後にリトライを行います")
                 controller.setErrorMsg(imageId.toString(), "送信に失敗しました")
+                break
             }
         }
 
@@ -171,17 +177,19 @@ class SenderHandler(val context: Context): Handler() {
         )
         val fixtures = controller.search(null, true)
 
-        fixtures.forEach {
-            val fixtureId = it.fixture_id
-            BlasLog.trace("I","シリアルナンバーを送信します ${it.serial_number}")
+        for(i in 0 until fixtures.size) {
+            val fixtureRecord = fixtures[i]
+
+            val fixtureId = fixtureRecord.fixture_id
+            BlasLog.trace("I","シリアルナンバーを送信します ${fixtureRecord.serial_number}")
             //ここに自力で送信する処理を作るしかない
 
-            var payload = it.toPayLoad().also{
+            var payload = fixtureRecord.toPayLoad().also{
                 it["token"] = token
             }
 
             var json: JSONObject? = null
-            val crud = it.status.toString()
+            val crud = fixtureRecord.status.toString()
             //BLASに送信する
             BlasLog.trace("I","シリアルナンバーを送信します ${payload}")
 
@@ -201,12 +209,15 @@ class SenderHandler(val context: Context): Handler() {
                 }
                 else {
                     val msg = json.getString("message")
-                    Log.d("konishi", msg)
+                    BlasLog.trace("E","BLASからエラーが返されました errorCode:${errorCode}")
                     controller.setErrorMsg(fixtureId.toString(), errorCode)
                 }
             }
             else {
                 controller.setErrorMsg(fixtureId.toString(), -1)
+                //通信エラーが発生しているので、このターンでのリトライは打ち切り
+                BlasLog.trace("E","送信に失敗しました。1分後にリトライを行います")
+                break
             }
         }
 

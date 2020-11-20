@@ -84,7 +84,6 @@ class FixtureKenpinFragment : FixtureBaseFragment() {
                 //requireActivityのパーミッションチェックがエラー原因だった
                 //  requireActivity().checkPermissions()
                 kenpin_project_name.text = projectName
-                startCamera(qr_view, ::kenpinCallBack)
             }else{
                 throw Exception("Failed to receive internal data ")
             }
@@ -96,21 +95,28 @@ class FixtureKenpinFragment : FixtureBaseFragment() {
         }
     }
 
+    override fun onResume() {
+        startCamera(qr_view, ::kenpinCallBack)
+        super.onResume()
+    }
+
     /**
      * カメラがQRコードを読み込んだときにコールバックされる
      */
     private fun kenpinCallBack(code:String) {
-        //検品データをLDBに保存する
-        SenderHandler.lock.withLock {
-            val fixtureController = FixtureController(BlasApp.applicationContext(), projectId)
-            fixtureController.kenpin(code)
+        //読み取った値を表示画面に送る
+        kenpin_result_text.text = code
 
-            //読み取った値を表示画面に送る
-            kenpin_result_text.text = code
-        }
+        Thread(Runnable {
+            //検品データをLDBに保存する
+            SenderHandler.lock.withLock {
+                val fixtureController = FixtureController(BlasApp.applicationContext(), projectId)
+                fixtureController.kenpin(code)
+            }
 
-        //BLASにデータ送信の合図を送る
-        BlasSyncMessenger.notifyBlasFixtures(token, projectId)
+            //BLASにデータ送信の合図を送る
+            BlasSyncMessenger.notifyBlasFixtures(token, projectId)
+        }).start()
     }
 }
 

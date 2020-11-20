@@ -65,21 +65,20 @@ open class QRCameraFragment:
     }
 
     override  fun onResume() {
-       // BlasLog.trace("I", "onResume start")
+        BlasLog.trace("I", "onResume start")
         cameraPreview?.resume()    // カメラ起動
         super.onResume()
 
     }
 
     override  fun onPause() {
-        //BlasLog.trace("I", "onPause start")
+        BlasLog.trace("I", "onPause start")
         cameraPreview?.pause()    // カメラ停止
         super.onPause()
     }
 
     override fun onStop() {
-        cameraPreview?.pause()
-        //BlasLog.trace("I", "onStop start")
+        BlasLog.trace("I", "onStop start")
         super.onStop()
     }
 

@@ -21,9 +21,11 @@ import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.BIG_IMA
 import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.SMALL_IMAGE
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.BaseController.Companion.SYNC_STATUS_NEW
+import com.v3.basis.blas.blasclass.db.BlasSQLDataBase
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
 import com.v3.basis.blas.blasclass.ldb.LdbImageRecord
 import com.v3.basis.blas.blasclass.ldb.LdbItemImageRecord
+import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestImage
 import com.v3.basis.blas.blasclass.service.BlasSyncMessenger
 import com.v3.basis.blas.blasclass.service.BlasSyncService
@@ -40,6 +42,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.fragment_item_image.*
 import java.lang.Exception
 import kotlin.concurrent.withLock
 
@@ -147,80 +150,84 @@ class ItemImageZoomActivity : AppCompatActivity() {
 
     //画像を右回転する
     fun rightRotate() {
-        //右回転ボタンを押したとき
-        SenderHandler.lock.withLock {
-            //小さな画像を読み込んで回転して保存する
-            var rminiBmp = imageController?.getCacheBitmap(itemId, projectImgId, SMALL_IMAGE)
-            rminiBmp = rminiBmp?.rotateRight()
-            if (rminiBmp != null) {
-                imageController?.saveBitmap(rminiBmp, itemId, projectImgId, SMALL_IMAGE)
+        Completable.fromAction {
+            SenderHandler.lock.withLock {
+                //画像を保存して、LDBにレコードを書き込む
+                rotate(1)
             }
-
-            //大きな画像を回転して保存する
-            var rbigBmp = imageController?.getCacheBitmap( itemId, projectImgId, BIG_IMAGE)
-            rbigBmp = rbigBmp?.rotateRight()
-            if (rbigBmp != null) {
-                imageController?.saveBitmap(rbigBmp, itemId, projectImgId, BIG_IMAGE)
-            }
-
-            //表示用画像を回転する
-            if (rbigBmp != null) {
-
-                val imageRecord = LdbImageRecord()
-                imageRecord.image_id = imageId.toLong()
-                imageRecord.project_id = projectId.toInt()
-                imageRecord.item_id = itemId.toLong()
-                imageRecord.project_image_id = projectImgId.toInt()
-                imageRecord.sync_status = SYNC_STATUS_NEW
-                imageController?.save2LDB(imageRecord)
-
-                //画像表示の更新
-                mImageCustomView.setBitMap(rbigBmp)
-                mImageCustomView.invalidate()
-                //再送信のイベントを送る
-                BlasSyncMessenger.notifyBlasImages(token, projectId)
-            }
-        }
+        }.subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(
+                onComplete = {
+                    BlasLog.trace("I", "画像を右回転しました")
+                },
+                onError = {
+                }
+            ).addTo(disposable)
     }
 
     //  画像を左回転する
     fun leftRotate() {
-        //右回転ボタンを押したとき
-        SenderHandler.lock.withLock {
-            //小さな画像を読み込んで回転して保存する
-            var rminiBmp = imageController?.getCacheBitmap(itemId, projectImgId, SMALL_IMAGE)
-            rminiBmp = rminiBmp?.rotateLeft()
-            if (rminiBmp != null) {
-                imageController?.saveBitmap(rminiBmp, itemId, projectImgId, SMALL_IMAGE)
-            }
-
-            //大きな画像を回転して保存する
-            var rbigBmp = imageController?.getCacheBitmap( itemId, projectImgId, BIG_IMAGE)
-            rbigBmp = rbigBmp?.rotateLeft()
-            if (rbigBmp != null) {
-                imageController?.saveBitmap(rbigBmp, itemId, projectImgId, BIG_IMAGE)
-            }
-
-            //表示用画像を回転する
-            if (rbigBmp != null) {
-
-                val imageRecord = LdbImageRecord()
-                imageRecord.image_id = imageId.toLong()
-                imageRecord.project_id = projectId.toInt()
-                imageRecord.item_id = itemId.toLong()
-                imageRecord.project_image_id = projectImgId.toInt()
-                imageRecord.sync_status = SYNC_STATUS_NEW
-                imageController?.save2LDB(imageRecord)
-
-                //画像表示の更新
-                mImageCustomView.setBitMap(rbigBmp)
-                mImageCustomView.invalidate()
-                //再送信のイベントを送る
-                BlasSyncMessenger.notifyBlasImages(token, projectId)
-            }
-        }
+        Completable.fromAction {
+                SenderHandler.lock.withLock {
+                    //画像を保存して、LDBにレコードを書き込む
+                    rotate(0)
+                }
+        }.subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(
+                onComplete = {
+                    BlasLog.trace("I", "画像を左回転しました")
+                },
+                onError = {
+                }
+            ).addTo(disposable)
     }
 
+    fun rotate(leftOrRight:Int) {
+        //小さな画像を読み込んで回転して保存する
+        var rminiBmp = imageController?.getCacheBitmap(itemId, projectImgId, SMALL_IMAGE)
+        if(leftOrRight == 0) {
+            rminiBmp = rminiBmp?.rotateLeft()
+        }
+        else {
+            rminiBmp = rminiBmp?.rotateRight()
+        }
+
+        if (rminiBmp != null) {
+            imageController?.saveBitmap(rminiBmp, itemId, projectImgId, SMALL_IMAGE)
+        }
+
+        //大きな画像を回転して保存する
+        var rbigBmp = imageController?.getCacheBitmap( itemId, projectImgId, BIG_IMAGE)
+        if(leftOrRight == 0) {
+            rbigBmp = rbigBmp?.rotateLeft()
+        }
+        else {
+            rbigBmp = rbigBmp?.rotateRight()
+        }
+
+        if (rbigBmp != null) {
+            imageController?.saveBitmap(rbigBmp, itemId, projectImgId, BIG_IMAGE)
+        }
+
+        //表示用画像を回転する
+        if (rbigBmp != null) {
+            val imageRecord = LdbImageRecord()
+            imageRecord.image_id = imageId.toLong()
+            imageRecord.project_id = projectId.toInt()
+            imageRecord.item_id = itemId.toLong()
+            imageRecord.project_image_id = projectImgId.toInt()
+            imageRecord.sync_status = SYNC_STATUS_NEW
+            imageController?.save2LDB(imageRecord)
+
+            //画像表示の更新
+            mImageCustomView.setBitMap(rbigBmp)
+            mImageCustomView.invalidate()
+            //再送信のイベントを送る
+            BlasSyncMessenger.notifyBlasImages(token, projectId)
+        }
+    }
 
     //矢印ボタンで戻るを実行する処理
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
