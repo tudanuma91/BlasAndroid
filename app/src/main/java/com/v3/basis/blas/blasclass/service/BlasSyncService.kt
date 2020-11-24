@@ -236,9 +236,11 @@ class SenderHandler(val context: Context): Handler() {
                         val newFixtureId = records.getString("fixture_id")
                         val oldFixtureId = records.getString("temp_fixture_id")
                         controller.updateFixtureId(oldFixtureId, newFixtureId)
+                        BlasLog.trace("I","シリアルナンバーを新規追加しました ${oldFixtureId} ${newFixtureId}")
                     }
                     else {
                         controller.resetSyncStatus(fixtureId.toString())
+                        BlasLog.trace("I","シリアルナンバーを更新しました ${fixtureId}")
                     }
                 }
                 else {

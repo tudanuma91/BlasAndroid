@@ -6,6 +6,7 @@ import android.media.ToneGenerator
 import android.os.*
 import android.view.Menu
 import android.view.MenuItem
+import android.view.WindowManager
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.v3.basis.blas.R
@@ -60,6 +61,8 @@ class FixtureActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_fixture)
 
+        //スリープにさせない
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         //フラグメントが使用する画面遷移(ナビゲーション)の定義を持ったコントローラーを取得する
         //val navController = findNavController(R.id.nav_host_fragment_fixture)
 

@@ -315,14 +315,14 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         try {
             db?.beginTransaction()
-            BlasLog.trace("I", "機器情報追加 $cv")
+            BlasLog.trace("I", "機器情報追加開始 $cv")
             db?.insertOrThrow("fixtures",null,cv)
 
             db?.setTransactionSuccessful()
-            Log.d("kenpin","insert 成功！！")
+            BlasLog.trace("I", "機器情報追加完了 $cv")
         } catch (e: Exception) {
             //とりあえず例外をキャッチして、Falseを返す？
-            Log.d("kenpin","Exception 発生！！！ " + e.message)
+            BlasLog.trace("E", "機器情報追加に失敗しました $e.message")
             e.printStackTrace()
             ret = false
         }
@@ -706,11 +706,12 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             db?.update("fixtures",cv,"fixture_id = ?", arrayOf(oldFixtureId))
             db?.setTransactionSuccessful()
             db?.endTransaction()
-            Log.d("update","成功！！")
+            BlasLog.trace("I", "DBを更新しました")
             true
         }
         catch ( ex : Exception ) {
-            ex.printStackTrace()
+            BlasLog.trace("E", "DBの更新に失敗しました")
+            ex.message?.let { BlasLog.trace("E", it) }
             false
         }
     }
@@ -728,11 +729,11 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             db?.update("fixtures",cv,"fixture_id = ?", arrayOf(fixtureId))
             db?.setTransactionSuccessful()
             db?.endTransaction()
-            Log.d("sync_status reset","成功！！")
+            BlasLog.trace("I","同期済みに変更しました ${fixtureId}")
             true
         }
         catch ( ex : Exception ) {
-            ex.printStackTrace()
+            BlasLog.trace("E","同期に失敗しました ${ex.message}")
             false
         }
     }

@@ -115,7 +115,7 @@ class FixtureKenpinMultiFragment : FixtureBaseFragment() {
     override fun onPause() {
         BlasLog.trace("I", "マルチバーコードリーダー onPause")
         barcodeReader?.unbindAll()
-        barcodeSubscriber?.dispose()
+        //barcodeSubscriber?.dispose()
         super.onPause()
 
     }
@@ -123,7 +123,7 @@ class FixtureKenpinMultiFragment : FixtureBaseFragment() {
     override fun onStop() {
         BlasLog.trace("I", "マルチバーコードリーダー onStop")
         barcodeReader?.unbindAll()
-        barcodeSubscriber?.dispose()
+        //barcodeSubscriber?.dispose()
         super.onStop()
     }
 

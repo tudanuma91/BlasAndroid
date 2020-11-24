@@ -86,20 +86,7 @@ class ItemViewFragment : Fragment() {
     }
 
     private val groupAdapter = GroupAdapter<GroupieViewHolder<*>>()
-//    private val adapter:ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
-//
-//        override fun onClickRow(tappedView: View, rowModel: RowModel) {
-//            //カードタップ時の処理
-//        }
-//
-//        override fun onClickImage(itemId: String?) {
-//
-//            val context = requireContext()
-//            val intent = ItemImageActivity.createIntent(context, token, projectId, itemId)
-//
-//            context.startActivity(intent)
-//        }
-//    })
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         super.onCreateView(inflater, container, savedInstanceState)
@@ -249,7 +236,6 @@ class ItemViewFragment : Fragment() {
                 super.onScrollStateChanged(recyclerView, newState)
                 if (itemListAll.isNotEmpty()) {
 
-//                    val notOverSize = currentIndex  <= itemListAll.size
                     if (!recyclerView.canScrollVertically(1) && progressBarFlg.not()) {
                         progressBarFlg = true
                         chkProgress(true, rootView)
@@ -257,34 +243,6 @@ class ItemViewFragment : Fragment() {
                         offset += CREATE_UNIT
                         searchASync()
 
-                        //下追加分
-                        /*
-                        [随時追加処理(不安なので記述する。)]
-                            currentIndexは現在作成したカードの枚数、parseNumは○○枚ずつパースするを定義した数
-                            カードの作成枚数が○○枚に達した場合、再びパースする
-                            パースするのは同じ数（ただし、端数は除く）
-                            (例：42件のレコードを20件ずつパースし、10枚ずつ作成する場合)
-                            parseNum = 20
-                            ①   currentIndex = 10
-                                 10 % 20 !=0よって、パースを実行せずカードを作成する。
-                            ②   currentIndex = 20
-                                 20%20 = 0 よってパースし、カードを作成する。
-                            ③   currentIndex = 30
-                                 30 % 20 != 10 よってパースを実行せずに、カードを作成する
-                            ④   currentIndex = 40
-                                 40 % 20 = 0 よってパースし、カードを作成する。
-                            ⑤   currentIndex = 42
-                                 上のval notOverSize = currentIndex  <= itemListAll.size がfalseになり下の処理が走らない
-
-
-                        */
-//                        if(currentIndex%parseNum  == 0) {
-//                            nextParseNum()
-//                            jsonParse(parseStartNum, parseFinNum)
-//                        }
-
-
-//                        setAdapter()
                     }
                 }
             }
