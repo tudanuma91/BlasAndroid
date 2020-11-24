@@ -4,9 +4,15 @@ import android.content.Context
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.os.*
+import android.telephony.PhoneStateListener
+import android.telephony.SignalStrength
+import android.telephony.TelephonyManager
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.LoginActivity
@@ -39,9 +45,26 @@ data class MsgParams(
 class SenderHandler(val context: Context): Handler() {
     companion object {
         var lock = ReentrantLock()
+        var level:Int? = null
         val FIXTURE = 0x00000001
         val ITEM    = 0x00000010
         val IMAGE   = 0x00000100
+    }
+
+    //電波の状況を調べる
+    private var telephonyManager:TelephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+    val phoneState = object: PhoneStateListener(){
+        override fun onSignalStrengthsChanged(signalStrength: SignalStrength?) {
+            super.onSignalStrengthsChanged(signalStrength)
+            level = signalStrength?.level
+            BlasLog.trace("I", "電波強度:$level")
+        }
+    }
+
+
+
+    init{
+        telephonyManager.listen(phoneState, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS)
     }
 
     override fun handleMessage(msg: Message) {
@@ -51,6 +74,9 @@ class SenderHandler(val context: Context): Handler() {
         var projectId = msgParam.projectId
         val sendType = msgParam.sendType
 
+        //wifiの接続状況を調べる
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
         //メッセージ受信スレッド
 
         //ロック中だったら次回の再送間隔待ち
@@ -58,25 +84,31 @@ class SenderHandler(val context: Context): Handler() {
         Thread(
             Runnable {
                 try {
-                    //ここに送信処理を入れる
-                    if ((sendType and FIXTURE) == FIXTURE) {
-                        lock.withLock {
-                            BlasLog.trace("I","ロックを獲得しました")
-                            syncFixture(context, token, projectId)
-                            BlasLog.trace("I","ロックを解除します")
+                    if(level != null) {
+                        if ((activeNetwork?.type != ConnectivityManager.TYPE_WIFI) and (level!! < 3)) {
+                            BlasLog.trace("W", "電波強度が弱いため、再送しません")
                         }
-                    }
+                        else {
+                            if ((sendType and FIXTURE) == FIXTURE) {
+                                lock.withLock {
+                                    BlasLog.trace("I", "ロックを獲得しました")
+                                    syncFixture(context, token, projectId)
+                                    BlasLog.trace("I", "ロックを解除します")
+                                }
+                            }
 
-                    if ((sendType and ITEM) == ITEM) {
-                        //データを送信する
-                    }
+                            if ((sendType and ITEM) == ITEM) {
+                                //データを送信する
+                            }
 
-                    if ((sendType and IMAGE) == IMAGE) {
-                        //画像を送信する
-                        lock.withLock {
-                            BlasLog.trace("I","ロックを獲得しました")
-                            syncImage(context, token, projectId)
-                            BlasLog.trace("I","ロックを解除します")
+                            if ((sendType and IMAGE) == IMAGE) {
+                                //画像を送信する
+                                lock.withLock {
+                                    BlasLog.trace("I", "ロックを獲得しました")
+                                    syncImage(context, token, projectId)
+                                    BlasLog.trace("I", "ロックを解除します")
+                                }
+                            }
                         }
                     }
                 } catch (e: Exception) {
@@ -94,7 +126,9 @@ class SenderHandler(val context: Context): Handler() {
         var ret = 0
         var imageId = 0L
         val controller = ImagesController(context, projectId)
+
         BlasLog.trace("I","画像を送信します")
+
         val imageList = controller.search(true)
 
         BlasLog.trace("I","imageList size:${imageList.size}")
@@ -228,6 +262,8 @@ class SenderHandler(val context: Context): Handler() {
 class BlasSyncService() : Service() {
     private var messenger: Messenger? = null
     private lateinit var token:String
+    private lateinit var telephonyManager: TelephonyManager
+    private var level:Int? = null
 
     override fun onBind(intent: Intent?): IBinder? {
         return messenger?.binder
@@ -238,10 +274,13 @@ class BlasSyncService() : Service() {
         messenger = Messenger(SenderHandler(applicationContext))
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent != null) {
             token = intent.getStringExtra("token")
         }
+
+
         val openIntent = Intent(this, LoginActivity::class.java).let {
             PendingIntent.getActivity(this, 0, it, 0)
         }
@@ -265,7 +304,7 @@ class BlasSyncService() : Service() {
         Thread(
             Runnable {
                 while(true){
-                    Thread.sleep(1*10*1000)
+                    Thread.sleep(60*1000)
                     BlasLog.trace("I", "再送開始")
                     val dbPath = applicationContext.dataDir.path + "/databases/"
                     //ディレクトリ名からプロジェクトIDを取得する

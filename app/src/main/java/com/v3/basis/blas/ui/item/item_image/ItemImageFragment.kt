@@ -362,6 +362,16 @@ class ItemImageFragment : Fragment() {
             //どの画像が更新されたかを調べる
             val item = imageFields?.firstOrNull { it == fcItem }
 
+            //画面にはあたかも撮影出来たかのように見せかける
+            val fakeBmp = bmp?.let {
+                saveImage(
+                    it,
+                    item?.item_id.toString(),
+                    item?.project_image_id.toString(),
+                    230.0f, SMALL_IMAGE)
+            }
+            item?.bitmap = fakeBmp
+
             Log.d("send", "itemImageFragment ロック開始")
 
             Single.fromCallable {
