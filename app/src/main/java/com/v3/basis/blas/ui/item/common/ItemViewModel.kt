@@ -65,7 +65,12 @@ class ItemViewModel: ViewModel() {
                 try {
                     SenderHandler.lock.withLock {
                         if (itemId == 0L) {
-                            it.create(map)
+                            if(it.create(map)) {
+                                BlasSyncMessenger.notifyBlasItems(token, projectId)
+                            }
+                            else {
+                                BlasLog.trace("E", "データベースの更新に失敗したため、再送イベントは送りません")
+                            }
                         } else {
                             map.set("item_id", itemId.toString())
                             if(it.update(map)) {

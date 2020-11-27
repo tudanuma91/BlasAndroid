@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.util.Log
 import androidx.work.impl.WorkDatabasePathHelper.getDatabasePath
+import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkFixture
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkRmFixture
@@ -14,8 +15,12 @@ import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.blasclass.worker.DownloadWorker
 import net.sqlcipher.database.SQLiteDatabase
 import java.io.File
+import java.io.FileReader
+import java.io.FileWriter
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 
 class ItemsController(context: Context, projectId: String): BaseController(context, projectId) {
@@ -26,11 +31,21 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         const val FIELD_TYPE_QRCODE_INT_INSPECTION = 8
         const val FIELD_TYPE_QRCODE_INT_RM = 11
 
+        private val lock = ReentrantLock()
     }
 
     private val addList = mutableListOf<String>()
     private lateinit var plHolder : Array<String>
+    private val itemCacheDir = BlasApp.applicationContext().dataDir.path  + "/items/${projectId}/"
+    private val cacheFile = itemCacheDir + "id_map.cache"
 
+    init {
+        //キャッシュディレクトリがなかったら作成する
+        if(!File(itemCacheDir).exists()) {
+            File(itemCacheDir).mkdirs()
+        }
+
+    }
     /**
      * ワード検索条件を構築
      */
@@ -200,7 +215,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
     }
 
     fun create(map: MutableMap<String, String?>): Boolean {
-        Log.d("insert()", "start")
+        var ret = true
 
         // QRコードバリデート処理
         ctlValidQr(map)
@@ -230,24 +245,24 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
         val cv = createConvertValue(item)
 
-        return try {
+        try {
             db?.beginTransaction()
 
             // itemテーブルに追加
-            db?.insert("items", null, cv)
+            db?.insertOrThrow("items", null, cv)
             // fixture(rm_fixture)を更新
            updateFixture(item, map)
 
             db?.setTransactionSuccessful()
-            true
         } catch (e: Exception) {
-            //とりあえず例外をキャッチして、Falseを返す？
-            e.printStackTrace()
-            false
+            BlasLog.trace("E", "データの新規追加に失敗しました", e)
+            ret = false
         }
         finally {
             db?.endTransaction()
         }
+
+        return ret
     }
 
     fun update(map: Map<String, String?>): Boolean {
@@ -373,6 +388,11 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             db?.update("rm_fixtures", cv, "item_id = ?", arrayOf(org_item_id))
 
             db?.setTransactionSuccessful()!!
+
+            //画面が開きっぱなしのとき、画面はIDの変更を知らないので、変更テーブルをキャッシュファイルに書き込む。
+            if(org_item_id != new_item_id) {
+                writeCache(org_item_id, new_item_id)
+            }
         }
         catch (e: Exception) {
             BlasLog.trace("E", "レコードの追加に失敗しました", e)
@@ -509,21 +529,6 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         }
     }
 
-    fun setSyncStatus(itemId: Long, syncStatus: Int) {
-        val cv = ContentValues()
-        cv.put("sync_status", syncStatus)
-
-        return try {
-            db?.beginTransaction()
-            db?.update("items", cv, "item_id = ?", arrayOf(itemId.toString()))
-            db?.setTransactionSuccessful()
-            db?.endTransaction()!!
-        }
-        catch (ex: Exception) {
-            ex.printStackTrace()
-            throw ex
-        }
-    }
 
     fun delete(itemId: Long) {
         try {
@@ -535,6 +540,85 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         catch (ex: Exception) {
             ex.printStackTrace()
             throw ex
+        }
+    }
+
+    /**
+     * 仮IDと新規IDのCSVファイルを作成する。
+     * データの書式はヘッダなしで以下。
+     * 仮ID,新規ID\n
+     */
+    fun writeCache(oldItemId:String, newItemId:String) {
+        lock.withLock {
+            //ログファイルの決定
+            FileWriter(cacheFile, true).use {
+                val record = "$oldItemId,$newItemId\n"
+                it.write(record)
+                it.flush()
+            }
+        }
+    }
+
+    fun getRealItemId(oldItemId:String):String? {
+        var retItemId:String? = null
+        var records:List<String>? = null
+
+        lock.withLock {
+            try {
+                FileReader(cacheFile).use {
+                    //面倒なので一回すべて読む
+                    records = it.readLines()
+                }
+            }
+            catch(e:java.lang.Exception) {
+                BlasLog.trace("W", "${cacheFile}がありません", e)
+            }
+        }
+
+        //仮IDと一致するレコードを探す
+        val record = records?.firstOrNull() {
+            val tokens = it.split(",", "\n")
+            //引数の仮IDと一致したレコードを返す
+            tokens[0] == oldItemId
+        }
+
+        if(record != null) {
+            //新しいIDを返却する
+            retItemId = record.split(",", "\n")[1]
+        }
+
+        return retItemId
+    }
+
+    /**
+     * 不要なレコードを削除する
+     */
+    fun deleteCacheRecord(oldItemId:String) {
+        var srcRecords:List<String>? = null
+        var dstRecords = mutableListOf<String>()
+
+        lock.withLock {
+            FileReader(cacheFile).use {
+                //面倒なので一回すべて読む
+                srcRecords = it.readLines()
+            }
+
+            srcRecords?.forEach {
+                val tokens = it.split(",", "\n")
+                val old = tokens[0]
+                if(old != oldItemId) {
+                    //消さないレコードだけリストに再登録
+                    dstRecords.add(it)
+                }
+            }
+
+            //残ったレコードを書き直す
+            FileWriter(cacheFile, false).use {fw->
+                dstRecords.forEach {record->
+                    fw.write(record+"\n")
+                }
+                fw.flush()
+            }
         }
     }
 }

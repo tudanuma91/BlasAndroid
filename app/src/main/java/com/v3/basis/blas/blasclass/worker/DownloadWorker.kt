@@ -12,6 +12,7 @@ import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.app.deleteDir
 import com.v3.basis.blas.blasclass.db.BlasLdbHandleManager
 import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
+import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.blasclass.rest.BlasRestCache
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestCache
 import com.v3.basis.blas.ui.ext.traceLog
@@ -151,6 +152,7 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
         catch(e:java.lang.Exception) {
             //エラーでも問題なし
             e.printStackTrace()
+            BlasLog.trace("E", "${cacheImagePath}の削除に失敗しました", e)
         }
 
         //古いDBが残っていたら削除する
@@ -161,6 +163,17 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
         catch(e:java.lang.Exception) {
             //エラーでも問題なし
             e.printStackTrace()
+            BlasLog.trace("E", "${cacheDbPath}の削除に失敗しました", e)
+        }
+        //古いDBが残っていたら削除する
+        val cacheItemPath = context.dataDir.path + "/items/${projectId}"
+        try {
+            deleteDir(cacheItemPath)
+        }
+        catch(e:java.lang.Exception) {
+            //エラーでも問題なし
+            e.printStackTrace()
+            BlasLog.trace("E", "${cacheItemPath}の削除に失敗しました", e)
         }
         // UnZip
         if (unzip(localPath, unZipPath)) {

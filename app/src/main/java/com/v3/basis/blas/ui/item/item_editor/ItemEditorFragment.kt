@@ -179,6 +179,7 @@ class ItemEditorFragment : Fragment() {
                         //入力用のフィールドを追加する
                         addField(field,index)
                     }
+
                     readItem()
                 }
                 else {
@@ -330,6 +331,14 @@ class ItemEditorFragment : Fragment() {
     private fun readItem() {
         Log.d("readItem()","start")
         var singleColCnt = 1
+
+        //サービスが自動送信した後、仮IDが本IDに変わっていたら、画面のIDも変更する
+        //仮IDのままの場合はnullが返る
+        val newItemId = itemsController.getRealItemId(itemId.toString())
+        if(newItemId != null) {
+            itemId = newItemId
+            itemsController.deleteCacheRecord(itemId.toString())
+        }
 
         itemId?.also { id ->
             Single
