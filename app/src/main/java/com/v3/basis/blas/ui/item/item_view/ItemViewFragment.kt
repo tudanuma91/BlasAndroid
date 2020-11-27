@@ -255,7 +255,7 @@ class ItemViewFragment : Fragment() {
                 progressBarFlg = true
                 chkProgress(progressBarFlg, rootView)
 
-                Single.fromCallable { FieldController(requireContext(),projectId).searchDisp() }
+                Single.fromCallable { FieldController(requireContext(),projectId).getFieldRecords() }
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy {

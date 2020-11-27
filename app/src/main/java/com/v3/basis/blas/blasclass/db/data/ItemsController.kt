@@ -10,6 +10,7 @@ import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkRmFixture
 import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.db.fixture.Fixtures
 import com.v3.basis.blas.blasclass.ldb.LdbRmFixtureRecord
+import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.blasclass.worker.DownloadWorker
 import net.sqlcipher.database.SQLiteDatabase
 import java.io.File
@@ -53,7 +54,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         }
 
         val dataDispHiddenCol = getGroupsValue(groupId, "data_disp_hidden_column")
-        val fields = FieldController(context, projectId).searchDisp()
+        val fields = FieldController(context, projectId).getFieldRecords()
         var additionOr = arrayOf<String>()
 
         fields.forEach {
@@ -145,7 +146,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
                 //ここで画像が非同期だった場合もサーバーに登録ボタンを表示したい
                 val sql = "select * from items "+ addition + " order by create_date desc " + addingPager
-                Log.d("item search sql", sql)
+                BlasLog.trace("I", sql)
                 db?.rawQuery(sql, plHolder)
             }
 
@@ -250,7 +251,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
     }
 
     fun update(map: Map<String, String?>): Boolean {
-        Log.d("update()", "start")
+        var ret = true
 
         // QRコードバリデート処理
         val orgItemMap = map["item_id"]?.toLong()?.let { search(it) }
@@ -278,27 +279,31 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         // けどまたmap…
         val cv = createConvertValue(item, null)
 
-        return try {
+        try {
             db?.beginTransaction()
-
             // itmeテーブルを更新
-            db?.update("items", cv, "item_id = ?", arrayOf(item.item_id.toString()))
-            // fixture(rm_fixture)を更新
-            updateFixture(item, map)
+            var num = db?.update("items", cv, "item_id = ?", arrayOf(item.item_id.toString()))
+            if(num == 0) {
+                BlasLog.trace("E", "DBの更新に失敗しました")
+            }
+            else {
+                // fixture(rm_fixture)を更新
+                updateFixture(item, map)
+            }
 
             db?.setTransactionSuccessful()
 
-            Log.d("item update", "仮登録完了！！")
-            true
+            BlasLog.trace("I", "item_id:${item.item_id.toString()}を更新しました")
         } catch (e: Exception) {
             //とりあえず例外をキャッチして、Falseを返す？
-            e.printStackTrace()
-            false
+            BlasLog.trace("E", "item_id:${item.item_id.toString()}の更新に失敗しました", e)
+            ret = false
         }
         finally {
             db?.endTransaction()
-            Log.d("item update", "終了！")
         }
+
+        return ret
     }
 
     /**
@@ -351,16 +356,16 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
     }
 
     /**
-     * ItemIdを新しいものに置き換える(新規作成の時)
+     * ItemIdを新しいものに置き換える
      */
-    fun updateItemId4Insert(org_item_id: String, new_item_id: String) {
+    fun updateItemId(org_item_id: String, new_item_id: String) {
         Log.d("updateItemId()", "start")
 
         val cv = ContentValues()
         cv.put("item_id", new_item_id)
         cv.put("sync_status", SYNC_STATUS_SYNC)
 
-        return try {
+        try {
             db?.beginTransaction()
 
             db?.update("items", cv, "item_id = ?", arrayOf(org_item_id))
@@ -370,8 +375,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             db?.setTransactionSuccessful()!!
         }
         catch (e: Exception) {
-            e.printStackTrace()
-            throw e
+            BlasLog.trace("E", "レコードの追加に失敗しました", e)
         }
         finally {
             db?.endTransaction()
@@ -391,7 +395,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         val cv = ContentValues()
         cv.put("sync_status", SYNC_STATUS_SYNC)
 
-        return try {
+        try {
             db?.beginTransaction()
 
             db?.update("items", cv, "item_id = ?", arrayOf(item_id))
@@ -401,8 +405,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             db?.setTransactionSuccessful()!!
         }
         catch (e: Exception) {
-            e.printStackTrace()
-            throw e
+            BlasLog.trace("E", "レコードの更新に失敗しました", e)
         }
         finally {
             db?.endTransaction()

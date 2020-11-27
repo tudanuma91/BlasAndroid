@@ -21,10 +21,14 @@ import com.v3.basis.blas.blasclass.controller.FixtureController
 import com.v3.basis.blas.blasclass.controller.ImagesController
 import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.SMALL_IMAGE
 import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.BIG_IMAGE
+import com.v3.basis.blas.blasclass.db.BaseController
+import com.v3.basis.blas.blasclass.db.data.Items
+import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.extra.trivia.TriviaList
 import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestFixture
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestImage
+import com.v3.basis.blas.blasclass.rest.SyncBlasRestItem
 import com.v3.basis.blas.blasclass.service.SenderHandler.Companion.FIXTURE
 import com.v3.basis.blas.blasclass.service.SenderHandler.Companion.IMAGE
 import com.v3.basis.blas.blasclass.service.SenderHandler.Companion.ITEM
@@ -60,8 +64,6 @@ class SenderHandler(val context: Context): Handler() {
             BlasLog.trace("I", "電波強度:$level")
         }
     }
-
-
 
     init{
         telephonyManager.listen(phoneState, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS)
@@ -99,6 +101,11 @@ class SenderHandler(val context: Context): Handler() {
 
                             if ((sendType and ITEM) == ITEM) {
                                 //データを送信する
+                                lock.withLock {
+                                    BlasLog.trace("I", "ロックを獲得しました")
+                                    syncItems(context, token, projectId)
+                                    BlasLog.trace("I", "ロックを解除しました")
+                                }
                             }
 
                             if ((sendType and IMAGE) == IMAGE) {
@@ -120,7 +127,58 @@ class SenderHandler(val context: Context): Handler() {
     }
 
     /**
-     * 画像の未送信データをBLASに送信する
+     * データ管理のデータをBLASに送信する
+     */
+    private fun syncItems(context:Context, token:String, projectId:String):Int {
+        var ret = 0
+        val controller = ItemsController(context, projectId)
+        //未送信データ改修
+        val records = controller.search(syncFlg = true)
+
+        BlasLog.trace("I","itemList size:${records.size}")
+
+        for(i in 0 until records.size) {
+            val record = records[i]
+            val item = controller.setProperty(Items(), record) as Items
+
+            //送信用ペイロード作成
+            var payload = mutableMapOf<String,String>()
+
+            record.forEach{
+                payload[it.key] = it.value.toString()
+            }
+            payload["token"] = token
+
+            BlasLog.trace("I", "データを送信します")
+            val json = SyncBlasRestItem().create_sync(payload)
+            if(json != null){
+                val errorCode = json.getInt("error_code")
+                var msg = json.getString("message")
+                if(errorCode == 0) {
+                    val records = json.getJSONObject("records")
+
+                    val new_item_id = records.getString("new_item_id")
+                    val org_item_id = records.getString("temp_item_id")
+
+                    controller.updateItemId( org_item_id,new_item_id )
+                }
+                else {
+                    if(msg == null) {
+                        msg = ""
+                    }
+                    BlasLog.trace("E", "データの送信に失敗しました　error_code:$errorCode, msg:$msg")
+                }
+            }
+            else {
+                BlasLog.trace("E", "データの送信に失敗しました")
+            }
+        }
+
+        return ret
+    }
+
+    /**
+     * 画像データをBLASに送信する
      */
     private fun syncImage(context:Context, token:String, projectId:String):Int{
         var ret = 0

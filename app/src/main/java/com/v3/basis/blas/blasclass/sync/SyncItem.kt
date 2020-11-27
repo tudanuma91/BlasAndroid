@@ -2,18 +2,11 @@ package com.v3.basis.blas.blasclass.sync
 
 import android.content.Context
 import android.util.Log
-import com.v3.basis.blas.blasclass.component.ImageComponent
-import com.v3.basis.blas.blasclass.controller.ImagesController
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.Items
 import com.v3.basis.blas.blasclass.db.data.ItemsController
-import com.v3.basis.blas.blasclass.rest.BlasRestImage
-import com.v3.basis.blas.blasclass.rest.BlasRestItem
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestItem
-import com.v3.basis.blas.ui.item.item_image.FileExtensions
-import com.v3.basis.blas.ui.item.item_view.ItemsCellModel
 import io.reactivex.subjects.PublishSubject
-import org.json.JSONObject
 import java.lang.Exception
 
 class SyncItem(val context: Context,val token : String, val projectId : String ,val itemId :Long) {
@@ -57,7 +50,7 @@ class SyncItem(val context: Context,val token : String, val projectId : String ,
                     val new_item_id = records.getString("new_item_id")
                     val org_item_id = records.getString("temp_item_id")
 
-                    itemCtl.updateItemId4Insert( org_item_id,new_item_id )
+                    itemCtl.updateItemId( org_item_id,new_item_id )
                     return new_item_id
                     //eventCompleted.onNext(true)
                 }

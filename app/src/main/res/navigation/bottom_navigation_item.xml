@@ -25,7 +25,7 @@
 
     <fragment
         android:id="@+id/navi_item_create"
-        android:name="com.v3.basis.blas.ui.item.item_create.ItemCreateFragment"
+        android:name="com.v3.basis.blas.ui.item.item_editor.ItemEditorFragment"
         android:label="@string/navi_title_item_create">
         <action
             android:id="@+id/action_navi_item_create_to_navi_item_view"

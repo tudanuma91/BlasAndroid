@@ -12,8 +12,6 @@ import com.tonyodev.fetch2core.getFile
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.component.ImageComponent
 import com.v3.basis.blas.blasclass.db.BaseController
-import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
-import com.v3.basis.blas.blasclass.ldb.LdbImageQueueRecord
 import com.v3.basis.blas.blasclass.ldb.LdbImageRecord
 import com.v3.basis.blas.blasclass.ldb.LdbItemImageRecord
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestImage

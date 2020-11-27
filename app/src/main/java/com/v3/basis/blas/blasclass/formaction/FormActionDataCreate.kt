@@ -8,8 +8,6 @@ import com.v3.basis.blas.blasclass.config.FieldType
 
 class FormActionDataCreate(setToken: String, setActivity: FragmentActivity):FormActionDataBasic(setToken, setActivity) {
 
-    var setToken = super.token
-    var setActivity = super.baseActivity
     var payloard = super.payload
     var mode :String? = null
         get() = field

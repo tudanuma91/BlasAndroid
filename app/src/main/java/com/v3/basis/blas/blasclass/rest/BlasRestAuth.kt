@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.core.content.ContextCompat.startActivity
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.log.BlasLog
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStream
@@ -79,7 +80,7 @@ open class BlasRestAuth(val payload:Map<String, String?>, val loginSuccess:(JSON
                     .joinToString(separator = "") {
                         "%02x".format(it)
                     }
-                Log.d("konishi", "password is ${BlasApp.key}")
+                BlasLog.trace("I", "password is ${BlasApp.key}")
                 loginSuccess(json)
             }
             else {

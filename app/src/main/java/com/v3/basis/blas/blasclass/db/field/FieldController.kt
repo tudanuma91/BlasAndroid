@@ -12,7 +12,7 @@ import org.json.JSONObject
 class FieldController(context: Context, projectId: String) : BaseController(context, projectId){
 
 
-    fun searchDisp() : List<LdbFieldRecord> {
+    fun getFieldRecords() : List<LdbFieldRecord> {
         Log.d("Field.search()", "start!!!!!!!!!!!!!!!!!!!!!!!")
 
         val user = getUserInfo()
@@ -47,7 +47,6 @@ class FieldController(context: Context, projectId: String) : BaseController(cont
                     "on right_fields.right_id = right_users.right_id "
             selection  += user_id.toString()
         }
-        Log.d("field sql", sql)
 
         val cursor = db?.rawQuery(sql, selection)
         val ret = mutableListOf<LdbFieldRecord>()
@@ -64,23 +63,6 @@ class FieldController(context: Context, projectId: String) : BaseController(cont
                     var new_choice = ""
                     val choice = field.choice?.replace("\\\"", "\"")
 
-/*
-                    val jsonChoice = JSONObject(choice)
-                    var first = true
-                    val parents = jsonChoice.names()
-
-                    for( i in 0 until parents.length() ) {
-                        val child = jsonChoice.getString(parents[i].toString())
-
-                        if( !first ) {
-                            new_choice += ","
-                        }
-                        new_choice += child
-                        first = false
-
-                    }
-                    field.choice = new_choice
- */
                     field.choice = choice
                 }
 

@@ -179,19 +179,6 @@ data class LdbItemImageRecord (
     var downloadProgress:Boolean = true
 )
 
-/**
- * 画像のキュー情報
- */
-class LdbImageQueueRecord() {
-    var id:Int = 0//主キー。BLASに関係ない。
-    var image_id:Long = 0
-    var item_id: Long = 0
-    var project_image_id: Int = 0
-    var filename:String = ""
-    var retry_count = 0
-    var message = ""
-    var error_code = 0
-}
 
 /**
  * 画像レコード

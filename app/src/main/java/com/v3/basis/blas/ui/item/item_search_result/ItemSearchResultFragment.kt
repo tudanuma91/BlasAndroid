@@ -53,7 +53,7 @@ class ItemSearchResultFragment : Fragment() {
     private val toastErrorLen = Toast.LENGTH_LONG
     private var toastSuccessLen = Toast.LENGTH_SHORT
 
-    private var chkReceiveData = true
+    private var isDataReceived = true
 
     private val findValueMap:MutableMap<String,String?> = mutableMapOf()
     private val fieldMap: MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
@@ -107,7 +107,6 @@ class ItemSearchResultFragment : Fragment() {
             checkValueCol = extras.getString("checkValueCol").toString()
         }
         try {
-            Log.d("ログテスト" ,"fldSize = ${fldSize}")
             if(fldSize == "null"){
                 throw Exception("Failed to get internal data")
             }
@@ -119,7 +118,7 @@ class ItemSearchResultFragment : Fragment() {
         }catch (e:Exception){
             val errorMessage = msg.createErrorMessage("getFail")
             Toast.makeText(activity, errorMessage, toastErrorLen).show()
-            chkReceiveData = false
+            isDataReceived = false
         }
 
         val endSwitch = rootView.findViewById<Switch>(R.id.switch_end_result)
@@ -127,24 +126,13 @@ class ItemSearchResultFragment : Fragment() {
 
 
         endSwitch.setOnCheckedChangeListener{_ ,isChecked->
-            if(isChecked){
-                Log.d("デバック管理","チェックされた。ONになった")
-                endShow = true
-            }else{
-                Log.d("デバック管理","チェックされた。OFFになった")
-                endShow = false
-            }
+            endShow = isChecked
         }
 
         viewBtn.setOnClickListener{
-            Log.d("デバック管理","Hello World")
-            if(progressBarFlg){
-                Log.d("デバック管理","処理させない。ぐるぐるしているから")
-            }else{
-                Log.d("デバック管理","いいっすよ！！！")
+            if(!progressBarFlg){
                 createCardManager(baseList,fieldMap.size,"Update")
             }
-
         }
         return root
     }
@@ -156,7 +144,7 @@ class ItemSearchResultFragment : Fragment() {
 
         super.onViewCreated(view, savedInstanceState)
         Log.d("lifeCycle", "onViewCreated")
-        if(chkReceiveData) {
+        if(isDataReceived) {
             try {
                 Log.d("デバック管理","分岐開始")
                 Log.d("デバック管理","findValueMap => ${findValueMap.isEmpty()}")
@@ -174,7 +162,7 @@ class ItemSearchResultFragment : Fragment() {
 
 
                     //呼ぶタイミングを確定させる！！
-                    Single.fromCallable { FieldController(requireContext(),projectId).searchDisp() }
+                    Single.fromCallable { FieldController(requireContext(),projectId).getFieldRecords() }
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeBy {fieldList ->
 
@@ -192,13 +180,6 @@ class ItemSearchResultFragment : Fragment() {
                         }
                         .addTo(disposables)
 
-
-
-
-//                    val payload2 = mapOf("token" to token, "project_id" to projectId)
-//                    BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
-
-//                    BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
                 }else{
                     throw Exception("Failed to receive internal data ")
                 }
@@ -210,7 +191,6 @@ class ItemSearchResultFragment : Fragment() {
                 Toast.makeText(activity, errorMessage, toastErrorLen).show()
             }
         }
-
     }
 
 
