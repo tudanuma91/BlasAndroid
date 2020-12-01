@@ -26,7 +26,7 @@ open class SyncBlasRestItem() : SyncBlasRest() {
      * プロジェクトに設定されているフィールドの情報取得要求を行う
      * @param in params 指定なし
      */
-    fun create_sync(payload:Map<String, String?>): JSONObject? {
+    fun upload(payload:Map<String, String?>): JSONObject? {
         Log.d("SyncBlasRestItem","post() start")
         var response:String? = null
         var blasUrl = BlasRest.URL + "items/search/"

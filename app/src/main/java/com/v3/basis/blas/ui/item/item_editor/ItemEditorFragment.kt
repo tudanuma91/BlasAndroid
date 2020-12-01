@@ -116,7 +116,7 @@ class ItemEditorFragment : Fragment() {
             viewModel.setupUpdateMode(itemId?.toLong() ?: 0L)
         }
 
-        //データを新規保存した場合に呼ばれる。多分、ViewModelに持つ必要のないメソッド
+        //データを新規保存した場合に呼ばれる。
         viewModel.completeSave
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
@@ -125,7 +125,7 @@ class ItemEditorFragment : Fragment() {
             .addTo(disposables)
 
 
-        //データを更新した場合に呼ばれる。多分、ViewModelに持つ必要のないメソッド
+        //データを更新した場合に呼ばれる。
         viewModel.completeUpdate
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
@@ -220,6 +220,7 @@ class ItemEditorFragment : Fragment() {
             }
             .addTo(disposables)
 
+        //多分設置のことを言っている。検品ではない
         viewModel.qrKenpinEvent
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
@@ -240,6 +241,7 @@ class ItemEditorFragment : Fragment() {
             }
             .addTo(disposables)
 
+        //撤去
         viewModel.qrTekkyoEvent
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {

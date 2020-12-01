@@ -48,13 +48,7 @@ class FixtureConfigFragment : FixtureBaseFragment() {
                 //一つずつ読むがしっかり生成されている時
                 if(viewModel.isCheckedSingle.value != null){
                     //値によって処理を変更
-                    if(viewModel.isCheckedSingle.value!!){
-                        //一つずつ読むチェック時=>リスト非表示
-                        barcode_list_view?.isVisible = false
-                    }else{
-                        //一つずつ読む非チェック時=>リスト表示
-                        barcode_list_view?.isVisible = true
-                    }
+                    barcode_list_view?.isVisible = !viewModel.isCheckedSingle.value!!
                 }
 
             }
@@ -108,8 +102,7 @@ class FixtureConfigFragment : FixtureBaseFragment() {
                 it
             )
         }
-
-        //barcode_list_view?.isVisible = false
+        
         barcode_list_view?.adapter = adapter
     }
 }

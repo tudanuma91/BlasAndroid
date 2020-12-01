@@ -89,32 +89,35 @@ class SenderHandler(val context: Context): Handler() {
                     if(level != null) {
                         if ((activeNetwork?.type != ConnectivityManager.TYPE_WIFI) and (level!! < 3)) {
                             BlasLog.trace("W", "電波強度が弱いため、再送しません")
+                            return@Runnable
                         }
-                        else {
-                            if ((sendType and FIXTURE) == FIXTURE) {
-                                lock.withLock {
-                                    BlasLog.trace("I", "ロックを獲得しました")
-                                    syncFixture(context, token, projectId)
-                                    BlasLog.trace("I", "ロックを解除します")
-                                }
-                            }
 
-                            if ((sendType and ITEM) == ITEM) {
-                                //データを送信する
-                                lock.withLock {
-                                    BlasLog.trace("I", "ロックを獲得しました")
-                                    syncItems(context, token, projectId)
-                                    BlasLog.trace("I", "ロックを解除しました")
-                                }
+                        //機器管理のデータを送信する
+                        if ((sendType and FIXTURE) == FIXTURE) {
+                            lock.withLock {
+                                BlasLog.trace("I", "ロックを獲得しました")
+                                syncFixture(context, token, projectId)
+                                BlasLog.trace("I", "ロックを解除します")
                             }
+                        }
 
-                            if ((sendType and IMAGE) == IMAGE) {
-                                //画像を送信する
-                                lock.withLock {
-                                    BlasLog.trace("I", "ロックを獲得しました")
-                                    syncImage(context, token, projectId)
-                                    BlasLog.trace("I", "ロックを解除します")
-                                }
+                        //データ管理のデータを送信する
+                        if ((sendType and ITEM) == ITEM) {
+                            //データを送信する
+                            lock.withLock {
+                                BlasLog.trace("I", "ロックを獲得しました")
+                                syncItems(context, token, projectId)
+                                BlasLog.trace("I", "ロックを解除しました")
+                            }
+                        }
+
+                        //画像を送信する
+                        if ((sendType and IMAGE) == IMAGE) {
+                            //画像を送信する
+                            lock.withLock {
+                                BlasLog.trace("I", "ロックを獲得しました")
+                                syncImage(context, token, projectId)
+                                BlasLog.trace("I", "ロックを解除します")
                             }
                         }
                     }
@@ -139,7 +142,6 @@ class SenderHandler(val context: Context): Handler() {
 
         for(i in 0 until records.size) {
             val record = records[i]
-            val item = controller.setProperty(Items(), record) as Items
 
             //送信用ペイロード作成
             var payload = mutableMapOf<String,String>()
@@ -150,11 +152,14 @@ class SenderHandler(val context: Context): Handler() {
             payload["token"] = token
 
             BlasLog.trace("I", "データを送信します")
-            val json = SyncBlasRestItem().create_sync(payload)
+
+            val json = SyncBlasRestItem().upload(payload)
+
             if(json != null){
                 val errorCode = json.getInt("error_code")
                 var msg = json.getString("message")
                 if(errorCode == 0) {
+                    //送信できた場合
                     val records = json.getJSONObject("records")
 
                     val new_item_id = records.getString("new_item_id")
@@ -163,6 +168,7 @@ class SenderHandler(val context: Context): Handler() {
                     controller.updateItemId( org_item_id,new_item_id )
                 }
                 else {
+                    //BLAS側でエラーが返された場合(論理エラー)
                     if(msg == null) {
                         msg = ""
                     }
@@ -170,6 +176,7 @@ class SenderHandler(val context: Context): Handler() {
                 }
             }
             else {
+                //通信そのものができなかった場合(物理エラー)
                 BlasLog.trace("E", "データの送信に失敗しました")
             }
         }
@@ -285,7 +292,7 @@ class SenderHandler(val context: Context): Handler() {
             //BLASに送信する
             BlasLog.trace("I","シリアルナンバーを送信します ${payload}")
 
-            json = SyncBlasRestFixture(crud).execute(payload)
+            json = SyncBlasRestFixture(crud).upload(payload)
             if(json != null) {
                 val errorCode = json.getInt("error_code")
                 if(errorCode == 0) {

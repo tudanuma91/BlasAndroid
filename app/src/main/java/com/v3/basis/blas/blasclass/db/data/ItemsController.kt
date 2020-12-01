@@ -470,7 +470,6 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             throw ItemCheckException("検品されていないシリアル番号です")
         }
         else {
-
             cursor.moveToFirst()
             val fixture = setProperty(Fixtures(), cursor) as Fixtures
             cursor.close()

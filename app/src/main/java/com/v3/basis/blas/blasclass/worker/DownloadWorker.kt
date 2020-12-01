@@ -165,7 +165,7 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
             e.printStackTrace()
             BlasLog.trace("E", "${cacheDbPath}の削除に失敗しました", e)
         }
-        //古いDBが残っていたら削除する
+        //データ管理のキャッシュファイルが残っていたら削除する
         val cacheItemPath = context.dataDir.path + "/items/${projectId}"
         try {
             deleteDir(cacheItemPath)

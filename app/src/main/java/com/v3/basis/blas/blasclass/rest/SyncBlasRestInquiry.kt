@@ -16,6 +16,10 @@ import java.util.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
+/**
+ * ログ回収クラス。
+ * 障害発生時に、BLASに調査に必要な資料(ログやDBなど）をアップロードする
+ */
 class SyncBlasRestInquiry : SyncBlasRest() {
 
     val zipDir =  BlasApp.applicationContext().dataDir.path + "/temp/"

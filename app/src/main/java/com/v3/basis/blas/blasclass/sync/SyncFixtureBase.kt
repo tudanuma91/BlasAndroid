@@ -20,7 +20,7 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
     fun exec() {
         val payload = createPayload()
         val fixtureId = payload["fixture_id"]
-        val json = SyncBlasRestFixture(crud).execute(payload)
+        val json = SyncBlasRestFixture(crud).upload(payload)
         val ctl = FixtureController(
             model.context,
             model.project_id.toString()

@@ -45,33 +45,19 @@
                         android:orientation="vertical"
                         android:padding="6dp">
 
-                        <include
-                            android:id="@+id/syncView"
-                            app:vm="@{vm}"
-                            app:model="@{model}"
-                            layout="@layout/view_sync_server"
-                            app:layout_constraintTop_toTopOf="parent"
-                            />
 
                         <TextView
                             android:id="@+id/row_title"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@{model.title}"
-                            tools:text="titleです" />
+                            tools:text="データ管理のID" />
 
                         <WebView
                             app:htmlText="@{model.detail}"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             />
-
-<!--                        <TextView-->
-<!--                            android:id="@+id/row_detail"-->
-<!--                            app:htmlText="@{model.detail}"-->
-<!--                            android:layout_width="wrap_content"-->
-<!--                            android:layout_height="wrap_content"-->
-<!--                            tools:text="詳細ですよ" />-->
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -89,7 +75,7 @@
                                 app:srcCompat="@android:drawable/ic_menu_gallery" />
 
                             <ImageButton
-                                android:id="@+id/imageButton2"
+                                android:id="@+id/editButton"
                                 android:onClick="@{v -> vm.clickEditButton(model)}"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"

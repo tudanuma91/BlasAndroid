@@ -26,7 +26,6 @@ import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
-import com.v3.basis.blas.blasclass.sync.Lump
 import com.v3.basis.blas.ui.ext.addTitle
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
@@ -37,6 +36,7 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_item_view.*
+import kotlinx.android.synthetic.main.list_item.*
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -95,36 +95,11 @@ class ItemViewFragment : Fragment() {
         rootView = root
 
         viewModel = ViewModelProviders.of(this).get(ItemsListViewModel::class.java)
+        //画像編集ボタンを押されたときにコールバックされる関数を登録
+        viewModel.imageBtnCallBack = ::clickImageButton
+        //データの編集ボタンを押されたときにコールバックされる関数を登録
+        viewModel.editBtnCallBack = ::clickEditButton
 
-        viewModel.transitionItemEdit
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                val intent = Intent(requireContext(), ItemEditActivity::class.java)
-                intent.putExtra("item_id", "${it.item_id}")
-                intent.putExtra("token", token)
-                intent.putExtra("project_id", projectId)
-                intent.putExtra("value_list", it.valueList)
-                requireActivity().startActivity(intent)
-            }
-            .addTo(disposables)
-
-        viewModel.transitionItemImage
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                val intent = Intent(requireContext(), ItemImageActivity::class.java)
-                intent.putExtra("item_id", "${it.item_id}")
-                intent.putExtra("token", token)
-                intent.putExtra("project_id", projectId)
-                requireContext().startActivity(intent)
-            }
-            .addTo(disposables)
-
-        viewModel.serverSyncedEvent
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                val count = dataList.filter { it.model.syncVisible.get() && it.model.syncedToServer.get().not() }.size
-            }
-            .addTo(disposables)
 
         val extras = activity?.intent?.extras
         if(extras?.getString("token") != null ) {
@@ -138,36 +113,19 @@ class ItemViewFragment : Fragment() {
         }
 
         itemsController = ItemsController(requireContext(), projectId)
-        itemsController.errorMessageEvent
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                Log.d("itemViewFragment", "データ取得失敗")
-                Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
 
-                //エラーのため、データを初期化する
-                //fieldMap.clear()
-                fields = mutableListOf()
-                progressBarFlg = false
-                chkProgress(progressBarFlg,rootView)
-            }
-            .addTo(disposables)
-
-        progressBarFlg = true
-        chkProgress(progressBarFlg,root)
 
         val endSwitch = rootView.findViewById<Switch>(R.id.switch_end_flg)
         val viewBtn = rootView.findViewById<Button>(R.id.button_view)
 
+        //ゴミ箱表示のスイッチ
         endSwitch.setOnCheckedChangeListener{_ ,isChecked->
-            if(isChecked){
-                Log.d("デバック管理","チェックされた。ONになった")
-                endShow = true
-            }else{
-                Log.d("デバック管理","チェックされた。OFFになった")
-                endShow = false
-            }
+            endShow = isChecked
         }
 
+        /**
+         * ゴミ箱のスイッチの横にある表示ボタンを押したとき
+         */
         viewBtn.setOnClickListener{
             if(progressBarFlg){
                 Log.d("デバック管理","処理させない。ぐるぐるしているから")
@@ -205,6 +163,29 @@ class ItemViewFragment : Fragment() {
         }
 
         return root
+    }
+
+    /**
+     * 画像編集ボタンを押されたときにコールされる
+     */
+    fun clickImageButton(model:ItemsCellModel) {
+        val intent = Intent(requireContext(), ItemImageActivity::class.java)
+        intent.putExtra("item_id", "${model.item_id}")
+        intent.putExtra("token", token)
+        intent.putExtra("project_id", projectId)
+        requireContext().startActivity(intent)
+    }
+
+    /**
+     * データ管理の編集ボタンを押されたときにコールされる
+     */
+    fun clickEditButton(model:ItemsCellModel) {
+        val intent = Intent(requireContext(), ItemEditActivity::class.java)
+        intent.putExtra("item_id", "${model.item_id}")
+        intent.putExtra("token", token)
+        intent.putExtra("project_id", projectId)
+        intent.putExtra("value_list", model.valueList)
+        requireActivity().startActivity(intent)
     }
 
     private fun chkProgress(flg:Boolean,view:View){
@@ -306,61 +287,6 @@ class ItemViewFragment : Fragment() {
             .addTo(disposables)
     }
 
-    private fun disp() {
-
-    }
-
-    /**
-     * データ取得時
-     */
-/*
-    private fun itemRecv(result: JSONObject) {
-        //初期化
-        itemListAll.clear()
-        jsonParseList = null
-
-        jsonItemList = result
-        if(jsonItemList != null) {
-            jsonParseList = helper.createJsonArray(jsonItemList)
-            jsonParse(parseStartNum, parseFinNum)
-            setAdapter()
-        }
-    }
-*/
-    /**
-     * フィールド取得時
-     */
-    // TODO:廃止予定
-/*
-    private fun fieldRecv(result: JSONObject) {
-        Log.d("ItemViewFragment.filedRecv()","start")
-        //カラム順に並べ替える
-        fieldMap.clear()
-        val fieldList = helper.createFieldList(result)
-        var cnt = 1
-        fieldList.forEach{
-            fieldMap[cnt] = it
-            cnt +=1
-        }
-
-        Single.fromCallable { itemsController.search() }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                if (it.isNotEmpty()) {
-                    itemListAll.clear()
-                    itemListAll.addAll(it)
-                    setAdapter()
-                } else {
-                    fieldMap.clear()
-                    progressBarFlg = false
-                    chkProgress(progressBarFlg,rootView)
-                }
-            }
-            .addTo(disposables)
-
-//        BlasRestItem("search", payload2, ::itemRecv, ::itemRecvError).execute()
-    }
-*/
 
     /**
      * フィールド取得失敗時
@@ -379,27 +305,7 @@ class ItemViewFragment : Fragment() {
         chkProgress(progressBarFlg,rootView)
     }
 
-    /**
-     * データ取得失敗時
-     */
-/*
-    private fun itemRecvError(errorCode: Int , aplCode:Int) {
-        Log.d("itemViewFragment", "データ取得失敗")
 
-        var message:String? = null
-
-        message = BlasMsg().getMessage(errorCode,aplCode)
-
-        handler.post {
-            Toast.makeText(getActivity(), message, toastErrorLen).show()
-        }
-
-        //エラーのため、データを初期化する
-        fieldMap.clear()
-        progressBarFlg = false
-        chkProgress(progressBarFlg,rootView)
-    }
-*/
     /**
      *  データ登録
      */
@@ -437,13 +343,6 @@ class ItemViewFragment : Fragment() {
 
         createCardManager(list,colMax)
     }
-
-    private fun setNotSendCount(list: List<ItemsListCell>) {
-
-        val count = list.filter { it.model.syncVisible.get() }.size
-        viewModel.sendCount.set((viewModel.sendCount.get() as Int) + count)
-    }
-
 
     /**
      * カードを作るときに使う関数。
@@ -650,5 +549,6 @@ class ItemViewFragment : Fragment() {
         disposables.dispose()
         super.onDestroyView()
     }
+
 }
 

@@ -46,7 +46,7 @@ class SyncBlasRestFixture(val crud:String) : SyncBlasRest() {
     }
 
 
-    fun execute( payload:Map<String,String> ):JSONObject?  {
+    fun upload( payload:Map<String,String> ):JSONObject?  {
         var json:JSONObject? = null
         try{
             val response = super.getResponseData(payload,method,blasUrl)
