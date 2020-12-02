@@ -2,9 +2,15 @@ package com.v3.basis.blas.ui.item.item_editor
 
 
 import android.Manifest
+import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
+import android.content.pm.PackageManager
+import android.content.res.Resources
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.media.ToneGenerator
 import android.os.*
 import android.util.Log
@@ -12,11 +18,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableBoolean
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProviders
+import com.google.gson.GsonBuilder
+import com.google.maps.GeoApiContext
+import com.google.maps.GeocodingApi
+import com.google.maps.model.LatLng
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.QRActivity
@@ -27,6 +38,7 @@ import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.formaction.FormActionDataCreate
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
+import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.blasclass.rest.BlasRest
 import com.v3.basis.blas.databinding.*
 import com.v3.basis.blas.ui.ext.addTitle
@@ -87,10 +99,19 @@ class ItemEditorFragment : Fragment() {
 
     private val singleSelectSpinner = mutableMapOf<Int,Spinner>()
 
+    //GPS
+    private var locationManager: LocationManager? = null
+    private var gpsListener:GPSLocationListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         addTitle("projectName")
+
+        activity?.let{
+            locationManager = it.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        }
+
+
     }
 
     override fun onCreateView(
@@ -265,15 +286,61 @@ class ItemEditorFragment : Fragment() {
         viewModel.locationEvent
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy { field ->
-                requestPermissions(arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION)) {
-                    (requireActivity() as ItemActivity).fetchLocationAddress {address ->
-                        field.text.set(address)
-                    }
+                if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    //GPSの権限がある場合
+                    gpsListener = GPSLocationListener(resources,
+                                                      field,
+                                                      GPSLocationListener.ADDRESS,
+                                                      GPSLocationListener.ONCE)
+
+                    locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, gpsListener)
+                }
+                else {
+                    //権限がない場合、権限をリクエストするだけ
+                    requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1000)
                 }
             }
             .addTo(disposables)
+
+
+        viewModel.latEvent
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy { field ->
+                if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    //GPSの権限がある場合
+                    gpsListener = GPSLocationListener(resources,
+                        field,
+                        GPSLocationListener.LAT,
+                        GPSLocationListener.ONCE)
+
+                    locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, gpsListener)
+                }
+                else {
+                    //権限がない場合、権限をリクエストするだけ
+                    requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1000)
+                }
+            }
+            .addTo(disposables)
+
+        viewModel.lngEvent
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy { field ->
+                if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    //GPSの権限がある場合
+                    gpsListener = GPSLocationListener(resources,
+                        field,
+                        GPSLocationListener.LNG,
+                        GPSLocationListener.ONCE)
+
+                    locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, gpsListener)
+                }
+                else {
+                    //権限がない場合、権限をリクエストするだけ
+                    requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1000)
+                }
+            }
+            .addTo(disposables)
+
 
         viewModel.accountNameEvent
             .observeOn(AndroidSchedulers.mainThread())
@@ -516,6 +583,25 @@ class ItemEditorFragment : Fragment() {
                     rootView = l.root
                     fieldModel = l.model
                 }
+
+                FieldType.LAT_LOCATION -> {
+                    val l: ViewItems14LocationBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_14_location, null, false)
+                    l.model = FieldText(cellNumber,field.col!!, name, mustInput)
+                    l.vm = viewModel
+                    rootView = l.root
+                    fieldModel = l.model
+                }
+
+                FieldType.LNG_LOCATION -> {
+                    val l: ViewItems15LocationBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_15_location, null, false)
+                    l.model = FieldText(cellNumber,field.col!!, name, mustInput)
+                    l.vm = viewModel
+                    rootView = l.root
+                    fieldModel = l.model
+                }
+
                 FieldType.KENPIN_RENDOU_QR -> {
                     val l: ViewItems8QrKenpinBinding =
                         DataBindingUtil.inflate(layoutInflater, R.layout.view_items_8_qr_kenpin, null, false)
@@ -641,10 +727,14 @@ class ItemEditorFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
+        gpsListener?.let{
+            locationManager?.removeUpdates(it)
+        }
         singleSelectList.forEach{
             it.values.clear()
         }
     }
+
 
     inner class SpinnerItemSelectedListener : AdapterView.OnItemSelectedListener {
 
@@ -660,4 +750,75 @@ class ItemEditorFragment : Fragment() {
     }
 }
 
+/**
+ * GPSから取得した値をフィールドにセットする。
+ * field:テキストフィールド
+ * kind:0 住所 1:緯度 2:経度を返す
+ */
+class GPSLocationListener(val resources:Resources, val field:FieldText, val kind:Int, once:Int) : LocationListener {
+    companion object{
+        val ADDRESS = 0
+        val LAT = 1
+        val LNG = 2
+
+        val ONCE = 0
+        val CONTINUE = 1
+
+    }
+    override fun onLocationChanged(location: Location?) {
+        val lat = location?.latitude.toString()
+        val lng = location?.longitude.toString()
+        when(kind) {
+            ADDRESS->{
+                try {
+                    val address = getAddressFromGeoCoord(lat, lng)
+                    field.text.set(address)
+                }
+                catch(e:Exception) {
+                    BlasLog.trace("E", "住所変換に失敗しました", e)
+                }
+            }
+            LAT->{
+                field.text.set(lat)
+            }
+            LNG->{
+                field.text.set(lng)
+            }
+        }
+
+
+    }
+
+    override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
+    }
+
+    override fun onProviderEnabled(provider: String?) {
+    }
+
+    override fun onProviderDisabled(provider: String?) {
+    }
+
+    /**
+     * 緯度・経度を住所に変換する
+     */
+    fun getAddressFromGeoCoord(lat:String, lng:String):String {
+        var address = ""
+        val latLng = LatLng(lat.toDouble(), lng.toDouble())
+        try {
+            val apiKey = resources.getString(R.string.geo_api_key)
+            val geoContext = GeoApiContext.Builder().apiKey(apiKey).build()
+            val results = GeocodingApi.reverseGeocode(geoContext, latLng).language("ja").awaitIgnoreError()
+            val gson = GsonBuilder().setPrettyPrinting().create()
+            address =  gson.toJson(results[0].formattedAddress)
+            address = address.replace("\"", "")
+            address = address.replace("日本、", "")
+        }
+        catch(e:Exception) {
+            BlasLog.trace("E", "緯度経度から住所への変換に失敗しました", e)
+        }
+
+        return address
+    }
+
+}
 

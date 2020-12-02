@@ -181,4 +181,7 @@
     <!-- プレファレンスの名前 -->
     <string name="BlasAppConfig">BlasAppConfig</string>
 
+    <!-- GEO -->
+    <string name="geo_api_key">AIzaSyB8rdIoHOf5Ki-F6yHQvwpGeTXlqsdcCPM</string>
+
 </resources>

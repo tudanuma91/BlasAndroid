@@ -29,6 +29,8 @@ class ItemViewModel: ViewModel() {
     val qrKenpinEvent: PublishSubject<FieldText> = PublishSubject.create()
     val qrTekkyoEvent: PublishSubject<FieldText> = PublishSubject.create()
     val locationEvent: PublishSubject<FieldText> = PublishSubject.create()
+    val latEvent: PublishSubject<FieldText> = PublishSubject.create()
+    val lngEvent: PublishSubject<FieldText> = PublishSubject.create()
     val accountNameEvent: PublishSubject<FieldText> = PublishSubject.create()
     val completeSave: PublishSubject<Unit> = PublishSubject.create()
     val completeUpdate: PublishSubject<Unit> = PublishSubject.create()
@@ -117,6 +119,14 @@ class ItemViewModel: ViewModel() {
 
     fun clickLocation(field: FieldText) {
         locationEvent.onNext(field)
+    }
+
+    fun clickLat(field:FieldText) {
+        latEvent.onNext(field)
+    }
+
+    fun clickLng(field:FieldText) {
+        lngEvent.onNext(field)
     }
 
     fun clickQRCode(field: FieldText) {

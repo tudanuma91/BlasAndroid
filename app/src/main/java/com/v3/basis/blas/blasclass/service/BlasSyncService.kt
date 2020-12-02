@@ -388,6 +388,8 @@ class BlasSyncService() : Service() {
                 }
                 stopSelf()
             }).start()
+
+
         startForeground(1, notification)
         return START_STICKY
     }
