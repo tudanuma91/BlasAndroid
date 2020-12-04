@@ -18,13 +18,13 @@ import java.security.NoSuchAlgorithmException
 import java.util.*
 import kotlin.text.StringBuilder
 
-class ImageComponent {
+open class ImageComponent {
 
     /**
      * [説明]
      * 画像のフルパスを取得する
      */
-    fun getSavedDir(context: Context, projectId:String):String {
+    open fun getSavedDir(context: Context, projectId:String):String {
         return context.dataDir.path + "/images/${projectId}/"
     }
 
@@ -57,7 +57,7 @@ class ImageComponent {
      * 画像ファイルのハッシュ値
      *
      */
-    fun saveBmp2Local(context: Context, projectId:String, fileName:String, bmp:Bitmap):String {
+    open fun saveBmp2Local(context: Context, projectId:String, fileName:String, bmp:Bitmap):String {
         var hash = ""
         if(context == null) {
             Log.d("blas", "contextがnullです")

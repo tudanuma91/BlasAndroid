@@ -7,8 +7,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
 import android.util.Log
-import com.google.android.datatransport.runtime.util.PriorityMapping.toInt
-import com.tonyodev.fetch2core.getFile
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.component.ImageComponent
 import com.v3.basis.blas.blasclass.db.BaseController

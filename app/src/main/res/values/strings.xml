@@ -50,6 +50,7 @@
     <string name="navi_title_item_search_result">データ検索結果</string>
     <string name="navi_title_item_view">データ一覧</string>
     <string name="navi_title_item_create">データ新規作成</string>
+    <string name="navi_title_item_drawing_search">図面検索</string>
     <!--機器管理画面-->
     <string name="navi_title_fixture_search">機器検索</string>
     <string name="navi_title_fixture_search_result">機器検索結果</string>

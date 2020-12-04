@@ -9,15 +9,37 @@
     android:id="@+id/frame_item">
 
 
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/item_list_bottom_navigation"
+    <LinearLayout
+        android:layout_gravity="bottom"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="?android:attr/windowBackground"
-        app:menu="@menu/bottom_navigation_menu_item"
-        app:labelVisibilityMode="labeled"/>
+        >
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/item_list_bottom_navigation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:elevation="0dp"
+            android:background="?android:attr/windowBackground"
+            app:menu="@menu/bottom_navigation_menu_item"
+            app:labelVisibilityMode="labeled"
+            />
+
+        <TextView
+            android:id="@+id/navi_item_drawing_seach"
+            android:drawableTop="@drawable/ic_search_gray_24dp"
+            android:background="@android:color/transparent"
+            android:textColor="@color/colorGray2"
+            android:paddingTop="8dp"
+            android:layout_weight="3"
+            android:gravity="center_horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/navi_title_item_drawing_search"
+            />
+    </LinearLayout>
 
 
     <fragment

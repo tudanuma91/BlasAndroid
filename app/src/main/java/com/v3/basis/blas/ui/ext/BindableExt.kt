@@ -1,5 +1,6 @@
 package com.v3.basis.blas.ui.ext
 
+import android.graphics.Color
 import android.text.Html
 import android.view.View
 import android.webkit.WebView
@@ -29,5 +30,20 @@ object CustomBindingAdapter {
 
         this.loadDataWithBaseURL(null, text, "text/html", "utf-8", null)
 //        this.text = Html.fromHtml(text, HtmlCompat.FROM_HTML_MODE_LEGACY)
+    }
+
+    @JvmStatic
+    @BindingAdapter(value = ["backColor"], requireAll = false)
+    fun View.backColor(color: String) {
+
+        val col = when (color) {
+            "red" -> Color.RED
+            "blue" -> Color.BLUE
+            "green" -> Color.GREEN
+            "yellow" -> Color.YELLOW
+            else -> Color.RED
+        }
+
+        this.setBackgroundColor(col)
     }
 }

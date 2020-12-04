@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="activity"
+            type="com.v3.basis.blas.activity.DrawingSearchActivity" />
+        <variable
+            name="model"
+            type="com.v3.basis.blas.activity.DrawingSearchActivity.LabelModel" />
+    </data>
+
+    <LinearLayout
+        android:id="@+id/parent"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/label"
+            android:text="@{model.name}"
+            android:textSize="12dp"
+            android:padding="6dp"
+            android:textColor="@color/colorWhite"
+            android:gravity="center_vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{v -> activity.clickLabel(model)}"
+            app:backColor="@{model.color}"
+            />
+    </LinearLayout>
+
+<!--    <androidx.constraintlayout.widget.ConstraintLayout-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content">-->
+
+<!--        <TextView-->
+<!--            android:id="@+id/label"-->
+<!--            android:text="@{model.name}"-->
+<!--            android:textSize="12dp"-->
+<!--            android:padding="6dp"-->
+<!--            android:textColor="@color/colorWhite"-->
+<!--            android:gravity="center_vertical"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:onClick="@{v -> activity.clickLabel(model)}"-->
+<!--            tools:text="Label1"-->
+<!--            app:backColor="@{model.color}"-->
+<!--            app:layout_constraintTop_toTopOf="parent"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            />-->
+<!--    </androidx.constraintlayout.widget.ConstraintLayout>-->
+
+</layout>

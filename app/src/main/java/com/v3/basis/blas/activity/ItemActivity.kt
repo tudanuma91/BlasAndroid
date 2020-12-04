@@ -1,6 +1,7 @@
 package com.v3.basis.blas.activity
 
 import android.Manifest
+import android.app.Activity
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -25,14 +26,19 @@ import android.os.Handler
 import android.os.Looper
 import android.os.ResultReceiver
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
+import com.v3.basis.blas.activity.ItemImageActivity.Companion.createIntent
 import com.v3.basis.blas.blasclass.service.FetchAddressIntentService
 import com.v3.basis.blas.blasclass.service.LocationConstants
+import com.v3.basis.blas.ui.terminal.BottomNavButton
+import kotlinx.android.synthetic.main.fragment_terminal.view.*
 
 
 /**
@@ -99,7 +105,8 @@ class ItemActivity : AppCompatActivity() {
             setOf(
                 R.id.navi_item_view, //データ一覧
                 R.id.navi_item_create, //データ新規作成
-                R.id.navi_item_seach //データ検索
+                R.id.navi_item_seach, //データ検索
+                R.id.navi_item_drawing_seach
                // R.id.navi_item_back
             )
         )
@@ -116,6 +123,29 @@ class ItemActivity : AppCompatActivity() {
         }
 
         setBlasCustomView()
+
+        // ナビゲーション内の図面検索がクリックされた時の処理
+        navi_item_drawing_seach.setOnClickListener {
+            // DrawingSearchActivityの実行結果をハンドリングするための記述
+            val startForResult =
+                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult? ->
+                    if (result?.resultCode == Activity.RESULT_OK) {
+                        result.data?.let { data: Intent ->
+                            // DrawingSearchActivityの実行結果から検索フリーワードを取得し、アイテムの検索を実行する
+                            val freeWord = data.getStringExtra(DrawingSearchActivity.SEARCH_FREEWORD)
+                            searchFreeWord = freeWord
+                            reloard()
+                        }
+                    }
+                }
+            // DrawingSearchActivityを起動するためのインテントを設定する
+            val intent = Intent(this, DrawingSearchActivity::class.java)
+            val token:String = this.intent.extras?.get("token") as String? ?: ""
+            intent.putExtra("token", token)
+            val projectId:String = this.intent.extras?.get("project_id") as String? ?: ""
+            intent.putExtra("project_id", projectId)
+            startForResult.launch(intent)
+        }
     }
 
     /**
