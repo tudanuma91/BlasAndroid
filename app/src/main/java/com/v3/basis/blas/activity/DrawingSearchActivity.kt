@@ -5,7 +5,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.text.TextUtils
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
@@ -16,6 +15,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.databinding.ActivityDrawingBinding
 import com.v3.basis.blas.databinding.ViewLabelBinding
 import com.v3.basis.blas.ui.item.item_drawing_search.*
@@ -36,7 +36,6 @@ class DrawingSearchActivity : AppCompatActivity() {
         const val SEARCH_FREEWORD: String = "search_freeword"
     }
 
-    private val TAG: String = "DrawingSearchActivity"
     private lateinit var bind: ActivityDrawingBinding
     private lateinit var progressBar: ProgressBar
 
@@ -109,7 +108,7 @@ class DrawingSearchActivity : AppCompatActivity() {
         categoryEvent
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy { list ->
-                Log.d(TAG, "categoryEvent: start ")
+                BlasLog.trace("I", "categoryEvent: start ")
                 categories.clear()
                 categories.addAll(list)
                 categorySpinner.adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, list.map { it.name })
@@ -123,7 +122,7 @@ class DrawingSearchActivity : AppCompatActivity() {
                         }
                     }
                 }
-                Log.d(TAG, "categoryEvent: end ")
+                BlasLog.trace("I", "categoryEvent: end ")
             }
             .addTo(disposables)
 
@@ -131,7 +130,7 @@ class DrawingSearchActivity : AppCompatActivity() {
         subCategoryEvent
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy { list ->
-                Log.d(TAG, "subCategoryEvent: start ")
+                BlasLog.trace("I", "subCategoryEvent: start ")
                 subCategories.clear()
                 subCategories.addAll(list)
                 subCategorySpinner.adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, list.map { it.name })
@@ -145,7 +144,7 @@ class DrawingSearchActivity : AppCompatActivity() {
                         }
                     }
                 }
-                Log.d(TAG, "subCategoryEvent: end ")
+                BlasLog.trace("I", "subCategoryEvent: end ")
             }
             .addTo(disposables)
 
@@ -153,7 +152,7 @@ class DrawingSearchActivity : AppCompatActivity() {
         drawingsEvent
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy { list ->
-                Log.d(TAG, "drawingsEvent: start ")
+                BlasLog.trace("I", "drawingsEvent: start ")
                 drawings.clear()
                 drawings.addAll(list)
                 drawingSpinner.adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, list.map { it.name })
@@ -167,7 +166,7 @@ class DrawingSearchActivity : AppCompatActivity() {
                         }
                     }
                 }
-                Log.d(TAG, "drawingsEvent: end ")
+                BlasLog.trace("I", "drawingsEvent: end ")
             }
             .addTo(disposables)
 
@@ -175,7 +174,7 @@ class DrawingSearchActivity : AppCompatActivity() {
         drawingImageEvent
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy { drawingImage ->
-                Log.d(TAG, "drawingImageEvent: start ")
+                BlasLog.trace("I", "drawingImageEvent: start ")
                 progressBar.visibility = android.widget.ProgressBar.INVISIBLE
                 // ラベルデータのセット
                 // 端末上に表示されるサイズとビットマップのサイズからラベルに適するスケールを計算
@@ -211,7 +210,7 @@ class DrawingSearchActivity : AppCompatActivity() {
                 }
                 // 画像データのセット
                 bind.photoView.setImageBitmap(drawingImage.bitmap)
-                Log.d(TAG, "drawingImageEvent: end ")
+                BlasLog.trace("I", "drawingImageEvent: end ")
             }
             .addTo(disposables)
 
@@ -239,7 +238,7 @@ class DrawingSearchActivity : AppCompatActivity() {
         // ViewModelの図面画像に対する監視
         mViewModel.getDrawingImage().observe(this, androidx.lifecycle.Observer { drawingImage ->
             if (drawingImage == null) {
-                Log.d(TAG, "Erase labels and image ")
+                BlasLog.trace("I", "Erase labels and image ")
                 progressBar.visibility = android.widget.ProgressBar.INVISIBLE
                 this.labels.clear()
                 bind.labelContainer.removeAllViews()
@@ -260,7 +259,7 @@ class DrawingSearchActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
 
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                Log.d(TAG, "Category selected: position=$position ")
+                BlasLog.trace("I", "Category selected: position=$position ")
                 mViewModel.selectCategory(categories[position])
             }
         }
@@ -270,7 +269,7 @@ class DrawingSearchActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
 
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                Log.d(TAG, "SubCategory selected: position=$position ")
+                BlasLog.trace("I", "SubCategory selected: position=$position ")
                 mViewModel.selectSubCategory(subCategories[position])
             }
         }
@@ -280,7 +279,7 @@ class DrawingSearchActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
 
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                Log.d(TAG, "Drawing selected: position=$position ")
+                BlasLog.trace("I", "Drawing selected: position=$position ")
                 progressBar.visibility = android.widget.ProgressBar.VISIBLE
                 val drawing = drawings[position]
                 mViewModel.selectDrawing(drawing)
@@ -294,7 +293,7 @@ class DrawingSearchActivity : AppCompatActivity() {
      * @param model ユーザーに選択されたラベルモデルオブジェクト
      */
     fun clickLabel(model: LabelModel) {
-        Log.d(TAG, "Label selected: name=${model.name} ")
+        BlasLog.trace("I", "Label selected: name=${model.name} ")
         val intent = Intent()
         intent.putExtra(SEARCH_FREEWORD, model.name)
         setResult(Activity.RESULT_OK, intent)

@@ -4,12 +4,12 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.v3.basis.blas.blasclass.db.drawing.DrawingsController
+import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.blasclass.rest.BlasRestDrawing
 
 /**
@@ -44,14 +44,13 @@ class DrawingSearchViewModel(
     var token: String,
     var projectId: String
 ) : ViewModel() {
-    private val TAG = "DrawingSearchViewModel"
     private val unselectedString = "----------"
 
     // 図面検索のデータベースコントローラー
     private val drawingsController: DrawingsController = DrawingsController(context, projectId)
 
     // 選択中の図面カテゴリーを保持
-    val selectedCategory = MutableLiveData<DrawingCategory>()
+    val selectedCategory = MutableLiveData<DrawingCategory?>()
     // 選択中の図面サブカテゴリーを保持
     val selectedSubCategory = MutableLiveData<DrawingSubCategory>()
     // 選択中の図面を保持
@@ -165,19 +164,19 @@ class DrawingSearchViewModel(
      * @param data ロード先のデータホルダー
      */
     private fun loadCategories(data: MutableLiveData<List<DrawingCategory>>) {
-        Log.d(TAG, "loadCategories: start ")
+        BlasLog.trace("I", "loadCategories: start ")
         val list = arrayListOf<DrawingCategory>()
         // カテゴリ無しを追加
         list.plusAssign(DrawingCategory(0, unselectedString))
         // DBからカテゴリー一覧を読み込み
         drawingsController.getCategories().forEach {
-            Log.d(TAG, "Category got: $it ")
+            BlasLog.trace("I", "Category got: $it ")
             val id = it["drawing_category_id"]?.toInt() ?: 0
             val name = it["name"] ?: ""
             list.plusAssign(DrawingCategory(id, name))
         }
         data.postValue(list.toList())
-        Log.d(TAG, "loadCategories: end ")
+        BlasLog.trace("I", "loadCategories: end ")
     }
 
     /**
@@ -185,21 +184,21 @@ class DrawingSearchViewModel(
      * @param data ロード先のデータホルダー
      */
     private fun loadSubCategories(data: MutableLiveData<List<DrawingSubCategory>>) {
-        Log.d(TAG, "loadSubCategories: start ")
+        BlasLog.trace("I", "loadSubCategories: start ")
         val list = arrayListOf<DrawingSubCategory>()
         // サブカテゴリ無しを追加
         list.plusAssign(DrawingSubCategory(0, unselectedString))
         // DBからサブカテゴリー一覧を読み込み
         selectedCategory.value?.let { drawingCategory ->
             drawingsController.getSubCategories(drawingCategory.id).forEach {
-                Log.d(TAG, "SubCategory got: $it ")
+                BlasLog.trace("I", "SubCategory got: $it ")
                 val id = it["drawing_sub_category_id"]?.toInt() ?: 0
                 val name = it["name"] ?: ""
                 list.plusAssign(DrawingSubCategory(id, name))
             }
         }
         data.postValue(list.toList())
-        Log.d(TAG, "loadSubCategories: end ")
+        BlasLog.trace("I", "loadSubCategories: end ")
     }
 
     /**
@@ -207,7 +206,7 @@ class DrawingSearchViewModel(
      * @param data ロード先のデータホルダー
      */
     private fun loadDrawings(data: MutableLiveData<List<Drawing>>) {
-        Log.d(TAG, "loadDrawings: start ")
+        BlasLog.trace("I", "loadDrawings: start ")
         val list = arrayListOf<Drawing>()
         // 図面無しを追加
         list.plusAssign(Drawing(0, unselectedString, "", 0))
@@ -216,14 +215,14 @@ class DrawingSearchViewModel(
             selectedCategory.value?.id ?: 0,
             selectedSubCategory.value?.id ?: 0
         ).forEach {
-            Log.d(TAG, "Drawing got: $it ")
+            BlasLog.trace("I", "Drawing got: $it ")
             val id = it["drawing_id"]?.toInt() ?: 0
             val name = it["name"] ?: ""
             val drawingFile = it["filename"] ?: ""
             list.plusAssign(Drawing(id, name, drawingFile, 0))
         }
         data.postValue(list.toList())
-        Log.d(TAG, "loadDrawings: end ")
+        BlasLog.trace("I", "loadDrawings: end ")
     }
 
     /**
@@ -234,10 +233,10 @@ class DrawingSearchViewModel(
      * @param data ロード先のデータホルダー
      */
     private fun loadDrawingImage(data: MutableLiveData<DrawingImage>) {
-        Log.d(TAG, "loadDrawingImage: start")
+        BlasLog.trace("I", "loadDrawingImage: start")
         selectedDrawing.value?.let {
             if (it.id == 0) {
-                Log.d(TAG, "No drawing selected ")
+                BlasLog.trace("I", "No drawing selected ")
                 data.postValue(null)
                 return@let // 図面無しを選択している場合は処理終了
             }
@@ -246,8 +245,7 @@ class DrawingSearchViewModel(
             // 対象のデータがローカルにあるか確認
             val localBmp:Bitmap? = drawingsController.loadImageFromLocal( it.drawingFile )
             if (localBmp != null) {
-                Log.d(
-                    TAG,
+                BlasLog.trace("I",
                     "The data was successfully read from the local: projectID=${it.id}, filename=${it.drawingFile} "
                 )
                 data.postValue(DrawingImage(localBmp,spots))
@@ -258,7 +256,7 @@ class DrawingSearchViewModel(
                 "view",
                 payload,
                 funcSuccess = { drawingResponse ->
-                    Log.d(TAG, "The data was successfully read from the remote server ")
+                    BlasLog.trace("I", "The data was successfully read from the remote server ")
                     val decodedString: ByteArray = Base64.decode(drawingResponse.records[0].Drawing.image, Base64.DEFAULT)
                     val remoteBmp:Bitmap =
                         BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
@@ -267,12 +265,12 @@ class DrawingSearchViewModel(
                     drawingsController.saveImageToLocal(it.drawingFile ,remoteBmp)
                 },
                 funcError = { _: Int, _: Int ->
-                    Log.d(TAG, "Failed to read data from remote server ")
+                    BlasLog.trace("W", "Failed to read data from remote server ")
                     error.postValue("図面のダウンロードに失敗しました")
                 }
             ).execute()
         }
-        Log.d(TAG, "loadDrawingImage: end")
+        BlasLog.trace("I", "loadDrawingImage: end")
     }
 
     /**
@@ -280,13 +278,13 @@ class DrawingSearchViewModel(
      * @return 設置箇所一覧
      */
     private fun getSpots(): List<DrawingSpot> {
-        Log.d(TAG, "getSpots: start ")
+        BlasLog.trace("I", "getSpots: start ")
         val list = arrayListOf<DrawingSpot>()
         // DBからラベルをロード
         drawingsController.getSpots(
             selectedDrawing.value?.id ?: 0
         ).forEach {
-            Log.d(TAG, "Spot got: $it ")
+            BlasLog.trace("I", "Spot got: $it ")
             val name = it["name"] ?: ""
             val color = it["shape_color"] ?: ""
             val x :Float = if (it["abscissa"]?.isNotBlank()!!) {
@@ -303,7 +301,7 @@ class DrawingSearchViewModel(
             }
             list.plusAssign(DrawingSpot(name, color, x.toInt(), y.toInt()))
         }
-        Log.d(TAG, "getSpots: end ")
+        BlasLog.trace("I", "getSpots: end ")
         return list
     }
 
