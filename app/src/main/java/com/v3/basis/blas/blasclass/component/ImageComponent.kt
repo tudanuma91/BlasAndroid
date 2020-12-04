@@ -68,13 +68,10 @@ open class ImageComponent {
             return hash
         }
 
-        //一時ディレクトリ作成
-        createTmpImageDir(context, projectId)
-        val imgFullPath = getSavedDir(context, projectId) + fileName
         //画像ファイル名のフルパス作成
         try {
             val byteArrOutputStream = ByteArrayOutputStream()
-            val fileOutputStream = FileOutputStream(imgFullPath)
+            val fileOutputStream = FileOutputStream(fileName)
             bmp!!.compress(Bitmap.CompressFormat.JPEG, 100, byteArrOutputStream)
             fileOutputStream.write(byteArrOutputStream.toByteArray())
             val digest: MessageDigest = MessageDigest.getInstance("MD5")

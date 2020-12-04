@@ -35,7 +35,7 @@ open class SyncBlasRest() {
         const val URL = BuildConfig.API_URL
 //        const val URL = "https://www.basis-service.com/blas70/api/v1/"
 
-        const val CONTEXT_TIME_OUT = 100000
+        const val CONNECT_TIME_OUT = 100000
         const val READ_TIME_OUT = 100000
         var queuefuncList = mutableListOf<FuncList>()
         val context = BlasApp.applicationContext()
@@ -76,7 +76,7 @@ open class SyncBlasRest() {
 
         val con = url.openConnection() as HttpURLConnection
         con.requestMethod = "GET"
-        con.connectTimeout = CONTEXT_TIME_OUT
+        con.connectTimeout = CONNECT_TIME_OUT
         con.readTimeout = READ_TIME_OUT
         con.doOutput = false  //GETのときはtrueにしてはいけません
         //responseDataがnull?
@@ -110,9 +110,7 @@ open class SyncBlasRest() {
             val url = java.net.URL(targetUrl)
             val con = url.openConnection() as HttpURLConnection
 
-            Log.d("konishi", "connect Ok")
             //POSTするデータの作成
-
             var postData: String = ""
 
             for ((k, v) in payload) {
@@ -121,11 +119,9 @@ open class SyncBlasRest() {
 
             postData = postData.substring(0, postData.length - 1)
 
-            Log.d("【rest/BlasRest】", "postData:${postData}")
-
             //タイムアウトとメソッドの設定
             con.requestMethod = method
-            con.connectTimeout = CONTEXT_TIME_OUT
+            con.connectTimeout = CONNECT_TIME_OUT
             con.readTimeout = READ_TIME_OUT
 
             //リクエストパラメータの設定

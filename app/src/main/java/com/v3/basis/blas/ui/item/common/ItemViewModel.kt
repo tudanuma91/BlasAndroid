@@ -5,7 +5,10 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import com.v3.basis.blas.blasclass.db.data.ItemsController
+import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.blasclass.rest.BlasRest
+import com.v3.basis.blas.blasclass.service.BlasSyncMessenger
+import com.v3.basis.blas.blasclass.service.SenderHandler
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -14,6 +17,7 @@ import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import kotlin.Exception
+import kotlin.concurrent.withLock
 
 class ItemViewModel: ViewModel() {
 
@@ -25,6 +29,8 @@ class ItemViewModel: ViewModel() {
     val qrKenpinEvent: PublishSubject<FieldText> = PublishSubject.create()
     val qrTekkyoEvent: PublishSubject<FieldText> = PublishSubject.create()
     val locationEvent: PublishSubject<FieldText> = PublishSubject.create()
+    val latEvent: PublishSubject<FieldText> = PublishSubject.create()
+    val lngEvent: PublishSubject<FieldText> = PublishSubject.create()
     val accountNameEvent: PublishSubject<FieldText> = PublishSubject.create()
     val completeSave: PublishSubject<Unit> = PublishSubject.create()
     val completeUpdate: PublishSubject<Unit> = PublishSubject.create()
@@ -32,6 +38,7 @@ class ItemViewModel: ViewModel() {
     val disposable = CompositeDisposable()
 
     var itemsController: ItemsController? = null
+    var token: String = ""
     var projectId: String = ""
     var itemId: Long = 0L
 
@@ -50,19 +57,31 @@ class ItemViewModel: ViewModel() {
 
             val map = mutableMapOf<String, String?>()
             map.set("project_id", projectId)
+
             itemsController?.also {
                 fields.forEachIndexed { index, f ->
                     val field = (f as FieldModel)
-                    // map.set("fld${index + 1}", field.convertToString())
                     map.set("fld${field.col}", field.convertToString())
                 }
 
                 try {
-                    if (itemId == 0L) {
-                        it.create(map)
-                    } else {
-                        map.set("item_id", itemId.toString())
-                        it.update(map)
+                    SenderHandler.lock.withLock {
+                        if (itemId == 0L) {
+                            if(it.create(map)) {
+                                BlasSyncMessenger.notifyBlasItems(token, projectId)
+                            }
+                            else {
+                                BlasLog.trace("E", "データベースの更新に失敗したため、再送イベントは送りません")
+                            }
+                        } else {
+                            map.set("item_id", itemId.toString())
+                            if(it.update(map)) {
+                                BlasSyncMessenger.notifyBlasItems(token, projectId)
+                            }
+                            else {
+                                BlasLog.trace("E", "データベースの更新に失敗したため、再送イベントは送りません")
+                            }
+                        }
                     }
                 }
                 catch ( ex : ItemsController.ItemCheckException ) {
@@ -100,6 +119,14 @@ class ItemViewModel: ViewModel() {
 
     fun clickLocation(field: FieldText) {
         locationEvent.onNext(field)
+    }
+
+    fun clickLat(field:FieldText) {
+        latEvent.onNext(field)
+    }
+
+    fun clickLng(field:FieldText) {
+        lngEvent.onNext(field)
     }
 
     fun clickQRCode(field: FieldText) {

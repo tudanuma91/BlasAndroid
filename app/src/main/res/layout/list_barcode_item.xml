@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <variable
+            name="barcodeitem"
+            type="com.v3.basis.blas.ui.fixture.fixture_config.BarcodeItem" />
+    </data>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/barcode_thumbnailview"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:padding="3dp"
+            android:imageResource="@{barcodeitem.imageId}"/>
+
+        <TextView
+            android:id="@+id/barcode_labelview"
+            android:layout_width="wrap_content"
+            android:layout_height="70dp"
+            android:textColor="#000"
+            android:padding="5dp"
+            android:gravity="center_vertical"
+            android:maxLines="1"
+            android:text="@{barcodeitem.name}"/>
+
+        <Switch
+            android:id="@+id/barcode_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="@={barcodeitem.useFlg}"
+            />
+
+    </LinearLayout>
+</layout>

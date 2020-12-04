@@ -1,7 +1,7 @@
 package com.v3.basis.blas.blasclass.sync
 
 import android.util.Log
-import com.v3.basis.blas.blasclass.db.fixture.FixtureController
+import com.v3.basis.blas.blasclass.controller.FixtureController
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureRecord
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestFixture
 import com.v3.basis.blas.ui.fixture.fixture_view.FixtureCellModel
@@ -19,11 +19,12 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
 
     fun exec() {
         val payload = createPayload()
-        //BlasRestFixture(crud, payload2, ::success, ::error).execute()
-       // SyncBlasRestFixture( crud, ::success,::error).execute(payload)
         val fixtureId = payload["fixture_id"]
-        val json = SyncBlasRestFixture(crud).execute(payload)
-        val ctl = FixtureController(model.context, model.project_id.toString())
+        val json = SyncBlasRestFixture(crud).upload(payload)
+        val ctl = FixtureController(
+            model.context,
+            model.project_id.toString()
+        )
         if(json != null) {
             val errorCode = json.getInt("error_code")
             if(errorCode == 0) {
@@ -61,7 +62,11 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
         Log.d("result",result.toString())
 
         // SQLite tableを更新する
-        val fixtureController = FixtureController(  model.context, model.project_id.toString())
+        val fixtureController =
+            FixtureController(
+                model.context,
+                model.project_id.toString()
+            )
         fixtureController.resetSyncStatus(fixture.fixture_id.toString())
 
         eventCompleted.onNext(true)
@@ -110,7 +115,11 @@ abstract class SyncFixtureBase(val model: FixtureCellModel, val fixture : LdbFix
         Log.d("errMsg" ,errMsg)
 
         // SQLite tableを更新する
-        val fixtureController = FixtureController(  model.context, model.project_id.toString())
+        val fixtureController =
+            FixtureController(
+                model.context,
+                model.project_id.toString()
+            )
         fixtureController.setErrorMsg(fixture.fixture_id.toString(),errMsg)
 
         //eventCompleted.onNext(false)

@@ -16,9 +16,4 @@
         android:id="@+id/navi_fixture_return"
         android:icon="@drawable/ic_replay_black_24dp"
         android:title="@string/navi_title_fixture_return"/>
-    <item
-        android:id="@+id/navi_fixture_search"
-        android:icon="@drawable/ic_search_black_24dp"
-        android:title="@string/navi_title_fixture_search"/>
-
 </menu>

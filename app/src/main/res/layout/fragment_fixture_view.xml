@@ -33,17 +33,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/allSyncButton"
-            android:background="@drawable/ic_circle"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:text="@{@string/all_sync_text(vm.sendCount)}"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="20dp"
-            />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -4,17 +4,23 @@ import android.content.ContentValues
 import android.content.Context
 import android.util.Log
 import androidx.work.impl.WorkDatabasePathHelper.getDatabasePath
+import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkFixture
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkRmFixture
 import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.db.fixture.Fixtures
 import com.v3.basis.blas.blasclass.ldb.LdbRmFixtureRecord
+import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.blasclass.worker.DownloadWorker
 import net.sqlcipher.database.SQLiteDatabase
 import java.io.File
+import java.io.FileReader
+import java.io.FileWriter
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 
 class ItemsController(context: Context, projectId: String): BaseController(context, projectId) {
@@ -25,11 +31,21 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         const val FIELD_TYPE_QRCODE_INT_INSPECTION = 8
         const val FIELD_TYPE_QRCODE_INT_RM = 11
 
+        private val lock = ReentrantLock()
     }
 
     private val addList = mutableListOf<String>()
     private lateinit var plHolder : Array<String>
+    private val itemCacheDir = BlasApp.applicationContext().dataDir.path  + "/items/${projectId}/"
+    private val cacheFile = itemCacheDir + "id_map.cache"
 
+    init {
+        //キャッシュディレクトリがなかったら作成する
+        if(!File(itemCacheDir).exists()) {
+            File(itemCacheDir).mkdirs()
+        }
+
+    }
     /**
      * ワード検索条件を構築
      */
@@ -53,7 +69,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         }
 
         val dataDispHiddenCol = getGroupsValue(groupId, "data_disp_hidden_column")
-        val fields = FieldController(context, projectId).searchDisp()
+        val fields = FieldController(context, projectId).getFieldRecords()
         var additionOr = arrayOf<String>()
 
         fields.forEach {
@@ -145,7 +161,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
                 //ここで画像が非同期だった場合もサーバーに登録ボタンを表示したい
                 val sql = "select * from items "+ addition + " order by create_date desc " + addingPager
-                Log.d("item search sql", sql)
+                BlasLog.trace("I", sql)
                 db?.rawQuery(sql, plHolder)
             }
 
@@ -199,7 +215,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
     }
 
     fun create(map: MutableMap<String, String?>): Boolean {
-        Log.d("insert()", "start")
+        var ret = true
 
         // QRコードバリデート処理
         ctlValidQr(map)
@@ -229,28 +245,28 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
         val cv = createConvertValue(item)
 
-        return try {
+        try {
             db?.beginTransaction()
 
             // itemテーブルに追加
-            db?.insert("items", null, cv)
+            db?.insertOrThrow("items", null, cv)
             // fixture(rm_fixture)を更新
            updateFixture(item, map)
 
             db?.setTransactionSuccessful()
-            true
         } catch (e: Exception) {
-            //とりあえず例外をキャッチして、Falseを返す？
-            e.printStackTrace()
-            false
+            BlasLog.trace("E", "データの新規追加に失敗しました", e)
+            ret = false
         }
         finally {
             db?.endTransaction()
         }
+
+        return ret
     }
 
     fun update(map: Map<String, String?>): Boolean {
-        Log.d("update()", "start")
+        var ret = true
 
         // QRコードバリデート処理
         val orgItemMap = map["item_id"]?.toLong()?.let { search(it) }
@@ -278,27 +294,31 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         // けどまたmap…
         val cv = createConvertValue(item, null)
 
-        return try {
+        try {
             db?.beginTransaction()
-
             // itmeテーブルを更新
-            db?.update("items", cv, "item_id = ?", arrayOf(item.item_id.toString()))
-            // fixture(rm_fixture)を更新
-            updateFixture(item, map)
+            var num = db?.update("items", cv, "item_id = ?", arrayOf(item.item_id.toString()))
+            if(num == 0) {
+                BlasLog.trace("E", "DBの更新に失敗しました")
+            }
+            else {
+                // fixture(rm_fixture)を更新
+                updateFixture(item, map)
+            }
 
             db?.setTransactionSuccessful()
 
-            Log.d("item update", "仮登録完了！！")
-            true
+            BlasLog.trace("I", "item_id:${item.item_id.toString()}を更新しました")
         } catch (e: Exception) {
             //とりあえず例外をキャッチして、Falseを返す？
-            e.printStackTrace()
-            false
+            BlasLog.trace("E", "item_id:${item.item_id.toString()}の更新に失敗しました", e)
+            ret = false
         }
         finally {
             db?.endTransaction()
-            Log.d("item update", "終了！")
         }
+
+        return ret
     }
 
     /**
@@ -351,16 +371,16 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
     }
 
     /**
-     * ItemIdを新しいものに置き換える(新規作成の時)
+     * ItemIdを新しいものに置き換える
      */
-    fun updateItemId4Insert(org_item_id: String, new_item_id: String) {
+    fun updateItemId(org_item_id: String, new_item_id: String) {
         Log.d("updateItemId()", "start")
 
         val cv = ContentValues()
         cv.put("item_id", new_item_id)
         cv.put("sync_status", SYNC_STATUS_SYNC)
 
-        return try {
+        try {
             db?.beginTransaction()
 
             db?.update("items", cv, "item_id = ?", arrayOf(org_item_id))
@@ -368,10 +388,14 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             db?.update("rm_fixtures", cv, "item_id = ?", arrayOf(org_item_id))
 
             db?.setTransactionSuccessful()!!
+
+            //画面が開きっぱなしのとき、画面はIDの変更を知らないので、変更テーブルをキャッシュファイルに書き込む。
+            if(org_item_id != new_item_id) {
+                writeCache(org_item_id, new_item_id)
+            }
         }
         catch (e: Exception) {
-            e.printStackTrace()
-            throw e
+            BlasLog.trace("E", "レコードの追加に失敗しました", e)
         }
         finally {
             db?.endTransaction()
@@ -391,7 +415,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         val cv = ContentValues()
         cv.put("sync_status", SYNC_STATUS_SYNC)
 
-        return try {
+        try {
             db?.beginTransaction()
 
             db?.update("items", cv, "item_id = ?", arrayOf(item_id))
@@ -401,8 +425,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             db?.setTransactionSuccessful()!!
         }
         catch (e: Exception) {
-            e.printStackTrace()
-            throw e
+            BlasLog.trace("E", "レコードの更新に失敗しました", e)
         }
         finally {
             db?.endTransaction()
@@ -447,7 +470,6 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             throw ItemCheckException("検品されていないシリアル番号です")
         }
         else {
-
             cursor.moveToFirst()
             val fixture = setProperty(Fixtures(), cursor) as Fixtures
             cursor.close()
@@ -506,21 +528,6 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         }
     }
 
-    fun setSyncStatus(itemId: Long, syncStatus: Int) {
-        val cv = ContentValues()
-        cv.put("sync_status", syncStatus)
-
-        return try {
-            db?.beginTransaction()
-            db?.update("items", cv, "item_id = ?", arrayOf(itemId.toString()))
-            db?.setTransactionSuccessful()
-            db?.endTransaction()!!
-        }
-        catch (ex: Exception) {
-            ex.printStackTrace()
-            throw ex
-        }
-    }
 
     fun delete(itemId: Long) {
         try {
@@ -532,6 +539,85 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         catch (ex: Exception) {
             ex.printStackTrace()
             throw ex
+        }
+    }
+
+    /**
+     * 仮IDと新規IDのCSVファイルを作成する。
+     * データの書式はヘッダなしで以下。
+     * 仮ID,新規ID\n
+     */
+    fun writeCache(oldItemId:String, newItemId:String) {
+        lock.withLock {
+            //ログファイルの決定
+            FileWriter(cacheFile, true).use {
+                val record = "$oldItemId,$newItemId\n"
+                it.write(record)
+                it.flush()
+            }
+        }
+    }
+
+    fun getRealItemId(oldItemId:String):String? {
+        var retItemId:String? = null
+        var records:List<String>? = null
+
+        lock.withLock {
+            try {
+                FileReader(cacheFile).use {
+                    //面倒なので一回すべて読む
+                    records = it.readLines()
+                }
+            }
+            catch(e:java.lang.Exception) {
+                BlasLog.trace("W", "${cacheFile}がありません", e)
+            }
+        }
+
+        //仮IDと一致するレコードを探す
+        val record = records?.firstOrNull() {
+            val tokens = it.split(",", "\n")
+            //引数の仮IDと一致したレコードを返す
+            tokens[0] == oldItemId
+        }
+
+        if(record != null) {
+            //新しいIDを返却する
+            retItemId = record.split(",", "\n")[1]
+        }
+
+        return retItemId
+    }
+
+    /**
+     * 不要なレコードを削除する
+     */
+    fun deleteCacheRecord(oldItemId:String) {
+        var srcRecords:List<String>? = null
+        var dstRecords = mutableListOf<String>()
+
+        lock.withLock {
+            FileReader(cacheFile).use {
+                //面倒なので一回すべて読む
+                srcRecords = it.readLines()
+            }
+
+            srcRecords?.forEach {
+                val tokens = it.split(",", "\n")
+                val old = tokens[0]
+                if(old != oldItemId) {
+                    //消さないレコードだけリストに再登録
+                    dstRecords.add(it)
+                }
+            }
+
+            //残ったレコードを書き直す
+            FileWriter(cacheFile, false).use {fw->
+                dstRecords.forEach {record->
+                    fw.write(record+"\n")
+                }
+                fw.flush()
+            }
         }
     }
 }

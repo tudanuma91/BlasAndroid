@@ -14,6 +14,7 @@ import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 import android.icu.text.SimpleDateFormat
 import com.v3.basis.blas.blasclass.helper.RestHelper
+import java.io.File
 import java.lang.Exception
 import java.security.MessageDigest
 import java.util.*
@@ -856,4 +857,20 @@ private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
         }
 
         return delList
+    }
+
+    public fun deleteDir(dirName:String) {
+        var files = File(dirName)
+        if(files == null) {
+            return
+        }
+        files.listFiles()?.forEach {
+            if(it.isDirectory()) {
+                deleteDir(it.absolutePath)
+            }
+            else if(it.isFile()) {
+                it.delete()
+            }
+        }
+        files?.delete()
     }

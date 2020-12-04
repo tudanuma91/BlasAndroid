@@ -28,8 +28,8 @@ import kotlin.reflect.full.starProjectedType
  * SQLiteのDBを管理するクラス。
  */
 abstract class BaseController(
-     val context: Context
-    ,val projectId: String
+     val context: Context,
+     val projectId: String
 ) {
 
     companion object {
@@ -46,21 +46,17 @@ abstract class BaseController(
         const val DONT_TAKE_OUT = 3
         const val RTN = 4
         const val REMOVE = 5
-
     }
 
     // 使うときはerrorMessageEvent.onNext("メッセージ")とする
     val errorMessageEvent: PublishSubject<String> = PublishSubject.create()
-
-    var db:SQLiteDatabase?
-
+    var db:SQLiteDatabase?=null
     var db_path:String? = null
 
     init {
-        SQLiteDatabase.loadLibs(context)
-        db = openSQLiteDatabase()
-        db?.rawQuery("PRAGMA foreign_keys=1",null)
-
+            //SQLiteDatabase.loadLibs(context)
+            db = openSQLiteDatabase()
+           // db?.rawQuery("PRAGMA foreign_keys=1", null)
     }
 
 
@@ -68,10 +64,11 @@ abstract class BaseController(
     fun openSQLiteDatabase(): SQLiteDatabase? {
 
         db_path = DownloadWorker.getSavedPath(projectId)
-        Log.d("SqliteDB Path:",db_path.toString())
 
+        Log.d("SqliteDB Path:",db_path.toString())
         val helper = db_path?.let {
-            SQLiteDatabase.openDatabase(db_path, BlasApp.key,null, SQLiteDatabase.OPEN_READWRITE)
+            //SQLiteDatabase.openDatabase(db_path, BlasApp.key,null, SQLiteDatabase.OPEN_READWRITE)
+            BlasLdbHandleManager.openDB(it)
         }
         return helper
     }
@@ -96,7 +93,7 @@ abstract class BaseController(
                     Log.d("prop.name is empty!!!!!",prop.name)
                     return@forEach
                 }
-                Log.d("setProperty()","propName:" + prop.name + "  value:" + value)
+                //Log.d("setProperty()","propName:" + prop.name + "  value:" + value)
 
                 if( value.isNullOrEmpty() ) {
                     return@forEach
@@ -246,7 +243,7 @@ abstract class BaseController(
     /**
      * show_dataの値を取得する
      */
-    protected fun getProjectVlue(columnName:String ) : Int {
+    protected fun getProjectValue(columnName:String ) : Int {
 
         val sql = "select "+ columnName + " from projects"
         val cursor = db?.rawQuery(sql,null)

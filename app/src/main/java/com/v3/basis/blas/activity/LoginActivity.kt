@@ -1,32 +1,32 @@
 package com.v3.basis.blas.activity
 
-import android.graphics.Bitmap
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
+import android.os.*
 import android.util.Log
-import android.widget.Toolbar
+import androidx.appcompat.app.AppCompatActivity
 import com.v3.basis.blas.R
-import kotlinx.android.synthetic.main.fragment_login.*
-import androidx.core.app.ComponentActivity.ExtraData
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.view.MenuItem
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import com.google.zxing.BinaryBitmap
-import com.google.zxing.multi.qrcode.QRCodeMultiReader
 import com.v3.basis.blas.ui.ext.showBackKeyForActionBar
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 //ログイン画面を表示する処理
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : AppCompatActivity(), ServiceConnection {
+    private lateinit var messenger: Messenger
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         setTitle(R.string.title_login)
-        showBackKeyForActionBar()
+        //リトライサービス起動
 
-//        QRCodeMultiReader().decodeMultiple(BinaryBitmap()).first().resultPoints.first().
+        showBackKeyForActionBar()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -40,6 +40,13 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    //ServiceConnectionのインターフェース
+    override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+    }
+
+    //ServiceConnectionのインターフェース
+    override fun onServiceDisconnected(name: ComponentName?) {
+    }
 }
 
 

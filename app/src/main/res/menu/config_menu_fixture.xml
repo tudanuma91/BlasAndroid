@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_fixture_config"
+        android:title="@string/menu_title_fixture_config">
+    </item>
+    <item
+        android:id="@+id/menu_fixture_search"
+        android:title="@string/navi_title_fixture_search">
+    </item>
+
+</menu>

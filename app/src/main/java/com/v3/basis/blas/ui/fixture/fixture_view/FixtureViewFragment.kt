@@ -2,6 +2,7 @@ package com.v3.basis.blas.ui.fixture.fixture_view
 
 
 import android.os.Bundle
+import android.os.Message
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.FixtureActivity
+import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.canTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.finishInstall
@@ -24,15 +26,18 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusFinishInst
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusNotTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
-import com.v3.basis.blas.blasclass.db.fixture.FixtureController
+import com.v3.basis.blas.blasclass.controller.FixtureController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
 import com.v3.basis.blas.blasclass.rest.BlasRest
-import com.v3.basis.blas.blasclass.sync.Lump
 import com.v3.basis.blas.databinding.FragmentFixtureViewBinding
 
-import com.v3.basis.blas.ui.ext.addTitle
+import com.v3.basis.blas.ui.ext.addTitleWithProjectName
 import com.v3.basis.blas.ui.ext.getStringExtra
+import com.v3.basis.blas.ui.common.ARG_PROJECT_ID
+import com.v3.basis.blas.ui.common.ARG_PROJECT_NAME
+import com.v3.basis.blas.ui.common.ARG_TOKEN
+import com.v3.basis.blas.ui.common.FixtureBaseFragment
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
 import io.reactivex.Single
@@ -41,9 +46,8 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.activity_fixture.*
 import kotlinx.android.synthetic.main.fragment_fixture_view.*
-import kotlinx.android.synthetic.main.fragment_fixture_view.allSyncButton
-import kotlinx.android.synthetic.main.fragment_item_view.*
 import kotlinx.android.synthetic.main.fragment_item_view.recyclerView
 import org.json.JSONArray
 import org.json.JSONObject
@@ -53,10 +57,7 @@ import java.lang.Exception
 /**
  * A simple [Fragment] subclass.
  */
-class FixtureViewFragment : Fragment() {
-
-    lateinit var token:String
-    lateinit var project_id:String
+class FixtureViewFragment : FixtureBaseFragment() {
     private var dataListAll = mutableListOf<FixtureListCell>()
     private var dataList = mutableListOf<FixtureListCell>()
     private var valueMap : MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
@@ -66,7 +67,6 @@ class FixtureViewFragment : Fragment() {
     private var helper = RestHelper()
 
     private var jsonParseList : JSONArray? = null
-    private lateinit var fixtureController: FixtureController
     private val disposables = CompositeDisposable()
 
     private var paresUnitNum = 100
@@ -80,66 +80,24 @@ class FixtureViewFragment : Fragment() {
 
     companion object {
         const val CREATE_UNIT = 20
+        fun newInstance() = FixtureViewFragment()
     }
 
     private lateinit var viewModel: FixtureListViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        addTitle("project_name")
+        addTitleWithProjectName("機器一覧画面")
     }
 
     private val groupAdapter = GroupAdapter<GroupieViewHolder<*>>()
 
-//    private val adapter: ViewAdapter = ViewAdapter(dataList, object : ViewAdapter.ListListener {
-//        override fun onClickRow(tappedView: View, rowModel: com.v3.basis.blas.ui.fixture.fixture_view.RowModel) {
-//            //カードタップ時の処理
-//        }
-//
-//    })
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-
         super.onCreateView(inflater, container, savedInstanceState)
-        Log.d("【onCreateView】","呼ばれた")
-        val extras = activity?.intent?.extras
-        if (extras?.getString("token") != null) {
-            token = extras.getString("token").toString()
-        }
-        if (extras?.getString("project_id") != null) {
-            project_id = extras.getString("project_id").toString()
-        }
 
-        checkSearchMap()
-
-        fixtureController = FixtureController(requireContext(), project_id)
-        fixtureController.errorMessageEvent
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                //エラーのため、データを初期化する
-                valueMap.clear()
-
-                Log.d("取得失敗","$it")
-                progressBar.visibility = View.INVISIBLE
-            }
-            .addTo(disposables)
-
+        getSearchParams()
         viewModel = ViewModelProviders.of(this).get(FixtureListViewModel::class.java)
-
-        viewModel.serverSyncedEvent
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                val count = dataList.filter { it.model.syncVisible.get() && it.model.syncedToServer.get().not() }.size
-                allSyncButton.text = "未送信\n${count}件"
-            }
-            .addTo(disposables)
-
-        viewModel.errorEvent
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
-            }
-            .addTo(disposables)
 
         bind = DataBindingUtil.inflate(inflater, R.layout.fragment_fixture_view, container, false)
         bind.vm = viewModel
@@ -147,46 +105,37 @@ class FixtureViewFragment : Fragment() {
         return bind.root
     }
 
-    private fun checkSearchMap() {
+    private fun getSearchParams() {
+        arguments?.let {
+            searchValueMap.set("freeWord",it.getString("freeWord"))
+            searchValueMap.set("serial_number",it.getString("serialNumber"))
+            searchValueMap.set("fixture_id",it.getString("dataId"))
+            searchValueMap.set("FixOrg",it.getString("kenpinOrg"))
+            searchValueMap.set("FixUser",it.getString("kenpinUser"))
+            searchValueMap.set("kenpinDayMin",it.getString("kenpinDayMin"))
+            searchValueMap.set("kenpinDayMax",it.getString("kenpinDayMax"))
+            searchValueMap.set("TakeOutOrg",it.getString("takeOutOrg"))
+            searchValueMap.set("TakeOutUser",it.getString("takeOutUser"))
+            searchValueMap.set("takeOutDayMin",it.getString("takeOutDayMin"))
+            searchValueMap.set("takeOutDayMax",it.getString("takeOutDayMax"))
+            searchValueMap.set("RtnOrg",it.getString("returnOrg"))
+            searchValueMap.set("RtnUser",it.getString("returnUser"))
+            searchValueMap.set("returnDayMin",it.getString("returnDayMin"))
+            searchValueMap.set("returnDayMax",it.getString("returnDayMax"))
+            searchValueMap.set("ItemOrg",it.getString("itemOrg"))
+            searchValueMap.set("ItemUser",it.getString("itemUser"))
+            searchValueMap.set("itemDayMin",it.getString("itemDayMin"))
+            searchValueMap.set("itemDayMax",it.getString("itemDayMax"))
+            searchValueMap.set("status",it.getString("status"))
+        }
 
-        searchValueMap.set("freeWord",getStringExtra("freeWord"))
-        searchValueMap.set("serial_number",getStringExtra("serialNumber"))
-        searchValueMap.set("fixture_id",getStringExtra("dataId"))
-        searchValueMap.set("FixOrg",getStringExtra("kenpinOrg"))
-        searchValueMap.set("FixUser",getStringExtra("kenpinUser"))
-        searchValueMap.set("kenpinDayMin",getStringExtra("kenpinDayMin"))
-        searchValueMap.set("kenpinDayMax",getStringExtra("kenpinDayMax"))
-        searchValueMap.set("TakeOutOrg",getStringExtra("takeOutOrg"))
-        searchValueMap.set("TakeOutUser",getStringExtra("takeOutUser"))
-        searchValueMap.set("takeOutDayMin",getStringExtra("takeOutDayMin"))
-        searchValueMap.set("takeOutDayMax",getStringExtra("takeOutDayMax"))
-        searchValueMap.set("RtnOrg",getStringExtra("returnOrg"))
-        searchValueMap.set("RtnUser",getStringExtra("returnUser"))
-        searchValueMap.set("returnDayMin",getStringExtra("returnDayMin"))
-        searchValueMap.set("returnDayMax",getStringExtra("returnDayMax"))
-        searchValueMap.set("ItemOrg",getStringExtra("itemOrg"))
-        searchValueMap.set("ItemUser",getStringExtra("itemUser"))
-        searchValueMap.set("itemDayMin",getStringExtra("itemDayMin"))
-        searchValueMap.set("itemDayMax",getStringExtra("itemDayMax"))
-        searchValueMap.set("status",getStringExtra("status"))
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        //全て同期のボタン
-        allSyncButton.setOnClickListener {
-            //  連打禁止！！
-            allSyncButton.isEnabled = false
-            Log.d("フローティングボタン Fixture","Click!!!!")
-
-            Lump(requireContext(),project_id,token,0){
-                (requireActivity() as FixtureActivity).reloard()
-            }.exec()
-        }
-
         try {
-            if(token != null && project_id != null) {
+            if(token != null && projectId != null) {
                 Log.d("lifeCycle", "onViewCreated")
                 //リサイクラ-viewを取得
                 //基本的にデータはまだ到着していないため、空のアクティビティとadapterだけ設定しておく
@@ -195,40 +144,21 @@ class FixtureViewFragment : Fragment() {
                 recyclerView.layoutManager = LinearLayoutManager(activity)
                 recyclerView.adapter = groupAdapter
                 recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-
+                    //画面がスクロールされたときに呼び出す
                     override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                         super.onScrollStateChanged(recyclerView, newState)
-//                        if (valueMap.isNotEmpty()) {
-//                            val notOverSize = currentIndex < dataListAll.size
-                            //100件のみ表示処理。
-                            //val notOverSize = currentIndex <= dataListAll.size
-                            if (!recyclerView.canScrollVertically(1) && progressBar.visibility == View.INVISIBLE) {
-                                progressBar.visibility = View.VISIBLE
-                                offset += CREATE_UNIT
+                        //100件のみ表示処理。
+                        if (!recyclerView.canScrollVertically(1) && progressBar.visibility == View.INVISIBLE) {
+                            progressBar.visibility = View.VISIBLE
+                            offset += CREATE_UNIT
 
-                                /*100件のみ表示の処理。
-                                if(currentIndex % paresUnitNum == 0){
-                                    parseJson()
-                                }*/
-                                searchAsync()
-//                                setAdapter()
-                            }
-//                        }
+                            getRecords()
+                        }
                     }
                 })
 
                 //呼ぶタイミングを確定させる！！
-                searchAsync()
-//                val payload2 = mapOf("token" to token, "project_id" to project_id)
-//                Log.d("testtest", "取得する")
-//                val list = FixtureController(requireContext(), project_id).search()
-//                Log.d("FixtureViewTest", list.toString())
-//                BlasRestFixture(
-//                    "search",
-//                    payload2,
-//                    ::fixtureGetSuccess,
-//                    ::fixtureGetError
-//                ).execute()
+                getRecords()
             }else{
                 throw java.lang.Exception("Failed to receive internal data ")
             }
@@ -244,8 +174,8 @@ class FixtureViewFragment : Fragment() {
         }
     }
 
-    private fun searchAsync() {
-
+    private fun getRecords() {
+        val fixtureController = FixtureController(BlasApp.applicationContext(), projectId)
         Single.fromCallable { fixtureController.searchDisp(offset = offset, searchMap = searchValueMap) }
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
@@ -270,7 +200,7 @@ class FixtureViewFragment : Fragment() {
                     // itを全部渡してもいいような気もするが辞めておく・・・
                     val model = FixtureCellModel(
                         token
-                        ,project_id.toInt()
+                        ,projectId.toInt()
                         ,it.fixture_id
                         , title.toString()
                         , value
@@ -292,22 +222,11 @@ class FixtureViewFragment : Fragment() {
 
     private fun createDataList() {
         //データ管理のループ
-        Log.d("ここで死んでいる","")
-//        if(currentIndex < parseStartNum) {
-//            dataList.addAll(dataListAll.filterIndexed { index, mutableMap ->
-//                (index >= currentIndex) && (index < currentIndex + CREATE_UNIT)
-//            }.toMutableList())
-//            dataList.forEach{
-//                Log.d("あたいチェック","datalist id =${it.title}")
-//            }
-//        }
         val filteredList = dataListAll.filterIndexed { index, mutableMap ->
             (index >= currentIndex) && (index < currentIndex + CREATE_UNIT)
         }
         dataList.addAll(filteredList.toMutableList())
-        dataList.forEach{
-            Log.d("あたいチェック","datalist id =${it.model.fixture_id}")
-        }
+
         // update
         if (dataList.isNotEmpty()) {
             currentIndex += CREATE_UNIT
@@ -335,64 +254,6 @@ class FixtureViewFragment : Fragment() {
         }
     }
 
-    /**
-     * 機器管理取得時
-     */
-    private fun fixtureGetSuccess(result: JSONObject) {
-        //カラム順に並べ替える
-       jsonParseList = helper.createJsonArray(result)
-       // Log.d("配列の中身","jsonParseList => ${jsonParseList}")
-       /* for(i in 0 .. jsonParseList!!.length()-1){
-            val fields = JSONObject(jsonParseList!![i].toString())
-            val fixture = fields.getJSONObject("Fixture")
-            val fixtureId = fixture.getInt("fixture_id")
-            Log.d("配列の中身","ID => ${fixtureId}")
-        }*/
-        //Log.d("配列の中身","jsonParseList => ${jsonParseList!!.length()}")
-        if(jsonParseList != null) {
-            parseJson()
-            if (valueMap.isNotEmpty()) {
-                valueMap.forEach {
-
-                    Log.d("配列の中身","key = ${it.key}")
-
-                    //カラムの定義取得
-//                    val fixture_id = it.key
-//                    val fixture_value = it.value
-//                    val value = createValue(fixture_value)
-//
-//                    val rowModel = RowModel().also {
-//                        if (fixture_id != null) {
-//                            it.title = fixture_id.toString()
-//                        }
-//                        if (value != null) {
-//                            it.detail = value
-//                        }
-//                    }
-//                    dataListAll.add(rowModel)
-                }
-                setAdapter()
-            }
-        }
-    }
-
-    /**
-     * フィールド取得失敗時
-     */
-    private fun fixtureGetError(errorCode: Int, aplCode:Int) {
-
-        var message:String? = null
-
-        message = BlasMsg().getMessage(errorCode,aplCode)
-
-        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
-
-        //エラーのため、データを初期化する
-        valueMap.clear()
-
-        Log.d("取得失敗","${errorCode}")
-        progressBar.visibility = View.INVISIBLE
-    }
 
     /**
      * 表示する値を作成する

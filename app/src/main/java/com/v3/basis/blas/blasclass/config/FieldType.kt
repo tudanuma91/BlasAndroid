@@ -16,6 +16,8 @@ open class FieldType {
         const val TEKKILYO_RENDOU_QR = "11"
         const val ACOUNT_NAME = "12"
         const val CHECK_VALUE = "13"
+        const val LAT_LOCATION = "14"
+        const val LNG_LOCATION = "15"
 
         //ユニークチェック
         const val UNIQUE_CHK = "unique_chk"

@@ -64,7 +64,6 @@ data class RestRequestData(
 object QueueController {
     private var stop_flg:Boolean = false                                  //スレッド停止フラグ
     private var reqList:MutableList<RestRequestData> = mutableListOf()     // キューリスト
-    val lock = java.util.concurrent.locks.ReentrantLock()                   //排他制御
     var param:String = ""
 
     /**

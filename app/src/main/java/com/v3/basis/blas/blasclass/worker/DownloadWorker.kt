@@ -9,6 +9,10 @@ import androidx.work.workDataOf
 import com.google.gson.Gson
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.app.deleteDir
+import com.v3.basis.blas.blasclass.db.BlasLdbHandleManager
+import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
+import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.blasclass.rest.BlasRestCache
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestCache
 import com.v3.basis.blas.ui.ext.traceLog
@@ -76,7 +80,7 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
             Result.success()
         } catch (e: Exception) {
             traceLog("Failed to download task, ${e::class.java.name}")
-            Log.d("error!!!!!!!!!!!!",e.message)
+            Log.d("download error",e.message)
             //  failureを返すと、永久に再ダウンロードできなくなる
             Result.success(workDataOf(KEY_RESULT_SUCCEEDED to false))
         }
@@ -133,6 +137,44 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters): Base
         output.close()
         input.close()
 
+        //DBをクローズする。ここで閉じるべきは、自分自身だけ。他のDBはリトライが使用している可能性がある。
+        //閉じないと、ダウンロードし直したときにDBを上書きできない。
+        val dbPath = getSavedPath(projectId)
+        if (dbPath != null) {
+            BlasLdbHandleManager.closeDB(dbPath)
+        }
+
+        //画像のキャッシュファイルも削除する
+        val cacheImagePath = context.dataDir.path + "/images/${projectId}"
+        try {
+            deleteDir(cacheImagePath)
+        }
+        catch(e:java.lang.Exception) {
+            //エラーでも問題なし
+            e.printStackTrace()
+            BlasLog.trace("E", "${cacheImagePath}の削除に失敗しました", e)
+        }
+
+        //古いDBが残っていたら削除する
+        val cacheDbPath = context.dataDir.path + "/databases/${projectId}"
+        try {
+            deleteDir(cacheDbPath)
+        }
+        catch(e:java.lang.Exception) {
+            //エラーでも問題なし
+            e.printStackTrace()
+            BlasLog.trace("E", "${cacheDbPath}の削除に失敗しました", e)
+        }
+        //データ管理のキャッシュファイルが残っていたら削除する
+        val cacheItemPath = context.dataDir.path + "/items/${projectId}"
+        try {
+            deleteDir(cacheItemPath)
+        }
+        catch(e:java.lang.Exception) {
+            //エラーでも問題なし
+            e.printStackTrace()
+            BlasLog.trace("E", "${cacheItemPath}の削除に失敗しました", e)
+        }
         // UnZip
         if (unzip(localPath, unZipPath)) {
             //  DeleteZipFile

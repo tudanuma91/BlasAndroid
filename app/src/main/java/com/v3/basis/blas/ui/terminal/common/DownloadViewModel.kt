@@ -80,34 +80,6 @@ class DownloadViewModel: ViewModel() {
             .addTo(disposable)
     }
 
-/*
-//    private fun setDownloadUrl(model: DownloadModel, callback: () -> Unit) {
-//
-////        item.downloadUrl = "https://www.basis-service.com/blas777/item/20200514043512291.zip"
-////        item.hasNotDownloadUrl.set(false)
-//        val payload = mapOf(
-//            "token" to token,
-//            "project_id" to model.projectId
-//        )
-//        val success: (json: JSONObject) -> Unit = {
-//            traceLog(it.toString())
-//            try {
-//                val zipModel = Gson().fromJson(it.toString(), DownloadZipModel::class.java)
-//                model.downloadUrl = BuildConfig.HOST + zipModel.zip_path
-//                model.hasNotDownloadUrl.set(false)
-//                callback.invoke()
-//            } catch (e: Exception) {
-//                Log.d("parse error", e.toString())
-//                traceLog(e.stackTrace.toString())
-//                model.hasNotDownloadUrl.set(true)
-//            }
-//        }
-//        val funcError:(Int,Int) -> Unit = {errorCode, aplCode ->
-//            model.downloadUrl = ""
-//        }
-//        BlasRestCache("zip", payload, success, funcError).execute()
-//    }
-*/
 
     /**
      * ダウンロードボタンがクリックされたとき、呼び出し側にそれを通知します。

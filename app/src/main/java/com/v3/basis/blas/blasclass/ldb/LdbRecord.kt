@@ -1,5 +1,9 @@
 package com.v3.basis.blas.blasclass.ldb
 
+import android.graphics.Bitmap
+import com.v3.basis.blas.blasclass.db.BaseController
+import com.v3.basis.blas.blasclass.db.BaseController.Companion.SYNC_STATUS_SYNC
+
 
 open class LdbSyncBase {
     var sync_status: Int = 0 //何も弄ってない0 仮登録中(新規追加)1、仮登録中(編集)2、仮登録集(削除)3,送信待ち4, 送信完了5
@@ -23,9 +27,44 @@ open class LdbFixtureRecord : LdbSyncBase() {
     var item_user_id: Int = 0           //設置したユーザのＩＤ
     var item_date: String = ""             //設置した日時
     var serial_number: String = ""     //シリアルナンバー
-    var status: Int = 0                       //0:検品済み(持ち出し可), 1:持ち出し中,2:設置済み, 3:持出不可
+    var status: Int = 0                       //0:検品済み(持ち出し可), 1:持ち出し中,2:設置済み, 3:持出不可 4:返却
     var create_date: String = ""         //レコード作成日付
     var update_date: String = ""         //レコード更新日付
+
+    fun toPayLoad():MutableMap<String, String> {
+        val payload = mutableMapOf<String, String>()
+        payload["fixture_id"] = fixture_id.toString()
+        payload["project_id"] = project_id.toString()
+        payload["serial_number"] = serial_number
+        payload["update_date"] = update_date
+        payload["sync_status"] = sync_status.toString()
+
+        when(status){
+            BaseController.KENPIN_FIN -> {
+                payload["fix_org_id"] = fix_org_id.toString()
+                payload["fix_user_id"] =  fix_user_id.toString()
+                payload["fix_date"] =  fix_date
+            }
+            BaseController.TAKING_OUT ->{
+                payload["takeout_org_id"] = takeout_org_id.toString()
+                payload["takeout_user_id"] = takeout_user_id.toString()
+                payload["takeout_date"] = takeout_date
+            }
+            BaseController.RTN->{
+                payload["rtn_org_id"] = rtn_org_id.toString()
+                payload["rtn_user_id"] = rtn_user_id.toString()
+                payload["rtn_date"] = rtn_date
+            }
+        }
+
+
+        if( BaseController.SYNC_STATUS_NEW  == sync_status ) {
+            payload["create_date"] = create_date
+        }
+
+        return payload
+    }
+
 }
 
 class LdbFixtureDispRecord : LdbFixtureRecord() {
@@ -60,179 +99,6 @@ class LdbUserRecord {
     var create_user_id: Int = 0         //ユーザ登録者
 }
 
-/*
-class LdbItemRecord : LdbSyncBase() {
-    var item_id: Long = 0
-    var project_id: Int = 0
-    var org_id: Int = 0
-    var user_id: Int = 0
-    var lat: Float = 0.0f
-    var lng: Float = 0.0f
-    var fld1: String = ""
-    var fld2: String = ""
-    var fld3: String = ""
-    var fld4: String = ""
-    var fld5: String = ""
-    var fld6: String = ""
-    var fld7: String = ""
-    var fld8: String = ""
-    var fld9: String = ""
-    var fld10: String = ""
-    var fld11: String = ""
-    var fld12: String = ""
-    var fld13: String = ""
-    var fld14: String = ""
-    var fld15: String = ""
-    var fld16: String = ""
-    var fld17: String = ""
-    var fld18: String = ""
-    var fld19: String = ""
-    var fld20: String = ""
-    var fld21: String = ""
-    var fld22: String = ""
-    var fld23: String = ""
-    var fld24: String = ""
-    var fld25: String = ""
-    var fld26: String = ""
-    var fld27: String = ""
-    var fld28: String = ""
-    var fld29: String = ""
-    var fld30: String = ""
-    var fld31: String = ""
-    var fld32: String = ""
-    var fld33: String = ""
-    var fld34: String = ""
-    var fld35: String = ""
-    var fld36: String = ""
-    var fld37: String = ""
-    var fld38: String = ""
-    var fld39: String = ""
-    var fld40: String = ""
-    var fld41: String = ""
-    var fld42: String = ""
-    var fld43: String = ""
-    var fld44: String = ""
-    var fld45: String = ""
-    var fld46: String = ""
-    var fld47: String = ""
-    var fld48: String = ""
-    var fld49: String = ""
-    var fld50: String = ""
-    var fld51: String = ""
-    var fld52: String = ""
-    var fld53: String = ""
-    var fld54: String = ""
-    var fld55: String = ""
-    var fld56: String = ""
-    var fld57: String = ""
-    var fld58: String = ""
-    var fld59: String = ""
-    var fld60: String = ""
-    var fld61: String = ""
-    var fld62: String = ""
-    var fld63: String = ""
-    var fld64: String = ""
-    var fld65: String = ""
-    var fld66: String = ""
-    var fld67: String = ""
-    var fld68: String = ""
-    var fld69: String = ""
-    var fld70: String = ""
-    var fld71: String = ""
-    var fld72: String = ""
-    var fld73: String = ""
-    var fld74: String = ""
-    var fld75: String = ""
-    var fld76: String = ""
-    var fld77: String = ""
-    var fld78: String = ""
-    var fld79: String = ""
-    var fld80: String = ""
-    var fld81: String = ""
-    var fld82: String = ""
-    var fld83: String = ""
-    var fld84: String = ""
-    var fld85: String = ""
-    var fld86: String = ""
-    var fld87: String = ""
-    var fld88: String = ""
-    var fld89: String = ""
-    var fld90: String = ""
-    var fld91: String = ""
-    var fld92: String = ""
-    var fld93: String = ""
-    var fld94: String = ""
-    var fld95: String = ""
-    var fld96: String = ""
-    var fld97: String = ""
-    var fld98: String = ""
-    var fld99: String = ""
-    var fld100: String = ""
-    var fld101: String = ""
-    var fld102: String = ""
-    var fld103: String = ""
-    var fld104: String = ""
-    var fld105: String = ""
-    var fld106: String = ""
-    var fld107: String = ""
-    var fld108: String = ""
-    var fld109: String = ""
-    var fld110: String = ""
-    var fld111: String = ""
-    var fld112: String = ""
-    var fld113: String = ""
-    var fld114: String = ""
-    var fld115: String = ""
-    var fld116: String = ""
-    var fld117: String = ""
-    var fld118: String = ""
-    var fld119: String = ""
-    var fld120: String = ""
-    var fld121: String = ""
-    var fld122: String = ""
-    var fld123: String = ""
-    var fld124: String = ""
-    var fld125: String = ""
-    var fld126: String = ""
-    var fld127: String = ""
-    var fld128: String = ""
-    var fld129: String = ""
-    var fld130: String = ""
-    var fld131: String = ""
-    var fld132: String = ""
-    var fld133: String = ""
-    var fld134: String = ""
-    var fld135: String = ""
-    var fld136: String = ""
-    var fld137: String = ""
-    var fld138: String = ""
-    var fld139: String = ""
-    var fld140: String = ""
-    var fld141: String = ""
-    var fld142: String = ""
-    var fld143: String = ""
-    var fld144: String = ""
-    var fld145: String = ""
-    var fld146: String = ""
-    var fld147: String = ""
-    var fld148: String = ""
-    var fld149: String = ""
-    var fld150: String = ""
-    var ee_enter: String = ""
-    var ee_exit: String = ""
-    var ee_enter_location: String = ""
-    var ee_exit_location: String = ""
-    var temp: String = ""
-    var end_flg: Int = 0
-    var work_flg: Int = 0
-    var modified_user: Int = 0
-    var create_date: String = ""
-    var update_date: String = ""
-}
-*/
-
-
-
 open class LdbRmFixtureRecord : LdbSyncBase() {
     var rm_fixture_id: Int = 0          //主キー
     var project_id: Int = 0             //プロジェクトID
@@ -265,7 +131,7 @@ class LdbRmFixtureDispRecord : LdbRmFixtureRecord() {
 }
 
 
-data class LdbFieldRecord(
+class LdbFieldRecord(
     var field_id:Int? = 0,
     var project_id:Int? = 0,
     var col:Int? = 0,
@@ -290,3 +156,72 @@ data class LdbFieldRecord(
     var edit_id:Int? = 0
 )
 
+/* project_imagesテーブルと、imagesテーブルの検索結果を
+　　保持するデータクラス
+ */
+data class LdbItemImageRecord (
+    //project_imagesテーブルより
+    var project_image_id:Long=0,
+    var project_id:Int=0,
+    var list:Int=0,
+    var field_id:Int=0,
+    var name:String?="",  //カラム名
+    //imagesテーブルより
+    var image_id:Long?=0,
+    var filename:String?="",  //画像ファイル名
+    var item_id:Long?=0,
+    var moved:Int?=0,
+    var rank:Int?=-1,
+    var create_date:String?="",
+    var bitmap: Bitmap? = null, //画像を取得したら入る
+    var sync_status:Int?=0,
+    var error_msg:String?="",
+    var downloadProgress:Boolean = true
+)
+
+
+/**
+ * 画像レコード
+ */
+class LdbImageRecord:LdbSyncBase() {
+    var image_id: Long? = 0
+    var project_id: Int? = 0
+    var project_image_id: Int? = 0
+    var item_id: Long? = 0
+    var filename: String = ""
+    var hash: String = ""
+    var moved: Int? = 0
+    var create_date: String = ""
+
+    fun toPayLoad():MutableMap<String, String> {
+        val payload = mutableMapOf<String, String>()
+        payload["image_id"] = image_id.toString()
+        payload["project_id"] = project_id.toString()
+        payload["project_image_id"] = project_image_id.toString()
+        payload["item_id"] = item_id.toString()
+        payload["filename"] = filename
+        payload["hash"] = hash
+        payload["moved"] = moved.toString()
+        payload["create_date"] = create_date
+        payload["sync_status"] = sync_status.toString()
+        payload["error_msg"] = error_msg
+        //payload["image"] =
+
+        return payload
+    }
+
+    override fun toString():String {
+        val str = mutableMapOf<String, String>()
+        str["image_id"] = image_id.toString()
+        str["project_id"] = project_id.toString()
+        str["project_image_id"] = project_image_id.toString()
+        str["item_id"] = item_id.toString()
+        str["filename"] = filename
+        str["hash"] = hash
+        str["moved"] = moved.toString()
+        str["create_date"] = create_date
+        str["sync_status"] = sync_status.toString()
+        str["error_msg"] = error_msg
+        return str.toString()
+    }
+}
