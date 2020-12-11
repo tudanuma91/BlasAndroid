@@ -309,6 +309,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         new_fixture.create_date = current.format(formatter)
         new_fixture.update_date = current.format(formatter)
         new_fixture.sync_status = SYNC_STATUS_NEW
+        new_fixture.error_msg = "送信待ちです"
 
 //        val exceptList = listOf("fixture_id")
         val cv = createConvertValue(new_fixture)
@@ -351,6 +352,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
         fixture.fix_date = current.format(formatter)
         fixture.update_date = current.format(formatter)
         fixture.sync_status = SYNC_STATUS_EDIT
+        fixture.error_msg = "送信待ちです"
 
         val cv = createConvertValue(fixture,null)
         BlasLog.trace("I", "機器情報更新 $cv")
@@ -566,6 +568,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             fixture!!.update_date = current.format(formatter)
             fixture!!.status = TAKING_OUT
             fixture!!.sync_status = SYNC_STATUS_EDIT
+            fixture!!.error_msg = "送信待ちです"
 
             val cv = createConvertValue(fixture as Any, null)
 
@@ -667,6 +670,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
             fixture!!.update_date = current.format(formatter)
             fixture!!.status = RTN
             fixture!!.sync_status = SYNC_STATUS_EDIT
+            fixture!!.error_msg = "送信待ちです"
 
             val cv = createConvertValue(fixture,null)
 
@@ -723,6 +727,7 @@ class FixtureController(context: Context, projectId: String): BaseController(con
 
         val cv = ContentValues()
         cv.put("sync_status", SYNC_STATUS_SYNC)
+        cv.put("error_msg", "")
 
         return try {
             db?.beginTransaction()
@@ -804,5 +809,38 @@ class FixtureController(context: Context, projectId: String): BaseController(con
            ex.printStackTrace()
            throw ex
        }
+    }
+
+    fun updateFixtureRecordStatus(fixture_id:String?, errorStatus:Int?, sendCnt:Int?, errorMsg:String) {
+        if(fixture_id == null){
+            return
+        }
+
+        if(errorStatus == null){
+            return
+        }
+
+        if(sendCnt == null) {
+            return
+        }
+
+        val cv = ContentValues()
+        cv.put("error_status", errorStatus)
+        cv.put("send_cnt", sendCnt)
+        cv.put("error_msg", errorMsg)
+
+        try {
+            db?.beginTransaction()
+
+            db?.update("fixtures", cv, "fixture_id = ?", arrayOf(fixture_id))
+
+            db?.setTransactionSuccessful()!!
+        }
+        catch (e: Exception) {
+            BlasLog.trace("E", "レコードの更新に失敗しました", e)
+        }
+        finally {
+            db?.endTransaction()
+        }
     }
 }

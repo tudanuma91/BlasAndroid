@@ -22,6 +22,7 @@ import com.v3.basis.blas.activity.ItemEditActivity
 import com.v3.basis.blas.activity.ItemImageActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
+import com.v3.basis.blas.blasclass.db.BaseController.Companion.SYNC_STATUS_SYNC
 import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.helper.RestHelper
@@ -428,7 +429,6 @@ class ItemViewFragment : Fragment() {
                 }
             }
             it.itemId = item_id
-            Log.d("testtst","${item_id}")
 
             it.detail = text.toString()
             it.projectId = projectId
@@ -467,49 +467,19 @@ class ItemViewFragment : Fragment() {
             syncStatus,
             requireContext()
         )
-        model.errorMessage.set(rowModel.errMsg)
+        //konishi check
+        if(syncStatus > SYNC_STATUS_SYNC) {
+            model.syncVisible.set(true)
+            model.errorMessage.set(rowModel.errMsg)
+        }
+        else {
+            model.syncVisible.set(false)
+        }
+
 
         dataList.add(ItemsListCell(viewModel, model))
         val count = dataList.filter { it.model.syncVisible.get() }.size
         Log.d("チェック!!","dataListの値 => ${dataList}")
-    }
-
-
-    /**
-     * Jsonをパースする関数。
-     */
-    fun jsonParse(parseStartNum:Int,parseFinNum:Int){
-        //val colMax = fieldMap.size
-        val colMax = fields.size
-
-        Log.d("jsonParse","fildMap.size =>${fields.size}")
-        try {
-            if(jsonParseList != null) {
-                val totalRecordNum = jsonParseList!!.length()
-                Log.d("jsonParse","jsonParseList.size =>${jsonParseList!!.length()}")
-                if(totalRecordNum < parseFinNum) {
-                    val itemInfo =
-                        helper.createSeparateItemList(
-                            jsonParseList,
-                            colMax,
-                            parseStartNum,
-                            totalRecordNum
-                        )
-                    itemListAll.addAll(itemInfo)
-                } else if (totalRecordNum >= parseFinNum){
-                    val itemInfo =
-                        helper.createSeparateItemList(
-                            jsonParseList,
-                            colMax,
-                            parseStartNum,
-                            parseFinNum
-                        )
-                    itemListAll.addAll(itemInfo)
-                }
-            }
-        }catch (e:java.lang.Exception){
-
-        }
     }
 
 

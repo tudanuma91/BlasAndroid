@@ -4,6 +4,7 @@ import android.util.Log
 import android.widget.Toast
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_QUEUE_SAVE
+import com.v3.basis.blas.blasclass.log.BlasLog
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -40,7 +41,7 @@ open class SyncBlasRestItem() : SyncBlasRest() {
         }
         catch(e: Exception) {
             //Log.d("blas-log", e.message)
-            Log.d("blas-log", "通信エラー")
+            BlasLog.trace("E", "通信エラーが発生しました", e)
         }
 
         return json

@@ -12,6 +12,7 @@ import com.v3.basis.blas.blasclass.component.ImageComponent
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.ldb.LdbImageRecord
 import com.v3.basis.blas.blasclass.ldb.LdbItemImageRecord
+import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestImage
 import org.json.JSONObject
 import java.io.File
@@ -258,16 +259,16 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         cv.put("image_id",newImageId)
         cv.put("sync_status", SYNC_STATUS_SYNC)
         cv.put("error_msg", "")
+        cv.put("error_status", NETWORK_NORMAL)
 
         try {
             db?.beginTransaction()
             db?.update("images",cv,"image_id = ?", arrayOf(oldImageId))
             db?.setTransactionSuccessful()
             db?.endTransaction()
-            Log.d("update","成功！！")
         }
         catch ( ex : Exception ) {
-            ex.printStackTrace()
+            BlasLog.trace("E", "imagesテーブルの更新に失敗しました", ex)
             ret = false
         }
 
@@ -313,220 +314,39 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         }
     }
 
+    fun updateImageRecordStatus(image_id:String?, errorStatus:Int?, sendCnt:Int?, errorMsg:String) {
+        if(image_id == null){
+            return
+        }
 
-    /**
-     * [説明]
-     * itemIdとproject_image_idをキーにローカルDBから画像を探す
-     */
-    fun searchFromLocal(context:Context, itemId:String, projectImageId:String): Pair<Bitmap, Long> {
-        var fileName:String
-        var bmp:Bitmap? = null
-        var image_id:Long = -1
-        var syncStatus = SYNC_STATUS_SYNC
+        if(errorStatus == null){
+            return
+        }
+
+        if(sendCnt == null) {
+            return
+        }
+
+        val cv = ContentValues()
+        cv.put("error_status", errorStatus)
+        cv.put("send_cnt", sendCnt)
+        cv.put("error_msg", errorMsg)
+
         try {
             db?.beginTransaction()
-            val sql = "select image_id, filename, sync_status from images where project_id=? and item_id=? and project_image_id=?"
-            val cursor = db?.rawQuery(sql, arrayOf(projectId, itemId, projectImageId))
-            if(cursor != null && cursor?.count > 0) {
-                //画像レコードがあった場合
-                cursor?.moveToFirst()
-                image_id = cursor?.getLong(0)
-                fileName = cursor?.getString(1) ?: ""
-                syncStatus = cursor?.getInt(2)
-                if(syncStatus == SYNC_STATUS_DEL) {
-                    bmp = null
-                }
-                else {
-                    bmp = ImageComponent().readBmpFromLocal(context, projectId, fileName)
-                }
-            }
-        } catch (e: Exception) {
-            //とりあえず例外をキャッチして、Falseを返す？
-            e.printStackTrace()
-        }
-        finally {
-            db?.endTransaction()
-        }
 
-        if(bmp == null) {
-            if(syncStatus == SYNC_STATUS_DEL) {
-                throw ImageControllerException(3, "削除中です")
-            }
-            else if(itemId.toLong() < 0) {
-                //ローカルに画像がなく、かつ、データIDが仮IDなので、リモートに画像がないのは明白。
-                throw ImageControllerException(1, "リモートに画像はありません")
-            }
-            else {
-                //例外投げる
-                throw ImageControllerException(2, "リモートサーバに確認必要")
-            }
-        }
-        else {
-            return Pair(bmp, image_id)
-        }
-    }
+            db?.update("images", cv, "image_id = ?", arrayOf(image_id))
 
-    /**
-     * [説明]
-     * 指定されたデータIDのレコードのうち、サーバと同期していない画像レコードを返却する
-     */
-    fun searchNosyncRecord(itemId:Long):MutableList<LdbImageRecord>{
-        //item_idとsync_statusが0以外の画像レコードを探す
-        var resultList:MutableList<LdbImageRecord> = mutableListOf()
-        try {
-            db?.beginTransaction()
-            val sql = "select image_id, project_id, project_image_id, item_id, filename, hash, moved, create_date, sync_status from images where item_id=? and sync_status!=?"
-            val cursor = db?.rawQuery(sql, arrayOf(itemId.toString(), SYNC_STATUS_SYNC.toString()))
-            cursor?.also { c->
-                var notLast = cursor?.moveToFirst()
-                while(notLast) {
-                    val image_record = LdbImageRecord()
-                    image_record.image_id = c.getLong(0)
-                    image_record.project_id = c.getInt(1)
-                    image_record.project_image_id = c.getInt(2)
-                    image_record.item_id = c.getLong(3)
-                    image_record.filename = c.getString(4)
-                    image_record.hash = c.getString(5)
-                    image_record.moved = c.getInt(6)
-                    image_record.create_date = c.getString(7)
-                    image_record.sync_status = c.getInt(8)
-
-                    resultList.add(image_record)
-                    //リストに追加する
-                    notLast = c.moveToNext()
-                }
-            }
+            db?.setTransactionSuccessful()!!
         }
         catch (e: Exception) {
-            //とりあえず例外をキャッチして、Falseを返す？
-            e.printStackTrace()
-        }
-        finally {
-            db?.endTransaction()
-        }
-
-        return resultList
-    }
-
-    fun fixDeleteImage(imageId:String) {
-        var imgFileName = ""
-
-        //削除だった場合
-        try{
-            db?.beginTransaction()
-            //レコード削除
-            db?.delete("images", "image_id=?", arrayOf(imageId))
-            //画像ファイルを削除する
-            ImageComponent().delImgFile(context, projectId, imgFileName)
-            //レコードと画像の両方を削除できたら成功
-            db?.setTransactionSuccessful()!!
-        }
-        catch (e:Exception) {
-            e.printStackTrace()
-            throw e
+            BlasLog.trace("E", "レコードの更新に失敗しました", e)
         }
         finally {
             db?.endTransaction()
         }
     }
 
-    /**
-     * 仮登録されたレコードを本登録する
-     */
-    fun fixUploadImage(newImageId:String, tempImageId:String) {
-        //新規追加、または更新の場合
-        try {
-            val cv = ContentValues()
-            cv.put("image_id", newImageId)
-            cv.put("sync_status", SYNC_STATUS_SYNC)
-            db?.beginTransaction()
-            db?.update("images", cv, "image_id=?", arrayOf(tempImageId.toString()))
-            db?.setTransactionSuccessful()!!
-        }
-        catch (e:Exception) {
-            e.printStackTrace()
-            throw e
-        }
-        finally {
-            db?.endTransaction()
-        }
-    }
-
-
-    /**
-     * [説明]
-     * 同期されていない画像のリストを返す
-     * [備考]
-     * 数万件あったらどうしようか
-     */
-    /*
-    fun searchNosyncRecords():List<Images>{
-        var resultList:MutableList<Images> = mutableListOf()
-        try {
-            db?.beginTransaction()
-            val sql = "select image_id, project_id, project_image_id, item_id, filename, hash, moved, create_date from images where sync_status!=?"
-            //where sync_status!=?はnot equealに注意
-            val cursor = db?.rawQuery(sql, arrayOf(SYNC_STATUS_SYNC.toString()))
-            cursor?.also { c->
-                var notLast = cursor?.moveToFirst()
-                while(notLast) {
-                    val image_record = Images(
-                        image_id = c.getLong(0),
-                        project_id = c.getInt(1),
-                        project_image_id = c.getInt(2),
-                        item_id = c.getLong(3),
-                        filename = c.getString(4),
-                        hash = c.getString(5),
-                        moved = c.getInt(6),
-                        create_date = c.getString(7)
-                    )
-                    resultList.add(image_record)
-                    //リストに追加する
-                    notLast = c.moveToNext()
-                }
-            }
-        }
-        catch (e: Exception) {
-            //とりあえず例外をキャッチして、Falseを返す？
-            e.printStackTrace()
-        }
-        finally {
-            db?.endTransaction()
-        }
-
-        return resultList
-    }
-    */
-    fun reserveDeleteImg(imageId:Long) : Boolean {
-        //画像管理テーブルを削除中に変更する。
-        //実際の画像ファイル削除は本登録完了後に行う
-        try {
-            db?.beginTransaction()
-            val sql = "select item_id from images where image_id=?"
-            val cursor = db?.rawQuery(sql, arrayOf(imageId.toString()))
-            cursor?.moveToFirst()
-            cursor?.let {
-                val itemId = it.getString(0)
-                val cvItem = ContentValues()
-                cvItem.put("sync_status", SYNC_STATUS_EDIT)
-                //データ管理テーブルを更新中に変更する
-                db?.update("items",cvItem, "item_id =?", arrayOf(itemId))
-                //画像管理テーブルを削除中に変更する
-                val cvImage = ContentValues()
-                cvImage.put("sync_status", SYNC_STATUS_DEL)
-                db?.update("images",cvImage, "image_id =?", arrayOf(imageId.toString()))
-            }
-            db?.setTransactionSuccessful()!!
-        }
-        catch(e: Exception) {
-            e.printStackTrace()
-        }
-        finally {
-            db?.endTransaction()
-        }
-
-        return true
-    }
 
     fun getImageStatus(imageId:String):Int {
         var retStatus = SYNC_STATUS_SYNC
@@ -581,21 +401,20 @@ class ImagesController (context: Context, projectId: String): BaseController(con
             cursor?.also { c->
                 var notLast = cursor?.moveToFirst()
                 while(notLast) {
-                    val record = LdbItemImageRecord(
-                        project_image_id = c.getLong(0),
-                        project_id = c.getInt(1),
-                        list = c.getInt(2),
-                        field_id = c.getInt(3),
-                        name = c.getString(4),
-                        rank = c.getInt(5),
-                        image_id = c.getLong(6),
-                        filename = c.getString(7),
-                        item_id = c.getLong(8),
-                        moved = c.getInt(9),
-                        create_date = c.getString(10),
-                        sync_status = c.getInt(11),
-                        error_msg = c.getString(12)
-                    )
+                    val record = LdbItemImageRecord()
+                    record.project_image_id = c.getLong(0)
+                    record.project_id = c.getInt(1)
+                    record.list = c.getInt(2)
+                    record.field_id = c.getInt(3)
+                    record.name = c.getString(4)
+                    record.rank = c.getInt(5)
+                    record.image_id = c.getLong(6)
+                    record.filename = c.getString(7)
+                    record.item_id = c.getLong(8)
+                    record.moved = c.getInt(9)
+                    record.create_date = c.getString(10)
+                    record.sync_status = c.getInt(11)
+                    record.error_msg = c.getString(12)
                     resultList.add(record)
                     //リストに追加する
                     notLast = c.moveToNext()

@@ -27,6 +27,7 @@ import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusNotTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.statusTakeOut
 import com.v3.basis.blas.blasclass.config.FixtureType.Companion.takeOut
 import com.v3.basis.blas.blasclass.controller.FixtureController
+import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
 import com.v3.basis.blas.blasclass.rest.BlasRest
@@ -176,6 +177,7 @@ class FixtureViewFragment : FixtureBaseFragment() {
 
     private fun getRecords() {
         val fixtureController = FixtureController(BlasApp.applicationContext(), projectId)
+        //機器管理のレコード検索
         Single.fromCallable { fixtureController.searchDisp(offset = offset, searchMap = searchValueMap) }
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
@@ -207,8 +209,14 @@ class FixtureViewFragment : FixtureBaseFragment() {
                         , it.sync_status
                         , requireContext()
                     )
-                    model.errorMessage.set(it.error_msg)
-
+               //     model.errorMessage.set(it.error_msg)
+                    if(it.sync_status > BaseController.SYNC_STATUS_SYNC) {
+                        model.syncVisible.set(true)
+                        model.errorMessage.set(it.error_msg)
+                    }
+                    else {
+                        model.syncVisible.set(false)
+                    }
                     list.add(FixtureListCell(viewModel, model))
                 }
                 list

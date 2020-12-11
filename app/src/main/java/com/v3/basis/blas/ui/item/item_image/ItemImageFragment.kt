@@ -188,7 +188,9 @@ class ItemImageFragment : Fragment() {
                     }
                     else {
                         val newStatus = imagesController?.getImageStatus(item.image_id.toString())
-                        item.sync_status = newStatus
+                        if (newStatus != null) {
+                            item.sync_status = newStatus
+                        }
                         fcItem = item
                         //ファイルダイアログを開く
                         startFileChoicer()
@@ -434,6 +436,7 @@ class ItemImageFragment : Fragment() {
 
                 //未送信フラグセット
                 item.sync_status = SYNC_STATUS_NEW
+                item.error_msg = "送信待ちです"
                 //保存
                 Log.d("send", item.toString())
                 var ret:Pair<Boolean, Long>? = null

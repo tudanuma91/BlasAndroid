@@ -37,21 +37,20 @@ object BlasLdbHandleManager {
                         if (dbHandle != null) {
                             dbHandle.rawQuery("PRAGMA foreign_keys=1", null)
                             handlers[dbPath] = dbHandle
-                            Log.d("send", "openDB1 すでにあるハンドル ${dbPath}")
+                            BlasLog.trace("E", "${dbPath}のオープンに失敗しました")
                         }
                     }catch(e :Exception) {
-                        Log.d("send", "openDB1 error ${dbPath}")
-                        e.printStackTrace()
+                        BlasLog.trace("E", "${dbPath}のオープンに失敗しました", e)
                     }
                 }
             }
             else {
-                Log.d("send", "openDB2 ${dbPath}")
+                BlasLog.trace("E", "${dbPath}のオープンに失敗しました")
             }
         }
         else {
             try {
-                Log.d("send", "openDB3 ${dbPath}")
+                BlasLog.trace("I", "${dbPath}を開きます")
                 SQLiteDatabase.loadLibs(context)
                 dbHandle = SQLiteDatabase.openDatabase(
                     dbPath,
@@ -66,9 +65,7 @@ object BlasLdbHandleManager {
                 }
             }
             catch(e:Exception) {
-                BlasLog.trace("E", "例外が発生しました")
-                e.message?.let { BlasLog.trace("E", it) }
-                e.printStackTrace()
+                BlasLog.trace("E", "例外が発生しました", e)
             }
         }
 

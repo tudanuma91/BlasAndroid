@@ -30,6 +30,7 @@ class LinkRmFixture(db : SQLiteDatabase?, item: Items, serialNumber:String)
         cv.put("rm_date",item.update_date)
         cv.put("status", BaseController.REMOVE)  // 現場撤去
         cv.put("sync_status", BaseController.SYNC_STATUS_EDIT )
+        cv.put("error_msg", "送信待ちです")
 
 
         return cv

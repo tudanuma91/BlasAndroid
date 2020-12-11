@@ -130,6 +130,9 @@ object BlasLog {
                     if(e != null) {
                         //Exceptionが渡されたときは、例外を書き込む
                         val pw = PrintWriter(it)
+                        if(e.message != null) {
+                            it.write(e.message + "\n")
+                        }
                         e.printStackTrace(pw)
                     }
                 }

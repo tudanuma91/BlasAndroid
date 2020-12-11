@@ -46,6 +46,19 @@ abstract class BaseController(
         const val DONT_TAKE_OUT = 3
         const val RTN = 4
         const val REMOVE = 5
+
+        /*
+        通信エラーコード
+         */
+        const val NETWORK_NORMAL = 0           //通信正常
+        const val NETWORK_ERROR = 4100         //とりあえず通信エラーは4100にする。
+                                               //詳細化する必要があれば4101～4199までの数値を割り当てて細分化する
+        const val NETWORK_LOGICAL_ERROR = 4200 //とりあえずネットワークエラーは4200にする。
+                                               //詳細化する必要があれば、4201～4299までの数値を割り当てて細分化する
+
+        const val RETRY_MAX = 100
+        const val RETRY_NORMAL = 0
+        const val RETRY_OUT = -1
     }
 
     // 使うときはerrorMessageEvent.onNext("メッセージ")とする

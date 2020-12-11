@@ -219,6 +219,7 @@ class ItemImageZoomActivity : AppCompatActivity() {
             imageRecord.item_id = itemId.toLong()
             imageRecord.project_image_id = projectImgId.toInt()
             imageRecord.sync_status = SYNC_STATUS_NEW
+            imageRecord.error_msg = "送信待ちです"
             imageController?.save2LDB(imageRecord)
 
             //画像表示の更新

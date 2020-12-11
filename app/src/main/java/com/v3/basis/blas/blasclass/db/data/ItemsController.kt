@@ -242,6 +242,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         item.create_date = current.format(formatter)
         item.update_date = current.format(formatter)
         item.sync_status = SYNC_STATUS_NEW
+        item.error_msg = "送信待ちです"
 
         val cv = createConvertValue(item)
 
@@ -290,6 +291,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss")
         item.update_date = current.format(formatter)
         item.sync_status = SYNC_STATUS_EDIT
+        item.error_msg = "送信待ちです"
 
         // けどまたmap…
         val cv = createConvertValue(item, null)
@@ -374,11 +376,10 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
      * ItemIdを新しいものに置き換える
      */
     fun updateItemId(org_item_id: String, new_item_id: String) {
-        Log.d("updateItemId()", "start")
-
         val cv = ContentValues()
         cv.put("item_id", new_item_id)
         cv.put("sync_status", SYNC_STATUS_SYNC)
+        cv.put("error_status", NETWORK_NORMAL)
 
         try {
             db?.beginTransaction()
@@ -386,43 +387,12 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             db?.update("items", cv, "item_id = ?", arrayOf(org_item_id))
             db?.update("fixtures", cv, "item_id = ?", arrayOf(org_item_id))
             db?.update("rm_fixtures", cv, "item_id = ?", arrayOf(org_item_id))
-
             db?.setTransactionSuccessful()!!
 
             //画面が開きっぱなしのとき、画面はIDの変更を知らないので、変更テーブルをキャッシュファイルに書き込む。
             if(org_item_id != new_item_id) {
                 writeCache(org_item_id, new_item_id)
             }
-        }
-        catch (e: Exception) {
-            BlasLog.trace("E", "レコードの追加に失敗しました", e)
-        }
-        finally {
-            db?.endTransaction()
-        }
-
-    }
-
-    /**
-     * 編集の時のローカル変更<br>
-     * ・sync_statusを0に戻す<br>
-     * ・Fixtureの設置情報を更新する
-     */
-    // TODO:名前が変？ItemIdは変更しない
-    fun updateItemId4Update(item_id: String, item: Items, mapItem: MutableMap<String, String?>) {
-        Log.d("updateItemId()", "start")
-
-        val cv = ContentValues()
-        cv.put("sync_status", SYNC_STATUS_SYNC)
-
-        try {
-            db?.beginTransaction()
-
-            db?.update("items", cv, "item_id = ?", arrayOf(item_id))
-            // fixture,rm_fixtureを更新
-            updateFixture(item, mapItem)
-
-            db?.setTransactionSuccessful()!!
         }
         catch (e: Exception) {
             BlasLog.trace("E", "レコードの更新に失敗しました", e)
@@ -432,23 +402,39 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         }
     }
 
-    //アプリからDELETEは実行されていない。
-//    fun delete(item: Items): Boolean {
-//        val db = openSQLiteDatabase()
-//        db ?: return false
-//
-//        return try {
-//            db.beginTransaction()
-//            db.execSQL("DELETE from items where item_id = ?", arrayOf(item.item_id))
-//            db.setTransactionSuccessful()
-//            db.endTransaction()
-//            true
-//        } catch (e: Exception) {
-//            //とりあえず例外をキャッチして、Falseを返す？
-//            e.printStackTrace()
-//            false
-//        }
-//    }
+    fun updateItemRecordStatus(item_id:String?, errorStatus:Int?, sendCnt:Int?, errorMsg:String) {
+        if(item_id == null){
+            return
+        }
+
+        if(errorStatus == null){
+            return
+        }
+
+        if(sendCnt == null) {
+            return
+        }
+
+        val cv = ContentValues()
+        cv.put("error_status", errorStatus)
+        cv.put("send_cnt", sendCnt)
+        cv.put("error_msg", errorMsg)
+
+        try {
+            db?.beginTransaction()
+
+            db?.update("items", cv, "item_id = ?", arrayOf(item_id))
+
+            db?.setTransactionSuccessful()!!
+        }
+        catch (e: Exception) {
+            BlasLog.trace("E", "レコードの更新に失敗しました", e)
+        }
+        finally {
+            db?.endTransaction()
+        }
+
+    }
 
     class ItemCheckException(message: String) : Exception(message) {}
 

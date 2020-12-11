@@ -8,6 +8,8 @@ import com.v3.basis.blas.blasclass.db.BaseController.Companion.SYNC_STATUS_SYNC
 open class LdbSyncBase {
     var sync_status: Int = 0 //何も弄ってない0 仮登録中(新規追加)1、仮登録中(編集)2、仮登録集(削除)3,送信待ち4, 送信完了5
     var error_msg:String = ""
+    var error_status: Int = 0
+    var send_cnt: Int = 0
 }
 
 open class LdbFixtureRecord : LdbSyncBase() {
@@ -30,6 +32,7 @@ open class LdbFixtureRecord : LdbSyncBase() {
     var status: Int = 0                       //0:検品済み(持ち出し可), 1:持ち出し中,2:設置済み, 3:持出不可 4:返却
     var create_date: String = ""         //レコード作成日付
     var update_date: String = ""         //レコード更新日付
+
 
     fun toPayLoad():MutableMap<String, String> {
         val payload = mutableMapOf<String, String>()
@@ -159,25 +162,27 @@ class LdbFieldRecord(
 /* project_imagesテーブルと、imagesテーブルの検索結果を
 　　保持するデータクラス
  */
-data class LdbItemImageRecord (
+class LdbItemImageRecord:LdbSyncBase() {
     //project_imagesテーブルより
-    var project_image_id:Long=0,
-    var project_id:Int=0,
-    var list:Int=0,
-    var field_id:Int=0,
-    var name:String?="",  //カラム名
+    var project_image_id: Long = 0
+    var project_id: Int = 0
+    var list: Int = 0
+    var field_id: Int = 0
+    var name: String? = ""  //カラム名
+
     //imagesテーブルより
-    var image_id:Long?=0,
-    var filename:String?="",  //画像ファイル名
-    var item_id:Long?=0,
-    var moved:Int?=0,
-    var rank:Int?=-1,
-    var create_date:String?="",
-    var bitmap: Bitmap? = null, //画像を取得したら入る
-    var sync_status:Int?=0,
-    var error_msg:String?="",
-    var downloadProgress:Boolean = true
-)
+    var image_id: Long? = 0
+    var filename: String? = ""  //画像ファイル名
+    var item_id: Long? = 0
+    var moved: Int? = 0
+    var rank: Int? = -1
+    var create_date: String? = ""
+    var bitmap: Bitmap? = null //画像を取得したら入る
+
+    //var sync_status:Int?=0,
+    //var error_msg:String?="",
+    var downloadProgress: Boolean = true
+}
 
 
 /**

@@ -25,6 +25,7 @@ import android.location.Location
 import android.os.Handler
 import android.os.Looper
 import android.os.ResultReceiver
+import android.view.Menu
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -37,6 +38,8 @@ import com.google.android.gms.location.LocationResult
 import com.v3.basis.blas.activity.ItemImageActivity.Companion.createIntent
 import com.v3.basis.blas.blasclass.service.FetchAddressIntentService
 import com.v3.basis.blas.blasclass.service.LocationConstants
+import com.v3.basis.blas.ui.fixture.fixture_config.FixtureConfigFragment
+import com.v3.basis.blas.ui.fixture.fixture_search.FixtureSearchFragment
 import com.v3.basis.blas.ui.terminal.BottomNavButton
 import kotlinx.android.synthetic.main.fragment_terminal.view.*
 
@@ -54,21 +57,12 @@ class ItemActivity : AppCompatActivity() {
         }
     }
 
-    private val REQUESTCODE_TEST = 1
-
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var lastLocation: Location? = null
     private lateinit var resultReceiver: AddressResultReceiver
     private var callBack: ((address: String) -> Unit)? = null
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
-
-    data class formType(var type: String?,
-                        var title: String?,
-                        var field_col: String?,
-                        var choiceValue: List<String?>?,
-                        var require:String?,
-                        var unique:String?)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,27 +71,6 @@ class ItemActivity : AppCompatActivity() {
         val navController = findNavController(R.id.nav_host_fragment)
         setupWithNavController(item_list_bottom_navigation, navController)
         fusedLocationClient = FusedLocationProviderClient(this)
-
-        locationRequest = LocationRequest().apply {
-            // 精度重視(電力大)と省電力重視(精度低)を両立するため2種類の更新間隔を指定
-            // 今回は公式のサンプル通りにする。
-            interval = 10000                                   // 最遅の更新間隔(但し正確ではない。)
-            fastestInterval = 5000                             // 最短の更新間隔
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY  // 精度重視
-        }
-
-        // コールバック
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult?) {
-                // 更新直後の位置が格納されているはず
-                lastLocation = locationResult?.lastLocation ?: return
-                startIntentService()
-                fusedLocationClient.removeLocationUpdates(this)
-//                Toast.makeText(this@ItemActivity,
-//                    "緯度:${location.latitude}, 経度:${location.longitude}", Toast.LENGTH_LONG).show()
-            }
-        }
-
         resultReceiver = AddressResultReceiver(Handler())
 
         //タイトルバーの名称を変更する処理
@@ -169,6 +142,7 @@ class ItemActivity : AppCompatActivity() {
                     transitionItemListScreen()
                 }
             }
+
             else ->
                 return super.onOptionsItemSelected(item)
         }
@@ -196,6 +170,16 @@ class ItemActivity : AppCompatActivity() {
             reloard = false
             reloard()
         }
+    }
+
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+
+        val inflater = menuInflater
+        //メニューのリソース選択
+        inflater.inflate(R.menu.config_menu_items, menu)
+        return true
     }
 
     fun reloard(){
