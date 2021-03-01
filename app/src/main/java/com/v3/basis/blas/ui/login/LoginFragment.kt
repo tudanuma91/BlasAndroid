@@ -236,7 +236,7 @@ class LoginFragment : Fragment(), ServiceConnection {
     }
 
     /**
-     * 暗号化キーの設定処理を行う
+     * 復号キーの設定処理を行う
      * @param in records_json サーバーからのレスポンス
      * @return 0:正常　0以外:エラー
      */
