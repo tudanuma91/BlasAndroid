@@ -28,11 +28,13 @@ import com.v3.basis.blas.blasclass.app.BlasApp.Companion.applicationContext
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.APL_OK
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.Params
+import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.blasclass.rest.BlasRestAuth
 import com.v3.basis.blas.blasclass.service.BlasSyncService
 import com.v3.basis.blas.blasclass.service.BlasSyncMessenger
 import kotlinx.android.synthetic.main.fragment_login.*
 import org.json.JSONObject
+import java.security.MessageDigest
 
 /**
  * A simple [Fragment] subclass.
@@ -124,6 +126,8 @@ class LoginFragment : Fragment(), ServiceConnection {
         Log.d("BLAS", "Login成功")
         val records_json = json.getJSONObject("records")
         val auth_type = records_json.getString("auth_type")
+        var errorCode = 0
+        var message:String? = null
 
         // 2段階認証処理
         if (auth_type == "1") {
@@ -134,6 +138,15 @@ class LoginFragment : Fragment(), ServiceConnection {
             if (procStop){
                 return
             }
+        }
+
+        // 復号キー設定処理
+        errorCode = setKey(records_json)
+
+        if (errorCode != 0){
+            message = BlasMsg().getMessage(errorCode , APL_OK)
+            Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show()
+            return
         }
 
         val token = records_json.getString("token")
@@ -200,7 +213,7 @@ class LoginFragment : Fragment(), ServiceConnection {
                     val payload = mapOf("name" to username, "password" to pass, "sms" to editText.getText().toString())
 
                     authRestFlg = true;
-                    BlasRestAuth(payload, ::loginSuccess, ::error).execute()
+                    BlasRestAuth(payload, ::loginSuccess, ::loginError).execute()
 
                 }
 
@@ -221,6 +234,35 @@ class LoginFragment : Fragment(), ServiceConnection {
         return false
 
     }
+
+    /**
+     * 復号キーの設定処理を行う
+     * @param in records_json サーバーからのレスポンス
+     * @return 0:正常　0以外:エラー
+     */
+    private fun setKey(records_json: JSONObject) : Int {
+
+        if(!records_json.has("salt")) {
+            return 10001
+        }
+
+        // passwordで実現するのは無理だった…
+        val saltPassword = records_json.getString("salt") +  pass
+        if(saltPassword != null) {
+            BlasApp.key = MessageDigest.getInstance("SHA1")
+                .digest(saltPassword.toByteArray())
+                .joinToString(separator = "") {
+                    "%02x".format(it)
+                }
+            BlasLog.trace("I", "password is ${BlasApp.key}")
+            return 0
+        }
+        else {
+            return 10001
+        }
+
+    }
+
 
     override fun onServiceDisconnected(name: ComponentName?) {
 
