@@ -140,6 +140,7 @@ class LoginFragment : Fragment(), ServiceConnection {
             }
         }
 
+        // 復号キー設定処理
         errorCode = setKey(records_json)
 
         if (errorCode != 0){
@@ -212,7 +213,7 @@ class LoginFragment : Fragment(), ServiceConnection {
                     val payload = mapOf("name" to username, "password" to pass, "sms" to editText.getText().toString())
 
                     authRestFlg = true;
-                    BlasRestAuth(payload, ::loginSuccess, ::error).execute()
+                    BlasRestAuth(payload, ::loginSuccess, ::loginError).execute()
 
                 }
 

@@ -67,6 +67,7 @@ open class BlasRestAuth(val payload:Map<String, String?>, val loginSuccess:(JSON
             userNameRest = payload["name"]
             passwordRest = payload["password"]
 
+            // loginSuccessの中で2段認証の判定処理がある為、ログイン完了後の処理はその後に記載して下さい
             loginSuccess(json)
 
         }
