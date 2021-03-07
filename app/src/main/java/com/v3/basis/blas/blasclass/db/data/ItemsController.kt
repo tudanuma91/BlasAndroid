@@ -5,14 +5,20 @@ import android.content.Context
 import android.util.Log
 import androidx.work.impl.WorkDatabasePathHelper.getDatabasePath
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkFixture
 import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkRmFixture
 import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.db.fixture.Fixtures
+import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbRmFixtureRecord
 import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.blasclass.worker.DownloadWorker
+import com.v3.basis.blas.ui.item.common.FieldCheckText
+import com.v3.basis.blas.ui.item.common.FieldModel
+import com.v3.basis.blas.ui.item.common.FieldMultiSelect
+import com.v3.basis.blas.ui.item.common.FieldText
 import net.sqlcipher.database.SQLiteDatabase
 import java.io.File
 import java.io.FileReader
@@ -112,7 +118,8 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         paging: Int = 20,
         endShow: Boolean = false,
         syncFlg: Boolean = false,
-        findValueMap: MutableMap<String, String?>? = null
+        findValueMap: MutableMap<String, String?>? = null,
+        isErrorOnly:Boolean = false
     ): MutableList<MutableMap<String, String?>> {
 
         // 初期化
@@ -149,6 +156,10 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
                         addition += it
                         first = false
                     }
+                }
+
+                if(isErrorOnly) {
+                    addition += " sync_status >0 "
                 }
 
                 var addingPager = ""
@@ -214,7 +225,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
     }
 
-    fun create(map: MutableMap<String, String?>): Boolean {
+    fun insertToLDB(map: MutableMap<String, String?>): Boolean {
         var ret = true
 
         // QRコードバリデート処理
@@ -266,7 +277,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         return ret
     }
 
-    fun update(map: Map<String, String?>): Boolean {
+    fun updateToLDB(map: Map<String, String?>): Boolean {
         var ret = true
 
         // QRコードバリデート処理
@@ -605,6 +616,96 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
                 fw.flush()
             }
         }
+    }
+
+    fun getParentFieldModelIndex(fields: MutableList<Any?>, parent_field_id:Int):Int {
+
+        val index = fields.indexOfFirst {
+            val model = (it as FieldModel)
+            model.field.field_id == parent_field_id
+        }
+
+        return index
+    }
+
+    fun validate(fields: MutableList<Any?>):Boolean {
+        //保存時のバリデーション
+        var ret = true  //一つでもバリデーションに引っ掛かったら戻り値はfalseにする
+        fields.forEachIndexed { index, f ->
+            val model = (f as FieldModel)
+            when(model.field.type.toString()){
+                FieldType.CHECK_VALUE,
+                FieldType.QR_CODE_WITH_CHECK-> {
+                    //入力値チェック連動または入力値チェック連動_QRコード(検品と連動)
+                    val childModel = (f as FieldCheckText)
+                    if(model.field.parent_field_id != null) {
+                        //親のフィールドIDが定義されている
+                        val parentIndex = this.getParentFieldModelIndex(fields, model.field.parent_field_id!!)
+                        val text = f.text.get()
+                        if(RestHelper().isBlank(text.toString())) {
+                            //テキスト領域に何も入力されていなかったら、無視する
+                            ret = true
+                        }
+                        else if(parentIndex != -1) {
+
+                            val memo = f.memo.get()
+                            val type = (fields[parentIndex] as FieldModel).field.type.toString()
+                            when(type) {
+                                //親項目の値を取得する
+                                FieldType.TEXT_FIELD,
+                                FieldType.TEXT_AREA,
+                                FieldType.QR_CODE,
+                                FieldType.TEKKYO_RENDOU_QR,
+                                FieldType.KENPIN_RENDOU_QR,
+                                FieldType.SIG_FOX ,
+                                FieldType.CURRENT_DATE_AND_TIME,
+                                FieldType.CATEGORY_SELECTION,
+                                FieldType.WORKER_NAME,
+                                FieldType.WORK_CONTENT_SELECTION,
+                                FieldType.ADDRESS,
+                                FieldType.ACOUNT_NAME -> {
+                                    val parentModel = (fields[parentIndex] as FieldText)
+                                    val parentText = parentModel.text.get()
+                                    if(parentText != childModel.text.get()) {
+                                        //親項目の値と子項目の値が異なる
+                                        if((memo != null) && (memo != "")) {
+                                            //備考欄に入力がある
+                                        }
+                                        else {
+                                            //親項目と異なり、備考欄に入力がない。NGのケース
+                                            ret = false
+                                            val colName = parentModel.field.name
+                                            childModel.validationMsg.set("${colName}と値が異なります。値を修正するか、備考欄に理由を記載してください")
+                                        }
+                                    }
+                                }
+
+                                FieldType.DATE_TIME->{
+                                    //日付入力
+
+                                }
+                                FieldType.TIME->{
+                                    //時間入力
+                                }
+
+                                FieldType.MULTIPLE_SELECTION,
+                                FieldType.SINGLE_SELECTION,
+                                FieldType.CATEGORY_SELECTION,
+                                FieldType.WORK_CONTENT_SELECTION->{
+                                    //チェックボックスとラジオボタン
+                                    val parentModel = (fields[parentIndex] as FieldMultiSelect)
+                                }
+
+                                FieldType.CHECK_VALUE->{
+                                    //値チェック時
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return ret
     }
 }
 

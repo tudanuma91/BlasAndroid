@@ -281,7 +281,33 @@ class RestHelper {
         return rtnMap
     }
 
+    fun isBlank(text:String?):Boolean {
+        var bRet:Boolean = false
+        if(text != null && text != "null" && text != "") {
+            bRet = true
+        }
+        return bRet
+    }
 
+    fun createCheckValue(value: String?) :String?{
+        //		この形式で来る
+        //		{\"value\":\"aaa\",\"memo\":\"aaaaa\"}
+        var newValue = ""
+        val json = value?.replace("\\", "")
+        if (json != null && json.isNotBlank()) {
+            val obj = JSONObject(json)
+            val text = obj.get("value")
+            val memo = obj.get("memo")
+            newValue = text.toString()
+            if(this.isBlank(memo.toString())) {
+                newValue += "(備考)"+memo
+            }
+        }
+
+        return newValue
+    }
+
+    /*
     fun createCheckValue(value:String?): String {
         var newValue = ""
         if(value != null && value != "") {
@@ -296,6 +322,7 @@ class RestHelper {
         }
         return newValue
     }
+     */
 
 
     fun createCheckValueText(value: String?,type:String):String{

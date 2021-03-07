@@ -3,14 +3,18 @@ package com.v3.basis.blas.ui.item.common
 import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableField
 import androidx.databinding.ObservableInt
+import com.v3.basis.blas.blasclass.helper.RestHelper
+import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import org.json.JSONObject
 import java.lang.StringBuilder
 
 data class FieldText(
 	override val fieldNumber: Int,
-	override val col:Int,
-	override val title: String,
-	override val mustInput: Boolean,
+//	override val col:Int,
+//	override val title: String,
+//	override val mustInput: Boolean,
+	override val field: LdbFieldRecord,
+	override val validationMsg: ObservableField<String> = ObservableField(""),
 	val text: ObservableField<String> = ObservableField("")
 ): FieldModel {
 
@@ -25,10 +29,12 @@ data class FieldText(
 
 data class FieldSingleSelect(
 	override val fieldNumber: Int,
-	override val col:Int,
-	override val title: String,
-	override val mustInput: Boolean,
-	val parentFieldId:Int? = 0,
+//	override val col:Int,
+//	override val title: String,
+//	override val mustInput: Boolean,
+	override val field: LdbFieldRecord,
+	override val validationMsg: ObservableField<String> = ObservableField(""),
+	//val parentFieldId:Int? = 0,
 	var values: MutableList<String> = mutableListOf(),
 	val selectedIndex: ObservableInt = ObservableInt(-1)
 ): FieldModel {
@@ -56,9 +62,11 @@ data class FieldSingleSelect(
 
 data class FieldMultiSelect(
 	override val fieldNumber: Int,
-	override val col:Int,
-	override val title: String,
-	override val mustInput: Boolean,
+//	override val col:Int,
+//	override val title: String,
+//	override val mustInput: Boolean,
+	override val field: LdbFieldRecord,
+	override val validationMsg: ObservableField<String> = ObservableField(""),
 	val values: MutableList<String> = mutableListOf(),
 	val selectedIndexes: MutableMap<Int, ObservableBoolean> = mutableMapOf()
 ): FieldModel {
@@ -95,9 +103,12 @@ data class FieldMultiSelect(
 
 data class FieldSigFox(
 	override val fieldNumber: Int,
-	override val col:Int,
-	override val title: String = "シグフォックスは使用できません",
-	override val mustInput: Boolean): FieldModel {
+	//override val col:Int,
+	//override val title: String = "シグフォックスは使用できません",
+	//override val mustInput: Boolean
+	override val field: LdbFieldRecord,
+	override val validationMsg: ObservableField<String> = ObservableField("")
+): FieldModel {
 
 	override fun convertToString(): String? = null
 	override fun setValue(value: String?) {}
@@ -105,17 +116,32 @@ data class FieldSigFox(
 
 data class FieldCheckText(
 	override val fieldNumber: Int,
-	override val col:Int,
-	override val title: String,
-	override val mustInput: Boolean,
+//	override val col:Int,
+//	override val title: String,
+//	override val mustInput: Boolean,
+	override val field: LdbFieldRecord,
+	override val validationMsg: ObservableField<String> = ObservableField(""),
 	val text: ObservableField<String> = ObservableField(""),
 	val memo: ObservableField<String> = ObservableField("")
+
 ): FieldModel {
 
 	override fun convertToString(): String? {
-		return if (text.get().isNullOrBlank().not() && memo.get().isNullOrBlank().not()) {
-			"{\"value\":\"${text.get()}\",\"memo\":\"${memo.get()}\"}"
-		} else null
+		//json形式で返却する
+		var retStr:String = "";
+
+		var tmpText:String? = ""
+		var tmpMemo:String? = ""
+
+		if(!RestHelper().isBlank(text.get())) {
+			tmpText = text.get()
+		}
+		if(!RestHelper().isBlank(memo.get())) {
+			tmpMemo = memo.get()
+		}
+		//ここって備考が入力されていないとデータが保存できないようになっていない？
+		retStr = "{\"value\":\"${text.get()}\",\"memo\":\"${memo.get()}\"}"
+		return retStr;
 	}
 
 	override fun setValue(value: String?) {

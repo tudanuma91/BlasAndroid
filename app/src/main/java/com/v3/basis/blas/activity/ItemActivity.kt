@@ -52,6 +52,8 @@ class ItemActivity : AppCompatActivity() {
     companion object {
         var reloard: Boolean = false
         var searchFreeWord: String? = null
+        var isErrorOnly:Boolean = false
+
         fun setRestartFlag() {
             reloard = true
         }

@@ -11,10 +11,12 @@ class ItemsListViewModel: ViewModel() {
     var editBtnCallBack:((model:ItemsCellModel)->Unit)? = null
 
     fun clickImageButton(model: ItemsCellModel) {
+        //ItemViewFragmentのclickImageButton関数を呼び出す
         imageBtnCallBack?.invoke(model)
     }
 
     fun clickEditButton(model: ItemsCellModel) {
+        //ItemViewFragmentのclickEditButton関数を呼び出す
         editBtnCallBack?.invoke(model)
     }
 }

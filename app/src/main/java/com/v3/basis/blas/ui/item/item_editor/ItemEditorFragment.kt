@@ -2,7 +2,6 @@ package com.v3.basis.blas.ui.item.item_editor
 
 
 import android.Manifest
-import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
@@ -22,7 +21,6 @@ import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableBoolean
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProviders
 import com.google.gson.GsonBuilder
 import com.google.maps.GeoApiContext
@@ -35,7 +33,6 @@ import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.db.field.FieldController
-import com.v3.basis.blas.blasclass.formaction.FormActionDataCreate
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import com.v3.basis.blas.blasclass.log.BlasLog
@@ -43,7 +40,6 @@ import com.v3.basis.blas.blasclass.rest.BlasRest
 import com.v3.basis.blas.databinding.*
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
-import com.v3.basis.blas.ui.ext.requestPermissions
 import com.v3.basis.blas.ui.ext.startActivityWithResult
 import com.v3.basis.blas.ui.item.common.*
 import io.reactivex.Single
@@ -53,6 +49,7 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import org.json.JSONObject
+import java.text.SimpleDateFormat
 import java.util.*
 
 
@@ -95,7 +92,6 @@ class ItemEditorFragment : Fragment() {
     private val singleSelectChoiceMap = mutableMapOf<Int,String?>()
     private val singleSelectList = mutableListOf<MutableMap<String?,ViewItems5SelectBinding>>()
     var singleCnt = 1
-
 
     private val singleSelectSpinner = mutableMapOf<Int,Spinner>()
 
@@ -160,7 +156,6 @@ class ItemEditorFragment : Fragment() {
         bind.vm = viewModel
         bind.scrollView.hideKeyboardWhenTouch(this)
 
-        subscribeFormEvent()
         vibrator = requireActivity().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
         Log.d("ItemEditorFragment.onCreateView()","end")
@@ -189,7 +184,17 @@ class ItemEditorFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        //サブスクライバの登録
+        //カレンダー、時刻、QRコードなど、ボタンを押下されたとき(イベント)に値を取得する
+        //フォームの処理を登録する
+        subscribeFormEvent()
 
+        //フォームを作成する
+        createForms();
+
+    }
+
+    private fun createForms() {
         //レイアウトの設置位置の設定
         Single.fromCallable {
             FieldController(requireContext(),projectId).getFieldRecords()
@@ -201,7 +206,8 @@ class ItemEditorFragment : Fragment() {
                         addField(field,index)
                     }
 
-                    readItem()
+                    //フォームに値を設定する
+                    setValue()
                 }
                 else {
                     throw Exception()
@@ -209,7 +215,6 @@ class ItemEditorFragment : Fragment() {
             }
             .addTo(disposables)
     }
-
     /**
      * カレンダー、時刻、QRコードなどの子ウインドウからのイベントを取得する。
      */
@@ -237,6 +242,18 @@ class ItemEditorFragment : Fragment() {
                 startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
                     val qr = r.data?.getStringExtra("qr_code")
                     it.text.set(qr)
+                }
+            }
+            .addTo(disposables)
+
+        //入力値チェック連動_QRコード(検品と連動)からカメラが起動されたとき
+        viewModel.qrCheckEvent
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                val extra = "colNumber" to it.fieldNumber.toString()
+                startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
+                    val qr = r.data?.getStringExtra("qr_code")
+                    it.text.set(qr);
                 }
             }
             .addTo(disposables)
@@ -348,6 +365,15 @@ class ItemEditorFragment : Fragment() {
                 it.text.set(userMap["name"])
             }
             .addTo(disposables)
+
+        viewModel.currentDateTimeEvent
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy {
+                val df = SimpleDateFormat("yyyy/MM/dd HH:mm")
+                val date = Date()
+                it.text.set(df.format(date))
+            }
+            .addTo(disposables)
     }
 
     /**
@@ -397,7 +423,7 @@ class ItemEditorFragment : Fragment() {
     }
 
 
-    private fun readItem() {
+    private fun setValue() {
         Log.d("readItem()","start")
         var singleColCnt = 1
 
@@ -418,7 +444,7 @@ class ItemEditorFragment : Fragment() {
                     fieldValues.putAll(it.first())
                     viewModel.fields.forEachIndexed { index, any ->
                         val field = (any as FieldModel)
-                        val columnName = "fld${field.col}"
+                        val columnName = "fld${field.field.col}"
                         val value = fieldValues[columnName]?.replace("\\r","")
 
                         with(field.javaClass.canonicalName!!) {
@@ -427,7 +453,7 @@ class ItemEditorFragment : Fragment() {
                                     val fieldSingleSelect = field as FieldSingleSelect
 
                                     //シングルセレクトの処理
-                                    whenSingleSelect(singleColCnt,value,fieldSingleSelect.parentFieldId!!)
+                                    whenSingleSelect(singleColCnt,value,fieldSingleSelect.field.parent_field_id!!)
                                     singleColCnt ++
                                 }
                                 else -> {
@@ -455,49 +481,57 @@ class ItemEditorFragment : Fragment() {
         if( 1 == field.edit_id ) {
             val l: ViewItems0ReadOnlySingleLineBinding =
                 DataBindingUtil.inflate(layoutInflater, R.layout.view_items_0_read_only_single_line, null, false)
-            l.model = FieldText(cellNumber,field.col!!, name, mustInput)
+            l.model = FieldText(cellNumber,field)
+            //どこでフィールドの型を認識させるべきか？朝礼前の考え事
             rootView = l.root
             fieldModel = l.model
         }
         else {
             when (field.type.toString()) {
                 FieldType.TEXT_FIELD -> {
+                    //自由入力(1行)
                     val l: ViewItems1TextSingleLineBinding =
                         DataBindingUtil.inflate(layoutInflater, R.layout.view_items_1_text_single_line, null, false)
-                    l.model = FieldText(cellNumber,field.col!!, name, mustInput)
+                    l.model = FieldText(cellNumber,field)
                     rootView = l.root
                     fieldModel = l.model
                 }
                 FieldType.TEXT_AREA -> {
+                    //自由入力(複数行)
                     val l: ViewItems2TextMultiLineBinding =
                         DataBindingUtil.inflate(layoutInflater, R.layout.view_items_2_text_multi_line, null, false)
-                    l.model = FieldText(cellNumber,field.col!!, name, mustInput)
+                    l.model = FieldText(cellNumber,field)
                     rootView = l.root
                     fieldModel = l.model
                 }
                 FieldType.DATE_TIME -> {
+                    //日付
                     val l: ViewItems3DateBinding =
                         DataBindingUtil.inflate(layoutInflater, R.layout.view_items_3_date, null, false)
-                    l.model = FieldText(cellNumber,field.col!!, name, mustInput)
+                    l.model = FieldText(cellNumber,field)
                     l.vm = viewModel
                     rootView = l.root
                     fieldModel = l.model
                 }
                 FieldType.TIME -> {
+                    //時間
                     val l: ViewItems4TimeBinding =
                         DataBindingUtil.inflate(layoutInflater, R.layout.view_items_4_time, null, false)
-                    l.model = FieldText(cellNumber,field.col!!, name, mustInput)
+                    l.model = FieldText(cellNumber,field)
                     l.vm = viewModel
                     rootView = l.root
                     fieldModel = l.model
                 }
+                FieldType.WORK_CONTENT_SELECTION,
+                FieldType.CATEGORY_SELECTION,
                 FieldType.SINGLE_SELECTION -> {
-
+                    //単一選択
                     val l: ViewItems5SelectBinding =
                         DataBindingUtil.inflate(
+                            //作業内容、カテゴリも単一選択と同じなので、5番を使いまわす。
                             layoutInflater, R.layout.view_items_5_select, null, false
                         )
-                    val model = FieldSingleSelect(cellNumber,field.col!!, name, mustInput,field.parent_field_id)
+                    val model = FieldSingleSelect(cellNumber,field)
 
                     if( 0 != field.parent_field_id ) {
                         // 連動パラメータ
@@ -540,18 +574,20 @@ class ItemEditorFragment : Fragment() {
                         l.spinner.createChildren(field.choice, model)
                     }
 
+                    //アイテムが選択されたときに行う処理を登録する
                     l.spinner.onItemSelectedListener = SpinnerItemSelectedListener().apply {
                         this.selectAction = {
                             model.selectedIndex.set(it)
                         }
                     }
 
-
                     l.model = model
                     l.vm = viewModel
                     singleSelectSpinner[field.field_id!!] = l.spinner
 
                     if (l.spinner.count > 0) {
+                        //あとで呼ばれるcreateForm関数内で値はセットされる。
+                        //ここでは未入力のときに先頭の選択肢を表示するために0を入力している。
                         l.spinner.setSelection(0)
                     }
 
@@ -566,9 +602,10 @@ class ItemEditorFragment : Fragment() {
 
                 }
                 FieldType.MULTIPLE_SELECTION -> {
+                    //複数選択
                     val l: ViewItems6SelectMultiBinding =
                         DataBindingUtil.inflate(layoutInflater, R.layout.view_items_6_select_multi, null, false)
-                    val model = FieldMultiSelect(cellNumber,field.col!!, name, mustInput)
+                    val model = FieldMultiSelect(cellNumber, field)
                     l.model = model
                     l.vm = viewModel
                     l.checkBoxGroup.createChildren(layoutInflater, field.choice, model)
@@ -576,78 +613,146 @@ class ItemEditorFragment : Fragment() {
                     fieldModel = l.model
                 }
                 FieldType.LOCATION -> {
+                    //場所
                     val l: ViewItems7LocationBinding =
                         DataBindingUtil.inflate(layoutInflater, R.layout.view_items_7_location, null, false)
-                    l.model = FieldText(cellNumber,field.col!!, name, mustInput)
+                    l.model = FieldText(cellNumber, field)
                     l.vm = viewModel
                     rootView = l.root
                     fieldModel = l.model
                 }
 
                 FieldType.LAT_LOCATION -> {
+                    //緯度
                     val l: ViewItems14LocationBinding =
                         DataBindingUtil.inflate(layoutInflater, R.layout.view_items_14_location, null, false)
-                    l.model = FieldText(cellNumber,field.col!!, name, mustInput)
+                    l.model = FieldText(cellNumber, field)
                     l.vm = viewModel
                     rootView = l.root
                     fieldModel = l.model
                 }
 
                 FieldType.LNG_LOCATION -> {
+                    //経度
                     val l: ViewItems15LocationBinding =
                         DataBindingUtil.inflate(layoutInflater, R.layout.view_items_15_location, null, false)
-                    l.model = FieldText(cellNumber,field.col!!, name, mustInput)
+                    l.model = FieldText(cellNumber, field)
                     l.vm = viewModel
                     rootView = l.root
                     fieldModel = l.model
                 }
 
                 FieldType.KENPIN_RENDOU_QR -> {
+                    //QRコード(検品と連動)
                     val l: ViewItems8QrKenpinBinding =
                         DataBindingUtil.inflate(layoutInflater, R.layout.view_items_8_qr_kenpin, null, false)
-                    l.model = FieldText(cellNumber,field.col!!, name, mustInput)
+                    l.model = FieldText(cellNumber, field)
                     l.vm = viewModel
                     rootView = l.root
                     fieldModel = l.model
                 }
                 FieldType.SIG_FOX -> {
+                    //シグフォックス（使っていない)
                     val l: ViewItems9SigfoxBinding =
                         DataBindingUtil.inflate(layoutInflater, R.layout.view_items_9_sigfox, null, false)
-                    l.model = FieldSigFox(cellNumber,field.col!!, name, mustInput)
+                    l.model = FieldSigFox(cellNumber, field)
                     rootView = l.root
                     fieldModel = l.model
                 }
                 FieldType.QR_CODE -> {
+                    //QRコード
                     val l: ViewItemsAQrBinding =
                         DataBindingUtil.inflate(layoutInflater, R.layout.view_items_a_qr, null, false)
-                    l.model = FieldText(cellNumber,field.col!!, name, mustInput)
+                    l.model = FieldText(cellNumber, field)
                     l.vm = viewModel
                     rootView = l.root
                     fieldModel = l.model
                 }
-                FieldType.TEKKILYO_RENDOU_QR -> {
+                FieldType.TEKKYO_RENDOU_QR -> {
+                    //QRコード(撤去と連動)
                     val l: ViewItemsBQrTekkyoBinding =
                         DataBindingUtil.inflate(layoutInflater, R.layout.view_items_b_qr_tekkyo, null, false)
-                    l.model = FieldText(cellNumber,field.col!!, name, mustInput)
+                    l.model = FieldText(cellNumber, field)
                     l.vm = viewModel
                     rootView = l.root
                     fieldModel = l.model
                 }
                 FieldType.ACOUNT_NAME -> {
+                    //アカウント名
                     val l: ViewItemsCAccountBinding =
                         DataBindingUtil.inflate(layoutInflater, R.layout.view_items_c_account, null, false)
-                    l.model = FieldText(cellNumber,field.col!!, name, mustInput)
+                    l.model = FieldText(cellNumber, field)
                     l.vm = viewModel
                     rootView = l.root
                     fieldModel = l.model
                 }
                 FieldType.CHECK_VALUE -> {
-                    val l: CellCheckvalueBinding =
-                        DataBindingUtil.inflate(layoutInflater, R.layout.cell_checkvalue, null, false)
-                    l.model = FieldCheckText(cellNumber,field.col!!, name, mustInput)
+                    //入力値チェック連動
+                    val l: ViewItems13CheckValueBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_13_check_value, null, false)
+                    l.model = FieldCheckText(cellNumber, field)
                     rootView = l.root
                     fieldModel = l.model
                 }
+
+                //type:16 入力値チェック連動_QRコード(検品と連動)
+                FieldType.QR_CODE_WITH_CHECK -> {
+                    val l: ViewItems16QrCheckBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_16_qr_check, null, false)
+                    //ここは連動パラメーターをどう扱うかを考えないとダメ。
+                    //TODO ここから直す
+                    l.model = FieldCheckText(cellNumber, field)
+                    l.vm = viewModel
+                    rootView = l.root
+                    fieldModel = l.model
+                }
+                //type:17
+                FieldType.CURRENT_DATE_AND_TIME -> {
+                    //現在日時のフォーマット yyyy/mm/dd hh:mmをボタンを押したら入力できるようにする
+                    val l: ViewItems17CurrentdatetimeBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_17_currentdatetime, null, false)
+                    l.model = FieldText(cellNumber, field)
+                    l.vm = viewModel
+                    rootView = l.root
+                    fieldModel = l.model
+
+                }
+
+                //type:18 単一選択のため、type5で処理する
+
+                //type:19
+                FieldType.WORKER_NAME -> {
+                    val l: ViewItems19WorkerBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_19_worker, null, false)
+                    l.model = FieldText(cellNumber, field)
+                    l.vm = viewModel
+                    rootView = l.root
+                    fieldModel = l.model
+                }
+
+                //type:20
+                FieldType.SCHEDULE_DATE -> {
+                    val l: ViewItems20ScheduleDateBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_20_schedule_date, null, false)
+                    l.model = FieldText(cellNumber, field)
+                    l.vm = viewModel
+                    rootView = l.root
+                    fieldModel = l.model
+                }
+
+                //type:21　単一選択なので5で処理する
+
+                //type:22
+                FieldType.ADDRESS -> {
+                    val l: ViewItems22AddressBinding =
+                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_22_address, null, false)
+                    l.model = FieldText(cellNumber, field)
+                    l.vm = viewModel
+                    rootView = l.root
+                    fieldModel = l.model
+                }
+
+
                 else -> { null }
             }
         }

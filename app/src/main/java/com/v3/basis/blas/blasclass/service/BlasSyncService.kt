@@ -64,7 +64,7 @@ class SenderHandler(val context: Context): Handler() {
         override fun onSignalStrengthsChanged(signalStrength: SignalStrength?) {
             super.onSignalStrengthsChanged(signalStrength)
             level = signalStrength?.level
-            BlasLog.trace("I", "電波強度:$level")
+            //BlasLog.trace("I", "電波強度:$level")
         }
     }
 

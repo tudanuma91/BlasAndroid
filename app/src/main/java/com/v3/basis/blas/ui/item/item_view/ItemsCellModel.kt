@@ -11,7 +11,7 @@ class ItemsCellModel(
     val item_id: Long,
     val title: String = "",
     val detail: String = "",
-    val valueList: ArrayList<String?>,
+    //val valueList: ArrayList<String?>,
     syncStatus: Int,
     context : Context
 ) : ServerSyncModel(token, project_id, item_id, syncStatus, context)

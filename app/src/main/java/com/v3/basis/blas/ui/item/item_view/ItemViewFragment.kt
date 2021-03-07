@@ -59,6 +59,7 @@ class ItemViewFragment : Fragment() {
     private var parseFinNum = parseNum
 
     private var findValueMap:MutableMap<String,String?>? = null
+    private var isErrorOnly:Boolean = false
 
 //    private val fieldMap: MutableMap<Int, MutableMap<String, String?>> = mutableMapOf()
     private var fields:List<LdbFieldRecord> = mutableListOf()
@@ -163,6 +164,8 @@ class ItemViewFragment : Fragment() {
             findValueMap = null
         }
 
+        isErrorOnly = ItemActivity.isErrorOnly
+
         return root
     }
 
@@ -185,7 +188,7 @@ class ItemViewFragment : Fragment() {
         intent.putExtra("item_id", "${model.item_id}")
         intent.putExtra("token", token)
         intent.putExtra("project_id", projectId)
-        intent.putExtra("value_list", model.valueList)
+       // intent.putExtra("value_list", model.valueList)
         requireActivity().startActivity(intent)
     }
 
@@ -270,7 +273,7 @@ class ItemViewFragment : Fragment() {
 
     private fun searchASync() {
 
-        Single.fromCallable { itemsController.search(offset = offset, paging = CREATE_UNIT, findValueMap = findValueMap) }
+        Single.fromCallable { itemsController.search(offset = offset, paging = CREATE_UNIT, findValueMap = findValueMap, isErrorOnly = isErrorOnly) }
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
@@ -396,7 +399,8 @@ class ItemViewFragment : Fragment() {
             text += "<tr>"
             text += "<td bgcolor=\"#FFEFFF\">${field.name}</td>"
 
-            if (field.type.toString() == FieldType.CHECK_VALUE) {
+            if ((field.type.toString() == FieldType.CHECK_VALUE) ||
+                 field.type.toString() == FieldType.QR_CODE_WITH_CHECK) {
                 val newValue = helper.createCheckValue(item[fldName].toString())
                 text += "<td>${newValue}</td>"
             }
@@ -443,27 +447,30 @@ class ItemViewFragment : Fragment() {
         val valueList = itemList.filter { it["item_id"] == rowModel.itemId }.first().let {
             val list = arrayListOf<String?>()
 
-            fields.forEach{ rec->
+            /*fields.forEach{ rec->
                 val name = "fld${rec.col}"
-                if( rec.type.toString() == FieldType.CHECK_VALUE ) {
+                if( rec.type.toString() == FieldType.CHECK_VALUE ||
+                    rec.type.toString() == FieldType.QR_CODE_WITH_CHECK) {
                     val newValue = helper.createCheckValue(it[name].toString())
-                    list.add(newValue)
+                    //list.add(newValue)
+                    list.add(it[name])
                 }
                 else {
                     list.add(it[name])
                 }
 
-            }
+            }*/
 
             list
         }
+
         val model = ItemsCellModel(
             token,
             projectId.toInt(),
             rowModel.itemId?.toLong() ?: 0,
             rowModel.title,
             rowModel.detail,
-            valueList,
+            //valueList,
             syncStatus,
             requireContext()
         )
@@ -478,8 +485,6 @@ class ItemViewFragment : Fragment() {
 
 
         dataList.add(ItemsListCell(viewModel, model))
-        val count = dataList.filter { it.model.syncVisible.get() }.size
-        Log.d("チェック!!","dataListの値 => ${dataList}")
     }
 
 

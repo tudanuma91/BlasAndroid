@@ -15,8 +15,9 @@
 
     <LinearLayout
         android:orientation="vertical"
+        android:layout_marginTop="10dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         >
 
         <TextView
@@ -37,18 +38,12 @@
 
         <!-- TwoWay Bindingで, 入力した値が自動的に変数にも反映されます！ -->
         <EditText
+            android:id="@+id/input_schedule_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@={model.text}"
             android:singleLine="true"
             tools:text="EDIT"
-            />
-
-        <Button
-            android:onClick="@{v -> vm.clickQRCode(model)}"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="QRコードを取得する"
             />
 
     </LinearLayout>

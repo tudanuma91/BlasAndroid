@@ -3,6 +3,7 @@ package com.v3.basis.blas.ui.item.common
 import android.util.Log
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.log.BlasLog
@@ -16,6 +17,8 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.Exception
 import kotlin.concurrent.withLock
 
@@ -26,14 +29,18 @@ class ItemViewModel: ViewModel() {
     val dateEvent: PublishSubject<FieldText> = PublishSubject.create()
     val timeEvent: PublishSubject<FieldText> = PublishSubject.create()
     val qrEvent: PublishSubject<FieldText> = PublishSubject.create()
+    val qrCheckEvent:PublishSubject<FieldCheckText> = PublishSubject.create()
     val qrKenpinEvent: PublishSubject<FieldText> = PublishSubject.create()
     val qrTekkyoEvent: PublishSubject<FieldText> = PublishSubject.create()
     val locationEvent: PublishSubject<FieldText> = PublishSubject.create()
     val latEvent: PublishSubject<FieldText> = PublishSubject.create()
     val lngEvent: PublishSubject<FieldText> = PublishSubject.create()
     val accountNameEvent: PublishSubject<FieldText> = PublishSubject.create()
+    val currentDateTimeEvent: PublishSubject<FieldText> = PublishSubject.create()    //日時
+
     val completeSave: PublishSubject<Unit> = PublishSubject.create()
     val completeUpdate: PublishSubject<Unit> = PublishSubject.create()
+
 
     val disposable = CompositeDisposable()
 
@@ -46,12 +53,18 @@ class ItemViewModel: ViewModel() {
         this.itemId = itemId
     }
 
+
     /**
      * [説明]
      * データ管理の保存ボタンを押したときに呼ばれる
      */
     fun clickSave(container: LinearLayout) {
         Log.d("clickSave()","start")
+
+        //ここでバリデーションを行う
+        if(itemsController?.validate(fields) == false) {
+            return
+        }
 
         Completable.fromAction {
 
@@ -61,13 +74,14 @@ class ItemViewModel: ViewModel() {
             itemsController?.also {
                 fields.forEachIndexed { index, f ->
                     val field = (f as FieldModel)
-                    map.set("fld${field.col}", field.convertToString())
+                    map.set("fld${field.field.col}", field.convertToString())
                 }
 
                 try {
                     SenderHandler.lock.withLock {
                         if (itemId == 0L) {
-                            if(it.create(map)) {
+                            //LDBにレコードを追加する
+                            if(it.insertToLDB(map)) {
                                 BlasSyncMessenger.notifyBlasItems(token, projectId)
                             }
                             else {
@@ -75,7 +89,8 @@ class ItemViewModel: ViewModel() {
                             }
                         } else {
                             map.set("item_id", itemId.toString())
-                            if(it.update(map)) {
+                            //LDBのレコードを更新する
+                            if(it.updateToLDB(map)) {
                                 BlasSyncMessenger.notifyBlasItems(token, projectId)
                             }
                             else {
@@ -133,6 +148,10 @@ class ItemViewModel: ViewModel() {
         qrEvent.onNext(field)
     }
 
+    fun clickQRCodeWithCheck(field: FieldCheckText) {
+        qrCheckEvent.onNext(field)
+    }
+
     fun clickQRCodeKenpin(field: FieldText) {
         Log.d("ItemViewModel.clickQRCodeKenpin()","start")
         qrKenpinEvent.onNext(field)
@@ -144,6 +163,10 @@ class ItemViewModel: ViewModel() {
 
     fun clickAccountName(field: FieldText) {
         accountNameEvent.onNext(field)
+    }
+
+    fun clickCurrentDateTime(field: FieldText) {
+        currentDateTimeEvent.onNext(field)
     }
 
     override fun onCleared() {

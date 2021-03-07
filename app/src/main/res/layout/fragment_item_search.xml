@@ -12,13 +12,21 @@
         android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="1dp">
+        app:layout_constraintVertical_bias="1.0"
+        tools:layout_editor_absoluteX="-45dp">
 
         <LinearLayout
             android:id="@+id/item_search_liner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:orientation="vertical" >
+
+            <Switch
+                android:id="@+id/network_error_switch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="通信エラーのレコードだけ表示する" />
+        </LinearLayout>
     </ScrollView>
 
 

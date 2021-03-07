@@ -23,7 +23,7 @@
             android:textColor="@color/colorAccent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="@{model.mustInput ? View.VISIBLE : View.INVISIBLE}"
+            android:visibility="@{model.field.essential == 1 ? View.VISIBLE : View.INVISIBLE}"
             android:text="※ 必須入力"
             />
 
@@ -31,7 +31,7 @@
             android:textColor="@color/colorText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@{model.title}"
+            android:text="@{model.field.name}"
             tools:text="TITLE"
             />
 

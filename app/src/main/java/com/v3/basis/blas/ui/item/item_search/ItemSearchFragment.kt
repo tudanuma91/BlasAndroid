@@ -168,7 +168,7 @@ class ItemSearchFragment : Fragment() {
                 FieldType.TEXT_FIELD,
                 FieldType.TEXT_AREA,
                 FieldType.QR_CODE,
-                FieldType.TEKKILYO_RENDOU_QR,
+                FieldType.TEKKYO_RENDOU_QR,
                 FieldType.KENPIN_RENDOU_QR,
                 FieldType.SIG_FOX,
                 FieldType.ACOUNT_NAME->{
@@ -312,9 +312,14 @@ class ItemSearchFragment : Fragment() {
                     FieldType.TEXT_FIELD,
                     FieldType.TEXT_AREA,
                     FieldType.QR_CODE,
-                    FieldType.TEKKILYO_RENDOU_QR,
+                    FieldType.TEKKYO_RENDOU_QR,
                     FieldType.KENPIN_RENDOU_QR,
                     FieldType.SIG_FOX ,
+                    FieldType.CURRENT_DATE_AND_TIME,
+                    FieldType.CATEGORY_SELECTION,
+                    FieldType.WORKER_NAME,
+                    FieldType.WORK_CONTENT_SELECTION,
+                    FieldType.ADDRESS,
                     FieldType.ACOUNT_NAME->{
                         //自由入力(1行)・自由入力(複数行)
                         value = formAction.pickUpValue(editMap,cnt)
@@ -340,7 +345,10 @@ class ItemSearchFragment : Fragment() {
                         dateTimeCol += "${cnt},"
                     }
 
-                    FieldType.MULTIPLE_SELECTION , FieldType.SINGLE_SELECTION->{
+                    FieldType.MULTIPLE_SELECTION,
+                    FieldType.SINGLE_SELECTION,
+                    FieldType.CATEGORY_SELECTION,
+                    FieldType.WORK_CONTENT_SELECTION->{
                         //チェックボックスとラジオボタン
                         val colCheckMap = checkMap.get("col_${cnt}")
                         value = formAction.getCheckedValues(colCheckMap)
@@ -352,7 +360,6 @@ class ItemSearchFragment : Fragment() {
                         value = formAction.pickupCheckValue(editMap,cnt)
                         searchValue.set("fld${cnt}",value)
                         checkValueCol += "${cnt},"
-
                     }
                 }
                 cnt += 1
@@ -394,6 +401,7 @@ class ItemSearchFragment : Fragment() {
                 Log.d("ItemSearchFragment.setDisplay()","startActivity")
 //                startActivity(intent)
                 ItemActivity.searchFreeWord = searchValue["freeWord"]
+                ItemActivity.isErrorOnly = network_error_switch.isChecked
                 val parent = (requireActivity() as ItemActivity)
                 parent.reloard()
             }
@@ -446,7 +454,7 @@ class ItemSearchFragment : Fragment() {
                     FieldType.TEXT_FIELD,
                     FieldType.TEXT_AREA,
                     FieldType.QR_CODE,
-                    FieldType.TEKKILYO_RENDOU_QR,
+                    FieldType.TEKKYO_RENDOU_QR,
                     FieldType.KENPIN_RENDOU_QR,
                     FieldType.SIG_FOX,
                     FieldType.ACOUNT_NAME->{
@@ -589,7 +597,7 @@ class ItemSearchFragment : Fragment() {
                         FieldType.TEXT_FIELD,
                         FieldType.TEXT_AREA,
                         FieldType.QR_CODE,
-                        FieldType.TEKKILYO_RENDOU_QR,
+                        FieldType.TEKKYO_RENDOU_QR,
                         FieldType.KENPIN_RENDOU_QR,
                         FieldType.SIG_FOX ,
                         FieldType.ACOUNT_NAME->{
