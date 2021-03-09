@@ -10,7 +10,7 @@
             type="com.v3.basis.blas.ui.item.common.ItemViewModel" />
         <variable
             name="model"
-            type="com.v3.basis.blas.ui.item.common.FieldText" />
+            type="com.v3.basis.blas.ui.item.common.FieldQRCode" />
     </data>
 
     <LinearLayout
@@ -45,10 +45,10 @@
             />
 
         <Button
-            android:onClick="@{v -> vm.clickQRCodeKenpin(model)}"
+            android:id="@+id/button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="QRコードを取得する(検品と連動)"
+            android:text="QRコードを取得する"
             />
 
     </LinearLayout>

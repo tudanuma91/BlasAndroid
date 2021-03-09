@@ -10,13 +10,14 @@
             type="com.v3.basis.blas.ui.item.common.ItemViewModel" />
         <variable
             name="model"
-            type="com.v3.basis.blas.ui.item.common.FieldText" />
+            type="com.v3.basis.blas.ui.item.common.FieldScheduleDate" />
     </data>
 
     <LinearLayout
         android:orientation="vertical"
+        android:layout_marginTop="10dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         >
 
         <TextView
@@ -37,18 +38,12 @@
 
         <!-- TwoWay Bindingで, 入力した値が自動的に変数にも反映されます！ -->
         <EditText
-            android:inputType="none"
+            android:id="@+id/input_schedule_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@={model.text}"
             android:singleLine="true"
             tools:text="EDIT"
-            />
-        <Button
-            android:onClick="@{v -> vm.clickLocation(model)}"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="場所を取得する"
             />
 
     </LinearLayout>

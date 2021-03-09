@@ -10,7 +10,7 @@
             type="com.v3.basis.blas.ui.item.common.ItemViewModel" />
         <variable
             name="model"
-            type="com.v3.basis.blas.ui.item.common.FieldCheckText" />
+            type="com.v3.basis.blas.ui.item.common.FieldLocation" />
     </data>
 
     <LinearLayout
@@ -37,40 +37,19 @@
 
         <!-- TwoWay Bindingで, 入力した値が自動的に変数にも反映されます！ -->
         <EditText
+            android:inputType="none"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@={model.text}"
             android:singleLine="true"
             tools:text="EDIT"
             />
-
-        <EditText
-            android:id="@+id/editMemo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/colorText"
-            android:singleLine="true"
-            android:ellipsize="none"
-            android:layout_weight="0.7"
-            android:text="@={model.memo}"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:hint="備考"
-            />
         <Button
-            android:onClick="@{v -> vm.clickQRCodeWithCheck(model)}"
+            android:id="@+id/button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="QRコードを取得する"
+            android:text="場所を取得する"
             />
 
-        <TextView
-            android:textColor="@color/colorAccent"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="@{model.validationMsg != null ? View.VISIBLE : View.INVISIBLE}"
-            android:text="@{model.validationMsg}"
-            />
     </LinearLayout>
 </layout>

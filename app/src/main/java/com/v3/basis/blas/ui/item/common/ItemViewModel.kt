@@ -26,6 +26,7 @@ class ItemViewModel: ViewModel() {
 
     val fields: MutableList<Any?> = mutableListOf()
 
+    /*
     val dateEvent: PublishSubject<FieldText> = PublishSubject.create()
     val timeEvent: PublishSubject<FieldText> = PublishSubject.create()
     val qrEvent: PublishSubject<FieldText> = PublishSubject.create()
@@ -37,7 +38,7 @@ class ItemViewModel: ViewModel() {
     val lngEvent: PublishSubject<FieldText> = PublishSubject.create()
     val accountNameEvent: PublishSubject<FieldText> = PublishSubject.create()
     val currentDateTimeEvent: PublishSubject<FieldText> = PublishSubject.create()    //日時
-
+    */
     val completeSave: PublishSubject<Unit> = PublishSubject.create()
     val completeUpdate: PublishSubject<Unit> = PublishSubject.create()
 
@@ -124,6 +125,7 @@ class ItemViewModel: ViewModel() {
             .addTo(disposable)
     }
 
+    /*
     fun clickDate(field: FieldText) {
         dateEvent.onNext(field)
     }
@@ -168,7 +170,7 @@ class ItemViewModel: ViewModel() {
     fun clickCurrentDateTime(field: FieldText) {
         currentDateTimeEvent.onNext(field)
     }
-
+    */
     override fun onCleared() {
         super.onCleared()
         disposable.dispose()

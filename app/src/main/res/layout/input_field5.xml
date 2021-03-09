@@ -10,7 +10,7 @@
             type="com.v3.basis.blas.ui.item.common.ItemViewModel" />
         <variable
             name="model"
-            type="com.v3.basis.blas.ui.item.common.FieldText" />
+            type="com.v3.basis.blas.ui.item.common.FieldSingleSelect" />
     </data>
 
     <LinearLayout
@@ -35,20 +35,12 @@
             tools:text="TITLE"
             />
 
-        <!-- TwoWay Bindingで, 入力した値が自動的に変数にも反映されます！ -->
-        <EditText
+        <Spinner
+            android:id="@+id/spinner"
+            android:orientation="vertical"
+            android:gravity="center_vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@={model.text}"
-            android:singleLine="true"
-            tools:text="EDIT"
-            />
-
-        <Button
-            android:onClick="@{v -> vm.clickCurrentDateTime(model)}"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="現在日時を取得する"
+            android:layout_height="50dp"
             />
 
     </LinearLayout>

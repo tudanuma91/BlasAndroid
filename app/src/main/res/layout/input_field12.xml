@@ -10,7 +10,7 @@
             type="com.v3.basis.blas.ui.item.common.ItemViewModel" />
         <variable
             name="model"
-            type="com.v3.basis.blas.ui.item.common.FieldText" />
+            type="com.v3.basis.blas.ui.item.common.FieldAccount" />
     </data>
 
     <LinearLayout
@@ -43,13 +43,19 @@
             android:singleLine="true"
             tools:text="EDIT"
             />
-
+        <!--
         <Button
-            android:onClick="@{v -> vm.clickQRCode(model)}"
+            android:onClick="@{v -> model.clickAccountName()}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="QRコードを取得する"
+            android:text="名前を入力する"
             />
-
+        -->
+        <Button
+            android:id="@+id/button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="名前を入力する"
+            />
     </LinearLayout>
 </layout>

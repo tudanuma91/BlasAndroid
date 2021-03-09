@@ -10,7 +10,7 @@
             type="com.v3.basis.blas.ui.item.common.ItemViewModel" />
         <variable
             name="model"
-            type="com.v3.basis.blas.ui.item.common.FieldText" />
+            type="com.v3.basis.blas.ui.item.common.FieldTime" />
     </data>
 
     <LinearLayout
@@ -38,17 +38,13 @@
         <!-- TwoWay Bindingで, 入力した値が自動的に変数にも反映されます！ -->
         <EditText
             android:inputType="none"
+            android:editable="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center_vertical"
             android:text="@={model.text}"
-            android:singleLine="true"
+            android:onClick="@{v -> model.clickTime()}"
             tools:text="EDIT"
-            />
-        <Button
-            android:onClick="@{v -> vm.clickLng(model)}"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="経度を取得する"
             />
 
     </LinearLayout>

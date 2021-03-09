@@ -10,7 +10,7 @@
             type="com.v3.basis.blas.ui.item.common.ItemViewModel" />
         <variable
             name="model"
-            type="com.v3.basis.blas.ui.item.common.FieldText" />
+            type="com.v3.basis.blas.ui.item.common.FieldDate" />
     </data>
 
     <LinearLayout
@@ -43,7 +43,7 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:text="@={model.text}"
-            android:onClick="@{v -> vm.clickDate(model)}"
+            android:onClick="@{v -> model.clickDate()}"
             tools:text="EDIT"
             />
 

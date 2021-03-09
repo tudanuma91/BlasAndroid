@@ -21,6 +21,7 @@
             android:layout_height="wrap_content"
             >
 
+            <!--ここにフィールドをプログラムから追加する -->
             <LinearLayout
                 android:id="@+id/innerView"
                 android:orientation="vertical"
