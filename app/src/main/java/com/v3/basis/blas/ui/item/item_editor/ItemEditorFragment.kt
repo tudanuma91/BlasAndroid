@@ -926,9 +926,11 @@ class GPSLocationListener(val resources:Resources, val field: ObservableField<St
                 }
             }
             LAT->{
+                //TODO:三代川 緯度の小数点は下6桁にしてください
                 field.set(lat)
             }
             LNG->{
+                //TODO:三代川 経度の小数点は下6桁にしてください
                 field.set(lng)
             }
         }
