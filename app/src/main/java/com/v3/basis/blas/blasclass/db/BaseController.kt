@@ -210,7 +210,7 @@ abstract class BaseController(
      * ユーザーテーブルから指定したカラムの値を取得する
      * user_idはログインユーザーに固定される
      */
-    protected fun getUserInfo() : LdbUserRecord? {
+    public fun getUserInfo() : LdbUserRecord? {
 
         val sql = "select * from users where user_id = ?"
         val cursor = db?.rawQuery(sql, arrayOf( BlasApp.userId.toString() ))

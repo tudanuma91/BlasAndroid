@@ -611,10 +611,9 @@ class ItemEditorFragment : Fragment() {
                     rootView = l.root
                     fieldModel = l.model
                 }
-
+                // type:7 場所
                 FieldType.LOCATION -> {
-                    //TODO:三代川 画面に住所を取得する、のボタンが表示されないので表示するようにしてください
-                    //場所
+                    //TODO:三代川 画面に住所を取得する、のボタンが表示されないので表示するようにしてください ⇨ OK
                     val inputField = FieldLocation(layoutInflater, cellNumber, field)
                     inputField.layout.button.setOnClickListener {
                         //ボタンを押したときの処理
@@ -625,22 +624,21 @@ class ItemEditorFragment : Fragment() {
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
                 }
-
+                // type:14  緯度
                 FieldType.LAT_LOCATION -> {
-                    //緯度
                     val inputField = FieldLat(layoutInflater, cellNumber, field)
                     inputField.layout.button.setOnClickListener {
                         //ボタンを押したときの処理
                         startGetGetCoord(inputField.text, GPSLocationListener.LAT)
+
                     }
                     //親フォームにフィールドを追加する
                     formModel.fields.add(inputField)
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
                 }
-
+                // type:15 経度
                 FieldType.LNG_LOCATION -> {
-                    //経度
                     val inputField = FieldLng(layoutInflater, cellNumber, field)
                     inputField.layout.button.setOnClickListener {
                         //ボタンを押したときの処理
@@ -691,18 +689,20 @@ class ItemEditorFragment : Fragment() {
 
 
                 }
-
+                // type:12 アカウント名
                 FieldType.ACOUNT_NAME -> {
-                    //アカウント名
                     val inputField = FieldAccount(layoutInflater, cellNumber, field)
-                    inputField.layout.button.setOnClickListener {
-                        inputField.text.set("クリックされました")
-                        Toast.makeText(context, "クリックされました", Toast.LENGTH_SHORT).show()
-                    }
+
                     //ボタンがクリックされたらログインユーザ名を表示する
-                    if(userMap["name"] != null) {
-                        //TODO 三代川 ここにログインユーザの名前が入るように修正してください
-                        inputField.accountName = userMap["name"].toString()
+                    inputField.layout.button.setOnClickListener {
+                        val user = itemsController.getUserInfo()
+                        inputField.text.set( user?.name )
+                    }
+
+                    // 値が入っていなかったらログインユーザ名を入れる
+                    if(inputField.text.get() == "") {
+                        val user = itemsController.getUserInfo()
+                        inputField.text.set( user?.name )
                     }
 
                     //親フォームにフィールドを追加する
@@ -710,16 +710,14 @@ class ItemEditorFragment : Fragment() {
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
                 }
-
+                // type:13 入力値チェック連動
                 FieldType.CHECK_VALUE -> {
-                    //入力値チェック連動
                     val inputField = FieldCheckText(layoutInflater, cellNumber, field)
                     //親フォームにフィールドを追加する
                     formModel.fields.add(inputField)
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
                 }
-
                 //type:16 入力値チェック連動_QRコード(検品と連動)
                 FieldType.QR_CODE_WITH_CHECK -> {
                     val inputField = FieldQRWithCheckText(layoutInflater, cellNumber, field)
@@ -728,14 +726,15 @@ class ItemEditorFragment : Fragment() {
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
                 }
-                //type:17
+                //type:17 現在日時
                 FieldType.CURRENT_DATE_AND_TIME -> {
                     //現在日時のフォーマット yyyy/mm/dd hh:mmをボタンを押したら入力できるようにする
                     val inputField = FieldCurrentDateTime(layoutInflater, cellNumber, field)
                     inputField.layout.button.setOnClickListener {
-                        //TODO:三代川 ここにyyyy/mm/dd hh:mmの値をセットしてください
-                        inputField.text.set("クリックされました")
-                        Toast.makeText(context, "クリックされました", Toast.LENGTH_SHORT).show()
+                        val df = SimpleDateFormat("yyyy/MM/dd HH:mm")
+                        val date = Date()
+                        inputField.text.set(df.format(date))
+                        // Toast.makeText(context, "クリックされました", Toast.LENGTH_SHORT).show()
                     }
 
                     //親フォームにフィールドを追加する
@@ -746,21 +745,24 @@ class ItemEditorFragment : Fragment() {
 
                 //type:18 単一選択のため、type5で処理する
 
-                //type:19
+                //type:19 作業者
                 FieldType.WORKER_NAME -> {
                     val inputField = FieldWorkerName(layoutInflater, cellNumber, field)
-                    //TODO ここにクリックする処理を追加する
                     //親フォームにフィールドを追加する
                     formModel.fields.add(inputField)
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
+
                     inputField.layout.button.setOnClickListener {
-                        //TODO:三代川 アカウント名の項目と同じ、ログインユーザー名を選択できるようにしてください
                         //TODO:現在はただのテキストフィールドだけど、単一選択の入力画面に変更する必要もあり。
                         //TODO:後回し
+
+                        //ボタンが押されたらログインユーザー名を設定
+                        val user = itemsController.getUserInfo()
+                        inputField.text.set( user?.name )
+
                     }
                 }
-
                 //type:20
                 FieldType.SCHEDULE_DATE -> {
                     val inputField = FieldScheduleDate(layoutInflater, cellNumber, field)
@@ -791,7 +793,10 @@ class ItemEditorFragment : Fragment() {
     }
 
     private fun startGetGetCoord(inputText:ObservableField<String>, GeoType:Int) {
+        BlasLog.trace("I","startGetGetCoord()")
+
         if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            BlasLog.trace("I","GPS権限あり")
             //GPSの権限がある場合
             gpsListener = GPSLocationListener(resources,
                 inputText,
@@ -801,6 +806,7 @@ class ItemEditorFragment : Fragment() {
             locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, gpsListener)
         }
         else {
+            BlasLog.trace("I","GPS権限なし")
             //権限がない場合、権限をリクエストするだけ
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1000)
         }
@@ -915,6 +921,7 @@ class GPSLocationListener(val resources:Resources, val field: ObservableField<St
     override fun onLocationChanged(location: Location?) {
         val lat = location?.latitude.toString()
         val lng = location?.longitude.toString()
+
         when(kind) {
             ADDRESS->{
                 try {
@@ -926,12 +933,14 @@ class GPSLocationListener(val resources:Resources, val field: ObservableField<St
                 }
             }
             LAT->{
-                //TODO:三代川 緯度の小数点は下6桁にしてください
-                field.set(lat)
+                // 小数点は下6桁
+                // field.set(lat)
+                field.set("%.6f".format(lat.toFloat()))
             }
             LNG->{
-                //TODO:三代川 経度の小数点は下6桁にしてください
-                field.set(lng)
+                // 小数点は下6桁
+                // field.set(lng)
+                field.set("%.6f".format(lat.toFloat()))
             }
         }
 
