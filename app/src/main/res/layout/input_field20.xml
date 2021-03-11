@@ -38,7 +38,7 @@
 
         <!-- TwoWay Bindingで, 入力した値が自動的に変数にも反映されます！ -->
         <EditText
-            android:id="@+id/input_schedule_date"
+            android:id="@+id/text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@={model.text}"

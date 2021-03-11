@@ -514,11 +514,18 @@ class ItemEditorFragment : Fragment() {
                     formModel.fields.add(inputField)
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
+                    inputField.layout.text.setOnClickListener {
+                        //TODO:三代川　カレンダーを表示できるようにしました。こちらを参考にSCHEDULE_DATE、TIMEなどを修正お願い致します。
+                        setClickDateTime(inputField)
+                    }
                 }
 
                 FieldType.TIME -> {
                     //時間
                     val inputField = FieldTime(layoutInflater, cellNumber,field)
+                    inputField.layout.text.setOnClickListener {
+                        //TODO:三代川 時刻を入力できるようにしてください
+                    }
                     //親フォームにフィールドを追加する
                     formModel.fields.add(inputField)
                     //入力フィールドを表示する
@@ -613,7 +620,6 @@ class ItemEditorFragment : Fragment() {
                 }
                 // type:7 場所
                 FieldType.LOCATION -> {
-                    //TODO:三代川 画面に住所を取得する、のボタンが表示されないので表示するようにしてください ⇨ OK
                     val inputField = FieldLocation(layoutInflater, cellNumber, field)
                     inputField.layout.button.setOnClickListener {
                         //ボタンを押したときの処理
@@ -654,7 +660,7 @@ class ItemEditorFragment : Fragment() {
                     //QRコード(検品と連動)
                     val inputField = FieldQRCodeWithKenpin(layoutInflater, cellNumber, field)
                     inputField.layout.button.setOnClickListener {
-                        //ボタンを押したときの処理
+                        //TODO:三代川 QRコード(検品と連動)用のアクティビティ起動
                     }
 
                     //親フォームにフィールドを追加する
@@ -667,7 +673,7 @@ class ItemEditorFragment : Fragment() {
                     //QRコード
                     val inputField = FieldQRCode(layoutInflater, cellNumber, field)
                     inputField.layout.button.setOnClickListener {
-                        //ボタンを押したときの処理
+                        //TODO:三代川 ボタンを押したときの処理　QRコード用のアクティビティ起動
                     }
                     //親フォームにフィールドを追加する
                     formModel.fields.add(inputField)
@@ -680,7 +686,7 @@ class ItemEditorFragment : Fragment() {
                     //QRコード(撤去と連動)
                     val inputField = FieldQRCodeWithTekkyo(layoutInflater, cellNumber, field)
                     inputField.layout.button.setOnClickListener {
-                        //ボタンをクリックされたときの処理
+                        //TODO:三代川 ボタンを押したときの処理　QRコード用のアクティビティ起動
                     }
                     //親フォームにフィールドを追加する
                     formModel.fields.add(inputField)
@@ -734,7 +740,6 @@ class ItemEditorFragment : Fragment() {
                         val df = SimpleDateFormat("yyyy/MM/dd HH:mm")
                         val date = Date()
                         inputField.text.set(df.format(date))
-                        // Toast.makeText(context, "クリックされました", Toast.LENGTH_SHORT).show()
                     }
 
                     //親フォームにフィールドを追加する
@@ -770,7 +775,10 @@ class ItemEditorFragment : Fragment() {
                     formModel.fields.add(inputField)
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
-                    //TODO:三代川 カレンダー選択できるようにしてください
+                    inputField.layout.text.setOnClickListener {
+                        //TODO:三代川 カレンダー選択できるようにしてください
+                        //ちょっと型20の使い方がわからないのでWEB版を調べて同じ動きにして欲しいです
+                    }
                 }
 
                 //type:21　単一選択なので5で処理する
@@ -788,10 +796,11 @@ class ItemEditorFragment : Fragment() {
                 else -> { null }
             }
         }
-
-       // form.innerView.addView(rootView)
     }
 
+    /**
+     * GPSから緯度経度を取得する。非同期。
+     */
     private fun startGetGetCoord(inputText:ObservableField<String>, GeoType:Int) {
         BlasLog.trace("I","startGetGetCoord()")
 
@@ -841,7 +850,7 @@ class ItemEditorFragment : Fragment() {
     /**
      * 日付フィールドタップ時の処理
      */
-    fun setClickDateTime(field: FieldText) {
+    fun setClickDateTime(field: FieldDate) {
         //editTextタップ時の処理
         val dtp = DatePickerDialog(
             requireContext(),
