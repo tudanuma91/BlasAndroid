@@ -948,7 +948,7 @@ class ItemEditorFragment : Fragment() {
     /**
      * 日付フィールドタップ時の処理
      */
-    fun setClickDateTime(field: FieldDateModel) {
+    fun setClickDateTime(field: FieldModel) {
         //editTextタップ時の処理
         val dtp = DatePickerDialog(
             requireContext(),
