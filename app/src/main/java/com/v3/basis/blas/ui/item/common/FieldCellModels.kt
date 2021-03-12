@@ -12,12 +12,12 @@ import com.v3.basis.blas.databinding.*
 import org.json.JSONObject
 
 class FieldText(
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField(""),
-	val text: ObservableField<String> = ObservableField("")
-): FieldModel {
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField("")
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	var layout: InputField1Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field1, null, false)
 
@@ -25,71 +25,47 @@ class FieldText(
 		layout.model = this
 	}
 
-	override fun convertToString(): String? {
-		return text.get()
-	}
-
-	override fun setValue(value: String?) {
-		value?.also { text.set(it) }
-	}
 }
 
 
 class FieldMultiText(
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField(""),
-	val text: ObservableField<String> = ObservableField("")
-): FieldModel {
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField("")
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	var layout: InputField2Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field2, null, false)
 
 	init {
 		layout.model = this
 	}
-
-	override fun convertToString(): String? {
-		return text.get()
-	}
-
-	override fun setValue(value: String?) {
-		value?.also { text.set(it) }
-	}
 }
 
 
 class FieldDate(
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField(""),
-	override val text: ObservableField<String> = ObservableField("")
-): FieldDateModel {
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField("")
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	var layout: InputField3Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field3, null, false)
 
 	init {
 		layout.model = this
 	}
-
-	override fun convertToString(): String? {
-		return text.get()
-	}
-
-	override fun setValue(value: String?) {
-		value?.also { text.set(it) }
-	}
-
 }
 
 class FieldTime(
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField(""),
-	val text: ObservableField<String> = ObservableField("")
-): FieldModel {
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField("")
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	var layout: InputField4Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field4, null, false)
 
@@ -97,13 +73,6 @@ class FieldTime(
 		layout.model = this
 	}
 
-	override fun convertToString(): String? {
-		return text.get()
-	}
-
-	override fun setValue(value: String?) {
-		value?.also { text.set(it) }
-	}
 
 	fun clickTime() {
 
@@ -112,15 +81,14 @@ class FieldTime(
 
 
 class FieldSingleSelect (
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField(""),
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField(""),
 	var values: MutableList<String> = mutableListOf(),
 	val selectedIndex: ObservableInt = ObservableInt(-1)
-	// このクラスだけopenにする
-	//var layout: InputField5Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field5, null, false)
-): FieldModel {
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	var layout: InputField5Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field5, null, false)
 
@@ -149,14 +117,16 @@ class FieldSingleSelect (
 
 }
 
-data class FieldMultiSelect(
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField(""),
+class FieldMultiSelect(
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField(""),
+
 	val values: MutableList<String> = mutableListOf(),
 	val selectedIndexes: MutableMap<Int, ObservableBoolean> = mutableMapOf()
-): FieldModel {
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	var layout: InputField6Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field6, null, false)
 
@@ -195,12 +165,12 @@ data class FieldMultiSelect(
 }
 
 class FieldLat(
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField(""),
-	val text: ObservableField<String> = ObservableField("")
-): FieldModel {
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField("")
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	var layout: InputField14Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field14, null, false)
 
@@ -208,36 +178,21 @@ class FieldLat(
 		layout.model = this
 	}
 
-	override fun convertToString(): String? {
-		return text.get()
-	}
-
-	override fun setValue(value: String?) {
-		value?.also { text.set(it) }
-	}
 }
 
 
 class FieldLng(
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField(""),
-	val text: ObservableField<String> = ObservableField("")
-): FieldModel {
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField("")
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	var layout: InputField15Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field15, null, false)
 
 	init {
 		layout.model = this
-	}
-
-	override fun convertToString(): String? {
-		return text.get()
-	}
-
-	override fun setValue(value: String?) {
-		value?.also { text.set(it) }
 	}
 
 	fun clickLng() {
@@ -246,25 +201,17 @@ class FieldLng(
 }
 
 class FieldLocation(
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField(""),
-	val text: ObservableField<String> = ObservableField("")
-): FieldModel {
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField("")
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	var layout: InputField7Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field7, null, false)
 
 	init {
 		layout.model = this
-	}
-
-	override fun convertToString(): String? {
-		return text.get()
-	}
-
-	override fun setValue(value: String?) {
-		value?.also { text.set(it) }
 	}
 
 	fun clickLocation() {
@@ -274,25 +221,17 @@ class FieldLocation(
 
 
 class FieldQRCodeWithKenpin(
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField(""),
-	val text: ObservableField<String> = ObservableField("")
-): FieldModel {
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField("")
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	var layout: InputField8Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field8, null, false)
 
 	init {
 		layout.model = this
-	}
-
-	override fun convertToString(): String? {
-		return text.get()
-	}
-
-	override fun setValue(value: String?) {
-		value?.also { text.set(it) }
 	}
 
 	fun clickQRCodeKenpin() {
@@ -302,25 +241,17 @@ class FieldQRCodeWithKenpin(
 
 
 class FieldQRCode(
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField(""),
-	val text: ObservableField<String> = ObservableField("")
-): FieldModel {
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField("")
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	var layout: InputField10Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field10, null, false)
 
 	init {
 		layout.model = this
-	}
-
-	override fun convertToString(): String? {
-		return text.get()
-	}
-
-	override fun setValue(value: String?) {
-		value?.also { text.set(it) }
 	}
 
 	fun clickQRCode() {
@@ -330,25 +261,17 @@ class FieldQRCode(
 
 
 class FieldQRCodeWithTekkyo(
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField(""),
-	val text: ObservableField<String> = ObservableField("")
-): FieldModel {
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField("")
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	var layout: InputField11Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field11, null, false)
 
 	init {
 		layout.model = this
-	}
-
-	override fun convertToString(): String? {
-		return text.get()
-	}
-
-	override fun setValue(value: String?) {
-		value?.also { text.set(it) }
 	}
 
 	fun clickQRCodeTekkyo() {
@@ -358,12 +281,12 @@ class FieldQRCodeWithTekkyo(
 
 
 class FieldAccount(
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField(""),
-	val text: ObservableField<String> = ObservableField("")
-): FieldModel {
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField("")
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	var layout: InputField12Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field12, null, false)
 	var accountName: String = ""
@@ -371,42 +294,31 @@ class FieldAccount(
 		layout.model = this
 	}
 
-	override fun convertToString(): String? {
-		return text.get()
-	}
-
-	override fun setValue(value: String?) {
-		value?.also { text.set(it) }
-	}
-
 	fun clickAccountName() {
 		this.text.set(accountName)
 	}
 }
 
-data class FieldSigFox(
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	//override val col:Int,
-	//override val title: String = "シグフォックスは使用できません",
-	//override val mustInput: Boolean
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField("")
-): FieldModel {
+class FieldSigFox(
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField("")
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	override fun convertToString(): String? = null
 	override fun setValue(value: String?) {}
 }
 
-data class FieldCheckText(
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField(""),
-	val text: ObservableField<String> = ObservableField(""),
+class FieldCheckText(
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField(""),
 	val memo: ObservableField<String> = ObservableField("")
-
-): FieldModel {
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	var layout: InputField13Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field13, null, false)
 
@@ -446,15 +358,14 @@ data class FieldCheckText(
 	}
 }
 
-data class FieldQRWithCheckText(
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField(""),
-	val text: ObservableField<String> = ObservableField(""),
+class FieldQRWithCheckText(
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField(""),
 	val memo: ObservableField<String> = ObservableField("")
-
-): FieldModel {
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	var layout: InputField16Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field16, null, false)
 
@@ -500,25 +411,17 @@ data class FieldQRWithCheckText(
 
 
 class FieldCurrentDateTime(
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField(""),
-	val text: ObservableField<String> = ObservableField("")
-): FieldModel {
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField("")
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	var layout: InputField17Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field17, null, false)
 
 	init {
 		layout.model = this
-	}
-
-	override fun convertToString(): String? {
-		return text.get()
-	}
-
-	override fun setValue(value: String?) {
-		value?.also { text.set(it) }
 	}
 
 	fun clickCurrentDateTime() {
@@ -527,12 +430,12 @@ class FieldCurrentDateTime(
 }
 
 class FieldWorkerName(
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField(""),
-	val text: ObservableField<String> = ObservableField("")
-): FieldModel {
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField("")
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	var layout: InputField19Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field19, null, false)
 
@@ -540,22 +443,15 @@ class FieldWorkerName(
 		layout.model = this
 	}
 
-	override fun convertToString(): String? {
-		return text.get()
-	}
-
-	override fun setValue(value: String?) {
-		value?.also { text.set(it) }
-	}
 }
 
 class FieldScheduleDate(
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField(""),
-	override val text: ObservableField<String> = ObservableField("")
-): FieldDateModel {
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField("")
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	var layout: InputField20Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field20, null, false)
 
@@ -563,22 +459,15 @@ class FieldScheduleDate(
 		layout.model = this
 	}
 
-	override fun convertToString(): String? {
-		return text.get()
-	}
-
-	override fun setValue(value: String?) {
-		value?.also { text.set(it) }
-	}
 }
 
 class FieldAddress(
-	override val layoutInflater: LayoutInflater,
-	override val fieldNumber: Int,
-	override val field: LdbFieldRecord,
-	override val validationMsg: ObservableField<String> = ObservableField(""),
-	val text: ObservableField<String> = ObservableField("")
-): FieldModel {
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord,
+	validationMsg: ObservableField<String> = ObservableField(""),
+	text: ObservableField<String> = ObservableField("")
+): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
 
 	var layout: InputField22Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field22, null, false)
 
@@ -586,11 +475,4 @@ class FieldAddress(
 		layout.model = this
 	}
 
-	override fun convertToString(): String? {
-		return text.get()
-	}
-
-	override fun setValue(value: String?) {
-		value?.also { text.set(it) }
-	}
 }
