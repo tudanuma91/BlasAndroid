@@ -39,8 +39,11 @@
         <!-- TwoWay Bindingで, 入力した値が自動的に変数にも反映されます！ -->
         <EditText
             android:id="@+id/text"
+            android:inputType="none"
+            android:editable="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center_vertical"
             android:text="@={model.text}"
             android:singleLine="true"
             tools:text="EDIT"

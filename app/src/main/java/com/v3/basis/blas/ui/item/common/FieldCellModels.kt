@@ -64,8 +64,8 @@ class FieldDate(
 	override val fieldNumber: Int,
 	override val field: LdbFieldRecord,
 	override val validationMsg: ObservableField<String> = ObservableField(""),
-	val text: ObservableField<String> = ObservableField("")
-): FieldModel {
+	override val text: ObservableField<String> = ObservableField("")
+): FieldDateModel {
 
 	var layout: InputField3Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field3, null, false)
 
@@ -81,9 +81,6 @@ class FieldDate(
 		value?.also { text.set(it) }
 	}
 
-	fun clickDate() {
-
-	}
 }
 
 class FieldTime(
@@ -555,8 +552,8 @@ class FieldScheduleDate(
 	override val fieldNumber: Int,
 	override val field: LdbFieldRecord,
 	override val validationMsg: ObservableField<String> = ObservableField(""),
-	val text: ObservableField<String> = ObservableField("")
-): FieldModel {
+	override val text: ObservableField<String> = ObservableField("")
+): FieldDateModel {
 
 	var layout: InputField20Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field20, null, false)
 

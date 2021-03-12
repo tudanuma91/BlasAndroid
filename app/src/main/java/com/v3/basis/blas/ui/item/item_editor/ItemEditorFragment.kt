@@ -29,7 +29,6 @@ import com.google.maps.GeocodingApi
 import com.google.maps.model.LatLng
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemActivity
-import com.v3.basis.blas.activity.QRActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.db.data.ItemsController
@@ -37,11 +36,9 @@ import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import com.v3.basis.blas.blasclass.log.BlasLog
-import com.v3.basis.blas.blasclass.rest.BlasRest
 import com.v3.basis.blas.databinding.*
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
-import com.v3.basis.blas.ui.ext.startActivityWithResult
 import com.v3.basis.blas.ui.item.common.*
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -506,9 +503,8 @@ class ItemEditorFragment : Fragment() {
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
                 }
-
+                // type:3 日付
                 FieldType.DATE_TIME -> {
-                    //日付
                     val inputField = FieldDate(layoutInflater, cellNumber,field)
                     //親フォームにフィールドを追加する
                     formModel.fields.add(inputField)
@@ -516,12 +512,12 @@ class ItemEditorFragment : Fragment() {
                     form.innerView.addView(inputField.layout.root)
                     inputField.layout.text.setOnClickListener {
                         //TODO:三代川　カレンダーを表示できるようにしました。こちらを参考にSCHEDULE_DATE、TIMEなどを修正お願い致します。
+                        // カレンダー選択を表示
                         setClickDateTime(inputField)
                     }
                 }
-
+                // type:4 時間
                 FieldType.TIME -> {
-                    //時間
                     val inputField = FieldTime(layoutInflater, cellNumber,field)
                     inputField.layout.text.setOnClickListener {
                         //TODO:三代川 時刻を入力できるようにしてください
@@ -538,6 +534,24 @@ class ItemEditorFragment : Fragment() {
                     //単一選択
                     val inputField = FieldSingleSelect(layoutInflater, cellNumber,field)
                     form.innerView.addView(inputField.layout.root)
+
+
+                    // 選択肢の生成
+                    val choice = createOption(field )
+
+                    // todo:単純な単一選択をテスト
+
+//                    val model = FieldSingleSelect(cellNumber,field.col!!, name, mustInput,field.parent_field_id)
+//                    l.spinner.createChildren(field.choice, model)
+
+                    // inputField.layout.spinner.createChildren(field.choice, inputField)
+                    inputField.layout.spinner.createChildren(choice, inputField)
+
+
+
+                    // 連動パラメータで親を取り出すために配列に入れておく
+                    singleSelectSpinner[field.field_id!!] = inputField.layout.spinner
+
                     /*
                     if( 0 != field.parent_field_id ) {
                         // 連動パラメータ
@@ -768,7 +782,7 @@ class ItemEditorFragment : Fragment() {
 
                     }
                 }
-                //type:20
+                //type:20 予定日
                 FieldType.SCHEDULE_DATE -> {
                     val inputField = FieldScheduleDate(layoutInflater, cellNumber, field)
                     //親フォームにフィールドを追加する
@@ -776,8 +790,11 @@ class ItemEditorFragment : Fragment() {
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
                     inputField.layout.text.setOnClickListener {
-                        //TODO:三代川 カレンダー選択できるようにしてください
-                        //ちょっと型20の使い方がわからないのでWEB版を調べて同じ動きにして欲しいです
+                        // カレンダー選択を表示
+                        setClickDateTime(inputField)
+
+
+                        //TODO:ちょっと型20の使い方がわからないのでWEB版を調べて同じ動きにして欲しいです
                     }
                 }
 
@@ -795,6 +812,62 @@ class ItemEditorFragment : Fragment() {
 
                 else -> { null }
             }
+        }
+    }
+
+    /**
+     * 単一選択の選択肢を作成する
+     * todo:ここにあっていいのかは？
+     */
+    private fun createOption( field: LdbFieldRecord ) : String {
+        BlasLog.trace("I","createOption() start field:" + field.name)
+
+        var ret = ""
+
+        if( 0 != field.parent_field_id ) {
+            // 連動パラメータ
+
+            val jsonChoice = JSONObject(field.choice)
+            val parents = jsonChoice.names()
+            // とりあえず一番最初のchildを入れておく
+            ret = jsonChoice.getString(parents[0].toString())
+            BlasLog.trace("I","child:::" + ret)
+
+            // 親の選択を取得
+            val parentSpinner = singleSelectSpinner[field.parent_field_id!!]
+
+
+            if( parentSpinner != null ) {
+
+                val parentValue = parentSpinner?.selectedItem as String
+                BlasLog.trace("I","parent value::::" + parentValue)
+                // childをちゃんとしたものに入替える
+                ret = jsonChoice.getString(parentValue)
+
+            }
+
+
+
+
+        }
+        else {
+            // choiceに入ってる文字列をそのまま使用
+            ret = field.choice.toString()
+        }
+
+        return ret
+    }
+
+    /**
+     * セレクタの選択肢を設定する
+     */
+    private fun Spinner.createChildren(separatedText: String?, model: FieldSingleSelect) {
+        separatedText?.also {
+            val list = it.split(",")
+            model.values.addAll(list)
+            val ad = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_item)
+            ad.addAll(list)
+            this.adapter = ad
         }
     }
 
@@ -820,15 +893,6 @@ class ItemEditorFragment : Fragment() {
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1000)
         }
     }
-    private fun Spinner.createChildren(separatedText: String?, model: FieldSingleSelect) {
-        separatedText?.also {
-            val list = it.split(",")
-            model.values.addAll(list)
-            val ad = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_item)
-            ad.addAll(list)
-            this.adapter = ad
-        }
-    }
 
     private fun LinearLayout.createChildren(inflater: LayoutInflater, separatedText: String?, model: FieldMultiSelect) {
         separatedText?.also {
@@ -850,7 +914,7 @@ class ItemEditorFragment : Fragment() {
     /**
      * 日付フィールドタップ時の処理
      */
-    fun setClickDateTime(field: FieldDate) {
+    fun setClickDateTime(field: FieldDateModel) {
         //editTextタップ時の処理
         val dtp = DatePickerDialog(
             requireContext(),

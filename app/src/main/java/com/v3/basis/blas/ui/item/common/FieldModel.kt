@@ -16,3 +16,7 @@ interface FieldModel {
     fun convertToString(): String?
     fun setValue(value: String?)
 }
+
+interface FieldDateModel : FieldModel {
+    val text: ObservableField<String>
+}
