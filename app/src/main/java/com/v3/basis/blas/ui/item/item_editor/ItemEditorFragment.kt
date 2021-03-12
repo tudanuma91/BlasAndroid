@@ -535,24 +535,30 @@ class ItemEditorFragment : Fragment() {
                 FieldType.SINGLE_SELECTION -> {
                     //単一選択
                     val inputField = FieldSingleSelect(layoutInflater, cellNumber,field)
+                    //親フォームにフィールドを追加する
+                    formModel.fields.add(inputField)
+                    //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
 
 
                     // 選択肢の生成
-                    val choice = createOption(field )
-
-                    // todo:単純な単一選択をテスト
-
-//                    val model = FieldSingleSelect(cellNumber,field.col!!, name, mustInput,field.parent_field_id)
-//                    l.spinner.createChildren(field.choice, model)
-
-                    // inputField.layout.spinner.createChildren(field.choice, inputField)
+                    val choice = createOption(field,inputField )
                     inputField.layout.spinner.createChildren(choice, inputField)
 
 
 
                     // 連動パラメータで親を取り出すために配列に入れておく
                     singleSelectSpinner[field.field_id!!] = inputField.layout.spinner
+
+                    //アイテムが選択されたときに行う処理を登録する
+                    inputField.layout.spinner.onItemSelectedListener = SpinnerItemSelectedListener().apply {
+                        this.selectAction = {
+                            BlasLog.trace("I","selectAction")
+                            inputField.selectedIndex.set(it)
+                        }
+                    }
+
+
 
                     /*
                     if( 0 != field.parent_field_id ) {
@@ -819,6 +825,9 @@ class ItemEditorFragment : Fragment() {
                     inputField.layout.text.setOnClickListener {
                         // カレンダー選択を表示
                         setClickDateTime(inputField)
+
+
+                        //TODO:ちょっと型20の使い方がわからないのでWEB版を調べて同じ動きにして欲しいです
                     }
                 }
 
@@ -833,9 +842,8 @@ class ItemEditorFragment : Fragment() {
                     form.innerView.addView(inputField.layout.root)
                 }
 
-                else -> {
-                    Toast.makeText(requireContext(), "${field.name}の型に対応していません", Toast.LENGTH_SHORT).show()
-                }
+
+                else -> { null }
             }
         }
     }
@@ -844,34 +852,39 @@ class ItemEditorFragment : Fragment() {
      * 単一選択の選択肢を作成する
      * todo:ここにあっていいのかは？
      */
-    private fun createOption( field: LdbFieldRecord ) : String {
+    private fun createOption( field: LdbFieldRecord,inputField : FieldSingleSelect ) : String {
         BlasLog.trace("I","createOption() start field:" + field.name)
-
         var ret = ""
 
         if( 0 != field.parent_field_id ) {
-            // 連動パラメータ
-
+            // 連動パラメータの時
             val jsonChoice = JSONObject(field.choice)
             val parents = jsonChoice.names()
             // とりあえず一番最初のchildを入れておく
             ret = jsonChoice.getString(parents[0].toString())
             BlasLog.trace("I","child:::" + ret)
 
-            // 親の選択を取得
+            // 親を取得
             val parentSpinner = singleSelectSpinner[field.parent_field_id!!]
 
-
             if( parentSpinner != null ) {
-
                 val parentValue = parentSpinner?.selectedItem as String
                 BlasLog.trace("I","parent value::::" + parentValue)
                 // childをちゃんとしたものに入替える
                 ret = jsonChoice.getString(parentValue)
 
+                // 親項目が変更されたら子も変える。ここでやるしかない！
+                val listener = parentSpinner.onItemSelectedListener as SpinnerItemSelectedListener
+                listener.optionalAction = { parent, position ->
+
+                    BlasLog.trace("I","親変更！！！  position:" + position)
+                    val newChoice = jsonChoice.getString(parents[ position ].toString())
+                    inputField.layout.spinner.createChildren(newChoice, inputField)
+                }
             }
         }
         else {
+            // 連動パラメータではない時
             // choiceに入ってる文字列をそのまま使用
             ret = field.choice.toString()
         }
