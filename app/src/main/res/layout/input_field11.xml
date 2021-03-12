@@ -46,7 +46,6 @@
 
         <Button
             android:id="@+id/button"
-            android:onClick="@{v -> model.clickQRCodeTekkyo()}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="QRコードを取得する(撤去と連動)"
