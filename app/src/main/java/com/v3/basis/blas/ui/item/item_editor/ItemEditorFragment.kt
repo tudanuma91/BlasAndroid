@@ -819,9 +819,6 @@ class ItemEditorFragment : Fragment() {
                     inputField.layout.text.setOnClickListener {
                         // カレンダー選択を表示
                         setClickDateTime(inputField)
-
-
-                        //TODO:ちょっと型20の使い方がわからないのでWEB版を調べて同じ動きにして欲しいです
                     }
                 }
 
@@ -836,8 +833,9 @@ class ItemEditorFragment : Fragment() {
                     form.innerView.addView(inputField.layout.root)
                 }
 
-
-                else -> { null }
+                else -> {
+                    Toast.makeText(requireContext(), "${field.name}の型に対応していません", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -872,10 +870,6 @@ class ItemEditorFragment : Fragment() {
                 ret = jsonChoice.getString(parentValue)
 
             }
-
-
-
-
         }
         else {
             // choiceに入ってる文字列をそのまま使用
