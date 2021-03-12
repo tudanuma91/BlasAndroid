@@ -29,6 +29,7 @@ import com.google.maps.GeocodingApi
 import com.google.maps.model.LatLng
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemActivity
+import com.v3.basis.blas.activity.QRActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.db.data.ItemsController
@@ -39,6 +40,7 @@ import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.databinding.*
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
+import com.v3.basis.blas.ui.ext.startActivityWithResult
 import com.v3.basis.blas.ui.item.common.*
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -677,7 +679,18 @@ class ItemEditorFragment : Fragment() {
                     //QRコード(検品と連動)
                     val inputField = FieldQRCodeWithKenpin(layoutInflater, cellNumber, field)
                     inputField.layout.button.setOnClickListener {
-                        //TODO:三代川 QRコード(検品と連動)用のアクティビティ起動
+                        //カメラ起動
+                        val extra = "colNumber" to inputField.fieldNumber.toString()
+                        startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE_KENPIN, extra) { r ->
+                            val qr = r.data?.getStringExtra("qr_code")
+                            try {
+                                itemsController.qrCodeCheck(qr)
+                                inputField.text.set(qr)
+                            } catch (ex: ItemsController.ItemCheckException) {
+                                // 設置不可の時
+                                Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                            }
+                        }
                     }
 
                     //親フォームにフィールドを追加する
@@ -690,7 +703,11 @@ class ItemEditorFragment : Fragment() {
                     //QRコード
                     val inputField = FieldQRCode(layoutInflater, cellNumber, field)
                     inputField.layout.button.setOnClickListener {
-                        //TODO:三代川 ボタンを押したときの処理　QRコード用のアクティビティ起動
+                        val extra = "colNumber" to inputField.fieldNumber.toString()
+                        startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
+                            val qr = r.data?.getStringExtra("qr_code")
+                            inputField.text.set(qr)
+                        }
                     }
                     //親フォームにフィールドを追加する
                     formModel.fields.add(inputField)
@@ -703,15 +720,25 @@ class ItemEditorFragment : Fragment() {
                     //QRコード(撤去と連動)
                     val inputField = FieldQRCodeWithTekkyo(layoutInflater, cellNumber, field)
                     inputField.layout.button.setOnClickListener {
-                        //TODO:三代川 ボタンを押したときの処理　QRコード用のアクティビティ起動
+                        //カメラ起動
+                        val extra = "colNumber" to inputField.fieldNumber.toString()
+                        startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE_TEKKYO, extra) { r ->
+                            val qr = r.data?.getStringExtra("qr_code")
+                            try {
+                                itemsController.qrCodeCheck(qr)
+                                inputField.text.set(qr)
+                            } catch (ex: ItemsController.ItemCheckException) {
+                                // 設置不可の時
+                                Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                            }
+                        }
                     }
                     //親フォームにフィールドを追加する
                     formModel.fields.add(inputField)
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
-
-
                 }
+
                 // type:12 アカウント名
                 FieldType.ACOUNT_NAME -> {
                     val inputField = FieldAccount(layoutInflater, cellNumber, field)
