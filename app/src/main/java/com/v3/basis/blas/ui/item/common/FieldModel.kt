@@ -3,6 +3,7 @@ package com.v3.basis.blas.ui.item.common
 import android.view.LayoutInflater
 import androidx.databinding.ObservableField
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
+import com.v3.basis.blas.databinding.InputField5Binding
 
 interface FieldModel {
     val layoutInflater:LayoutInflater
@@ -17,6 +18,8 @@ interface FieldModel {
     fun setValue(value: String?)
 }
 
+// カレンダーを表示するmodel
 interface FieldDateModel : FieldModel {
     val text: ObservableField<String>
 }
+

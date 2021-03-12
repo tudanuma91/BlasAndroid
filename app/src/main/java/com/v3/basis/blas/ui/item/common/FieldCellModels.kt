@@ -111,13 +111,15 @@ class FieldTime(
 }
 
 
-class FieldSingleSelect(
+class FieldSingleSelect (
 	override val layoutInflater: LayoutInflater,
 	override val fieldNumber: Int,
 	override val field: LdbFieldRecord,
 	override val validationMsg: ObservableField<String> = ObservableField(""),
 	var values: MutableList<String> = mutableListOf(),
 	val selectedIndex: ObservableInt = ObservableInt(-1)
+	// このクラスだけopenにする
+	//var layout: InputField5Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field5, null, false)
 ): FieldModel {
 
 	var layout: InputField5Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field5, null, false)
