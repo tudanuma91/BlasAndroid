@@ -1,6 +1,9 @@
 package com.v3.basis.blas.ui.item.common
 
+import android.content.Context
 import android.view.LayoutInflater
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableField
@@ -8,7 +11,9 @@ import androidx.databinding.ObservableInt
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
+import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.databinding.*
+import com.v3.basis.blas.ui.item.item_editor.ItemEditorFragment
 import org.json.JSONObject
 
 class FieldText(
@@ -114,6 +119,68 @@ class FieldSingleSelect (
 			}
 		}
 	}
+
+	// TODO:三代川　↓↓↓↓↓ この人たちをここに持ってきたいのだが Spinner.createChildren() が持って来れない T_T
+	/*
+	fun createOption(
+		field: LdbFieldRecord,inputField : FieldSingleSelect,context:Context,singleSelectSpinner:Map<Int,Spinner>
+	) : String {
+		BlasLog.trace("I","createOption() start field:" + field.name)
+		var ret = ""
+
+		if( 0 != field.parent_field_id ) {
+			// 連動パラメータの時
+			val jsonChoice = JSONObject(field.choice)
+			val parents = jsonChoice.names()
+			// とりあえず一番最初のchildを入れておく
+			ret = jsonChoice.getString(parents[0].toString())
+			BlasLog.trace("I","child:::" + ret)
+
+			// 親を取得
+			val parentSpinner = singleSelectSpinner[field.parent_field_id!!]
+
+			if( parentSpinner != null ) {
+				val parentValue = parentSpinner?.selectedItem as String
+				BlasLog.trace("I","parent value::::" + parentValue)
+				// childをちゃんとしたものに入替える
+				ret = jsonChoice.getString(parentValue)
+
+				// 親項目が変更されたら子も変える。ここでやるしかない！
+				val listener = parentSpinner.onItemSelectedListener as ItemEditorFragment.SpinnerItemSelectedListener
+				listener.optionalAction = { parent, position ->
+
+					BlasLog.trace("I","親変更！！！  position:" + position)
+					val newChoice = jsonChoice.getString(parents[ position ].toString())
+					inputField.layout.spinner.createChildren(newChoice, inputField,context)
+				}
+			}
+		}
+		else {
+			// 連動パラメータではない時
+			// choiceに入ってる文字列をそのまま使用
+			ret = field.choice.toString()
+		}
+
+		return ret
+	}
+	 */
+
+	/**
+	 * セレクタの選択肢を設定する
+	 */
+	/*
+	fun Spinner.createChildren(separatedText: String?, model: FieldSingleSelect,context:Context) {
+		separatedText?.also {
+			val list = it.split(",")
+			model.values.addAll(list)
+			val ad = ArrayAdapter<String>(context, android.R.layout.simple_spinner_item)
+			ad.addAll(list)
+			this.adapter = ad
+		}
+	}
+	 */
+
+
 
 }
 

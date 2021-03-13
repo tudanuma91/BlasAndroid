@@ -88,7 +88,8 @@ class ItemEditorFragment : Fragment() {
     private var tone: ToneGenerator? = null
 
     //シングルセレクトを取得
-    private val singleSelectMap = mutableMapOf<Int,ViewItems5SelectBinding>()
+//    private val singleSelectMap = mutableMapOf<Int,ViewItems5SelectBinding>()
+    private val singleSelectMap = mutableMapOf<Int,InputField5Binding>()
     private val singleSelectChoiceMap = mutableMapOf<Int,String?>()
     private val singleSelectList = mutableListOf<MutableMap<String?,ViewItems5SelectBinding>>()
     var singleCnt = 1
@@ -543,6 +544,9 @@ class ItemEditorFragment : Fragment() {
 
                     // 選択肢の生成
                     val choice = createOption(field,inputField )
+                    // val choice = inputField.createOption(field,inputField,requireContext(),singleSelectSpinner )
+
+                    // 実際に表示の処理
                     inputField.layout.spinner.createChildren(choice, inputField)
 
 
@@ -558,6 +562,12 @@ class ItemEditorFragment : Fragment() {
                         }
                     }
 
+                    // とりあえずここら辺を入れないとwhenSingleSelect()がうまく動かない
+                    //一回シングルセレクトをマップに格納
+                    singleSelectMap[singleCnt] = inputField.layout
+                    //チョイスの値を格納
+                    singleSelectChoiceMap[singleCnt] = field.choice
+                    singleCnt++
 
 
                     /*
@@ -904,6 +914,7 @@ class ItemEditorFragment : Fragment() {
             this.adapter = ad
         }
     }
+
 
     /**
      * GPSから緯度経度を取得する。非同期。
