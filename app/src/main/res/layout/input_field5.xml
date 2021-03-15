@@ -6,9 +6,6 @@
     <data>
         <import type="android.view.View" />
         <variable
-            name="vm"
-            type="com.v3.basis.blas.ui.item.common.ItemViewModel" />
-        <variable
             name="model"
             type="com.v3.basis.blas.ui.item.common.FieldSingleSelect" />
     </data>

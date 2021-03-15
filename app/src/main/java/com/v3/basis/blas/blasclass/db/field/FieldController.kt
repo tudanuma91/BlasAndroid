@@ -75,5 +75,18 @@ class FieldController(context: Context, projectId: String) : BaseController(cont
         return ret
     }
 
+    companion object {
+        fun getChildFields(myId:Int, fieldsRecordList:List<LdbFieldRecord>) : MutableList<LdbFieldRecord> {
+            val childFieldList = mutableListOf<LdbFieldRecord>()
+
+            fieldsRecordList.forEach {record->
+                if(record.parent_field_id == myId) {
+                    childFieldList.add(record)
+                }
+            }
+            return childFieldList
+        }
+    }
+
 
 }

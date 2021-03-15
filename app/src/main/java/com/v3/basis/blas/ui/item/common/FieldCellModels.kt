@@ -2,44 +2,50 @@ package com.v3.basis.blas.ui.item.common
 
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableField
 import androidx.databinding.ObservableInt
 import com.v3.basis.blas.R
+import com.v3.basis.blas.activity.QRActivity
+import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.databinding.*
+import com.v3.basis.blas.ui.ext.startActivityWithResult
 import com.v3.basis.blas.ui.item.item_editor.ItemEditorFragment
 import org.json.JSONObject
 
+/**
+ * ItemEditorViewに表示する各型のフィールド
+ */
 class FieldText(
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField("")
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField1Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field1, null, false)
 
 	init {
 		layout.model = this
 	}
-
 }
 
 
 class FieldMultiText(
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField("")
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField2Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field2, null, false)
 
@@ -50,12 +56,11 @@ class FieldMultiText(
 
 
 class FieldDate(
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField("")
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField3Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field3, null, false)
 
@@ -65,59 +70,134 @@ class FieldDate(
 }
 
 class FieldTime(
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField("")
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField4Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field4, null, false)
 
 	init {
 		layout.model = this
 	}
-
-
-	fun clickTime() {
-
-	}
 }
 
 
 class FieldSingleSelect (
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField(""),
-	var values: MutableList<String> = mutableListOf(),
-	val selectedIndex: ObservableInt = ObservableInt(-1)
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
-	var layout: InputField5Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field5, null, false)
+	val layout: InputField5Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field5, null, false)
+	var selectedItemStr = ""
+	var choiceList: Array<String>
+	var adapter:ArrayAdapter<String>
 
 	init {
+		//fieldのchoiceに選択肢が"a,b,c"のように指定されているので、アダプターに指定するため配列に変換。
+		if(field.parent_field_id != 0) {
+			//従属パラメーターあり
+			//親の選択肢が決まるまで、子供は表示できない
+
+			//親が決まらないと子供のリストは決められない
+			choiceList = arrayOf("")
+		}
+		else {
+			choiceList = field.choice!!.split(",").toTypedArray()
+		}
+
+		if(choiceList == null) {
+			choiceList = arrayOf("")
+		}
+		//アダプター作成
+		adapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, choiceList)
+		//ドロップダウンの表示領域を大きくする
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+		//ViewModelに自分を登録
 		layout.model = this
+
+		//SpinnerViewのアダプターに接続
+		layout.spinner.adapter = adapter
+
+		//選択されたときのイベントを取得する
+		layout.spinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
+
+			override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+				//選択されたとき
+				val spinnerParent = p0 as Spinner
+				//選択された文字をメンバ変数に保持
+				selectedItemStr = spinnerParent.selectedItem as String
+
+				//親fieldsテーブルを調べて、親の選択肢を子供に通知する必要がある
+				childFieldList.forEach {child->
+					if (selectedItemStr != null) {
+						//親の値が設定されたら子供のフィールドに値を通知する。
+						//現時点ではsingleSelectFieldのための機能。
+						child.notifyFromParent(selectedItemStr)
+					}
+				}
+			}
+			
+			override fun onNothingSelected(p0: AdapterView<*>?) {
+				//アイテムが選択されなかったとき。現時点では使用していない
+			}
+		}
 	}
 
-	fun selected(idx: Int) {
-		selectedIndex.set(idx)
-	}
 
 	override fun convertToString(): String? {
-		val idx = selectedIndex.get()
+		return selectedItemStr
+//		val idx = selectedIndex.get()
 //		return if (idx == -1) { null } else { values.get(idx) }
-		return if (idx == -1) { values.get(0) } else { values.get(idx) }
+//		return if (idx == -1) { values.get(0) } else { values.get(idx) }
 	}
 
 	override fun setValue(value: String?) {
-		values.forEachIndexed { index, s ->
-			if (s == value) {
-				selectedIndex.set(index)
-				return
+		if(field.parent_field_id != 0) {
+			var childChoiceList:String = ""
+			val choiceJson = JSONObject(field.choice)
+			val names = choiceJson.names()
+			var findFlg = false
+
+			for(i in 0 until names.length()) {
+				val name = names[i].toString()
+				//ここまではあっている
+//				var child_list = choiceJson.getJSONObject(name)//ここがおかしい
+				var values = choiceJson.getJSONArray(name)
+
+				for(j in 0 until values.length()) {
+					if(value == values[i].toString()) {
+						childChoiceList = choiceJson.getString(value)
+						findFlg = true
+					}
+				}
+				if(findFlg) {
+					break
+				}
+			}
+
+			choiceList = childChoiceList.split(",").toTypedArray()
+		}
+		choiceList.forEachIndexed {index, s ->
+			if(s == value) {
+				selectedItemStr = s
+				layout.spinner.setSelection(index)
 			}
 		}
+	}
+
+	override fun notifyFromParent(value: String) {
+		//親からの変更を受信する
+		//{"野菜":"キャベツ,ニンジン","果物":"みかん,リンゴ","肉":"牛肉,鶏肉"}
+		val choiceJson = JSONObject(field.choice)
+		val childChoiceList = choiceJson.getString(value)
+		choiceList = childChoiceList.split(",").toTypedArray()
+		adapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, choiceList)
+		layout.spinner.adapter = adapter
 	}
 
 	// TODO:三代川　↓↓↓↓↓ この人たちをここに持ってきたいのだが Spinner.createChildren() が持って来れない T_T
@@ -163,7 +243,7 @@ class FieldSingleSelect (
 
 		return ret
 	}
-	 */
+	*/
 
 	/**
 	 * セレクタの選択肢を設定する
@@ -185,18 +265,15 @@ class FieldSingleSelect (
 }
 
 class FieldMultiSelect(
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField(""),
-
-	val values: MutableList<String> = mutableListOf(),
-	val selectedIndexes: MutableMap<Int, ObservableBoolean> = mutableMapOf()
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField6Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field6, null, false)
-
+	val selectedIndexes: MutableMap<Int, ObservableBoolean> = mutableMapOf()
+	val values: MutableList<String> = mutableListOf()
 	init {
 		layout.model = this
 	}
@@ -229,111 +306,91 @@ class FieldMultiSelect(
 			}
 		}
 	}
+
+	override fun notifyFromParent(value: String) {
+	}
 }
 
 class FieldLat(
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField("")
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField14Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field14, null, false)
 
 	init {
 		layout.model = this
 	}
-
 }
 
 
 class FieldLng(
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField("")
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField15Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field15, null, false)
 
 	init {
 		layout.model = this
 	}
-
-	fun clickLng() {
-
-	}
 }
 
 class FieldLocation(
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField("")
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField7Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field7, null, false)
 
 	init {
 		layout.model = this
 	}
-
-	fun clickLocation() {
-
-	}
 }
 
 
 class FieldQRCodeWithKenpin(
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField("")
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField8Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field8, null, false)
 
 	init {
 		layout.model = this
 	}
-
-	fun clickQRCodeKenpin() {
-
-	}
 }
 
 
 class FieldQRCode(
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField("")
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField10Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field10, null, false)
 
 	init {
 		layout.model = this
 	}
-
-	fun clickQRCode() {
-
-	}
 }
 
 
 class FieldQRCodeWithTekkyo(
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField("")
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField11Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field11, null, false)
 
@@ -341,53 +398,44 @@ class FieldQRCodeWithTekkyo(
 		layout.model = this
 	}
 
-	fun clickQRCodeTekkyo() {
-
-	}
 }
 
 
 class FieldAccount(
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField("")
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField12Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field12, null, false)
-	var accountName: String = ""
+
 	init {
 		layout.model = this
 	}
 
-	fun clickAccountName() {
-		this.text.set(accountName)
-	}
 }
 
 class FieldSigFox(
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField("")
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
-	override fun convertToString(): String? = null
-	override fun setValue(value: String?) {}
+	//使う気のないクラス
 }
 
 class FieldCheckText(
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField(""),
-	val memo: ObservableField<String> = ObservableField("")
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField13Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field13, null, false)
+	//個別パラメーター
+	val memo = ObservableField("")
 
 	init {
 		layout.model = this
@@ -423,18 +471,22 @@ class FieldCheckText(
 			memo.set(value2.toString())
 		}
 	}
+
+	override fun notifyFromParent(value: String) {
+	}
+
 }
 
 class FieldQRWithCheckText(
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField(""),
-	val memo: ObservableField<String> = ObservableField("")
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField16Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field16, null, false)
+	//個別パラメーター
+	val memo = ObservableField("")
 
 	init {
 		layout.model = this
@@ -471,54 +523,45 @@ class FieldQRWithCheckText(
 		}
 	}
 
-	fun clickQRCodeWithCheck() {
-
+	override fun notifyFromParent(value: String) {
 	}
 }
 
 
 class FieldCurrentDateTime(
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField("")
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField17Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field17, null, false)
 
 	init {
 		layout.model = this
 	}
-
-	fun clickCurrentDateTime() {
-
-	}
 }
 
 class FieldWorkerName(
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField("")
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField19Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field19, null, false)
 
 	init {
 		layout.model = this
 	}
-
 }
 
 class FieldScheduleDate(
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField("")
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField20Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field20, null, false)
 
@@ -529,17 +572,15 @@ class FieldScheduleDate(
 }
 
 class FieldAddress(
+	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord,
-	validationMsg: ObservableField<String> = ObservableField(""),
-	text: ObservableField<String> = ObservableField("")
-): FieldModel(layoutInflater,fieldNumber,field,validationMsg,text) {
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField22Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field22, null, false)
 
 	init {
 		layout.model = this
 	}
-
 }

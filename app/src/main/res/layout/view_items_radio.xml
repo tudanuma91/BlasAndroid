@@ -17,7 +17,6 @@
 
     <RadioButton
         android:text="@{text}"
-        android:onClick="@{v -> model.selected(idx)}"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         />
