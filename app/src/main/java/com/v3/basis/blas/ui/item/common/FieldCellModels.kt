@@ -157,6 +157,8 @@ class FieldSingleSelect (
 	}
 
 	override fun setValue(value: String?) {
+		BlasLog.trace("I","setValue(" + value + ") start!!")
+
 		if(field.parent_field_id != 0) {
 			var childChoiceList:String = ""
 			val choiceJson = JSONObject(field.choice)
@@ -165,32 +167,51 @@ class FieldSingleSelect (
 
 			for(i in 0 until names.length()) {
 				val name = names[i].toString()
+				BlasLog.trace("I","name:" + name)
+
 				//ここまではあっている
 //				var child_list = choiceJson.getJSONObject(name)//ここがおかしい
-				var values = choiceJson.getJSONArray(name)
+				// valueStr = "みかん,リンゴ","肉":"牛肉,鶏肉"
+				val valueStr = choiceJson.getString(name)
+				BlasLog.trace("I","values:" + valueStr)
+				val values = valueStr.split(",")
 
-				for(j in 0 until values.length()) {
-					if(value == values[i].toString()) {
-						childChoiceList = choiceJson.getString(value)
+				BlasLog.trace("I","values.size:" + values.size)
+				for(j in 0 until values.size ) {
+
+					BlasLog.trace("I","value[" + j + "] :" + values[j])
+					if(value == values[j].toString()) {
+						// childChoiceList = choiceJson.getString(value)
+						childChoiceList = valueStr
 						findFlg = true
 					}
 				}
 				if(findFlg) {
 					break
 				}
+
 			}
 
 			choiceList = childChoiceList.split(",").toTypedArray()
 		}
+
 		choiceList.forEachIndexed {index, s ->
 			if(s == value) {
 				selectedItemStr = s
 				layout.spinner.setSelection(index)
+
+				BlasLog.trace("I","selectedItemStr:" + selectedItemStr)
+				BlasLog.trace("I","index:" + index)
 			}
 		}
+
+		BlasLog.trace("I","end convertToString()")
+
 	}
 
 	override fun notifyFromParent(value: String) {
+		BlasLog.trace("I","start notifyFromParent()")
+
 		//親からの変更を受信する
 		//{"野菜":"キャベツ,ニンジン","果物":"みかん,リンゴ","肉":"牛肉,鶏肉"}
 		val choiceJson = JSONObject(field.choice)
