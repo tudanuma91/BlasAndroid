@@ -44,6 +44,14 @@
             tools:text="EDIT"
             />
 
+        <TextView
+            android:textColor="@color/colorAccent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="@{model.validationMsg != null ? View.VISIBLE : View.INVISIBLE}"
+            android:text="@{model.validationMsg}"
+            />
+
         <Button
             android:id="@+id/button"
             android:layout_width="wrap_content"

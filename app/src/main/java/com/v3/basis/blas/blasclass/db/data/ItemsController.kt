@@ -12,6 +12,8 @@ import com.v3.basis.blas.blasclass.db.data.linkFixtures.LinkRmFixture
 import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.db.fixture.Fixtures
 import com.v3.basis.blas.blasclass.helper.RestHelper
+import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
+import com.v3.basis.blas.blasclass.ldb.LdbItemRecord
 import com.v3.basis.blas.blasclass.ldb.LdbRmFixtureRecord
 import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.blasclass.worker.DownloadWorker
@@ -112,12 +114,55 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         addList += orStr
     }
 
+    fun find(conditions:Map<String, String>): MutableList<MutableMap<String, String?>> {
+        var sql = "select * from Items where "
+        val plHolder = mutableListOf<String>()
+        val ret = mutableListOf<MutableMap<String, String?>>()
+
+        conditions.forEach { key, value ->
+            sql += "${key}=? or "
+            plHolder.add(value)
+        }
+        sql = sql.substring(0, sql.length - 3)
+
+        val cursor = db?.rawQuery(sql, plHolder.toTypedArray())
+
+        cursor?.let { c ->
+            var notLast = c.moveToFirst()
+            while (notLast) {
+                val value = getMapValues(c)
+                if (null != value) {
+                    ret.add(getMapValues(c))
+                }
+                notLast = c.moveToNext()
+            }
+        }
+
+        return ret
+    }
+
+    fun findByItemId(item_id:String):MutableMap<String, String?> {
+        var record = mutableMapOf<String, String?>()
+        val sql = "select * from items where item_id=?"
+        val plHolder = arrayOf<String>(item_id)
+        val cursor = db?.rawQuery(sql, plHolder)
+        cursor?.let {c->
+            c.moveToFirst()
+            record = getMapValues(c)
+        }
+
+        cursor?.close()
+
+        return record
+    }
+
     fun search(
         item_id: Long = 0L,
         offset: Int = 0,
         paging: Int = 20,
         endShow: Boolean = false,
         syncFlg: Boolean = false,
+        freeword: Boolean = true,
         findValueMap: MutableMap<String, String?>? = null,
         isErrorOnly:Boolean = false
     ): MutableList<MutableMap<String, String?>> {
@@ -277,7 +322,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         return ret
     }
 
-    fun updateToLDB(map: Map<String, String?>): Boolean {
+    fun updateToLDB(map: Map<String, String?>, status:Int=SYNC_STATUS_EDIT): Boolean {
         var ret = true
 
         // QRコードバリデート処理
@@ -301,8 +346,10 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         val current = LocalDateTime.now()
         val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss")
         item.update_date = current.format(formatter)
-        item.sync_status = SYNC_STATUS_EDIT
-        item.error_msg = "送信待ちです"
+        item.sync_status = status
+        if(status == SYNC_STATUS_EDIT) {
+            item.error_msg = "送信待ちです"
+        }
 
         // けどまたmap…
         val cv = createConvertValue(item, null)

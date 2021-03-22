@@ -7,7 +7,7 @@
         <import type="android.view.View" />
         <variable
             name="model"
-            type="com.v3.basis.blas.ui.item.common.FieldSingleSelect" />
+            type="com.v3.basis.blas.ui.item.common.FieldWorkContentSelect" />
     </data>
 
     <LinearLayout
@@ -47,6 +47,6 @@
             android:visibility="@{model.validationMsg != null ? View.VISIBLE : View.INVISIBLE}"
             android:text="@{model.validationMsg}"
             />
-        
+
     </LinearLayout>
 </layout>

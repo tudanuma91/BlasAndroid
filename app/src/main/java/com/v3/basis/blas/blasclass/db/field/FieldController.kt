@@ -13,8 +13,6 @@ class FieldController(context: Context, projectId: String) : BaseController(cont
 
 
     fun getFieldRecords() : List<LdbFieldRecord> {
-        Log.d("Field.search()", "start!!!!!!!!!!!!!!!!!!!!!!!")
-
         val user = getUserInfo()
         var user_id = 1
         var group_id = 1

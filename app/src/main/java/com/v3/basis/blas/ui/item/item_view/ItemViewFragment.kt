@@ -8,10 +8,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.Switch
-import android.widget.Toast
+import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,6 +25,8 @@ import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import com.v3.basis.blas.ui.ext.addTitle
+import com.v3.basis.blas.ui.item.common.FieldDate
+import com.v3.basis.blas.ui.item.common.FieldEvent
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
 import io.reactivex.Single
@@ -38,6 +37,7 @@ import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_item_view.*
 import kotlinx.android.synthetic.main.list_item.*
+import kotlinx.android.synthetic.main.list_item.view.*
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -78,6 +78,7 @@ class ItemViewFragment : Fragment() {
     private var handler = Handler()
     private var currentIndex: Int = 0
     private var offset: Int = 0
+
     companion object {
         const val CREATE_UNIT = 20
     }
@@ -92,7 +93,6 @@ class ItemViewFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         super.onCreateView(inflater, container, savedInstanceState)
         addTitle("projectName")
-
         val root = inflater.inflate(R.layout.fragment_item_view, container, false)
         rootView = root
 
@@ -108,10 +108,10 @@ class ItemViewFragment : Fragment() {
             token = extras.getString("token").toString() //トークンの値を取得
         }
         if(extras?.getString("project_id") != null ) {
-            projectId = extras.getString("project_id").toString() //トークンの値を取得
+            projectId = extras.getString("project_id").toString()
         }
         if(extras?.getString("projectName") != null ) {
-            projectNames = extras.getString("projectName") //トークンの値を取得
+            projectNames = extras.getString("projectName")
         }
 
         itemsController = ItemsController(requireContext(), projectId)
@@ -232,7 +232,7 @@ class ItemViewFragment : Fragment() {
                 }
             }
         })
-
+        
         //呼ぶタイミングを確定させる！！
         try {
             Log.d("プロジェクト名","プロジェクト名=>${projectNames}")
@@ -255,6 +255,20 @@ class ItemViewFragment : Fragment() {
                             progressBarFlg = false
                             chkProgress(progressBarFlg,rootView)
                         }
+
+                        fields.forEach {field->
+                            if(field.type.toString() == FieldType.EVENT_FIELD) {
+                                //val inputField = FieldEvent(requireContext(), layoutInflater, 0, field)
+                                //親フォームにフィールドを追加する
+                                //入力フィールドを表示する
+                                //このタイミングだと、まだbutton_layoutが構築されていないため、NULLになる。
+                                val b = recyclerView.imageButton
+                                //val b = rootView.findViewById<ImageButton>(R.id.imageButton)
+                                Log.d("konishi", b.toString())
+                                //button_layout.addView(inputField.layout.root)
+                        }
+
+                    }
                     }
                     .addTo(disposables)
 
@@ -446,21 +460,6 @@ class ItemViewFragment : Fragment() {
 
         val valueList = itemList.filter { it["item_id"] == rowModel.itemId }.first().let {
             val list = arrayListOf<String?>()
-
-            /*fields.forEach{ rec->
-                val name = "fld${rec.col}"
-                if( rec.type.toString() == FieldType.CHECK_VALUE ||
-                    rec.type.toString() == FieldType.QR_CODE_WITH_CHECK) {
-                    val newValue = helper.createCheckValue(it[name].toString())
-                    //list.add(newValue)
-                    list.add(it[name])
-                }
-                else {
-                    list.add(it[name])
-                }
-
-            }*/
-
             list
         }
 
@@ -474,6 +473,7 @@ class ItemViewFragment : Fragment() {
             syncStatus,
             requireContext()
         )
+
         //konishi check
         if(syncStatus > SYNC_STATUS_SYNC) {
             model.syncVisible.set(true)
@@ -483,8 +483,8 @@ class ItemViewFragment : Fragment() {
             model.syncVisible.set(false)
         }
 
-
-        dataList.add(ItemsListCell(viewModel, model))
+        val itemCell = ItemsListCell(viewModel, model, fields)
+        dataList.add(itemCell)
     }
 
 

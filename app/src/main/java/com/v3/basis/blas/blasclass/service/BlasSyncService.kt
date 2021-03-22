@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat.getSystemService
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.LoginActivity
 import com.v3.basis.blas.blasclass.app.getHash
+import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.controller.FixtureController
 import com.v3.basis.blas.blasclass.controller.ImagesController
 import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.SMALL_IMAGE
@@ -27,11 +28,14 @@ import com.v3.basis.blas.blasclass.controller.ImagesController.Companion.BIG_IMA
 import com.v3.basis.blas.blasclass.db.BaseController
 import com.v3.basis.blas.blasclass.db.data.Items
 import com.v3.basis.blas.blasclass.db.data.ItemsController
+import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.extra.trivia.TriviaList
 import com.v3.basis.blas.blasclass.log.BlasLog
+import com.v3.basis.blas.blasclass.rest.SyncBlasRestEvent
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestFixture
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestImage
 import com.v3.basis.blas.blasclass.rest.SyncBlasRestItem
+import com.v3.basis.blas.blasclass.service.SenderHandler.Companion.EVENT
 import com.v3.basis.blas.blasclass.service.SenderHandler.Companion.FIXTURE
 import com.v3.basis.blas.blasclass.service.SenderHandler.Companion.IMAGE
 import com.v3.basis.blas.blasclass.service.SenderHandler.Companion.ITEM
@@ -46,21 +50,24 @@ import kotlin.concurrent.withLock
 data class MsgParams(
     val token:String,
     val projectId:String,
-    val sendType:Int
+    val sendType:Int,
+    val itemId:String = "" //イベント発行監視用のitem_idのリスト
 )
 
 class SenderHandler(val context: Context): Handler() {
     companion object {
         var lock = ReentrantLock()
-        var level:Int? = null
+        var level: Int? = null
         val FIXTURE = 0x00000001
-        val ITEM    = 0x00000010
-        val IMAGE   = 0x00000100
+        val ITEM = 0x00000010
+        val IMAGE = 0x00000100
+        val EVENT = 0x00001000
     }
 
     //電波の状況を調べる
-    private var telephonyManager:TelephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-    val phoneState = object: PhoneStateListener(){
+    private var telephonyManager: TelephonyManager =
+        context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+    val phoneState = object : PhoneStateListener() {
         override fun onSignalStrengthsChanged(signalStrength: SignalStrength?) {
             super.onSignalStrengthsChanged(signalStrength)
             level = signalStrength?.level
@@ -68,7 +75,7 @@ class SenderHandler(val context: Context): Handler() {
         }
     }
 
-    init{
+    init {
         telephonyManager.listen(phoneState, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS)
     }
 
@@ -85,11 +92,11 @@ class SenderHandler(val context: Context): Handler() {
         //メッセージ受信スレッド
 
         //ロック中だったら次回の再送間隔待ち
-        BlasLog.trace("I","イベントを受信しました(projectId:${projectId}, event:${sendType}")
+        BlasLog.trace("I", "イベントを受信しました(projectId:${projectId}, event:${sendType}")
         Thread(
             Runnable {
                 try {
-                    if(level != null) {
+                    if (level != null) {
                         if ((activeNetwork?.type != ConnectivityManager.TYPE_WIFI) and (level!! < 3)) {
                             BlasLog.trace("W", "電波強度が弱いため、再送しません")
                             return@Runnable
@@ -123,10 +130,17 @@ class SenderHandler(val context: Context): Handler() {
                                 BlasLog.trace("I", "ロックを解除します")
                             }
                         }
+
+                        //イベントを受信する
+                        if ((sendType and EVENT) == EVENT) {
+                            lock.withLock {
+                                syncEvent(context, token, projectId)
+                            }
+                        }
                     }
                 } catch (e: Exception) {
-                    BlasLog.trace("E","例外が発生しました")
-                    BlasLog.trace("E","${e.message}")
+                    BlasLog.trace("E", "例外が発生しました")
+                    BlasLog.trace("E", "${e.message}")
                     e.printStackTrace()
                 }
             }).start()
@@ -138,15 +152,15 @@ class SenderHandler(val context: Context): Handler() {
      * リトライアウトなし:0(BaseController.RETRY_NORMAL)
      * リトライアウトした:-1(BaseController.RETRY_OUT)
      */
-    private fun syncItems(context:Context, token:String, projectId:String):Int {
+    private fun syncItems(context: Context, token: String, projectId: String): Int {
         var ret = BaseController.RETRY_NORMAL
         val controller = ItemsController(context, projectId)
         //未送信データ改修
         val records = controller.search(syncFlg = true)
 
-        BlasLog.trace("I","itemList size:${records.size}")
+        BlasLog.trace("I", "itemList size:${records.size}")
 
-        for(i in 0 until records.size) {
+        for (i in 0 until records.size) {
             val record = records[i]
 
             val item_id = record["item_id"]
@@ -154,22 +168,21 @@ class SenderHandler(val context: Context): Handler() {
 
             //リトライアウトチェック
             if (sendCnt != null) {
-                if(sendCnt == BaseController.RETRY_MAX) {
+                if (sendCnt == BaseController.RETRY_MAX) {
                     //1回だけログに出す
                     BlasLog.trace("E", "リトライアウトしました item_id:${item_id}")
                     ret = BaseController.RETRY_OUT
                     //戻り値が-1のときはコール元でメッセージの通知を行うこと。
                     continue
-                }
-                else {
+                } else {
                     sendCnt += 1
                 }
             }
 
             //送信用ペイロード作成
-            var payload = mutableMapOf<String,String>()
+            var payload = mutableMapOf<String, String>()
 
-            record.forEach{
+            record.forEach {
                 payload[it.key] = it.value.toString()
             }
             payload["token"] = token
@@ -178,40 +191,42 @@ class SenderHandler(val context: Context): Handler() {
 
             val json = SyncBlasRestItem().upload(payload)
 
-            if(json != null){
+            if (json != null) {
                 val errorCode = json.getInt("error_code")
                 var errorMsg = json.getString("message")
-                if(errorCode == 0) {
+                if (errorCode == 0) {
                     //送信できた場合
                     val records = json.getJSONObject("records")
 
                     val new_item_id = records.getString("new_item_id")
                     val org_item_id = records.getString("temp_item_id")
 
-                    controller.updateItemId( org_item_id,new_item_id )
-                }
-                else {
+                    controller.updateItemId(org_item_id, new_item_id)
+                } else {
                     //BLAS側でエラーが返された場合(論理エラー)
-                    if(errorMsg == null) {
+                    if (errorMsg == null) {
                         errorMsg = ""
                     }
 
                     //論理エラー
-                    controller.updateItemRecordStatus(item_id,
-                                                      BaseController.NETWORK_LOGICAL_ERROR,
-                                                      sendCnt,
-                                                      errorMsg)
+                    controller.updateItemRecordStatus(
+                        item_id,
+                        BaseController.NETWORK_LOGICAL_ERROR,
+                        sendCnt,
+                        errorMsg
+                    )
 
                     BlasLog.trace("E", "データに誤りがあります　error_code:$errorCode, msg:$errorMsg")
                 }
-            }
-            else {
+            } else {
                 //通信そのものができなかった場合(物理エラー)
                 BlasLog.trace("E", "データの送信に失敗しました")
-                controller.updateItemRecordStatus(item_id,
-                                                  BaseController.NETWORK_ERROR,
-                                                  sendCnt,
-                                                  "データの送信に失敗しました")
+                controller.updateItemRecordStatus(
+                    item_id,
+                    BaseController.NETWORK_ERROR,
+                    sendCnt,
+                    "データの送信に失敗しました"
+                )
                 break
             }
         }
@@ -222,19 +237,19 @@ class SenderHandler(val context: Context): Handler() {
     /**
      * 画像データをBLASに送信する
      */
-    private fun syncImage(context:Context, token:String, projectId:String):Int{
+    private fun syncImage(context: Context, token: String, projectId: String): Int {
         var ret = 0
         var imageId = 0L
         var sendCnt = 0
         val controller = ImagesController(context, projectId)
 
-        BlasLog.trace("I","画像を送信します")
+        BlasLog.trace("I", "画像を送信します")
 
         val imageList = controller.search(true)
 
-        BlasLog.trace("I","imageList size:${imageList.size}")
+        BlasLog.trace("I", "imageList size:${imageList.size}")
 
-        for(i in 0 until imageList.size){
+        for (i in 0 until imageList.size) {
             var image_record = imageList[i]
             image_record.image_id?.let {
                 imageId = it
@@ -246,19 +261,18 @@ class SenderHandler(val context: Context): Handler() {
 
             //リトライアウトチェック
             if (sendCnt != null) {
-                if(sendCnt == BaseController.RETRY_MAX) {
+                if (sendCnt == BaseController.RETRY_MAX) {
                     //1回だけログに出す
                     BlasLog.trace("E", "リトライアウトしました image_id:${imageId}")
                     ret = BaseController.RETRY_OUT
                     //戻り値が-1のときはコール元でメッセージの通知を行うこと。
                     continue
-                }
-                else {
+                } else {
                     sendCnt += 1
                 }
             }
 
-            BlasLog.trace("I",image_record.toString())
+            BlasLog.trace("I", image_record.toString())
 
             //送信パラメーターの作成
             var payload = image_record.toPayLoad().also {
@@ -282,39 +296,43 @@ class SenderHandler(val context: Context): Handler() {
             var json: JSONObject? = null
 
             //BLASに送信する
-            BlasLog.trace("I","画像を送信します")
+            BlasLog.trace("I", "画像を送信します")
             json = SyncBlasRestImage().upload(payload)
             if (json != null) {
                 val errorCode = json.getInt("error_code")
                 val msg = json.getString("message")
                 if (errorCode == 0) {
-                    BlasLog.trace("I","画像の送信に成功しました")
+                    BlasLog.trace("I", "画像の送信に成功しました")
                     if (imageId < 0) {
                         val records = json.getJSONObject("records")
                         val newImageId = records.getString("new_image_id")
                         val oldImageId = records.getString("temp_image_id")
 
-                        BlasLog.trace("I","IDを同期します ${oldImageId} ${newImageId}")
+                        BlasLog.trace("I", "IDを同期します ${oldImageId} ${newImageId}")
                         controller.updateImageId(oldImageId, newImageId)
                     } else {
-                        BlasLog.trace("I","IDを同期します ${imageId}")
+                        BlasLog.trace("I", "IDを同期します ${imageId}")
                         controller.resetSyncStatus(imageId.toString())
                     }
                 } else {
                     //論理エラーが発生
                     BlasLog.trace("E", "BLASからエラーが返されました　error_code:$errorCode, msg:$msg")
-                    controller.updateImageRecordStatus(imageId.toString(),
-                                                       BaseController.NETWORK_LOGICAL_ERROR,
-                                                       sendCnt,
-                                              "データの送信に失敗しました")
+                    controller.updateImageRecordStatus(
+                        imageId.toString(),
+                        BaseController.NETWORK_LOGICAL_ERROR,
+                        sendCnt,
+                        "データの送信に失敗しました"
+                    )
                 }
             } else {
                 //通信エラーが発生しているので、このターンでのリトライは打ち切り
-                BlasLog.trace("E","送信に失敗しました。1分後にリトライを行います")
-                controller.updateImageRecordStatus(imageId.toString(),
-                                                   BaseController.NETWORK_ERROR,
-                                                   sendCnt,
-                                          "データの送信に失敗しました")
+                BlasLog.trace("E", "送信に失敗しました。1分後にリトライを行います")
+                controller.updateImageRecordStatus(
+                    imageId.toString(),
+                    BaseController.NETWORK_ERROR,
+                    sendCnt,
+                    "データの送信に失敗しました"
+                )
                 break
             }
         }
@@ -325,7 +343,7 @@ class SenderHandler(val context: Context): Handler() {
     /**
      * 機器管理の未送信データをBLASに送信する
      */
-    private fun syncFixture(context:Context, token:String, projectId:String):Int{
+    private fun syncFixture(context: Context, token: String, projectId: String): Int {
         var ret = 0
         var sendCnt = 0
         val controller = FixtureController(
@@ -334,7 +352,7 @@ class SenderHandler(val context: Context): Handler() {
         )
         val fixtures = controller.search(null, true)
 
-        for(i in 0 until fixtures.size) {
+        for (i in 0 until fixtures.size) {
             val fixtureRecord = fixtures[i]
             val fixtureId = fixtureRecord.fixture_id
             fixtureRecord.send_cnt?.let {
@@ -344,67 +362,135 @@ class SenderHandler(val context: Context): Handler() {
 
             //リトライアウトチェック
             if (sendCnt != null) {
-                if(sendCnt == BaseController.RETRY_MAX) {
+                if (sendCnt == BaseController.RETRY_MAX) {
                     //1回だけログに出す
                     BlasLog.trace("E", "リトライアウトしました fixtureId:${fixtureId}")
                     ret = BaseController.RETRY_OUT
                     //戻り値が-1のときはコール元でメッセージの通知を行うこと。
                     continue
-                }
-                else {
+                } else {
                     sendCnt += 1
                 }
             }
 
-            BlasLog.trace("I","シリアルナンバーを送信します ${fixtureRecord.serial_number}")
+            BlasLog.trace("I", "シリアルナンバーを送信します ${fixtureRecord.serial_number}")
             //ここに自力で送信する処理を作るしかない
 
-            var payload = fixtureRecord.toPayLoad().also{
+            var payload = fixtureRecord.toPayLoad().also {
                 it["token"] = token
             }
 
             var json: JSONObject? = null
             val crud = fixtureRecord.status.toString()
             //BLASに送信する
-            BlasLog.trace("I","シリアルナンバーを送信します ${payload}")
+            BlasLog.trace("I", "シリアルナンバーを送信します ${payload}")
 
             json = SyncBlasRestFixture(crud).upload(payload)
-            if(json != null) {
+            if (json != null) {
                 val errorCode = json.getInt("error_code")
-                if(errorCode == 0) {
-                    if(fixtureId < 0) {
+                if (errorCode == 0) {
+                    if (fixtureId < 0) {
                         val records = json.getJSONObject("records")
                         val newFixtureId = records.getString("fixture_id")
                         val oldFixtureId = records.getString("temp_fixture_id")
                         controller.updateFixtureId(oldFixtureId, newFixtureId)
-                        BlasLog.trace("I","シリアルナンバーを新規追加しました ${oldFixtureId} ${newFixtureId}")
-                    }
-                    else {
+                        BlasLog.trace("I", "シリアルナンバーを新規追加しました ${oldFixtureId} ${newFixtureId}")
+                    } else {
                         controller.resetSyncStatus(fixtureId.toString())
-                        BlasLog.trace("I","シリアルナンバーを更新しました ${fixtureId}")
+                        BlasLog.trace("I", "シリアルナンバーを更新しました ${fixtureId}")
                     }
-                }
-                else {
+                } else {
                     val msg = json.getString("message")
-                    BlasLog.trace("E","BLASからエラーが返されました errorCode:${errorCode}")
-                    controller.updateFixtureRecordStatus(fixtureId.toString(),
-                                                         BaseController.NETWORK_LOGICAL_ERROR,
-                                                         sendCnt,
-                                                         msg)
+                    BlasLog.trace("E", "BLASからエラーが返されました errorCode:${errorCode}")
+                    controller.updateFixtureRecordStatus(
+                        fixtureId.toString(),
+                        BaseController.NETWORK_LOGICAL_ERROR,
+                        sendCnt,
+                        msg
+                    )
                 }
-            }
-            else {
+            } else {
                 //通信エラーが発生しているので、このターンでのリトライは打ち切り
-                BlasLog.trace("E","送信に失敗しました。1分後にリトライを行います")
-                controller.updateFixtureRecordStatus(fixtureId.toString(),
+                BlasLog.trace("E", "送信に失敗しました。1分後にリトライを行います")
+                controller.updateFixtureRecordStatus(
+                    fixtureId.toString(),
                     BaseController.NETWORK_ERROR,
                     sendCnt,
-                    "データの送信に失敗しました")
+                    "データの送信に失敗しました"
+                )
                 break
             }
         }
 
         return ret
+    }
+
+    /**
+     * イベントを定期的に取得する
+     */
+    private fun syncEvent(context: Context, token: String, projectId: String): Int {
+
+        val itemController = ItemsController(context, projectId)
+        val fields = FieldController(context, projectId).getFieldRecords()
+        val conditions = mutableMapOf<String, String>()
+
+        //イベント型で処理中のレコードを探す
+        fields.forEach {
+            if(it.type.toString() == FieldType.EVENT_FIELD) {
+                val fldCol = "fld${it.col}"
+                conditions[fldCol] = "処理中"
+            }
+        }
+
+        if(conditions.isEmpty()) {
+            return -1
+        }
+
+        val eventRecords = itemController.find(conditions)
+
+        eventRecords.forEach {
+            //イベントを取得して更新する
+            //データ管理の更新用データ作成
+            val payload = mutableMapOf<String, String>()
+            val valueMap = mutableMapOf<String, String>()
+            payload["token"] = token
+            payload["project_id"] = projectId
+            valueMap["project_id"] = projectId
+            if(it.contains("item_id")) {
+                val itemId = it["item_id"]
+                if(itemId != null) {
+                    payload["item_id"] = itemId
+                    valueMap["item_id"] = itemId
+                }
+            }
+            //BLASのデータをダウンロードする
+            val jsonObj = SyncBlasRestEvent("search").request(payload)
+            val errorCode = jsonObj.getInt("error_code")
+            if(errorCode == 0) {
+                //BLASのイベント状態を取得できた
+                val item = jsonObj.getJSONArray("records")
+                    .getJSONObject(0)
+                    .getJSONObject("Item")
+
+                //処理の都合上、mapに変換する
+
+
+                item.keys().forEach {key->
+                    if(conditions.containsKey(key)) {
+                        valueMap[key] = item.getString(key)
+                    }
+                }
+                //LDBをアップデートする。BLASからのデータを反映するだけなので
+                //ステータスは同期済みにする
+                itemController.updateToLDB(valueMap, status=BaseController.SYNC_STATUS_SYNC)
+            }
+            else {
+                //BLASに通信できたけど、レコードの更新ができなかったとき
+                val message = jsonObj.getString("message")
+            }
+        }
+
+        return 0
     }
 }
 
@@ -478,7 +564,7 @@ class BlasSyncService() : Service() {
                         if (it.isDirectory()) {
                             val projectId = it.name
                             if (token != null) {
-                                messenger?.send(Message.obtain(null, 0, MsgParams(token, projectId, FIXTURE or ITEM or IMAGE)))
+                                messenger?.send(Message.obtain(null, 0, MsgParams(token, projectId, FIXTURE or ITEM or IMAGE or EVENT)))
                             }
 
                             //DBからエラーになっているレコードを探す

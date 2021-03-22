@@ -27,13 +27,6 @@ open class FieldModel(
     //自分自身に値を設定する
     open fun setValue(value:String?) {
         text.set(value)
-        childFieldList.forEach {child->
-            if (value != null) {
-                //親の値が設定されたら子供のフィールドに値を通知する。
-                //現時点ではsingleSelectFieldのための機能。
-                child.notifyFromParent(value)
-            }
-        }
     }
 
     open fun addChildField(field:FieldModel) {
@@ -42,8 +35,14 @@ open class FieldModel(
     }
 
     //子供に親のデータを通知する
-    open fun notifyFromParent(value:String) {
+    open fun notifyedFromParent(value:String) {
         //継承先で実体を書く前提
+    }
+
+    //値不正のチェック
+    open fun validate():Boolean{
+        //子クラスで実装すること
+        return true
     }
 }
 

@@ -3,6 +3,7 @@ package com.v3.basis.blas.ui.item.common
 import android.util.Log
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.core.view.forEach
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.v3.basis.blas.blasclass.db.data.ItemsController
@@ -24,21 +25,8 @@ import kotlin.concurrent.withLock
 
 class ItemViewModel: ViewModel() {
 
-    val fields: MutableList<Any?> = mutableListOf()
+    val fields: MutableList<FieldModel> = mutableListOf()
 
-    /*
-    val dateEvent: PublishSubject<FieldText> = PublishSubject.create()
-    val timeEvent: PublishSubject<FieldText> = PublishSubject.create()
-    val qrEvent: PublishSubject<FieldText> = PublishSubject.create()
-    val qrCheckEvent:PublishSubject<FieldCheckText> = PublishSubject.create()
-    val qrKenpinEvent: PublishSubject<FieldText> = PublishSubject.create()
-    val qrTekkyoEvent: PublishSubject<FieldText> = PublishSubject.create()
-    val locationEvent: PublishSubject<FieldText> = PublishSubject.create()
-    val latEvent: PublishSubject<FieldText> = PublishSubject.create()
-    val lngEvent: PublishSubject<FieldText> = PublishSubject.create()
-    val accountNameEvent: PublishSubject<FieldText> = PublishSubject.create()
-    val currentDateTimeEvent: PublishSubject<FieldText> = PublishSubject.create()    //日時
-    */
     val completeSave: PublishSubject<Unit> = PublishSubject.create()
     val completeUpdate: PublishSubject<Unit> = PublishSubject.create()
 
@@ -62,8 +50,16 @@ class ItemViewModel: ViewModel() {
     fun clickSave(container: LinearLayout) {
         Log.d("clickSave()","start")
 
-        //ここでバリデーションを行う
-        if(itemsController?.validate(fields) == false) {
+        //TODO:ここでバリデーションを行う
+        var validateFlg = true
+        fields.forEach {
+            //バリデーション
+            val ret = it.validate()
+            validateFlg = ret and validateFlg
+        }
+
+        if(!validateFlg) {
+            //エラーメッセージはvalidate内でセットしている
             return
         }
 
@@ -125,52 +121,6 @@ class ItemViewModel: ViewModel() {
             .addTo(disposable)
     }
 
-    /*
-    fun clickDate(field: FieldText) {
-        dateEvent.onNext(field)
-    }
-
-    fun clickTime(field: FieldText) {
-        timeEvent.onNext(field)
-    }
-
-    fun clickLocation(field: FieldText) {
-        locationEvent.onNext(field)
-    }
-
-    fun clickLat(field:FieldText) {
-        latEvent.onNext(field)
-    }
-
-    fun clickLng(field:FieldText) {
-        lngEvent.onNext(field)
-    }
-
-    fun clickQRCode(field: FieldText) {
-        qrEvent.onNext(field)
-    }
-
-    fun clickQRCodeWithCheck(field: FieldCheckText) {
-        qrCheckEvent.onNext(field)
-    }
-
-    fun clickQRCodeKenpin(field: FieldText) {
-        Log.d("ItemViewModel.clickQRCodeKenpin()","start")
-        qrKenpinEvent.onNext(field)
-    }
-
-    fun clickQRCodeTekkyo(field: FieldText) {
-        qrTekkyoEvent.onNext(field)
-    }
-
-    fun clickAccountName(field: FieldText) {
-        accountNameEvent.onNext(field)
-    }
-
-    fun clickCurrentDateTime(field: FieldText) {
-        currentDateTimeEvent.onNext(field)
-    }
-    */
     override fun onCleared() {
         super.onCleared()
         disposable.dispose()

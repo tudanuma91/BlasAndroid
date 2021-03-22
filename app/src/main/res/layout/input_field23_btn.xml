@@ -10,35 +10,20 @@
             type="com.v3.basis.blas.ui.item.common.ItemViewModel" />
         <variable
             name="model"
-            type="com.v3.basis.blas.ui.item.common.FieldMultiSelect" />
+            type="com.v3.basis.blas.ui.item.common.FieldEvent" />
     </data>
 
     <LinearLayout
-        android:orientation="vertical"
+        android:id="@+id/eventLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        >
+        android:layout_height="wrap_content"
+        android:gravity="left"
+        android:orientation="vertical"
+        android:padding="6dp">
 
-        <TextView
-            android:textColor="@color/colorAccent"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="@{model.field.essential == 1 ? View.VISIBLE : View.INVISIBLE}"
-            android:text="※ 必須入力"
-            />
-
-        <TextView
-            android:textColor="@color/colorText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@{model.field.name}"
-            tools:text="TITLE"
-            />
-
-        <LinearLayout
-            android:id="@+id/checkBoxGroup"
-            android:orientation="vertical"
-            android:layout_width="match_parent"
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             />
 
@@ -49,5 +34,12 @@
             android:visibility="@{model.validationMsg != null ? View.VISIBLE : View.INVISIBLE}"
             android:text="@{model.validationMsg}"
             />
+        <Button
+            android:id="@+id/button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="疎通確認" />
+
     </LinearLayout>
+
 </layout>

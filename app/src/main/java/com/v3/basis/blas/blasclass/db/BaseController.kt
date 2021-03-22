@@ -11,7 +11,9 @@ import androidx.room.Room
 import com.v3.basis.blas.BuildConfig
 import com.v3.basis.blas.R
 import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.config.UserDef
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
+import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
 import com.v3.basis.blas.blasclass.ldb.LdbUserRecord
 import com.v3.basis.blas.blasclass.worker.DownloadWorker
 import io.reactivex.subjects.PublishSubject
@@ -125,8 +127,6 @@ abstract class BaseController(
         val cv = ContentValues()
         instance::class.memberProperties.forEach {
 
-            Log.d(it.name,it.getter.call(instance).toString())
-
             if( null != exceptList ) {
                 if( exceptList.contains(it.name) ) {
                     return@forEach
@@ -233,6 +233,49 @@ abstract class BaseController(
         cursor?.close()
 
         return user
+    }
+
+    public fun getWorkers(projectId:Int) : List<String>? {
+
+        val me = getUserInfo()
+        //システム管理者(1)、統括管理者(2)、一般管理者(3)、作業者(4)のどれか
+        val group_id = me?.group_id
+        val org_id = me?.org_id
+        var sql = ""
+        var cursor:Cursor? = null
+        when(group_id) {
+            UserDef.SYSTEM_USER,
+            UserDef.TOUKATU_USER-> {
+                //プロジェクトに所属しているユーザすべて
+                sql = "select users.name from right_users left join users on users.user_id=right_users.user_id where project_id=?"
+                cursor = db?.rawQuery(sql, arrayOf(projectId))
+            }
+            UserDef.IPPAN_USER -> {
+                //自分が所属している会社のユーザで、かつ、一般管理者と作業者
+                sql = "select users.name from right_users left join users on users.user_id=right_users.user_id where project_id=? and users.org_id=? and users.group_id >=3"
+                cursor = db?.rawQuery(sql, arrayOf(projectId, org_id))
+            }
+
+            UserDef.WORKER_USER -> {
+                sql = "select users.name from right_users left join users on users.user_id=right_users.user_id where project_id=? and users.org_id=? and users.group_id >=4"
+                cursor = db?.rawQuery(sql, arrayOf(projectId, org_id))
+            }
+        }
+
+        //val sql = "select name from users"
+        val users = mutableListOf<String>()
+        
+
+        cursor?.also { c_now ->
+            var notLast = c_now.moveToFirst()
+            while (notLast) {
+                users.add(c_now.getString(0))
+                notLast = c_now.moveToNext()
+            }
+        }
+
+        cursor?.close()
+        return users
     }
 
     /**

@@ -197,22 +197,18 @@ class ItemEditorFragment : Fragment() {
             FieldController(requireContext(),projectId).getFieldRecords()
         }.observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {fieldList->
-                val inputFieldList = mutableListOf<FieldModel>()
                 if( fieldList.isNotEmpty() ) {
                     fieldList.forEachIndexed{ index,field ->
                         //子供のフィールドを取得
                         //入力用のフィールドを追加する
-                        val inputField = addField(field,index)
-                        if (inputField != null) {
-                            inputFieldList.add(inputField)
-                        }
+                        addField(field,index)
                     }
 
                     //親子関係構築
-                    inputFieldList.forEach {me->
+                    formModel.fields.forEach {me->
                         if(me.field.parent_field_id != 0) {
                             //親フィールドを取得する
-                            val parentInputField = inputFieldList.first {parent->
+                            val parentInputField = formModel.fields.first {parent->
                                 parent.field.field_id == me.field.parent_field_id
                             }
                             parentInputField.addChildField(me)
@@ -554,106 +550,8 @@ class ItemEditorFragment : Fragment() {
                     formModel.fields.add(inputField)
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
-
-
-                    // 選択肢の生成
-                    /*
-                    val choice = createOption(field,inputField )
-                    // val choice = inputField.createOption(field,inputField,requireContext(),singleSelectSpinner )
-
-                    // 実際に表示の処理
-                    inputField.layout.spinner.createChildren(choice, inputField)
-
-
-
-                    // 連動パラメータで親を取り出すために配列に入れておく
-                    singleSelectSpinner[field.field_id!!] = inputField.layout.spinner
-
-                    //アイテムが選択されたときに行う処理を登録する
-                    inputField.layout.spinner.onItemSelectedListener = SpinnerItemSelectedListener().apply {
-                        this.selectAction = {
-                            BlasLog.trace("I","selectAction")
-                            inputField.selectedIndex.set(it)
-                        }
-                    }
-
-                    // とりあえずここら辺を入れないとwhenSingleSelect()がうまく動かない
-                    //一回シングルセレクトをマップに格納
-                    singleSelectMap[singleCnt] = inputField.layout
-                    //チョイスの値を格納
-                    singleSelectChoiceMap[singleCnt] = field.choice
-                    singleCnt++
-
-                    */
-                    /*
-                    if( 0 != field.parent_field_id ) {
-                        // 連動パラメータ
-                        val jsonChoice = JSONObject(field.choice)
-                        val parents = jsonChoice.names()
-
-                        val child = jsonChoice.getString(parents[0].toString())
-                        model.values = child.split(",").toMutableList()
-
-                        l.spinner.createChildren(child, model)
-
-                        val parentSpinner = singleSelectSpinner[field.parent_field_id!!]
-
-                        if (parentSpinner != null) {
-                            // 親項目が変わったら子も連動して変える(親のセレクトチェンジイベントに細工する)
-                            val listener = parentSpinner.onItemSelectedListener as SpinnerItemSelectedListener
-                            listener.optionalAction = { parent, position ->
-
-                                if (parent?.adapter is ArrayAdapter<*>) {// ArrayAdapter<String>
-                                    val item = parent.adapter.getItem(position) as String
-                                    try {
-                                        val newChild = jsonChoice.getString(item)
-                                        model.values = newChild.split(",").toMutableList()
-
-                                        Log.d("child",newChild)
-                                        (l.spinner.adapter as ArrayAdapter<*>).clear()
-                                        l.spinner.createChildren(newChild, model)
-                                        l.spinner.setSelection(0)
-                                        model.selectedIndex.set(position)
-                                    } catch (e: Exception) {
-                                        val ad = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_item)
-                                        ad.addAll("")
-                                        l.spinner.adapter = ad
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else  {
-                        l.spinner.createChildren(field.choice, model)
-                    }
-
-                    //アイテムが選択されたときに行う処理を登録する
-                    l.spinner.onItemSelectedListener = SpinnerItemSelectedListener().apply {
-                        this.selectAction = {
-                            model.selectedIndex.set(it)
-                        }
-                    }
-
-                    l.model = model
-                    l.vm = viewModel
-                    singleSelectSpinner[field.field_id!!] = l.spinner
-
-                    if (l.spinner.count > 0) {
-                        //あとで呼ばれるcreateForm関数内で値はセットされる。
-                        //ここでは未入力のときに先頭の選択肢を表示するために0を入力している。
-                        l.spinner.setSelection(0)
-                    }
-
-                    //一回シングルセレクトをマップに格納
-                    singleSelectMap[singleCnt] = l
-                    //チョイスの値を格納
-                    singleSelectChoiceMap[singleCnt] = field.choice
-                    singleCnt++
-
-                    rootView = l.root
-                    fieldModel = l.model*/
-
                 }
+
                 FieldType.MULTIPLE_SELECTION -> {
                     //複数選択
                     val l: ViewItems6SelectMultiBinding =
@@ -820,11 +718,31 @@ class ItemEditorFragment : Fragment() {
                     form.innerView.addView(inputField.layout.root)
                 }
 
-                //type:18 単一選択のため、type5で処理する
+                //type:18 カテゴリ
+                //FieldType.WORK_CONTENT_SELECTION,
+                FieldType.CATEGORY_SELECTION -> {
+                    //単一選択
+                    inputField = FieldCategorySelect(requireContext(), layoutInflater, cellNumber,field)
+                    //親フォームにフィールドを追加する
+                    formModel.fields.add(inputField)
+                    //入力フィールドを表示する
+                    form.innerView.addView(inputField.layout.root)
+                }
 
                 //type:19 作業者
                 FieldType.WORKER_NAME -> {
-                    inputField = FieldWorkerName(requireContext(), layoutInflater, cellNumber, field)
+                    inputField = FieldWorkerNameAutoComplete(requireContext(), layoutInflater, cellNumber, field)
+
+                    val user = itemsController.getUserInfo()
+                    /*if(user != null) {
+                        (inputField as FieldWorkerNameSelect).addUser(user.name)
+                    }*/
+
+                    val workers = itemsController.getWorkers(projectId.toInt())
+                    workers?.forEach {
+                        (inputField as FieldWorkerNameAutoComplete).addUser(it)
+                    }
+
                     //親フォームにフィールドを追加する
                     formModel.fields.add(inputField)
                     //入力フィールドを表示する
@@ -832,12 +750,12 @@ class ItemEditorFragment : Fragment() {
 
                     inputField.layout.button.setOnClickListener {
                         //TODO:現在はただのテキストフィールドだけど、単一選択の入力画面に変更する必要もあり。
-                        //TODO:後回し
-
                         //ボタンが押されたらログインユーザー名を設定
                         val user = itemsController.getUserInfo()
-                        (inputField as FieldWorkerName).text.set( user?.name )
-
+                        val field = (inputField as FieldWorkerNameAutoComplete)
+                        if(user != null) {
+                            field.setValue(user.name)
+                        }
                     }
                 }
                 //type:20 予定日
@@ -856,7 +774,15 @@ class ItemEditorFragment : Fragment() {
                     }
                 }
 
-                //type:21　単一選択なので5で処理する
+                //type:21 作業内容
+                FieldType.WORK_CONTENT_SELECTION -> {
+                    //単一選択
+                    inputField = FieldWorkContentSelect(requireContext(), layoutInflater, cellNumber,field)
+                    //親フォームにフィールドを追加する
+                    formModel.fields.add(inputField)
+                    //入力フィールドを表示する
+                    form.innerView.addView(inputField.layout.root)
+                }
 
                 //type:22
                 FieldType.ADDRESS -> {

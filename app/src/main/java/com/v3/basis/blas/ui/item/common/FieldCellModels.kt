@@ -92,8 +92,7 @@ class FieldSingleSelect (
 ): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	val layout: InputField5Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field5, null, false)
-	var selectedItemStr = ""
-	var choiceList: Array<String>
+	var choiceList: MutableList<String>
 	var adapter:ArrayAdapter<String>
 
 	init {
@@ -101,17 +100,15 @@ class FieldSingleSelect (
 		if(field.parent_field_id != 0) {
 			//従属パラメーターあり
 			//親の選択肢が決まるまで、子供は表示できない
-
-			//親が決まらないと子供のリストは決められない
-			choiceList = arrayOf("")
+			choiceList = mutableListOf("")
 		}
 		else {
-			choiceList = field.choice!!.split(",").toTypedArray()
+			choiceList = field.choice!!.split(",").toMutableList()
+			if(choiceList == null) {
+				choiceList = mutableListOf("")
+			}
 		}
 
-		if(choiceList == null) {
-			choiceList = arrayOf("")
-		}
 		//アダプター作成
 		adapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, choiceList)
 		//ドロップダウンの表示領域を大きくする
@@ -130,14 +127,14 @@ class FieldSingleSelect (
 				//選択されたとき
 				val spinnerParent = p0 as Spinner
 				//選択された文字をメンバ変数に保持
-				selectedItemStr = spinnerParent.selectedItem as String
+				val selectedItemStr = spinnerParent.selectedItem as String
 
 				//親fieldsテーブルを調べて、親の選択肢を子供に通知する必要がある
 				childFieldList.forEach {child->
 					if (selectedItemStr != null) {
 						//親の値が設定されたら子供のフィールドに値を通知する。
 						//現時点ではsingleSelectFieldのための機能。
-						child.notifyFromParent(selectedItemStr)
+						child.notifyedFromParent(selectedItemStr)
 					}
 				}
 			}
@@ -150,58 +147,40 @@ class FieldSingleSelect (
 
 
 	override fun convertToString(): String? {
-		return selectedItemStr
-//		val idx = selectedIndex.get()
-//		return if (idx == -1) { null } else { values.get(idx) }
-//		return if (idx == -1) { values.get(0) } else { values.get(idx) }
+		return layout.spinner.selectedItem.toString()
 	}
 
 	override fun setValue(value: String?) {
-		BlasLog.trace("I","setValue(" + value + ") start!!")
-
 		if(field.parent_field_id != 0) {
-			var childChoiceList:String = ""
 			val choiceJson = JSONObject(field.choice)
 			val names = choiceJson.names()
-			var findFlg = false
-
-			for(i in 0 until names.length()) {
+			for (i in 0 until names.length()) {
 				val name = names[i].toString()
-				BlasLog.trace("I","name:" + name)
-
-				//ここまではあっている
-//				var child_list = choiceJson.getJSONObject(name)//ここがおかしい
-				// valueStr = "みかん,リンゴ","肉":"牛肉,鶏肉"
-				val valueStr = choiceJson.getString(name)
-				BlasLog.trace("I","values:" + valueStr)
-				val values = valueStr.split(",")
-
-				BlasLog.trace("I","values.size:" + values.size)
-				for(j in 0 until values.size ) {
-
-					BlasLog.trace("I","value[" + j + "] :" + values[j])
-					if(value == values[j].toString()) {
-						// childChoiceList = choiceJson.getString(value)
-						childChoiceList = valueStr
-						findFlg = true
+				val childChoiceStr = choiceJson.getString(name)
+				val tokens = childChoiceStr.split(",").toMutableList()
+				for (j in 0 until tokens.size) {
+					if (tokens[j] == value) {
+						choiceList.clear()
+						tokens.forEach {
+							choiceList.add(it)
+						}
+						layout.spinner.setSelection(j)
+						adapter.notifyDataSetChanged()
+						return
 					}
 				}
-				if(findFlg) {
-					break
-				}
-
 			}
-
-			choiceList = childChoiceList.split(",").toTypedArray()
 		}
-
-		choiceList.forEachIndexed {index, s ->
-			if(s == value) {
-				selectedItemStr = s
-				layout.spinner.setSelection(index)
-
-				BlasLog.trace("I","selectedItemStr:" + selectedItemStr)
-				BlasLog.trace("I","index:" + index)
+		else {
+			//親子関係のないシングルセレクト
+			val tokens = field.choice?.split(",")?.toMutableList()
+			if(tokens != null) {
+				for(i in 0 until tokens.size) {
+					if(tokens[i] == value) {
+						layout.spinner.setSelection(i)
+						break
+					}
+				}
 			}
 		}
 
@@ -209,80 +188,22 @@ class FieldSingleSelect (
 
 	}
 
-	override fun notifyFromParent(value: String) {
-		BlasLog.trace("I","start notifyFromParent()")
-
+	/**
+	 * 親フィールドからの変更を受信する
+	 */
+	override fun notifyedFromParent(value: String) {
 		//親からの変更を受信する
 		//{"野菜":"キャベツ,ニンジン","果物":"みかん,リンゴ","肉":"牛肉,鶏肉"}
 		val choiceJson = JSONObject(field.choice)
 		val childChoiceList = choiceJson.getString(value)
-		choiceList = childChoiceList.split(",").toTypedArray()
-		adapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, choiceList)
-		layout.spinner.adapter = adapter
-	}
-
-	// TODO:三代川　↓↓↓↓↓ この人たちをここに持ってきたいのだが Spinner.createChildren() が持って来れない T_T
-	/*
-	fun createOption(
-		field: LdbFieldRecord,inputField : FieldSingleSelect,context:Context,singleSelectSpinner:Map<Int,Spinner>
-	) : String {
-		BlasLog.trace("I","createOption() start field:" + field.name)
-		var ret = ""
-
-		if( 0 != field.parent_field_id ) {
-			// 連動パラメータの時
-			val jsonChoice = JSONObject(field.choice)
-			val parents = jsonChoice.names()
-			// とりあえず一番最初のchildを入れておく
-			ret = jsonChoice.getString(parents[0].toString())
-			BlasLog.trace("I","child:::" + ret)
-
-			// 親を取得
-			val parentSpinner = singleSelectSpinner[field.parent_field_id!!]
-
-			if( parentSpinner != null ) {
-				val parentValue = parentSpinner?.selectedItem as String
-				BlasLog.trace("I","parent value::::" + parentValue)
-				// childをちゃんとしたものに入替える
-				ret = jsonChoice.getString(parentValue)
-
-				// 親項目が変更されたら子も変える。ここでやるしかない！
-				val listener = parentSpinner.onItemSelectedListener as ItemEditorFragment.SpinnerItemSelectedListener
-				listener.optionalAction = { parent, position ->
-
-					BlasLog.trace("I","親変更！！！  position:" + position)
-					val newChoice = jsonChoice.getString(parents[ position ].toString())
-					inputField.layout.spinner.createChildren(newChoice, inputField,context)
-				}
-			}
+		val tokens = childChoiceList.split(",").toMutableList()
+		//親項目が変更されたため、リストの差し替えを行う
+		choiceList.clear()
+		tokens.forEach {
+			choiceList.add(it)
 		}
-		else {
-			// 連動パラメータではない時
-			// choiceに入ってる文字列をそのまま使用
-			ret = field.choice.toString()
-		}
-
-		return ret
+		adapter.notifyDataSetChanged()
 	}
-	*/
-
-	/**
-	 * セレクタの選択肢を設定する
-	 */
-	/*
-	fun Spinner.createChildren(separatedText: String?, model: FieldSingleSelect,context:Context) {
-		separatedText?.also {
-			val list = it.split(",")
-			model.values.addAll(list)
-			val ad = ArrayAdapter<String>(context, android.R.layout.simple_spinner_item)
-			ad.addAll(list)
-			this.adapter = ad
-		}
-	}
-	 */
-
-
-
 }
 
 class FieldMultiSelect(
@@ -328,7 +249,7 @@ class FieldMultiSelect(
 		}
 	}
 
-	override fun notifyFromParent(value: String) {
+	override fun notifyedFromParent(value: String) {
 	}
 }
 
@@ -493,7 +414,7 @@ class FieldCheckText(
 		}
 	}
 
-	override fun notifyFromParent(value: String) {
+	override fun notifyedFromParent(value: String) {
 	}
 
 }
@@ -544,7 +465,7 @@ class FieldQRWithCheckText(
 		}
 	}
 
-	override fun notifyFromParent(value: String) {
+	override fun notifyedFromParent(value: String) {
 	}
 }
 
@@ -563,19 +484,154 @@ class FieldCurrentDateTime(
 	}
 }
 
-class FieldWorkerName(
+class FieldCategorySelect(
 	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
 	field: LdbFieldRecord
 ): FieldModel(context, layoutInflater, fieldNumber, field) {
 
-	var layout: InputField19Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field19, null, false)
+	val layout: InputField18Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field18, null, false)
+	var selectedItemStr = ""
+	var choiceList: MutableList<String>
+	var adapter:ArrayAdapter<String>
 
 	init {
+		choiceList = field.choice!!.split(",").toMutableList()
+		if(choiceList == null) {
+			choiceList = mutableListOf("")
+		}
+
+		//アダプター作成
+		adapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, choiceList)
+		//ドロップダウンの表示領域を大きくする
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+		//ViewModelに自分を登録
 		layout.model = this
+
+		//SpinnerViewのアダプターに接続
+		layout.spinner.adapter = adapter
+
+		//選択されたときのイベントを取得する
+		layout.spinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
+
+			override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+				//選択されたとき。何もしない
+			}
+
+			override fun onNothingSelected(p0: AdapterView<*>?) {
+				//アイテムが選択されなかったとき。現時点では使用していない
+			}
+		}
+	}
+
+
+	override fun convertToString(): String? {
+		return layout.spinner.selectedItem.toString()
+	}
+
+	override fun setValue(value: String?) {
+		//親子関係のないシングルセレクト
+		val tokens = field.choice?.split(",")?.toMutableList()
+		if(tokens != null) {
+			for(i in 0 until tokens.size) {
+				if(tokens[i] == value) {
+					layout.spinner.setSelection(i)
+					break
+				}
+			}
+		}
+		BlasLog.trace("I","end convertToString()")
+
+	}
+
+	/**
+	 * 親フィールドからの変更を受信する
+	 */
+	override fun notifyedFromParent(value: String) {
+		//親からの変更を受信する
 	}
 }
+
+class FieldWorkerNameAutoComplete(
+	context: Context,
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
+
+	val layout: InputField19Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field19, null, false)
+	var choiceList: MutableList<String> = mutableListOf("")
+	var adapter:ArrayAdapter<String>
+
+	init {
+		if(field.choice != null) {
+			val tokens = field.choice?.split(",")
+			if(tokens != null) {
+				choiceList = tokens.toMutableList()
+			}
+		}
+
+		//アダプター作成
+		adapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, choiceList)
+		//ドロップダウンの表示領域を大きくする
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+		//ViewModelに自分を登録
+		layout.model = this
+
+		//AutoCompleteTextViewのアダプターに接続
+		layout.autocomplete.threshold = 1
+		layout.autocomplete.setAdapter(adapter)
+
+	}
+
+
+	override fun convertToString(): String? {
+		return layout.autocomplete.text.toString()
+	}
+
+	override fun setValue(value: String?) {
+		layout.autocomplete.setText(value)
+	}
+
+	override fun validate():Boolean {
+		//選択肢にある名前以外が指定された場合
+		val inputName = layout.autocomplete.text.toString()
+		var ret = false
+		val name = choiceList.find { it == inputName }
+		if(name != null) {
+			ret = true
+		}
+
+		if(!ret) {
+			validationMsg.set("${inputName}は指定できない名前です")
+		}
+
+		return ret
+	}
+
+	/**
+	 * 親フィールドからの変更を受信する
+	 */
+	override fun notifyedFromParent(value: String) {
+		//親からの変更を受信する
+	}
+
+	/* ユーザーリストをすべて消す */
+	public fun clearUserList() {
+		choiceList.clear()
+		adapter.notifyDataSetChanged()
+	}
+
+	/* リストにユーザを追加する */
+	public fun addUser(userName:String) {
+		choiceList.add(userName)
+		adapter.notifyDataSetChanged()
+	}
+}
+
 
 class FieldScheduleDate(
 	context: Context,
@@ -592,6 +648,79 @@ class FieldScheduleDate(
 
 }
 
+
+class FieldWorkContentSelect(
+	context: Context,
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
+
+	val layout: InputField21Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field21, null, false)
+	var selectedItemStr = ""
+	var choiceList: MutableList<String>
+	var adapter:ArrayAdapter<String>
+
+	init {
+		choiceList = field.choice!!.split(",").toMutableList()
+		if(choiceList == null) {
+			choiceList = mutableListOf("")
+		}
+
+		//アダプター作成
+		adapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, choiceList)
+		//ドロップダウンの表示領域を大きくする
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+		//ViewModelに自分を登録
+		layout.model = this
+
+		//SpinnerViewのアダプターに接続
+		layout.spinner.adapter = adapter
+
+		//選択されたときのイベントを取得する
+		layout.spinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
+
+			override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+				//選択されたとき。何もしない
+			}
+
+			override fun onNothingSelected(p0: AdapterView<*>?) {
+				//アイテムが選択されなかったとき。現時点では使用していない
+			}
+		}
+	}
+
+
+	override fun convertToString(): String? {
+		return selectedItemStr
+	}
+
+	override fun setValue(value: String?) {
+		//親子関係のないシングルセレクト
+		val tokens = field.choice?.split(",")?.toMutableList()
+		if(tokens != null) {
+			for(i in 0 until tokens.size) {
+				if(tokens[i] == value) {
+					layout.spinner.setSelection(i)
+					break
+				}
+			}
+		}
+		BlasLog.trace("I","end convertToString()")
+
+	}
+
+	/**
+	 * 親フィールドからの変更を受信する
+	 */
+	override fun notifyedFromParent(value: String) {
+		//親からの変更を受信する
+	}
+}
+
+
+
 class FieldAddress(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -604,4 +733,19 @@ class FieldAddress(
 	init {
 		layout.model = this
 	}
+}
+
+class FieldEvent(
+	context: Context,
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
+
+	var layout: InputField23Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field23, null, false)
+
+	init {
+		layout.model = this
+	}
+
 }
