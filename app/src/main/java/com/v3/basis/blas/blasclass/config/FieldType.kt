@@ -26,6 +26,7 @@ open class FieldType {
         const val WORK_CONTENT_SELECTION = "21"
         const val ADDRESS = "22"
         const val EVENT_FIELD = "23"
+        const val BAR_CODE = "24"
 
         //ユニークチェック
         const val UNIQUE_CHK = "unique_chk"

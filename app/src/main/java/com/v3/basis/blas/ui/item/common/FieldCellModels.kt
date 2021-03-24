@@ -720,7 +720,6 @@ class FieldWorkContentSelect(
 }
 
 
-
 class FieldAddress(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -729,6 +728,21 @@ class FieldAddress(
 ): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField22Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field22, null, false)
+
+	init {
+		layout.model = this
+	}
+}
+
+
+class FieldBarCode(
+	context: Context,
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
+
+	var layout: InputField24Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field24, null, false)
 
 	init {
 		layout.model = this

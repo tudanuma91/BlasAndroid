@@ -702,6 +702,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
                                 FieldType.TEXT_FIELD,
                                 FieldType.TEXT_AREA,
                                 FieldType.QR_CODE,
+                                FieldType.BAR_CODE,
                                 FieldType.TEKKYO_RENDOU_QR,
                                 FieldType.KENPIN_RENDOU_QR,
                                 FieldType.SIG_FOX ,

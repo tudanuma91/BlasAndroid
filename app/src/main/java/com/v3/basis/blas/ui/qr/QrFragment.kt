@@ -36,15 +36,10 @@ import kotlinx.android.synthetic.main.fragment_qr.qr_view
 class QrFragment : QRCameraFragment() {
     companion object {
     }
-    private var token:String? = null
-    private var cameraManager: CameraManager? = null
+
     private var cameraID: String? = null
     private var SW: Boolean = false
-    private var projectId:String? = null
     private var intent :Intent? = null
-    private lateinit var messageText: TextView
-    private var oldResult:String? =null
-
 
 //    private var tone: ToneGenerator = ToneGenerator(AudioManager.STREAM_SYSTEM, ToneGenerator.MAX_VOLUME)
 

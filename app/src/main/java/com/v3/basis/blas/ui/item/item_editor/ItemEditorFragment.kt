@@ -639,7 +639,6 @@ class ItemEditorFragment : Fragment() {
                     formModel.fields.add(inputField)
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
-
                 }
 
                 FieldType.TEKKYO_RENDOU_QR -> {
@@ -793,7 +792,22 @@ class ItemEditorFragment : Fragment() {
                     form.innerView.addView(inputField.layout.root)
                 }
 
-
+                FieldType.BAR_CODE -> {
+                    //QRコード
+                    inputField = FieldBarCode(requireContext(), layoutInflater, cellNumber, field)
+                    inputField.layout.button.setOnClickListener {
+                        val extra = "colNumber" to (inputField as FieldBarCode).fieldNumber.toString()
+                        //QRコードでバーコードも読む。
+                        startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
+                            val qr = r.data?.getStringExtra("qr_code")
+                            (inputField as FieldBarCode).text.set(qr)
+                        }
+                    }
+                    //親フォームにフィールドを追加する
+                    formModel.fields.add(inputField)
+                    //入力フィールドを表示する
+                    form.innerView.addView(inputField.layout.root)
+                }
                 else -> { null }
             }
         }
@@ -915,20 +929,6 @@ class ItemEditorFragment : Fragment() {
             day
         )
         dtp.show()
-    }
-
-    /**
-     * 時間フィールドタップ時の処理
-     */
-    private fun setClickTime(field: FieldText) {
-        //editTextタップ時の処理
-        val tp = TimePickerDialog(
-            context,
-            TimePickerDialog.OnTimeSetListener { view, hour, minute ->
-                field.text.set(String.format("%02d:%02d", hour, minute))
-            }, hour, minute, true
-        )
-        tp.show()
     }
 
     override fun onDestroyView() {
