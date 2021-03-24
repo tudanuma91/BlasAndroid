@@ -26,7 +26,6 @@ import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.item.common.FieldDate
-import com.v3.basis.blas.ui.item.common.FieldEvent
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
 import io.reactivex.Single
@@ -407,23 +406,24 @@ class ItemViewFragment : Fragment() {
         text += "<table border=\"1\" style=\"border-collapse: collapse; table-layout:fixed; border-style: solid; border-color: #FF69B4;\" width=\"100%\">"
 
         fields.forEachIndexed { index, field ->
+            if(field.type.toString() != FieldType.EVENT_FIELD) {
+                val fldName = "fld${field.col}"
 
-            val fldName = "fld${field.col}"
+                text += "<tr>"
+                text += "<td bgcolor=\"#FFEFFF\">${field.name}</td>"
 
-            text += "<tr>"
-            text += "<td bgcolor=\"#FFEFFF\">${field.name}</td>"
+                if ((field.type.toString() == FieldType.CHECK_VALUE) ||
+                    field.type.toString() == FieldType.QR_CODE_WITH_CHECK
+                ) {
+                    val newValue = helper.createCheckValue(item[fldName].toString())
+                    text += "<td>${newValue}</td>"
+                } else {
+                    val fldVal = item[fldName]?.replace("\\r", "")
+                    text += "<td>${fldVal}</td>"
+                }
 
-            if ((field.type.toString() == FieldType.CHECK_VALUE) ||
-                 field.type.toString() == FieldType.QR_CODE_WITH_CHECK) {
-                val newValue = helper.createCheckValue(item[fldName].toString())
-                text += "<td>${newValue}</td>"
+                text += "</tr>"
             }
-            else {
-                val fldVal = item[fldName]?.replace("\\r","")
-                text += "<td>${fldVal}</td>"
-            }
-
-            text += "</tr>"
          }
 
         text += "</table>"

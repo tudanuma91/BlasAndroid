@@ -53,6 +53,10 @@ data class MsgParams(
     val sendType:Int,
     val itemId:String = "" //イベント発行監視用のitem_idのリスト
 )
+interface EventListener {
+    val itemId:Long
+    fun callBack(itemRecord:MutableMap<String, String>)
+}
 
 class SenderHandler(val context: Context): Handler() {
     companion object {
@@ -62,6 +66,9 @@ class SenderHandler(val context: Context): Handler() {
         val ITEM = 0x00000010
         val IMAGE = 0x00000100
         val EVENT = 0x00001000
+
+        //イベントコールバック用関数
+        val eventCallbackList = mutableListOf<EventListener>()
     }
 
     //電波の状況を調べる
@@ -442,6 +449,11 @@ class SenderHandler(val context: Context): Handler() {
             }
         }
 
+        eventCallbackList.forEach {
+            val itemId = it.itemId
+
+        }
+
         if(conditions.isEmpty()) {
             return -1
         }
@@ -473,8 +485,6 @@ class SenderHandler(val context: Context): Handler() {
                     .getJSONObject("Item")
 
                 //処理の都合上、mapに変換する
-
-
                 item.keys().forEach {key->
                     if(conditions.containsKey(key)) {
                         valueMap[key] = item.getString(key)
@@ -483,6 +493,16 @@ class SenderHandler(val context: Context): Handler() {
                 //LDBをアップデートする。BLASからのデータを反映するだけなので
                 //ステータスは同期済みにする
                 itemController.updateToLDB(valueMap, status=BaseController.SYNC_STATUS_SYNC)
+
+                val node = eventCallbackList.first{listener->
+                    listener.itemId.toString() == it["item_id"]
+                }
+                //コールバックを呼び出す
+                //val guiHandler = Handler()
+               // guiHandler.post{
+                    node.callBack(valueMap)
+               // }
+
             }
             else {
                 //BLASに通信できたけど、レコードの更新ができなかったとき

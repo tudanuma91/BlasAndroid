@@ -734,18 +734,3 @@ class FieldAddress(
 		layout.model = this
 	}
 }
-
-class FieldEvent(
-	context: Context,
-	layoutInflater: LayoutInflater,
-	fieldNumber: Int,
-	field: LdbFieldRecord
-): FieldModel(context, layoutInflater, fieldNumber, field) {
-
-	var layout: InputField23Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field23, null, false)
-
-	init {
-		layout.model = this
-	}
-
-}

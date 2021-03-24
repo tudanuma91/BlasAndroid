@@ -8,38 +8,63 @@
         <variable
             name="vm"
             type="com.v3.basis.blas.ui.item.common.ItemViewModel" />
-        <variable
-            name="model"
-            type="com.v3.basis.blas.ui.item.common.FieldEvent" />
     </data>
 
     <LinearLayout
-        android:id="@+id/eventLayout"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="left"
-        android:orientation="vertical"
-        android:padding="6dp">
-
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            />
+        android:orientation="vertical">
 
         <TextView
-            android:textColor="@color/colorAccent"
-            android:layout_width="match_parent"
+            android:id="@+id/colname"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="@{model.validationMsg != null ? View.VISIBLE : View.INVISIBLE}"
-            android:text="@{model.validationMsg}"
+            android:text=""
+            android:textSize="16sp"
+            android:textStyle="bold"
             />
-        <Button
-            android:id="@+id/button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="疎通確認" />
 
+        <View
+            android:id="@+id/divider2"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_weight="1"
+            android:background="?android:attr/listDivider" />
+
+        <LinearLayout
+            android:id="@+id/eventLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="left"
+            android:orientation="horizontal"
+            android:padding="6dp">
+            <Button
+                android:id="@+id/button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="疎通確認"
+
+                android:padding="6dp"
+                />
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:padding="6dp"
+                android:scaleType="fitStart" />
+
+            <TextView
+                android:id="@+id/status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:padding="6dp"
+                android:textSize="16sp"
+
+                />
+        </LinearLayout>
     </LinearLayout>
 
 </layout>

@@ -47,6 +47,14 @@ class BlasSyncMessenger() {
             BlasLog.trace("I", "画像再送イベントを発行しました")
         }
 
+        fun notifyBlasEvents(token:String, projectId:String) {
+            instance?.send(
+                Message.obtain(null, 0, MsgParams(token, projectId,
+                    SenderHandler.EVENT
+                )))
+            BlasLog.trace("I", "データ管理再送イベントを発行しました")
+        }
+
         fun syncBlasAll(token:String, projectId:String) {
             instance?.send(
                 Message.obtain(null, 0, MsgParams(token, projectId,
