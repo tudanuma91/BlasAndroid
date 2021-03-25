@@ -7,7 +7,7 @@ import com.v3.basis.blas.blasclass.db.BaseController.Companion.SYNC_STATUS_SYNC
 
 open class LdbSyncBase {
     var sync_status: Int = 0 //何も弄ってない0 仮登録中(新規追加)1、仮登録中(編集)2、仮登録集(削除)3,送信待ち4, 送信完了5
-    var error_msg:String = ""
+    var error_msg:String? = ""
     var error_status: Int = 0
     var send_cnt: Int = 0
 }
@@ -371,8 +371,8 @@ class LdbImageRecord:LdbSyncBase() {
     var moved: Int? = 0
     var create_date: String = ""
 
-    fun toPayLoad():MutableMap<String, String> {
-        val payload = mutableMapOf<String, String>()
+    fun toPayLoad():MutableMap<String, String?> {
+        val payload = mutableMapOf<String, String?>()
         payload["image_id"] = image_id.toString()
         payload["project_id"] = project_id.toString()
         payload["project_image_id"] = project_image_id.toString()
@@ -389,7 +389,7 @@ class LdbImageRecord:LdbSyncBase() {
     }
 
     override fun toString():String {
-        val str = mutableMapOf<String, String>()
+        val str = mutableMapOf<String, String?>()
         str["image_id"] = image_id.toString()
         str["project_id"] = project_id.toString()
         str["project_image_id"] = project_image_id.toString()

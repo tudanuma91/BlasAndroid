@@ -6,20 +6,14 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
-import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableField
-import androidx.databinding.ObservableInt
 import com.v3.basis.blas.R
-import com.v3.basis.blas.activity.QRActivity
-import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.databinding.*
-import com.v3.basis.blas.ui.ext.startActivityWithResult
-import com.v3.basis.blas.ui.item.item_editor.ItemEditorFragment
 import org.json.JSONObject
 
 /**
@@ -214,24 +208,29 @@ class FieldMultiSelect(
 ): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField6Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field6, null, false)
-	val selectedIndexes: MutableMap<Int, ObservableBoolean> = mutableMapOf()
+	val choiceList: MutableMap<String, ObservableBoolean> = mutableMapOf()
 	val values: MutableList<String> = mutableListOf()
 	init {
+		field.choice?.split(",")?.forEach { choice ->
+			val checkBoxLayout = DataBindingUtil.inflate<ViewItemsCheckboxBinding>(layoutInflater, R.layout.view_items_checkbox, null, false)
+			choiceList[choice] = ObservableBoolean(false)
+			checkBoxLayout.selected = choiceList[choice]
+			checkBoxLayout.checkBox.text = choice
+			layout.checkBoxGroup.addView(checkBoxLayout.root)
+		}
+
 		layout.model = this
 	}
 
-	fun selected(idx: Int, selected: ObservableBoolean) {
-		selectedIndexes.set(idx, selected)
-	}
 
 	override fun convertToString(): String? {
-		return if (selectedIndexes.isEmpty()) {
+		return if (choiceList.isEmpty()) {
 			null
 		} else {
 			val list = mutableListOf<String>()
-			selectedIndexes.forEach {
+			choiceList.forEach {
 				if (it.value.get()) {
-					list.add(values.get(it.key))
+					list.add(it.key)
 				}
 			}
 			list.joinToString(",")
@@ -239,13 +238,10 @@ class FieldMultiSelect(
 	}
 
 	override fun setValue(value: String?) {
+
 		val vals = value?.split(",")
-		vals?.forEachIndexed { index, s ->
-			values.forEachIndexed { valuesIndex, valuesS ->
-				if (s == valuesS) {
-					selectedIndexes.get(valuesIndex)?.set(true)
-				}
-			}
+		vals?.forEach {choice->
+			choiceList[choice]?.set(true)
 		}
 	}
 
