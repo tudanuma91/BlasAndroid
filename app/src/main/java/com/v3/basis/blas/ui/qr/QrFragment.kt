@@ -1,34 +1,22 @@
 package com.v3.basis.blas.ui.qr
 
 
-import android.Manifest
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
-import android.graphics.Color
-import android.hardware.camera2.CameraManager
-import android.media.AudioManager
-import android.media.ToneGenerator
 import android.os.Bundle
-import android.os.VibrationEffect
-import android.os.Vibrator
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import com.google.zxing.ResultPoint
-import com.journeyapps.barcodescanner.BarcodeCallback
-import com.journeyapps.barcodescanner.BarcodeResult
-import com.journeyapps.barcodescanner.CompoundBarcodeView
+import com.google.zxing.BarcodeFormat
+import com.journeyapps.barcodescanner.DefaultDecoderFactory
 import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.QRActivity
 import com.v3.basis.blas.ui.common.QRCameraFragment
 import com.v3.basis.blas.ui.ext.checkPermissions
 import kotlinx.android.synthetic.main.fragment_qr.*
-import kotlinx.android.synthetic.main.fragment_qr.qr_view
+import kotlinx.android.synthetic.main.fragment_qr.view.*
 
 /**
  * A simple [Fragment] subclass.
@@ -43,8 +31,27 @@ class QrFragment : QRCameraFragment() {
 
 //    private var tone: ToneGenerator = ToneGenerator(AudioManager.STREAM_SYSTEM, ToneGenerator.MAX_VOLUME)
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_qr, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+
+        val layout = inflater.inflate(R.layout.fragment_qr, container, false)
+
+        val barCodeView = layout.qr_view
+
+        val decodeFormats = listOf(
+            BarcodeFormat.CODE_128,BarcodeFormat.CODE_93,BarcodeFormat.CODE_39,
+            BarcodeFormat.EAN_13,BarcodeFormat.EAN_8,
+            BarcodeFormat.CODABAR,BarcodeFormat.UPC_A,BarcodeFormat.UPC_E,
+            BarcodeFormat.CODABAR,BarcodeFormat.ITF,
+            BarcodeFormat.QR_CODE
+        )
+
+        barCodeView.barcodeView.decoderFactory = DefaultDecoderFactory(decodeFormats)
+
+        return layout
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -66,7 +73,7 @@ class QrFragment : QRCameraFragment() {
         //ボタンがタップされたときの処理
         dataQrBtnLight.setOnClickListener{
             if(cameraID == null){
-                Log.d("null","nullだったよ")
+                Log.d("null", "nullだったよ")
             }
             try {
                 if(SW == false){
@@ -90,7 +97,7 @@ class QrFragment : QRCameraFragment() {
     /**
      * カメラがQRコードを読み込んだときにコールバックされる
      */
-    private fun QRCallBack(code:String) {
+    private fun QRCallBack(code: String) {
         //検品データをLDBに保存する
         requireActivity().setResult(
             Activity.RESULT_OK,
@@ -98,3 +105,4 @@ class QrFragment : QRCameraFragment() {
         requireActivity().finish()
     }
 }
+
