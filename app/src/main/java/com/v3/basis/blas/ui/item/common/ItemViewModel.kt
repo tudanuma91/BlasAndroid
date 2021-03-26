@@ -3,9 +3,9 @@ package com.v3.basis.blas.ui.item.common
 import android.util.Log
 import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.core.view.forEach
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.v3.basis.blas.blasclass.app.BlasApp
+import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.blasclass.rest.BlasRest
@@ -18,7 +18,6 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
-import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.Exception
 import kotlin.concurrent.withLock
@@ -70,8 +69,27 @@ class ItemViewModel: ViewModel() {
 
             itemsController?.also {
                 fields.forEachIndexed { index, f ->
-                    val field = (f as FieldModel)
-                    map.set("fld${field.field.col}", field.convertToString())
+                    val fieldModel = (f as FieldModel)
+                    map.set("fld${fieldModel.field.col}", fieldModel.convertToString())
+
+
+                    when( fieldModel.field.type.toString() ) {
+                        FieldType.CATEGORY_SELECTION -> {
+                            map.set("category",fieldModel.convertToString())
+                        }
+                        FieldType.WORKER_NAME -> {
+
+                            // TODO:とりあえず自分のIDを入れている
+                            // map.set("worker_user_id",fieldModel.convertToString())
+                            map.set("worker_user_id", BlasApp.userId.toString())
+                        }
+                        FieldType.SCHEDULE_DATE -> {
+                            map.set("schedule_date",fieldModel.convertToString())
+                        }
+                        else -> {}
+                    }
+
+
                 }
 
                 try {
