@@ -30,7 +30,7 @@ class ImageDownLoader(val r: Resources,
 
     override fun subscribe(emitter: FlowableEmitter<LdbItemImageRecord>) {
         //ここに画像ダウンロードの処理を書く
-        val MAX_THREAD_NUM=4
+        val MAX_THREAD_NUM=16 //16枚まで同時にダウンロードする
         try {
             imageList.forEach { itemImage ->
                 //MAX_THREAD_NUMスレッドずつダウンロードする
@@ -39,7 +39,7 @@ class ImageDownLoader(val r: Resources,
                     return
                 }
 
-                val thread = imageDownloader(controller, token, item_id, itemImage)
+                val thread = imageDownloaderCore(controller, token, item_id, itemImage)
                 //max_thread_numを超えるまでは、キューに貯める
                 downloadQueue.add(thread)
                 if (downloadQueue.size == MAX_THREAD_NUM) {
@@ -73,7 +73,7 @@ class ImageDownLoader(val r: Resources,
     }
 
 
-    inner class imageDownloader(val controller: ImagesController,
+    inner class imageDownloaderCore(val controller: ImagesController,
                                 val token:String,
                                 val item_id:String,
                                 val itemImage: LdbItemImageRecord): Thread() {

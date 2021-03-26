@@ -917,7 +917,7 @@ class GPSLocationListener(val resources:Resources, val field: ObservableField<St
             LNG->{
                 // 小数点は下6桁
                 // field.set(lng)
-                field.set("%.6f".format(lat.toFloat()))
+                field.set("%.6f".format(lng.toFloat()))
             }
         }
 
