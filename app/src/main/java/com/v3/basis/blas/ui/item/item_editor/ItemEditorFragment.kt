@@ -728,24 +728,24 @@ class ItemEditorFragment : Fragment() {
 
                 //type:19 作業者
                 FieldType.WORKER_NAME -> {
-                    inputField = FieldWorkerNameAutoComplete(requireContext(), layoutInflater, cellNumber, field)
+                    val workers = itemsController.getWorkers(projectId.toInt())
 
-                    val user = itemsController.getUserInfo()
-                    /*if(user != null) {
-                        (inputField as FieldWorkerNameSelect).addUser(user.name)
-                    }*/
+                    inputField = FieldWorkerNameAutoComplete(requireContext(), layoutInflater, cellNumber, field,workers)
 
+/*
                     val workers = itemsController.getWorkers(projectId.toInt())
                     workers?.forEach {
                         (inputField as FieldWorkerNameAutoComplete).addUser(it)
                     }
-
+*/
                     //親フォームにフィールドを追加する
                     formModel.fields.add(inputField)
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
 
                     inputField.layout.button.setOnClickListener {
+
+/*
                         //TODO:現在はただのテキストフィールドだけど、単一選択の入力画面に変更する必要もあり。
                         //ボタンが押されたらログインユーザー名を設定
                         val user = itemsController.getUserInfo()
@@ -753,6 +753,15 @@ class ItemEditorFragment : Fragment() {
                         if(user != null) {
                             field.setValue(user.name)
                         }
+*/
+
+                        val user = itemsController.getUserInfo()
+                        if (user != null) {
+                            (inputField as FieldWorkerNameAutoComplete).setValue( user.name )
+                        }
+
+
+
                         // MEMO:専用DBカラム へは ItemViewModel.clickSave() で入れる
 
                     }
