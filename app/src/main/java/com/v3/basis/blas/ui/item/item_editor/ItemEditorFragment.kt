@@ -87,9 +87,6 @@ class ItemEditorFragment : Fragment() {
     //シングルセレクトを取得
     private val singleSelectMap = mutableMapOf<Int,InputField5Binding>()
     private val singleSelectChoiceMap = mutableMapOf<Int,String?>()
-    private val singleSelectList = mutableListOf<MutableMap<String?,ViewItems5SelectBinding>>()
-    var singleCnt = 1
-
     private val singleSelectSpinner = mutableMapOf<Int,Spinner>()
 
     //GPS
@@ -554,14 +551,13 @@ class ItemEditorFragment : Fragment() {
 
                 FieldType.MULTIPLE_SELECTION -> {
                     //複数選択
-                    val l: ViewItems6SelectMultiBinding =
-                        DataBindingUtil.inflate(layoutInflater, R.layout.view_items_6_select_multi, null, false)
-                    val model = FieldMultiSelect(requireContext(), layoutInflater, cellNumber, field)
-                    l.model = model
-                    l.vm = formModel
-                    l.checkBoxGroup.createChildren(layoutInflater, field.choice, model)
-                    rootView = l.root
-                    fieldModel = l.model
+                    //val l: ViewItems6SelectMultiBinding =
+                    //    DataBindingUtil.inflate(layoutInflater, R.layout.input_field6, null, false)
+                    inputField = FieldMultiSelect(requireContext(), layoutInflater, cellNumber, field)
+                    //親フォームにフィールドを追加する
+                    formModel.fields.add(inputField)
+                    //入力フィールドを表示する
+                    form.innerView.addView(inputField.layout.root)
                 }
                 // type:7 場所
                 FieldType.LOCATION -> {
@@ -816,64 +812,7 @@ class ItemEditorFragment : Fragment() {
 
         return inputField
     }
-
-    /**
-     * 単一選択の選択肢を作成する
-     * todo:ここにあっていいのかは？
-     */
-    private fun createOption( field: LdbFieldRecord,inputField : FieldSingleSelect ) : String {
-        BlasLog.trace("I","createOption() start field:" + field.name)
-        var ret = ""
-
-        if( 0 != field.parent_field_id ) {
-            // 連動パラメータの時
-            val jsonChoice = JSONObject(field.choice)
-            val parents = jsonChoice.names()
-            // とりあえず一番最初のchildを入れておく
-            ret = jsonChoice.getString(parents[0].toString())
-            BlasLog.trace("I","child:::" + ret)
-
-            // 親を取得
-            val parentSpinner = singleSelectSpinner[field.parent_field_id!!]
-
-            if( parentSpinner != null ) {
-                val parentValue = parentSpinner?.selectedItem as String
-                BlasLog.trace("I","parent value::::" + parentValue)
-                // childをちゃんとしたものに入替える
-                ret = jsonChoice.getString(parentValue)
-
-                // 親項目が変更されたら子も変える。ここでやるしかない！
-                val listener = parentSpinner.onItemSelectedListener as SpinnerItemSelectedListener
-                listener.optionalAction = { parent, position ->
-
-                    BlasLog.trace("I","親変更！！！  position:" + position)
-                    val newChoice = jsonChoice.getString(parents[ position ].toString())
-                    inputField.layout.spinner.createChildren(newChoice, inputField)
-                }
-            }
-        }
-        else {
-            // 連動パラメータではない時
-            // choiceに入ってる文字列をそのまま使用
-            ret = field.choice.toString()
-        }
-
-        return ret
-    }
-
-    /**
-     * セレクタの選択肢を設定する
-     */
-    private fun Spinner.createChildren(separatedText: String?, model: FieldSingleSelect) {
-       /* separatedText?.also {
-            val list = it.split(",")
-            model.values.addAll(list)
-            val ad = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_item)
-            ad.addAll(list)
-            this.adapter = ad
-        }*/
-    }
-
+    
 
     /**
      * GPSから緯度経度を取得する。非同期。
@@ -895,22 +834,6 @@ class ItemEditorFragment : Fragment() {
             BlasLog.trace("I","GPS権限なし")
             //権限がない場合、権限をリクエストするだけ
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1000)
-        }
-    }
-
-    private fun LinearLayout.createChildren(inflater: LayoutInflater, separatedText: String?, model: FieldMultiSelect) {
-        separatedText?.also {
-            val list = it.split(",")
-            model.values.addAll(list)
-            list.forEachIndexed { index, s ->
-                val layout = DataBindingUtil.inflate<ViewItemsCheckboxBinding>(inflater, R.layout.view_items_checkbox, null, false)
-                val selected = ObservableBoolean(false)
-                layout.selected = selected
-                layout.model = model
-                layout.checkBox.text = s
-                model.selected(index, selected)
-                this.addView(layout.root)
-            }
         }
     }
 
@@ -936,18 +859,13 @@ class ItemEditorFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         disposables.dispose()
-        singleSelectList.forEach{
-            it.values.clear()
-        }
+
     }
 
     override fun onPause() {
         super.onPause()
         gpsListener?.let{
             locationManager?.removeUpdates(it)
-        }
-        singleSelectList.forEach{
-            it.values.clear()
         }
     }
 
