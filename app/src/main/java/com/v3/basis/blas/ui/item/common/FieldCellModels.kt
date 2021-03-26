@@ -687,9 +687,9 @@ class FieldWorkContentSelect(
 		}
 	}
 
-
 	override fun convertToString(): String? {
-		return selectedItemStr
+//		return selectedItemStr
+		return layout.spinner.selectedItem.toString()
 	}
 
 	override fun setValue(value: String?) {
