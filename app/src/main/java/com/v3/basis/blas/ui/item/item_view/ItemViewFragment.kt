@@ -262,17 +262,12 @@ class ItemViewFragment : Fragment() {
                                 //入力フィールドを表示する
                                 //このタイミングだと、まだbutton_layoutが構築されていないため、NULLになる。
                                 val b = recyclerView.imageButton
-                                //val b = rootView.findViewById<ImageButton>(R.id.imageButton)
-                                Log.d("konishi", b.toString())
-                                //button_layout.addView(inputField.layout.root)
                         }
 
                     }
                     }
                     .addTo(disposables)
 
-//                val payload2 = mapOf("token" to token, "project_id" to projectId)
-//                BlasRestField(payload2, ::fieldRecv, ::fieldRecvError).execute()
             }else{
                 throw Exception("Failed to receive internal data ")
             }
@@ -327,7 +322,6 @@ class ItemViewFragment : Fragment() {
      *  データ登録
      */
     private fun setAdapter() {
-        Log.d("konishi", "setAdapter")
         createCardView()
         groupAdapter.update(dataList)
         progressBarFlg = false
@@ -337,7 +331,6 @@ class ItemViewFragment : Fragment() {
 
     private fun createCardView() {
 
-//        val colMax = fieldMap.size
         val colMax = fields.size
         val list = mutableListOf<MutableMap<String, String?>>()
         //ここでItemListAllの追加処理を入れる
@@ -475,13 +468,15 @@ class ItemViewFragment : Fragment() {
         )
 
         //konishi check
+        /*
+            自動送信するようになったため、送信待ちの表示は廃止する
         if(syncStatus > SYNC_STATUS_SYNC) {
-            model.syncVisible.set(true)
-            model.errorMessage.set(rowModel.errMsg)
+           // model.syncVisible.set(true)
+           // model.errorMessage.set(rowModel.errMsg)
         }
         else {
             model.syncVisible.set(false)
-        }
+        }*/
 
         val itemCell = ItemsListCell(viewModel, model, fields)
         dataList.add(itemCell)
@@ -507,16 +502,6 @@ class ItemViewFragment : Fragment() {
             }
             .addTo(disposables)
     }
-
-
-    /**
-     * パースした件数と次に行う件数を記録する
-     */
-    fun nextParseNum(){
-        parseStartNum = parseFinNum
-        parseFinNum += parseNum
-    }
-
 
 
     override fun onDestroyView() {
