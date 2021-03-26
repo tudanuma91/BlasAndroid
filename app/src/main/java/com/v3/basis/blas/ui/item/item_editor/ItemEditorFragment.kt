@@ -726,6 +726,8 @@ class ItemEditorFragment : Fragment() {
                     formModel.fields.add(inputField)
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
+
+                    // MEMO:専用DBカラム へは ItemViewModel.clickSave() で入れる
                 }
 
                 //type:19 作業者
@@ -755,6 +757,8 @@ class ItemEditorFragment : Fragment() {
                         if(user != null) {
                             field.setValue(user.name)
                         }
+                        // MEMO:専用DBカラム へは ItemViewModel.clickSave() で入れる
+
                     }
                 }
                 //type:20 予定日
@@ -767,9 +771,7 @@ class ItemEditorFragment : Fragment() {
                     inputField.layout.text.setOnClickListener {
                         // カレンダー選択を表示
                         setClickDateTime(inputField as FieldScheduleDate)
-
-
-                        //TODO:ちょっと型20の使い方がわからないのでWEB版を調べて同じ動きにして欲しいです
+                        // MEMO:専用DBカラム へは ItemViewModel.clickSave() で入れる
                     }
                 }
 

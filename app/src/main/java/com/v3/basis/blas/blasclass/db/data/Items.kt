@@ -170,7 +170,12 @@ data class Items(
     var create_date: String? = null,
     var update_date: String? = null,
     var sync_status: Int? = 0,
-    var error_msg:String? = null
+    var error_msg:String? = null,
+
+    var category: String? = null,
+    var worker_user_id: Int? = null,
+    var schedule_date: String? = null
+
 ) {
     companion object {
         fun makeInstance(c: Cursor): Items {
