@@ -17,6 +17,7 @@ import com.v3.basis.blas.R
 import com.v3.basis.blas.activity.ItemActivity
 import com.v3.basis.blas.activity.ItemEditActivity
 import com.v3.basis.blas.activity.ItemImageActivity
+import com.v3.basis.blas.activity.MapsActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
 import com.v3.basis.blas.blasclass.db.BaseController.Companion.SYNC_STATUS_SYNC
@@ -77,6 +78,8 @@ class ItemViewFragment : Fragment() {
     private var handler = Handler()
     private var currentIndex: Int = 0
     private var offset: Int = 0
+    private var mapAddressCol = ""
+    private var mapTitleCol = ""
 
     companion object {
         const val CREATE_UNIT = 20
@@ -100,6 +103,8 @@ class ItemViewFragment : Fragment() {
         viewModel.imageBtnCallBack = ::clickImageButton
         //データの編集ボタンを押されたときにコールバックされる関数を登録
         viewModel.editBtnCallBack = ::clickEditButton
+        //地図ボタンを押されたときにコールバックされる関数を登録
+        viewModel.mapBtnCallBack = ::clickMapButton
 
 
         val extras = activity?.intent?.extras
@@ -191,6 +196,32 @@ class ItemViewFragment : Fragment() {
         requireActivity().startActivity(intent)
     }
 
+    /**
+     * データ管理の地図ボタンを押されたときにコールされる
+     */
+    fun clickMapButton(model:ItemsCellModel) {
+        val intent = Intent(requireContext(), MapsActivity::class.java)
+        val record = itemsController.findByItemId(model.item_id.toString())
+        var address = ""
+        var mapTitle = ""
+
+        if(mapAddressCol != "") {
+            address = record[mapAddressCol].toString()
+            if((address == "") || (address == null)) {
+                Toast.makeText(context, "地図情報が設定されていません", Toast.LENGTH_LONG).show()
+                return
+            }
+        }
+
+        if(mapTitleCol != "") {
+            mapTitle = record[mapTitleCol].toString()
+        }
+
+        intent.putExtra("address", address)
+        intent.putExtra("title", mapTitle)
+        requireActivity().startActivity(intent)
+    }
+
     private fun chkProgress(flg:Boolean,view:View){
         val progressbar = view.findViewById<ProgressBar>(R.id.progressBarItemView)
         if (flg) {
@@ -256,15 +287,17 @@ class ItemViewFragment : Fragment() {
                         }
 
                         fields.forEach {field->
-                            if(field.type.toString() == FieldType.EVENT_FIELD) {
-                                //val inputField = FieldEvent(requireContext(), layoutInflater, 0, field)
-                                //親フォームにフィールドを追加する
-                                //入力フィールドを表示する
-                                //このタイミングだと、まだbutton_layoutが構築されていないため、NULLになる。
-                                val b = recyclerView.imageButton
-                        }
 
-                    }
+                            //地図表示で緯度経度を取得するための住所のカラム名を取得
+                            if(field.address == 1) {
+                                mapAddressCol = "fld${field.col}"
+                            }
+                            //地図表示でラベルに表示するカラム名を取得する
+                            if(field.map == 1) {
+                                mapTitleCol = "fld${field.col}"
+                            }
+
+                        }
                     }
                     .addTo(disposables)
 
@@ -466,17 +499,6 @@ class ItemViewFragment : Fragment() {
             syncStatus,
             requireContext()
         )
-
-        //konishi check
-        /*
-            自動送信するようになったため、送信待ちの表示は廃止する
-        if(syncStatus > SYNC_STATUS_SYNC) {
-           // model.syncVisible.set(true)
-           // model.errorMessage.set(rowModel.errMsg)
-        }
-        else {
-            model.syncVisible.set(false)
-        }*/
 
         val itemCell = ItemsListCell(viewModel, model, fields)
         dataList.add(itemCell)
