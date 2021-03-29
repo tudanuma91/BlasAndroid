@@ -774,3 +774,84 @@ class FieldBarCode(
 		layout.model = this
 	}
 }
+
+class FieldBarCodeWithKenpin(
+	context: Context,
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
+
+	var layout :InputField25Binding = DataBindingUtil.inflate(layoutInflater, R.layout.input_field25, null, false)
+
+	init {
+		layout.model = this
+	}
+
+}
+
+class FieldBarCodeWithTekkyo(
+	context: Context,
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
+
+	var layout :InputField26Binding = DataBindingUtil.inflate(layoutInflater, R.layout.input_field26, null, false)
+
+	init {
+		layout.model = this
+	}
+
+}
+
+class FieldBarCodeWithCheckText(
+	context: Context,
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
+
+	var layout: InputField27Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field27, null, false)
+	//個別パラメーター
+	val memo = ObservableField("")
+
+	init {
+		layout.model = this
+	}
+
+	override fun convertToString(): String? {
+		//json形式で返却する
+		var retStr:String = "";
+
+		var tmpText:String? = ""
+		var tmpMemo:String? = ""
+
+		if(!RestHelper().isBlank(text.get())) {
+			tmpText = text.get()
+		}
+		if(!RestHelper().isBlank(memo.get())) {
+			tmpMemo = memo.get()
+		}
+		//ここって備考が入力されていないとデータが保存できないようになっていない？
+		retStr = "{\"value\":\"${text.get()}\",\"memo\":\"${memo.get()}\"}"
+		return retStr;
+	}
+
+	override fun setValue(value: String?) {
+		//		この形式で来る
+		//		{\"value\":\"aaa\",\"memo\":\"aaaaa\"}
+		val json = value?.replace("\\", "")
+		if (json != null && json.isNotBlank()) {
+			val obj = JSONObject(json)
+			val value1 = obj.get("value")
+			val value2 = obj.get("memo")
+			text.set(value1.toString())
+			memo.set(value2.toString())
+		}
+	}
+
+	override fun notifyedFromParent(value: String) {
+	}
+}
+

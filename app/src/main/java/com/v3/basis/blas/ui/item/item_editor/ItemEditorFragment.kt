@@ -642,7 +642,8 @@ class ItemEditorFragment : Fragment() {
                         startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE_TEKKYO, extra) { r ->
                             val qr = r.data?.getStringExtra("qr_code")
                             try {
-                                itemsController.qrCodeCheck(qr)
+                                // itemsController.qrCodeCheck(qr)
+                                itemsController.rmQrCodeCheck(qr)
                                 (inputField as FieldQRCodeWithTekkyo).text.set(qr)
                             } catch (ex: ItemsController.ItemCheckException) {
                                 // 設置不可の時
@@ -728,12 +729,6 @@ class ItemEditorFragment : Fragment() {
 
                     inputField = FieldWorkerNameAutoComplete(requireContext(), layoutInflater, cellNumber, field,workers)
 
-/*
-                    val workers = itemsController.getWorkers(projectId.toInt())
-                    workers?.forEach {
-                        (inputField as FieldWorkerNameAutoComplete).addUser(it)
-                    }
-*/
                     //親フォームにフィールドを追加する
                     formModel.fields.add(inputField)
                     //入力フィールドを表示する
@@ -741,25 +736,11 @@ class ItemEditorFragment : Fragment() {
 
                     inputField.layout.button.setOnClickListener {
 
-/*
-                        //TODO:現在はただのテキストフィールドだけど、単一選択の入力画面に変更する必要もあり。
-                        //ボタンが押されたらログインユーザー名を設定
-                        val user = itemsController.getUserInfo()
-                        val field = (inputField as FieldWorkerNameAutoComplete)
-                        if(user != null) {
-                            field.setValue(user.name)
-                        }
-*/
-
                         val user = itemsController.getUserInfo()
                         if (user != null) {
                             (inputField as FieldWorkerNameAutoComplete).setValue( user.name )
                         }
-
-
-
                         // MEMO:専用DBカラム へは ItemViewModel.clickSave() で入れる
-
                     }
                 }
                 //type:20 予定日
@@ -795,8 +776,8 @@ class ItemEditorFragment : Fragment() {
                     form.innerView.addView(inputField.layout.root)
                 }
 
+                // type:24 バーコード
                 FieldType.BAR_CODE -> {
-                    //QRコード
                     inputField = FieldBarCode(requireContext(), layoutInflater, cellNumber, field)
                     inputField.layout.button.setOnClickListener {
                         val extra = "colNumber" to (inputField as FieldBarCode).fieldNumber.toString()
@@ -806,6 +787,63 @@ class ItemEditorFragment : Fragment() {
                             (inputField as FieldBarCode).text.set(qr)
                         }
                     }
+                    //親フォームにフィールドを追加する
+                    formModel.fields.add(inputField)
+                    //入力フィールドを表示する
+                    form.innerView.addView(inputField.layout.root)
+                }
+                // type:25 バーコード(検品連動)
+                FieldType.KENPIN_RENDOU_BAR_CODE -> {
+                    inputField =   FieldBarCodeWithKenpin(requireContext(), layoutInflater, cellNumber, field)
+
+                    inputField.layout.button.setOnClickListener {
+                        val extra = "colNumber" to (inputField as FieldBarCodeWithKenpin).fieldNumber.toString()
+                        //QRコードでバーコードも読む。
+                        startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
+                            val qr = r.data?.getStringExtra("qr_code")
+                            try {
+                                itemsController.qrCodeCheck(qr)
+                                (inputField as FieldQRCodeWithKenpin).text.set(qr)
+                            } catch (ex: ItemsController.ItemCheckException) {
+                                // 設置不可の時
+                                Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+
+                    //親フォームにフィールドを追加する
+                    formModel.fields.add(inputField)
+                    //入力フィールドを表示する
+                    form.innerView.addView(inputField.layout.root)
+                }
+                // type:26 バーコード(撤去連動)
+                FieldType.TEKKYO_RENDOU_BAR_CODE -> {
+                    inputField = FieldBarCodeWithTekkyo(requireContext(), layoutInflater, cellNumber, field)
+
+                    inputField.layout.button.setOnClickListener {
+                        //カメラ起動
+                        val extra = "colNumber" to (inputField as FieldBarCodeWithTekkyo).fieldNumber.toString()
+                        startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE_TEKKYO, extra) { r ->
+                            val qr = r.data?.getStringExtra("qr_code")
+                            try {
+                                itemsController.rmQrCodeCheck(qr)
+                                (inputField as FieldBarCodeWithTekkyo).text.set(qr)
+                            } catch (ex: ItemsController.ItemCheckException) {
+                                // 設置不可の時
+                                Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+
+                    //親フォームにフィールドを追加する
+                    formModel.fields.add(inputField)
+                    //入力フィールドを表示する
+                    form.innerView.addView(inputField.layout.root)
+                }
+
+                // type:27　入力値チェック連動_バーコード(検品連動)
+                FieldType.BAR_CODE_CODE_WITH_CHECK -> {
+                    inputField = FieldQRWithCheckText(requireContext(), layoutInflater, cellNumber, field)
                     //親フォームにフィールドを追加する
                     formModel.fields.add(inputField)
                     //入力フィールドを表示する

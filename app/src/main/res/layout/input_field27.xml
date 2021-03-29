@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="vm"
+            type="com.v3.basis.blas.ui.item.common.ItemViewModel" />
+        <variable
+            name="model"
+            type="com.v3.basis.blas.ui.item.common.FieldBarCodeWithCheckText" />
+    </data>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+        <TextView
+            android:textColor="@color/colorAccent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="@{model.field.essential == 1 ? View.VISIBLE : View.INVISIBLE}"
+            android:text="※ 必須入力"
+            />
+
+        <TextView
+            android:textColor="@color/colorText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@{model.field.name}"
+            tools:text="TITLE"
+            />
+
+        <!-- TwoWay Bindingで, 入力した値が自動的に変数にも反映されます！ -->
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@={model.text}"
+            android:singleLine="true"
+            tools:text="EDIT"
+            />
+
+        <EditText
+            android:id="@+id/editMemo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorText"
+            android:singleLine="true"
+            android:ellipsize="none"
+            android:layout_weight="0.7"
+            android:text="@={model.memo}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:hint="備考"
+            />
+
+        <TextView
+            android:textColor="@color/colorAccent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="@{model.validationMsg != null ? View.VISIBLE : View.INVISIBLE}"
+            android:text="@{model.validationMsg}"
+            />
+
+        <Button
+            android:id="@+id/button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="バーコードを取得する"
+            />
+
+
+    </LinearLayout>
+</layout>
