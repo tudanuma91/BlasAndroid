@@ -439,7 +439,8 @@ class ItemViewFragment : Fragment() {
                 text += "<td bgcolor=\"#FFEFFF\">${field.name}</td>"
 
                 if ((field.type.toString() == FieldType.CHECK_VALUE) ||
-                    field.type.toString() == FieldType.QR_CODE_WITH_CHECK
+                    (field.type.toString() == FieldType.QR_CODE_WITH_CHECK) ||
+                    (field.type.toString() == FieldType.BAR_CODE_CODE_WITH_CHECK)
                 ) {
                     val newValue = helper.createCheckValue(item[fldName].toString())
                     text += "<td>${newValue}</td>"
