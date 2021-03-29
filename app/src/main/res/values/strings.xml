@@ -185,5 +185,6 @@
 
     <!-- GEO -->
     <string name="geo_api_key">AIzaSyB8rdIoHOf5Ki-F6yHQvwpGeTXlqsdcCPM</string>
+    <string name="title_activity_maps">Map</string>
 
 </resources>

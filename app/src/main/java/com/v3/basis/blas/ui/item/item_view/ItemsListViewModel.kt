@@ -9,6 +9,7 @@ class ItemsListViewModel: ViewModel() {
 
     var imageBtnCallBack:((model:ItemsCellModel)->Unit)? = null
     var editBtnCallBack:((model:ItemsCellModel)->Unit)? = null
+    var mapBtnCallBack:((model:ItemsCellModel)->Unit)? = null
 
     fun clickImageButton(model: ItemsCellModel) {
         //ItemViewFragmentのclickImageButton関数を呼び出す
@@ -19,4 +20,10 @@ class ItemsListViewModel: ViewModel() {
         //ItemViewFragmentのclickEditButton関数を呼び出す
         editBtnCallBack?.invoke(model)
     }
+
+    fun clickMapButton(model: ItemsCellModel) {
+        //ItemViewFragmentのclickEditButton関数を呼び出す
+        mapBtnCallBack?.invoke(model)
+    }
+
 }
