@@ -461,6 +461,38 @@ class FieldQRWithCheckText(
 
 	override fun notifyedFromParent(value: String) {
 	}
+
+	//親データとの整合チェック
+	override fun parentValidate():Boolean {
+		var ret = true
+		parentField?.let{parent->
+			val parentData = parent.convertToString()
+			if(parentData == this.text.get()) {
+				//親のフィールドの値と自分のフィールドが同じなので
+				//入力を受け付ける
+				text.set(this.text.get())
+				ret = true
+			}
+			else {
+				//親のフィールドと自分の値が異なる
+				if(!this.memo.get().isNullOrBlank()) {
+					//メモの入力があったので
+					//入力を受け付ける
+					text.set(this.text.get())
+					ret = true
+				}
+				else {
+					//メモの入力がない
+					val msg = "相違しています。備考欄を入力してください"
+					this.validationMsg.set(msg)
+					ret = false
+				}
+			}
+		}
+
+		return ret
+	}
+
 }
 
 
@@ -809,9 +841,6 @@ class FieldBarCodeWithCheckText(
 ): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField27Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field27, null, false)
-	//個別パラメーター
-	val memo = ObservableField("")
-
 	init {
 		layout.model = this
 	}
