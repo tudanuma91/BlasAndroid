@@ -374,8 +374,6 @@ class FieldCheckText(
 ): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField13Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field13, null, false)
-	//個別パラメーター
-	val memo = ObservableField("")
 
 	init {
 		layout.model = this
@@ -425,8 +423,6 @@ class FieldQRWithCheckText(
 ): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField16Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field16, null, false)
-	//個別パラメーター
-	val memo = ObservableField("")
 
 	init {
 		layout.model = this

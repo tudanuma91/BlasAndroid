@@ -675,6 +675,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         return index
     }
 
+    /*
     fun validate(fields: MutableList<Any?>):Boolean {
         //保存時のバリデーション
         var ret = true  //一つでもバリデーションに引っ掛かったら戻り値はfalseにする
@@ -701,17 +702,21 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
                                 //親項目の値を取得する
                                 FieldType.TEXT_FIELD,
                                 FieldType.TEXT_AREA,
-                                FieldType.QR_CODE,
-                                FieldType.BAR_CODE,
-                                FieldType.TEKKYO_RENDOU_QR,
+                                FieldType.DATE_TIME,
+                                FieldType.TIME,
+                                FieldType.LOCATION,
                                 FieldType.KENPIN_RENDOU_QR,
-                                FieldType.SIG_FOX ,
+                                FieldType.QR_CODE,
+                                FieldType.TEKKYO_RENDOU_QR,
+                                FieldType.ACOUNT_NAME,
+                                FieldType.LAT_LOCATION,
+                                FieldType.LNG_LOCATION,
                                 FieldType.CURRENT_DATE_AND_TIME,
-                                FieldType.CATEGORY_SELECTION,
                                 FieldType.WORKER_NAME,
-                                FieldType.WORK_CONTENT_SELECTION,
+                                FieldType.SCHEDULE_DATE,
                                 FieldType.ADDRESS,
-                                FieldType.ACOUNT_NAME -> {
+                                FieldType.EVENT_FIELD,
+                                FieldType.BAR_CODE -> {
                                     val parentModel = (fields[parentIndex] as FieldText)
                                     val parentText = parentModel.text.get()
                                     if(parentText != childModel.text.get()) {
@@ -728,16 +733,8 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
                                     }
                                 }
 
-                                FieldType.DATE_TIME->{
-                                    //日付入力
-
-                                }
-                                FieldType.TIME->{
-                                    //時間入力
-                                }
-
-                                FieldType.MULTIPLE_SELECTION,
                                 FieldType.SINGLE_SELECTION,
+                                FieldType.MULTIPLE_SELECTION,
                                 FieldType.CATEGORY_SELECTION,
                                 FieldType.WORK_CONTENT_SELECTION->{
                                     //チェックボックスとラジオボタン
@@ -754,7 +751,5 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             }
         }
         return ret
-    }
+    }*/
 }
-
-

@@ -208,7 +208,11 @@ class ItemEditorFragment : Fragment() {
                             val parentInputField = formModel.fields.first {parent->
                                 parent.field.field_id == me.field.parent_field_id
                             }
+                            //親に子供を登録する
                             parentInputField.addChildField(me)
+                            //子に親を登録する
+                            me.addParentField(parentInputField)
+
                         }
                     }
 
@@ -692,6 +696,14 @@ class ItemEditorFragment : Fragment() {
                     formModel.fields.add(inputField)
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
+
+                    inputField.layout.button.setOnClickListener {
+                        val extra = "colNumber" to (inputField as FieldQRWithCheckText).fieldNumber.toString()
+                        startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
+                            val qr = r.data?.getStringExtra("qr_code")
+                            (inputField as FieldQRWithCheckText).text.set(qr)
+                        }
+                    }
                 }
                 //type:17 現在日時
                 FieldType.CURRENT_DATE_AND_TIME -> {
