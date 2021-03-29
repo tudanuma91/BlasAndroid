@@ -534,7 +534,7 @@ class ItemEditorFragment : Fragment() {
                 FieldType.TIME -> {
                     inputField = FieldTime(requireContext(), layoutInflater, cellNumber,field)
                     inputField.layout.text.setOnClickListener {
-                        //TODO:三代川 時刻を入力できるようにしてください
+                        setClickTime(inputField as FieldTime)
                     }
                     //親フォームにフィールドを追加する
                     formModel.fields.add(inputField)
@@ -909,6 +909,18 @@ class ItemEditorFragment : Fragment() {
             day
         )
         dtp.show()
+    }
+
+    /**
+     * 時刻フィールドタップ時の処理
+     */
+    private fun setClickTime(field: FieldModel) {
+        //editTextタップ時の処理
+        val tp = TimePickerDialog(context,
+            TimePickerDialog.OnTimeSetListener{ view, hour, minute->
+                    field.text.set(String.format("%02d:%02d",hour,minute))
+            },hour,minute,true)
+        tp.show()
     }
 
     override fun onDestroyView() {
