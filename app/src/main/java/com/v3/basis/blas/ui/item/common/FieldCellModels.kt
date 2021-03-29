@@ -10,8 +10,10 @@ import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableField
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
+import com.v3.basis.blas.blasclass.ldb.LdbUserRecord
 import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.databinding.*
 import org.json.JSONObject
@@ -554,7 +556,8 @@ class FieldWorkerNameAutoComplete(
 	context: Context,
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
-	field: LdbFieldRecord
+	field: LdbFieldRecord,
+	val workers: List<String>?
 ): FieldModel(context, layoutInflater, fieldNumber, field) {
 
 	val layout: InputField19Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field19, null, false)
@@ -562,12 +565,16 @@ class FieldWorkerNameAutoComplete(
 	var adapter:ArrayAdapter<String>
 
 	init {
+
+/*
 		if(field.choice != null) {
 			val tokens = field.choice?.split(",")
 			if(tokens != null) {
 				choiceList = tokens.toMutableList()
 			}
 		}
+*/
+		choiceList = workers as MutableList<String>
 
 		//アダプター作成
 		adapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, choiceList)
@@ -577,23 +584,45 @@ class FieldWorkerNameAutoComplete(
 		//ViewModelに自分を登録
 		layout.model = this
 
+		//SpinnerViewのアダプターに接続
+		layout.spinner.adapter = adapter
+
+
 		//AutoCompleteTextViewのアダプターに接続
+/*
 		layout.autocomplete.threshold = 1
 		layout.autocomplete.setAdapter(adapter)
-
+*/
 	}
 
 
 	override fun convertToString(): String? {
-		return layout.autocomplete.text.toString()
+//		return layout.autocomplete.text.toString()
+		return layout.spinner.selectedItem.toString()
+
 	}
 
 	override fun setValue(value: String?) {
-		layout.autocomplete.setText(value)
+//		layout.autocomplete.setText(value)
+		//親子関係のないシングルセレクト
+//		val tokens = field.choice?.split(",")?.toMutableList()
+		val tokens = workers
+		if(tokens != null) {
+			for(i in 0 until tokens.size) {
+				if(tokens[i] == value) {
+					layout.spinner.setSelection(i)
+					break
+				}
+			}
+		}
+		BlasLog.trace("I","end convertToString()")
+
 	}
 
+/*
 	override fun validate():Boolean {
 		//選択肢にある名前以外が指定された場合
+
 		val inputName = layout.autocomplete.text.toString()
 		var ret = false
 		val name = choiceList.find { it == inputName }
@@ -607,6 +636,7 @@ class FieldWorkerNameAutoComplete(
 
 		return ret
 	}
+*/
 
 	/**
 	 * 親フィールドからの変更を受信する
@@ -687,9 +717,9 @@ class FieldWorkContentSelect(
 		}
 	}
 
-
 	override fun convertToString(): String? {
-		return selectedItemStr
+//		return selectedItemStr
+		return layout.spinner.selectedItem.toString()
 	}
 
 	override fun setValue(value: String?) {
