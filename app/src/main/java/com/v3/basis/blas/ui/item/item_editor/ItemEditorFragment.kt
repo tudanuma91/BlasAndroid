@@ -538,8 +538,6 @@ class ItemEditorFragment : Fragment() {
                     form.innerView.addView(inputField.layout.root)
                 }
 
-                //FieldType.WORK_CONTENT_SELECTION,
-                //FieldType.CATEGORY_SELECTION,
                 FieldType.SINGLE_SELECTION -> {
                     //単一選択
                     inputField = FieldSingleSelect(requireContext(), layoutInflater, cellNumber,field)
@@ -551,8 +549,6 @@ class ItemEditorFragment : Fragment() {
 
                 FieldType.MULTIPLE_SELECTION -> {
                     //複数選択
-                    //val l: ViewItems6SelectMultiBinding =
-                    //    DataBindingUtil.inflate(layoutInflater, R.layout.input_field6, null, false)
                     inputField = FieldMultiSelect(requireContext(), layoutInflater, cellNumber, field)
                     //親フォームにフィールドを追加する
                     formModel.fields.add(inputField)
@@ -821,7 +817,7 @@ class ItemEditorFragment : Fragment() {
 
         return inputField
     }
-    
+
 
     /**
      * GPSから緯度経度を取得する。非同期。
@@ -930,7 +926,7 @@ class GPSLocationListener(val resources:Resources, val field: ObservableField<St
             LNG->{
                 // 小数点は下6桁
                 // field.set(lng)
-                field.set("%.6f".format(lat.toFloat()))
+                field.set("%.6f".format(lng.toFloat()))
             }
         }
 
