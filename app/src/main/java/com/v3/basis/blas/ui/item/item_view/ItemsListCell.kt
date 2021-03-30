@@ -53,7 +53,7 @@ class ItemsListCell(private val viewModel: ItemsListViewModel, val model: ItemsC
     override fun bind(viewBinding: ListItemBinding, position: Int) {
         viewBinding.vm = viewModel
         viewBinding.model = model
-
+        /*
         fields.forEach {field->
             if(field.type == FieldType.EVENT_FIELD.toInt()) {
                 //レイアウトをバインドする
@@ -124,7 +124,7 @@ class ItemsListCell(private val viewModel: ItemsListViewModel, val model: ItemsC
                     viewBinding.eventLayout.addView(binding.root)
                 }
             }
-        }
+        }*/
     }
 
     @RequiresApi(Build.VERSION_CODES.P)

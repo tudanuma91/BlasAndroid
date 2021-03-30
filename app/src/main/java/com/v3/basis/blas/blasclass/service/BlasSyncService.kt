@@ -141,7 +141,7 @@ class SenderHandler(val context: Context): Handler() {
                         //イベントを受信する
                         if ((sendType and EVENT) == EVENT) {
                             lock.withLock {
-                                syncEvent(context, token, projectId)
+                               // syncEvent(context, token, projectId)
                             }
                         }
                     }
@@ -494,6 +494,7 @@ class SenderHandler(val context: Context): Handler() {
                 //ステータスは同期済みにする
                 itemController.updateToLDB(valueMap, status=BaseController.SYNC_STATUS_SYNC)
 
+                /* ここで例外が発生している
                 val node = eventCallbackList.first{listener->
                     listener.itemId.toString() == it["item_id"]
                 }
@@ -501,7 +502,7 @@ class SenderHandler(val context: Context): Handler() {
                 //val guiHandler = Handler()
                // guiHandler.post{
                     node.callBack(valueMap)
-               // }
+               // }*/
 
             }
             else {
