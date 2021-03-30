@@ -15,6 +15,7 @@ import com.v3.basis.blas.blasclass.config.UserDef
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import com.v3.basis.blas.blasclass.ldb.LdbFixtureDispRecord
 import com.v3.basis.blas.blasclass.ldb.LdbUserRecord
+import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.blasclass.worker.DownloadWorker
 import io.reactivex.subjects.PublishSubject
 import java.io.FileNotFoundException
@@ -199,6 +200,11 @@ abstract class BaseController(
     protected fun getMapValues(cursor: Cursor) : MutableMap<String, String?> {
 
         val map = mutableMapOf<String, String?>()
+
+        if( cursor.count == 0 ) {
+            return map
+        }
+
         cursor.columnNames.forEach { name ->
             val value = cursor.getString( cursor.getColumnIndex(name) )
             map[name] = value ?: ""
