@@ -502,6 +502,7 @@ class ItemViewFragment : Fragment() {
         )
 
         val itemCell = ItemsListCell(viewModel, model, fields)
+
         dataList.add(itemCell)
     }
 

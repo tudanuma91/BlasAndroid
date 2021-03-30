@@ -141,7 +141,7 @@ class SenderHandler(val context: Context): Handler() {
                         //イベントを受信する
                         if ((sendType and EVENT) == EVENT) {
                             lock.withLock {
-                               // syncEvent(context, token, projectId)
+                                syncEvent(context, token, projectId)
                             }
                         }
                     }
@@ -449,11 +449,6 @@ class SenderHandler(val context: Context): Handler() {
             }
         }
 
-        eventCallbackList.forEach {
-            val itemId = it.itemId
-
-        }
-
         if(conditions.isEmpty()) {
             return -1
         }
@@ -494,15 +489,17 @@ class SenderHandler(val context: Context): Handler() {
                 //ステータスは同期済みにする
                 itemController.updateToLDB(valueMap, status=BaseController.SYNC_STATUS_SYNC)
 
-                /* ここで例外が発生している
-                val node = eventCallbackList.first{listener->
-                    listener.itemId.toString() == it["item_id"]
-                }
-                //コールバックを呼び出す
-                //val guiHandler = Handler()
-               // guiHandler.post{
+
+                try {
+                    val node = eventCallbackList.first { listener ->
+                        listener.itemId.toString() == it["item_id"]
+                    }
+
                     node.callBack(valueMap)
-               // }*/
+                }
+                catch(e:Exception) {
+                    BlasLog.trace("E", "イベント呼び出しがありません", e)
+                }
 
             }
             else {

@@ -6,7 +6,7 @@ class BlasDef {
         const val BLAS_URL = "http://192.168.1.8/api/v1/"
         const val REQUEST_TABLE = "RequestTable"
         const val NOTICE_TABLE = "NoticeTable"
-        const val READ_TIME_OUT_POST = 100000
+        const val READ_TIME_OUT_POST = 1000000
         const val STS_RETRY_MAX = 9
 
         //APLコード

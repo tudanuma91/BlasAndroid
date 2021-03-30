@@ -147,8 +147,9 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         val plHolder = arrayOf<String>(item_id)
         val cursor = db?.rawQuery(sql, plHolder)
         cursor?.let {c->
-            c.moveToFirst()
-            record = getMapValues(c)
+            if(c.moveToFirst()) {
+                record = getMapValues(c)
+            }
         }
 
         cursor?.close()
