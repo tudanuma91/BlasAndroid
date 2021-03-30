@@ -907,8 +907,14 @@ class FieldBarCodeWithCheckText(
 		val json = value?.replace("\\", "")
 		if (json != null && json.isNotBlank()) {
 			val obj = JSONObject(json)
-			val value1 = obj.get("value")
-			val value2 = obj.get("memo")
+			var value1 = obj.get("value")
+			var value2 = obj.get("memo")
+			if(value1 == null) {
+				value1 = ""
+			}
+			if(value2 == null) {
+				value2 = ""
+			}
 			text.set(value1.toString())
 			memo.set(value2.toString())
 		}

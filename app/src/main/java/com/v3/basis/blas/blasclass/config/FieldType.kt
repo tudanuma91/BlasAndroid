@@ -29,7 +29,7 @@ open class FieldType {
         const val BAR_CODE = "24"
         const val KENPIN_RENDOU_BAR_CODE = "25"
         const val TEKKYO_RENDOU_BAR_CODE = "26"
-        const val BAR_CODE_CODE_WITH_CHECK = "27"
+        const val BAR_CODE_WITH_CHECK = "27"
 
         //ユニークチェック
         const val UNIQUE_CHK = "unique_chk"

@@ -20,13 +20,11 @@ import com.v3.basis.blas.activity.ItemImageActivity
 import com.v3.basis.blas.activity.MapsActivity
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
-import com.v3.basis.blas.blasclass.db.BaseController.Companion.SYNC_STATUS_SYNC
 import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import com.v3.basis.blas.ui.ext.addTitle
-import com.v3.basis.blas.ui.item.common.FieldDate
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
 import io.reactivex.Single
@@ -36,8 +34,6 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_item_view.*
-import kotlinx.android.synthetic.main.list_item.*
-import kotlinx.android.synthetic.main.list_item.view.*
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -440,7 +436,7 @@ class ItemViewFragment : Fragment() {
 
                 if ((field.type.toString() == FieldType.CHECK_VALUE) ||
                     (field.type.toString() == FieldType.QR_CODE_WITH_CHECK) ||
-                    (field.type.toString() == FieldType.BAR_CODE_CODE_WITH_CHECK)
+                    (field.type.toString() == FieldType.BAR_CODE_WITH_CHECK)
                 ) {
                     val newValue = helper.createCheckValue(item[fldName].toString())
                     text += "<td>${newValue}</td>"
