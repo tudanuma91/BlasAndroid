@@ -702,7 +702,14 @@ class ItemEditorFragment : Fragment() {
                         val extra = "colNumber" to (inputField as FieldQRWithCheckText).fieldNumber.toString()
                         startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
                             val qr = r.data?.getStringExtra("qr_code")
-                            (inputField as FieldQRWithCheckText).text.set(qr)
+
+                            try {
+                                itemsController.qrCodeCheck(qr)
+                                (inputField as FieldQRWithCheckText).text.set(qr)
+                            } catch (ex: ItemsController.ItemCheckException) {
+                                // 設置不可の時
+                                Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                            }
                         }
                     }
                 }
