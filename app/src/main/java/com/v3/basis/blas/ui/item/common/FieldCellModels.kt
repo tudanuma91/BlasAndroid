@@ -351,7 +351,7 @@ class FieldQRCodeWithKenpin(
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
 	field: LdbFieldRecord
-): FieldModel(context, layoutInflater, fieldNumber, field) {
+): FieldQRBaseModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField8Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field8, null, false)
 
@@ -396,7 +396,7 @@ class FieldQRCodeWithTekkyo(
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
 	field: LdbFieldRecord
-): FieldModel(context, layoutInflater, fieldNumber, field) {
+): FieldQRBaseModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField11Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field11, null, false)
 
@@ -532,7 +532,7 @@ class FieldQRWithCheckText(
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
 	field: LdbFieldRecord
-): FieldModel(context, layoutInflater, fieldNumber, field) {
+): FieldQRBaseModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField16Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field16, null, false)
 
@@ -996,7 +996,7 @@ class FieldBarCodeWithKenpin(
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
 	field: LdbFieldRecord
-): FieldModel(context, layoutInflater, fieldNumber, field) {
+): FieldQRBaseModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout :InputField25Binding = DataBindingUtil.inflate(layoutInflater, R.layout.input_field25, null, false)
 
@@ -1025,7 +1025,7 @@ class FieldBarCodeWithTekkyo(
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
 	field: LdbFieldRecord
-): FieldModel(context, layoutInflater, fieldNumber, field) {
+): FieldQRBaseModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout :InputField26Binding = DataBindingUtil.inflate(layoutInflater, R.layout.input_field26, null, false)
 
@@ -1054,7 +1054,7 @@ class FieldBarCodeWithCheckText(
 	layoutInflater: LayoutInflater,
 	fieldNumber: Int,
 	field: LdbFieldRecord
-): FieldModel(context, layoutInflater, fieldNumber, field) {
+): FieldQRBaseModel(context, layoutInflater, fieldNumber, field) {
 
 	var layout: InputField27Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field27, null, false)
 	init {

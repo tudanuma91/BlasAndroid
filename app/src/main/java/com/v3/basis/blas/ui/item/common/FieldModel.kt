@@ -77,10 +77,16 @@ open class FieldModel(
     open fun parentValidate():Boolean {
         return true
     }
+}
 
+open class FieldQRBaseModel(
+    context: Context,
+    layoutInflater: LayoutInflater,
+    fieldNumber: Int,
+    field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
 
     fun validateKenpinRendou() : Boolean {
-
         val itemsController = ItemsController(context, field.project_id.toString())
 
         try {
@@ -111,5 +117,3 @@ open class FieldModel(
         return true
     }
 }
-
-
