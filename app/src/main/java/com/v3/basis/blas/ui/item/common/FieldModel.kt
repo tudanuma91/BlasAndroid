@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import androidx.databinding.ObservableField
 import androidx.lifecycle.ViewModel
+import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import com.v3.basis.blas.databinding.InputField5Binding
 
@@ -58,6 +59,18 @@ open class FieldModel(
             this.validationMsg.set(msg)
             ret = false
         }
+
+        // 重複チェック
+        if( 1 == field.unique_chk ) {
+            val itemsController = ItemsController(context, field.project_id.toString())
+
+            if( !itemsController.checkUnique(field,text.get()) ) {
+                val msg = text.get() + "は既に登録されています"
+                this.validationMsg.set(msg)
+                ret = false
+            }
+        }
+
 
         return ret
     }
