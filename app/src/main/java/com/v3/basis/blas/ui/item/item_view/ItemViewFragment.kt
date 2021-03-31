@@ -442,16 +442,16 @@ class ItemViewFragment : Fragment() {
             text += "<tr>"
             text += "<td bgcolor=\"#FFEFFF\">${field.name}</td>"
 
-            if ((field.type.toString() == FieldType.CHECK_VALUE) ||
-                (field.type.toString() == FieldType.QR_CODE_WITH_CHECK) ||
-                (field.type.toString() == FieldType.BAR_CODE_CODE_WITH_CHECK)
-            ) {
-                val newValue = helper.createCheckValue(item[fldName].toString())
-                text += "<td>${newValue}</td>"
-            } else {
-                val fldVal = item[fldName]?.replace("\\r", "")
-                text += "<td>${fldVal}</td>"
-            }
+                if ((field.type.toString() == FieldType.CHECK_VALUE) ||
+                    (field.type.toString() == FieldType.QR_CODE_WITH_CHECK) ||
+                    (field.type.toString() == FieldType.BAR_CODE_WITH_CHECK)
+                ) {
+                    val newValue = helper.createCheckValue(item[fldName].toString())
+                    text += "<td>${newValue}</td>"
+                } else {
+                    val fldVal = item[fldName]?.replace("\\r", "")
+                    text += "<td>${fldVal}</td>"
+                }
 
             text += "</tr>"
          }
@@ -505,7 +505,6 @@ class ItemViewFragment : Fragment() {
         )
 
         val itemCell = ItemsListCell(viewModel, model, fields)
-
         dataList.add(itemCell)
     }
 
@@ -536,5 +535,6 @@ class ItemViewFragment : Fragment() {
         disposables.dispose()
         super.onDestroyView()
     }
+
 }
 

@@ -753,4 +753,29 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         }
         return ret
     }*/
+
+
+    fun checkUnique(field: LdbFieldRecord,text:String?) : Boolean {
+
+        var ret = true
+        BlasLog.trace("I","start")
+
+        val sql = "select count(*) as count from items where fld" + field.col + " = ?"
+        val cursor = db?.rawQuery(sql, arrayOf(text))
+
+        if( null == cursor ) {
+            throw Exception("sqlite error!!")
+        }
+
+        cursor.moveToFirst()
+        val count = cursor.getString( cursor.getColumnIndex("count") )
+
+        if(  count.toInt() > 0 ) {
+            ret = false
+        }
+        cursor.close()
+
+        return ret
+    }
+
 }

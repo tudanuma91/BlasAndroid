@@ -10,7 +10,6 @@ import android.content.res.Resources
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import android.media.ToneGenerator
 import android.os.*
 import android.util.Log
 import android.view.LayoutInflater
@@ -19,7 +18,6 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
-import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableField
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
@@ -690,7 +688,14 @@ class ItemEditorFragment : Fragment() {
                         val extra = "colNumber" to (inputField as FieldQRWithCheckText).fieldNumber.toString()
                         startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
                             val qr = r.data?.getStringExtra("qr_code")
-                            (inputField as FieldQRWithCheckText).text.set(qr)
+
+                            try {
+                                itemsController.qrCodeCheck(qr)
+                                (inputField as FieldQRWithCheckText).text.set(qr)
+                            } catch (ex: ItemsController.ItemCheckException) {
+                                // 設置不可の時
+                                Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                            }
                         }
                     }
                 }
@@ -899,12 +904,30 @@ class ItemEditorFragment : Fragment() {
                 }
 
                 // type:27　入力値チェック連動_バーコード(検品連動)
-                FieldType.BAR_CODE_CODE_WITH_CHECK -> {
-                    inputField = FieldQRWithCheckText(requireContext(), layoutInflater, cellNumber, field)
+                FieldType.BAR_CODE_WITH_CHECK -> {
+                    inputField = FieldBarCodeWithCheckText(requireContext(), layoutInflater, cellNumber, field)
+
                     //親フォームにフィールドを追加する
                     formModel.fields.add(inputField)
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
+
+                    inputField.layout.button.setOnClickListener {
+                        val extra = "colNumber" to (inputField as FieldBarCodeWithCheckText).fieldNumber.toString()
+
+                        startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
+                            val qr = r.data?.getStringExtra("qr_code")
+
+                            try {
+                                itemsController.qrCodeCheck(qr)
+                                (inputField as FieldBarCodeWithCheckText).text.set(qr)
+                            } catch (ex: ItemsController.ItemCheckException) {
+                                // 設置不可の時
+                                Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+
                 }
                 else -> { null }
             }
