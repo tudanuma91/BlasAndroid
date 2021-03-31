@@ -440,8 +440,8 @@ class ItemEditorFragment : Fragment() {
                     form.innerView.addView(inputField.layout.root)
                 }
 
+                // type:8 QRコード(検品と連動)
                 FieldType.KENPIN_RENDOU_QR -> {
-                    //QRコード(検品と連動)
                     inputField = FieldQRCodeWithKenpin(requireContext(), layoutInflater, cellNumber, field)
                     inputField.layout.button.setOnClickListener {
                         //カメラ起動
