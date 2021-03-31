@@ -21,7 +21,7 @@ open class FieldModel(
 
     //親が子供のフィールドを持つ
     protected val childFieldList = mutableListOf<FieldModel>()
-    public var parentField:FieldModel? = null
+    public var parentFieldList = mutableListOf<FieldModel>()
 
     //文字列を返却する
     open fun convertToString(): String? {
@@ -40,7 +40,7 @@ open class FieldModel(
     }
 
     open fun addParentField(field:FieldModel) {
-        parentField = field
+        parentFieldList.add(field)
     }
 
 

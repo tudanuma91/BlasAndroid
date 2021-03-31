@@ -104,6 +104,7 @@ class FieldSingleSelect (
 			//親の選択肢が決まるまで、子供は表示できない
 			choiceList = mutableListOf("")
 		}
+
 		else {
 			choiceList = field.choice!!.split(",").toMutableList()
 			if(choiceList == null) {
@@ -205,6 +206,50 @@ class FieldSingleSelect (
 			choiceList.add(it)
 		}
 		adapter.notifyDataSetChanged()
+	}
+
+	override fun validate(): Boolean {
+		var ret = true
+		if(!this.field.case_required.isNullOrBlank()) {
+			val durtyText = this.field.case_required
+			val json = durtyText?.replace("\\", "")
+			var parentFieldName = ""
+			val choice = convertToString()
+			if(choice.isNullOrBlank()) {
+				//選択肢が選ばれていないときはＯＫとする
+				return true
+			}
+
+			if (json != null && json.isNotBlank()) {
+				val obj = JSONObject(json)
+				try{
+					//指定された選択肢に対応するフィールド名を取得する
+					parentFieldName = obj.getString(choice)
+				}
+				catch(e:Exception) {
+					validationMsg.set("不正な親フィールド名です")
+					ret = false
+					return ret
+				}
+
+				//親フィールドの値を取得する
+				try{
+					val parentFieldModel = parentFieldList.first { parentFieldName == it.field.name }
+					if(parentFieldModel.text.get().isNullOrBlank()) {
+						validationMsg.set("${choice}の場合は、${parentFieldName}を入力してください")
+						ret = false
+					}
+				}
+				catch(e:Exception) {
+					//親フィールドが見つからない場合
+					BlasLog.trace("E", "親フィールドが見つかりません", e)
+					ret = false
+				}
+
+			}
+		}
+
+		return ret
 	}
 }
 
@@ -422,7 +467,7 @@ class FieldCheckText(
 	//親データとの整合チェック
 	override fun parentValidate():Boolean {
 		var ret = true
-		parentField?.let{parent->
+		parentFieldList.forEach{parent->
 			val parentData = parent.convertToString()
 			if(parentData == this.text.get()) {
 				//親のフィールドの値と自分のフィールドが同じなので
@@ -509,7 +554,7 @@ class FieldQRWithCheckText(
 	//親データとの整合チェック
 	override fun parentValidate():Boolean {
 		var ret = true
-		parentField?.let{parent->
+		parentFieldList.forEach{parent->
 			val parentData = parent.convertToString()
 			if(parentData == this.text.get()) {
 				//親のフィールドの値と自分のフィールドが同じなので
@@ -987,7 +1032,7 @@ class FieldBarCodeWithCheckText(
 	//親データとの整合チェック
 	override fun parentValidate():Boolean {
 		var ret = true
-		parentField?.let{parent->
+		parentFieldList.forEach{parent->
 			val parentData = parent.convertToString()
 			if(parentData == this.text.get()) {
 				//親のフィールドの値と自分のフィールドが同じなので

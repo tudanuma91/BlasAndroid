@@ -22,6 +22,7 @@ import androidx.databinding.ObservableField
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonObject
 import com.google.maps.GeoApiContext
 import com.google.maps.GeocodingApi
 import com.google.maps.model.LatLng
@@ -205,18 +206,40 @@ class ItemEditorFragment : Fragment() {
                         addField(field, index)
                     }
 
-                    //親子関係構築
+                    //親子関係構築(従属系)
                     formModel.fields.forEach {me->
                         if(me.field.parent_field_id != 0) {
                             //親フィールドを取得する
                             val parentInputField = formModel.fields.first {parent->
                                 parent.field.field_id == me.field.parent_field_id
                             }
+
                             //親に子供を登録する
                             parentInputField.addChildField(me)
                             //子に親を登録する
                             me.addParentField(parentInputField)
 
+                        }
+                    }
+
+                    //親子関係構築(条件付き(武内Ver)
+                    formModel.fields.forEach {me->
+                        //武内データ型(条件付き必須の場合)
+                        if(!me.field.case_required.isNullOrBlank()) {
+                            val jsonText = me.field.case_required?.replace("\\", "")
+                            if(!jsonText.isNullOrBlank()) {
+                                val json = JSONObject(jsonText)
+                                json.keys().forEach {choice->
+                                    //選択肢に紐づく親フィールド名を取得する
+                                    val parentFieldName = json.getString(choice)
+
+                                    formModel.fields.forEach {fModel->
+                                        if(parentFieldName == fModel.field.name) {
+                                            me.addParentField(fModel)
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -795,46 +818,6 @@ class ItemEditorFragment : Fragment() {
                     inputField.layout.button.setOnClickListener {
                         //疎通確認ボタン押下時
                         (inputField as FieldEvent).setValue("処理中")
-
-                        //保存時もレコードが追加されるが、処理中ボタンを押しただけでも
-                        //疎通確認ができるようにしておく。(保存ボタン押し忘れ対策)
-                        val itemsController = context?.let { con ->
-                            ItemsController(con, field.project_id.toString())
-                        }
-
-                        if(itemsController != null) {
-                            val record = itemId?.let { id -> itemsController.findByItemId(id) }
-                            if(record == null) {
-                                //新規追加時はここを通るはず
-                                Toast.makeText(context, "新規追加時は疎通確認ができません。一度保存してから実行してください", Toast.LENGTH_LONG).show()
-                                (inputField as FieldEvent).validationMsg.set("新規追加時は疎通確認ができません。一度保存してから実行してください")
-                            }
-                            else {
-                                //編集時
-                                val eventFld = "fld${field.col}"
-
-                                record[eventFld] = "処理中"
-                                Thread(Runnable {
-                                    //イベント発行のデータを更新する
-                                    SenderHandler.lock.withLock {
-                                        itemsController.updateToLDB(record)
-                                    }
-                                    //BLASにデータ送信の合図を送る
-                                    BlasSyncMessenger.notifyBlasItems(
-                                        token,
-                                        projectId
-                                    )
-                                    //イベントの監視の合図を送る
-                                    BlasSyncMessenger.notifyBlasEvents(
-                                        token,
-                                        projectId
-                                    )
-                                }).start()
-                                //ボタンの表示を処理中に変更する
-                                (inputField as FieldEvent).setValue("処理中")
-                            }
-                        }
-
                     }
                 }
 
