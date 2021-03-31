@@ -248,7 +248,6 @@ class ItemSearchResultFragment : Fragment() {
      *  データ登録
      */
     private fun setAdapter( itemInfo : MutableList<MutableMap<String, String?>> ) {
-        Log.d("konishi", "setAdapter")
         createDataList( itemInfo )
         adapter.notifyItemInserted(0)
         progressBarFlg = false

@@ -52,7 +52,7 @@ class ItemsListCell(private val viewModel: ItemsListViewModel, val model: ItemsC
 
     override fun createViewHolder(itemView: View): GroupieViewHolder<ListItemBinding> {
         val holder = super.createViewHolder(itemView)
-        addPingForm(holder.binding)
+        //addPingForm(holder.binding)
         return holder
     }
 
@@ -60,53 +60,6 @@ class ItemsListCell(private val viewModel: ItemsListViewModel, val model: ItemsC
     override fun bind(viewBinding: ListItemBinding, position: Int) {
         viewBinding.vm = viewModel
         viewBinding.model = model
-        BlasLog.trace("I", "position is ${position}")
-
-        fields.forEach {field->
-            if(field.type == FieldType.EVENT_FIELD.toInt()) {
-                //レイアウトをバインドする
-                /*eventLayout = DataBindingUtil.inflate(
-                    LayoutInflater.from(context),
-                    R.layout.input_field23_btn,
-                    null,
-                    false
-                )*/
-                val eventLayout = viewBinding.eventLayout
-
-                val itemController = ItemsController(context, model.project_id.toString())
-                val itemRecord = itemController.findByItemId(model.item_id.toString())
-                val eventFld = "fld${field.col.toString()}"
-
-                eventLayout?.let {binding->
-                    //LDBの監視を登録する
-                    var label:String = ""
-                    field.name?.let {
-                        label = it
-                    }
-
-                    //カラム名設定
-                    binding.colname.text = field.name
-                    //ボタンのテキスト設定
-                    binding.button.text = field.name
-                    BlasLog.trace("I", "status is ${itemRecord[eventFld]}")
-                    if(itemRecord[eventFld] == "処理中") {
-                        //処理中のGIF表示
-                        binding.imageView.visibility = View.VISIBLE
-                        //ボタンの非表示
-                        binding.button.visibility = View.GONE
-                    }
-                    else {
-                        /*
-                        //処理中のGIF非表示
-                        binding.imageView.visibility = View.GONE
-                        //ボタンの表示
-                        binding.button.visibility = View.VISIBLE
-                        //イベント型の値を表示
-                        binding.status.text = itemRecord[eventFld]*/
-                    }
-                }
-            }
-        }
     }
 
     @RequiresApi(Build.VERSION_CODES.P)

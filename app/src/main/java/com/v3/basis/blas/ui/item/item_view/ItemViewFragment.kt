@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -25,6 +26,7 @@ import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
+import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.item.common.FieldDate
 import com.xwray.groupie.GroupAdapter
@@ -192,8 +194,11 @@ class ItemViewFragment : Fragment() {
         intent.putExtra("item_id", "${model.item_id}")
         intent.putExtra("token", token)
         intent.putExtra("project_id", projectId)
-       // intent.putExtra("value_list", model.valueList)
-        requireActivity().startActivity(intent)
+        val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
+            //やることなし
+        }
+
+        startForResult.launch(intent)
     }
 
     /**
@@ -432,25 +437,23 @@ class ItemViewFragment : Fragment() {
         text += "<table border=\"1\" style=\"border-collapse: collapse; table-layout:fixed; border-style: solid; border-color: #FF69B4;\" width=\"100%\">"
 
         fields.forEachIndexed { index, field ->
-            if(field.type.toString() != FieldType.EVENT_FIELD) {
-                val fldName = "fld${field.col}"
+            val fldName = "fld${field.col}"
 
-                text += "<tr>"
-                text += "<td bgcolor=\"#FFEFFF\">${field.name}</td>"
+            text += "<tr>"
+            text += "<td bgcolor=\"#FFEFFF\">${field.name}</td>"
 
-                if ((field.type.toString() == FieldType.CHECK_VALUE) ||
-                    (field.type.toString() == FieldType.QR_CODE_WITH_CHECK) ||
-                    (field.type.toString() == FieldType.BAR_CODE_CODE_WITH_CHECK)
-                ) {
-                    val newValue = helper.createCheckValue(item[fldName].toString())
-                    text += "<td>${newValue}</td>"
-                } else {
-                    val fldVal = item[fldName]?.replace("\\r", "")
-                    text += "<td>${fldVal}</td>"
-                }
-
-                text += "</tr>"
+            if ((field.type.toString() == FieldType.CHECK_VALUE) ||
+                (field.type.toString() == FieldType.QR_CODE_WITH_CHECK) ||
+                (field.type.toString() == FieldType.BAR_CODE_CODE_WITH_CHECK)
+            ) {
+                val newValue = helper.createCheckValue(item[fldName].toString())
+                text += "<td>${newValue}</td>"
+            } else {
+                val fldVal = item[fldName]?.replace("\\r", "")
+                text += "<td>${fldVal}</td>"
             }
+
+            text += "</tr>"
          }
 
         text += "</table>"
@@ -533,6 +536,5 @@ class ItemViewFragment : Fragment() {
         disposables.dispose()
         super.onDestroyView()
     }
-
 }
 

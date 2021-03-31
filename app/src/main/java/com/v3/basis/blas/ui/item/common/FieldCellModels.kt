@@ -1,15 +1,21 @@
 package com.v3.basis.blas.ui.item.common
 
 import android.content.Context
+import android.graphics.ImageDecoder
+import android.graphics.drawable.AnimatedImageDrawable
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import androidx.annotation.RequiresApi
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableField
+import com.bumptech.glide.Glide
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.db.BlasSQLDataBase
 import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
@@ -838,6 +844,61 @@ class FieldBarCode(
 
 	init {
 		layout.model = this
+	}
+}
+
+class FieldEvent(
+	context: Context,
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
+
+	var layout: InputField23Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field23, null, false)
+
+	init {
+		layout.model = this
+	}
+
+	override fun setValue(value: String?) {
+		text.set(value)
+		if(value != "処理中") {
+			//layout.button.text = value
+			layout.button.visibility = View.VISIBLE
+			layout.progessImg.visibility = View.GONE
+			layout.status.visibility = View.VISIBLE
+			layout.status.text = value
+		}
+		else {
+			animationStart(layout)
+			layout.button.visibility = View.GONE
+			layout.progessImg.visibility = View.VISIBLE
+			layout.status.visibility = View.GONE
+		}
+
+	}
+
+	@RequiresApi(Build.VERSION_CODES.P)
+	private fun getGifAnimationDrawable(): AnimatedImageDrawable {
+		//画像ソースを取得(assets直下)
+		val source = ImageDecoder.createSource(BlasSQLDataBase.context.assets,"run.gif" )
+		return ImageDecoder.decodeDrawable(source) as? AnimatedImageDrawable
+			?: throw ClassCastException()
+	}
+
+
+	//gifを表示する処理＋動かす処理
+	private fun animationStart(binding: InputField23Binding){
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+			//pie以降はこっちの処理を使用する
+			val drawable = getGifAnimationDrawable()
+			binding.progessImg.setImageDrawable(drawable)
+			drawable.start()
+		}else {
+			//pieより前はこっちの処理を使用する
+			//後々ここの処理は削除したい。
+			Glide.with(BlasSQLDataBase.context).load(R.drawable.run).into(binding.progessImg)
+		}
 	}
 }
 

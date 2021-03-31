@@ -37,20 +37,26 @@ import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
 import com.v3.basis.blas.blasclass.log.BlasLog
+import com.v3.basis.blas.blasclass.service.BlasSyncMessenger
+import com.v3.basis.blas.blasclass.service.SenderHandler
 import com.v3.basis.blas.databinding.*
 import com.v3.basis.blas.ui.ext.addTitle
 import com.v3.basis.blas.ui.ext.hideKeyboardWhenTouch
 import com.v3.basis.blas.ui.ext.startActivityWithResult
 import com.v3.basis.blas.ui.item.common.*
+import com.v3.basis.blas.ui.item.item_search_result.RowModel
+import com.v3.basis.blas.ui.item.item_search_result.ViewAdapter
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.input_field23.view.*
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.concurrent.withLock
 
 
 /**
@@ -198,7 +204,7 @@ class ItemEditorFragment : Fragment() {
                     fieldList.forEachIndexed{ index,field ->
                         //子供のフィールドを取得
                         //入力用のフィールドを追加する
-                        addField(field,index)
+                        addField(field, index)
                     }
 
                     //親子関係構築
@@ -459,23 +465,6 @@ class ItemEditorFragment : Fragment() {
                         val columnName = "fld${field.field.col}"
                         val value = fieldValues[columnName]?.replace("\\r","")
                         field.setValue(value)
-                        /*
-                        with(field.javaClass.canonicalName!!) {
-                            when {
-                                contains("FieldSingleSelect") -> {
-                                    val fieldSingleSelect = field as FieldSingleSelect
-
-                                    //シングルセレクトの処理
-                                    //whenSingleSelect(singleColCnt,value,fieldSingleSelect.field.parent_field_id!!)
-                                    fieldSingleSelect.setValue(value)
-                                    singleColCnt ++
-                                }
-                                else -> {
-                                    //その他の処理
-                                    field.setValue(value)
-                                }
-                            }
-                        }*/
                     }
                 }
                 .addTo(disposables)
@@ -525,7 +514,6 @@ class ItemEditorFragment : Fragment() {
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
                     inputField.layout.text.setOnClickListener {
-                        //TODO:三代川　カレンダーを表示できるようにしました。こちらを参考にSCHEDULE_DATE、TIMEなどを修正お願い致します。
                         // カレンダー選択を表示
                         setClickDateTime(inputField as FieldDate)
                     }
@@ -762,6 +750,7 @@ class ItemEditorFragment : Fragment() {
                     formModel.fields.add(inputField)
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
+
                     inputField.layout.text.setOnClickListener {
                         // カレンダー選択を表示
                         setClickDateTime(inputField as FieldScheduleDate)
@@ -786,6 +775,62 @@ class ItemEditorFragment : Fragment() {
                     formModel.fields.add(inputField)
                     //入力フィールドを表示する
                     form.innerView.addView(inputField.layout.root)
+                }
+
+                //type:23
+                FieldType.EVENT_FIELD -> {
+                    inputField = FieldEvent(requireContext(), layoutInflater, cellNumber, field)
+                    //親フォームにフィールドを追加する
+                    formModel.fields.add(inputField)
+                    //入力フィールドを表示する
+                    form.innerView.addView(inputField.layout.root)
+
+                    inputField.layout.button.text = field.name
+
+                    inputField.layout.button.setOnClickListener {
+                        //疎通確認ボタン押下時
+                        (inputField as FieldEvent).setValue("処理中")
+
+                        //保存時もレコードが追加されるが、処理中ボタンを押しただけでも
+                        //疎通確認ができるようにしておく。(保存ボタン押し忘れ対策)
+                        val itemsController = context?.let { con ->
+                            ItemsController(con, field.project_id.toString())
+                        }
+
+                        if(itemsController != null) {
+                            val record = itemId?.let { id -> itemsController.findByItemId(id) }
+                            if(record == null) {
+                                //新規追加時はここを通るはず
+                                Toast.makeText(context, "新規追加時は疎通確認ができません。一度保存してから実行してください", Toast.LENGTH_LONG).show()
+                                (inputField as FieldEvent).validationMsg.set("新規追加時は疎通確認ができません。一度保存してから実行してください")
+                            }
+                            else {
+                                //編集時
+                                val eventFld = "fld${field.col}"
+
+                                record[eventFld] = "処理中"
+                                Thread(Runnable {
+                                    //イベント発行のデータを更新する
+                                    SenderHandler.lock.withLock {
+                                        itemsController.updateToLDB(record)
+                                    }
+                                    //BLASにデータ送信の合図を送る
+                                    BlasSyncMessenger.notifyBlasItems(
+                                        token,
+                                        projectId
+                                    )
+                                    //イベントの監視の合図を送る
+                                    BlasSyncMessenger.notifyBlasEvents(
+                                        token,
+                                        projectId
+                                    )
+                                }).start()
+                                //ボタンの表示を処理中に変更する
+                                (inputField as FieldEvent).setValue("処理中")
+                            }
+                        }
+
+                    }
                 }
 
                 // type:24 バーコード
@@ -924,6 +969,8 @@ class ItemEditorFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        ItemActivity.setRestartFlag()
+        //requireActivity().finish()
         super.onDestroyView()
         disposables.dispose()
 
@@ -935,6 +982,7 @@ class ItemEditorFragment : Fragment() {
             locationManager?.removeUpdates(it)
         }
     }
+
 
 
     inner class SpinnerItemSelectedListener : AdapterView.OnItemSelectedListener {
@@ -1025,6 +1073,5 @@ class GPSLocationListener(val resources:Resources, val field: ObservableField<St
 
         return address
     }
-
 }
 
