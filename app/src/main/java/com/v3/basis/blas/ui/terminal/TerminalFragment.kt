@@ -76,11 +76,7 @@ class TerminalFragment : Fragment() {
                 val text = it.customView.findViewById<EditText>(R.id.searchBox).text.toString()
                 vm.filterProject(text)
             }
-            it.customView.findViewById<ImageButton>(R.id.updateButton).setOnClickListener { v ->
-                //空文字で更新する
-                it.customView.findViewById<EditText>(R.id.searchBox).setText("")
-                vm.filterProject("", true)
-            }
+
         }
 
         val act = requireActivity() as TerminalActivity
@@ -110,10 +106,10 @@ class TerminalFragment : Fragment() {
         when (item) {
             BottomNavButton.DATA_MANAGE,
             BottomNavButton.EQUIPMENT_MANAGE -> {
-                showViewForCustomActionBar(arrayOf(R.id.searchBox, R.id.searchButton, R.id.updateButton))
+                showViewForCustomActionBar(arrayOf(R.id.searchBox, R.id.searchButton))
             }
             else -> {
-                hideViewForCustomActionBar(arrayOf(R.id.searchBox, R.id.searchButton, R.id.updateButton))
+                hideViewForCustomActionBar(arrayOf(R.id.searchBox, R.id.searchButton))
             }
         }
     }

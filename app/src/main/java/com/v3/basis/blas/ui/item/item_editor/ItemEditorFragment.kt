@@ -17,6 +17,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.core.app.ActivityCompat
+
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableField
 import androidx.fragment.app.Fragment
@@ -113,7 +114,6 @@ class ItemEditorFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
         super.onCreateView(inflater, container, savedInstanceState)
 
         //引数の取得 token,projectId, item_idの取得
@@ -183,11 +183,6 @@ class ItemEditorFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        //サブスクライバの登録
-        //カレンダー、時刻、QRコードなど、ボタンを押下されたとき(イベント)に値を取得する
-        //フォームの処理を登録する
-        subscribeFormEvent()
-
         //フォームを作成する
         createForms();
 
@@ -252,168 +247,7 @@ class ItemEditorFragment : Fragment() {
             }
             .addTo(disposables)
     }
-    /**
-     * カレンダー、時刻、QRコードなどの子ウインドウからのイベントを取得する。
-     */
-    private fun subscribeFormEvent() {
-        /*
-        formModel.dateEvent
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                setClickDateTime(it)
-            }
-            .addTo(disposables)
 
-        formModel.timeEvent
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                setClickTime(it)
-            }
-            .addTo(disposables)
-
-        formModel.qrEvent
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                //QRコードの処理
-                val extra = "colNumber" to it.fieldNumber.toString()
-                startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
-                    val qr = r.data?.getStringExtra("qr_code")
-                    it.text.set(qr)
-                }
-            }
-            .addTo(disposables)
-
-        //入力値チェック連動_QRコード(検品と連動)からカメラが起動されたとき
-        formModel.qrCheckEvent
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                val extra = "colNumber" to it.fieldNumber.toString()
-                startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
-                    val qr = r.data?.getStringExtra("qr_code")
-                    it.text.set(qr);
-                }
-            }
-            .addTo(disposables)
-
-        //多分設置のことを言っている。検品ではない
-        formModel.qrKenpinEvent
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                val extra = "colNumber" to it.fieldNumber.toString()
-                startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE_KENPIN, extra) { r ->
-                    val qr = r.data?.getStringExtra("qr_code")
-
-                    try {
-                        itemsController.qrCodeCheck( qr )
-                        it.text.set(qr)
-                    }
-                    catch ( ex : ItemsController.ItemCheckException ) {
-                        // 設置不可の時
-                        Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
-                    }
-
-                }
-            }
-            .addTo(disposables)
-
-        //撤去
-        formModel.qrTekkyoEvent
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                val extra = "colNumber" to it.fieldNumber.toString()
-                startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE_TEKKYO, extra) { r ->
-                    val qr = r.data?.getStringExtra("qr_code")
-
-                    try {
-                        itemsController.rmQrCodeCheck( qr )
-                        it.text.set(qr)
-                    }
-                    catch ( ex : ItemsController.ItemCheckException ) {
-                        // 撤去不可の時
-                        Toast.makeText(BlasRest.context, ex.message, Toast.LENGTH_LONG).show()
-                    }
-
-                }
-            }
-            .addTo(disposables)
-
-        formModel.locationEvent
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy { field ->
-                if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    //GPSの権限がある場合
-                    gpsListener = GPSLocationListener(resources,
-                                                      field,
-                                                      GPSLocationListener.ADDRESS,
-                                                      GPSLocationListener.ONCE)
-
-                    locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, gpsListener)
-                }
-                else {
-                    //権限がない場合、権限をリクエストするだけ
-                    requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1000)
-                }
-            }
-            .addTo(disposables)
-
-
-        formModel.latEvent
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy { field ->
-                if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    //GPSの権限がある場合
-                    gpsListener = GPSLocationListener(resources,
-                        field,
-                        GPSLocationListener.LAT,
-                        GPSLocationListener.ONCE)
-
-                    locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, gpsListener)
-                }
-                else {
-                    //権限がない場合、権限をリクエストするだけ
-                    requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1000)
-                }
-            }
-            .addTo(disposables)
-
-        formModel.lngEvent
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy { field ->
-                if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    //GPSの権限がある場合
-                    gpsListener = GPSLocationListener(resources,
-                        field,
-                        GPSLocationListener.LNG,
-                        GPSLocationListener.ONCE)
-
-                    locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, gpsListener)
-                }
-                else {
-                    //権限がない場合、権限をリクエストするだけ
-                    requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1000)
-                }
-            }
-            .addTo(disposables)
-
-
-        formModel.accountNameEvent
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                it.text.set(userMap["name"])
-            }
-            .addTo(disposables)
-
-        formModel.currentDateTimeEvent
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy {
-                val df = SimpleDateFormat("yyyy/MM/dd HH:mm")
-                val date = Date()
-                it.text.set(df.format(date))
-            }
-            .addTo(disposables)
-
-         */
-    }
 
     /**
      * シングルセレクトの編集フィールド処理

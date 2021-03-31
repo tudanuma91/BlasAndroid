@@ -114,16 +114,8 @@ open class FixtureFragment : Fragment() {
      * BLASからプロジェクト一覧を取得する
      */
     private fun makeProjectList(update: Boolean = false) {
-        if (update) {
-            if (beforeFilterWord != filterWord) {
-                beforeFilterWord = filterWord
-                val payload = mapOf("token" to token)
-                BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
-            }
-        } else {
-            val payload = mapOf("token" to token)
-            BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
-        }
+        val payload = mapOf("token" to token)
+        BlasRestProject(payload, ::projectSearchSuccess, ::projectSearchError).execute()
     }
 
     /**
@@ -221,11 +213,16 @@ open class FixtureFragment : Fragment() {
      * @return プロジェクトのリスト
      */
     private fun createProjectList(from: MutableMap<String,MutableMap<String, String>>): List<ProjectListCellItem> {
-        val dataList = mutableListOf<ProjectListCellItem>()
-
+        //val dataList = mutableListOf<ProjectListCellItem>()
+        val downloadedProcjectList = mutableListOf<ProjectListCellItem>()
+        val noDownloadProjectList = mutableListOf<ProjectListCellItem>()
         val dir = requireContext().cacheDir.path + "/download_zip"
         val directory = File(dir)
         directory.mkdirs()
+
+        val dbPath = context?.dataDir?.path + "/databases/"
+        //ディレクトリ名からプロジェクトIDを取得する
+        val dbList = File(dbPath).listFiles()
 
         from.forEach{
             val project_name = it.value["project_name"].toString()
@@ -234,10 +231,29 @@ open class FixtureFragment : Fragment() {
                 val item = DownloadModel(project_id, dir)
                 viewModel.setupItem(this, item, token)
                 val data = ProjectListCellItem(project_name, project_id, viewModel, item)
-                dataList.add(data)
+                val ret = dbList.firstOrNull {
+                    if(it.isDirectory()) {
+                        it.name == data.detail
+                    }
+                    else {
+                        false
+                    }
+                }
+
+                if(ret != null) {
+                    downloadedProcjectList.add(data)
+                }
+                else {
+                    noDownloadProjectList.add(data)
+                }
+                //すでにダウンロードされいているものを優先的に表示する
+                //dataList.add(data)
             }
+
         }
-        return dataList
+
+
+        return downloadedProcjectList + noDownloadProjectList
     }
 
     override fun onDestroyView() {
