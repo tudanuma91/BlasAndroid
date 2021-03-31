@@ -51,13 +51,12 @@ open class FieldModel(
 
     //値不正のチェック
     open fun validate():Boolean{
-        var ret = true
 
         // 必須チェック
         if( 1 == field.essential && "" == text.get() ) {
             val msg = field.name + "を入力してください"
             this.validationMsg.set(msg)
-            ret = false
+            return false
         }
 
         // 重複チェック
@@ -67,17 +66,35 @@ open class FieldModel(
             if( !itemsController.checkUnique(field,text.get()) ) {
                 val msg = text.get() + "は既に登録されています"
                 this.validationMsg.set(msg)
-                ret = false
+                return false
             }
         }
 
 
-        return ret
+        return true
     }
 
     open fun parentValidate():Boolean {
         return true
     }
+
+
+    fun validateKenpinRendou() : Boolean {
+
+        val itemsController = ItemsController(context, field.project_id.toString())
+
+        try {
+            itemsController.qrCodeCheck( text.get() )
+        }
+        catch ( ex: ItemsController.ItemCheckException) {
+            val msg = ex.message
+            this.validationMsg.set(msg)
+            return false
+        }
+
+        return true
+    }
+
 }
 
 

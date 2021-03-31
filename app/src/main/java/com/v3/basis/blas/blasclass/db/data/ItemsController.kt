@@ -755,9 +755,8 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
 
     fun checkUnique(field: LdbFieldRecord,text:String?) : Boolean {
-
-        var ret = true
         BlasLog.trace("I","start")
+        var ret = true
 
         val sql = "select count(*) as count from items where fld" + field.col + " = ?"
         val cursor = db?.rawQuery(sql, arrayOf(text))
@@ -776,5 +775,6 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
 
         return ret
     }
+
 
 }

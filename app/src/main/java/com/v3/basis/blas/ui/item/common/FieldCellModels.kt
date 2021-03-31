@@ -307,6 +307,21 @@ class FieldQRCodeWithKenpin(
 	init {
 		layout.model = this
 	}
+
+	override fun validate(): Boolean {
+
+		if(!super.validate()) {
+			return false
+		}
+
+		// 検品連動
+		if( !validateKenpinRendou() ) {
+			return false
+		}
+
+		return true
+	}
+
 }
 
 
@@ -498,6 +513,20 @@ class FieldQRWithCheckText(
 	}
 
 	override fun notifyedFromParent(value: String) {
+	}
+
+	override fun validate(): Boolean {
+
+		if(!super.validate()) {
+			return false
+		}
+
+		// 検品連動
+		if( !validateKenpinRendou() ) {
+			return false
+		}
+
+		return true
 	}
 
 	//親データとの整合チェック
@@ -854,6 +883,20 @@ class FieldBarCodeWithKenpin(
 		layout.model = this
 	}
 
+	override fun validate(): Boolean {
+
+		if(!super.validate()) {
+			return false
+		}
+
+		// 検品連動
+		if( !validateKenpinRendou() ) {
+			return false
+		}
+
+		return true
+	}
+
 }
 
 class FieldBarCodeWithTekkyo(
@@ -921,6 +964,20 @@ class FieldBarCodeWithCheckText(
 	}
 
 	override fun notifyedFromParent(value: String) {
+	}
+
+	override fun validate(): Boolean {
+
+		if(!super.validate()) {
+			return false
+		}
+
+		// 検品連動
+		if( !validateKenpinRendou() ) {
+			return false
+		}
+
+		return true
 	}
 
 	//親データとの整合チェック
