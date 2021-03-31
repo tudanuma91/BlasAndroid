@@ -95,6 +95,21 @@ open class FieldModel(
         return true
     }
 
+    fun validateTekkyoRendou() : Boolean {
+
+        val itemsController = ItemsController(context, field.project_id.toString())
+
+        try {
+            itemsController.rmQrCodeCheck(text.get())
+        }
+        catch ( ex: ItemsController.ItemCheckException ) {
+            val msg = ex.message
+            this.validationMsg.set(msg)
+            return false
+        }
+
+        return true
+    }
 }
 
 

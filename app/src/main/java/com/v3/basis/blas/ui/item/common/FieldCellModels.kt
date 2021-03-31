@@ -353,6 +353,21 @@ class FieldQRCodeWithTekkyo(
 		layout.model = this
 	}
 
+	override fun validate(): Boolean {
+
+		if(!super.validate()) {
+			return false
+		}
+
+		// 撤去連動
+		if( !validateTekkyoRendou() ) {
+			return false
+		}
+
+		return true
+	}
+
+
 }
 
 
@@ -910,6 +925,20 @@ class FieldBarCodeWithTekkyo(
 
 	init {
 		layout.model = this
+	}
+
+	override fun validate(): Boolean {
+
+		if(!super.validate()) {
+			return false
+		}
+
+		// 撤去連動
+		if( !validateTekkyoRendou() ) {
+			return false
+		}
+
+		return true
 	}
 
 }
