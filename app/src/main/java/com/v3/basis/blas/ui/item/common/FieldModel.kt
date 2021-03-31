@@ -50,7 +50,16 @@ open class FieldModel(
 
     //値不正のチェック
     open fun validate():Boolean{
-        return true
+        var ret = true
+
+        // 必須チェック
+        if( 1 == field.essential && "" == text.get() ) {
+            val msg = field.name + "を入力してください"
+            this.validationMsg.set(msg)
+            ret = false
+        }
+
+        return ret
     }
 
     open fun parentValidate():Boolean {
