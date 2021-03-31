@@ -1,15 +1,21 @@
 package com.v3.basis.blas.ui.item.common
 
 import android.content.Context
+import android.graphics.ImageDecoder
+import android.graphics.drawable.AnimatedImageDrawable
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import androidx.annotation.RequiresApi
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableField
+import com.bumptech.glide.Glide
 import com.v3.basis.blas.R
+import com.v3.basis.blas.blasclass.db.BlasSQLDataBase
 import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
@@ -98,6 +104,7 @@ class FieldSingleSelect (
 			//親の選択肢が決まるまで、子供は表示できない
 			choiceList = mutableListOf("")
 		}
+
 		else {
 			choiceList = field.choice!!.split(",").toMutableList()
 			if(choiceList == null) {
@@ -199,6 +206,50 @@ class FieldSingleSelect (
 			choiceList.add(it)
 		}
 		adapter.notifyDataSetChanged()
+	}
+
+	override fun validate(): Boolean {
+		var ret = true
+		if(!this.field.case_required.isNullOrBlank()) {
+			val durtyText = this.field.case_required
+			val json = durtyText?.replace("\\", "")
+			var parentFieldName = ""
+			val choice = convertToString()
+			if(choice.isNullOrBlank()) {
+				//選択肢が選ばれていないときはＯＫとする
+				return true
+			}
+
+			if (json != null && json.isNotBlank()) {
+				val obj = JSONObject(json)
+				try{
+					//指定された選択肢に対応するフィールド名を取得する
+					parentFieldName = obj.getString(choice)
+				}
+				catch(e:Exception) {
+					validationMsg.set("不正な親フィールド名です")
+					ret = false
+					return ret
+				}
+
+				//親フィールドの値を取得する
+				try{
+					val parentFieldModel = parentFieldList.first { parentFieldName == it.field.name }
+					if(parentFieldModel.text.get().isNullOrBlank()) {
+						validationMsg.set("${choice}の場合は、${parentFieldName}を入力してください")
+						ret = false
+					}
+				}
+				catch(e:Exception) {
+					//親フィールドが見つからない場合
+					BlasLog.trace("E", "親フィールドが見つかりません", e)
+					ret = false
+				}
+
+			}
+		}
+
+		return ret
 	}
 }
 
@@ -446,7 +497,7 @@ class FieldCheckText(
 	//親データとの整合チェック
 	override fun parentValidate():Boolean {
 		var ret = true
-		parentField?.let{parent->
+		parentFieldList.forEach{parent->
 			val parentData = parent.convertToString()
 			if(parentData == this.text.get()) {
 				//親のフィールドの値と自分のフィールドが同じなので
@@ -547,7 +598,7 @@ class FieldQRWithCheckText(
 	//親データとの整合チェック
 	override fun parentValidate():Boolean {
 		var ret = true
-		parentField?.let{parent->
+		parentFieldList.forEach{parent->
 			val parentData = parent.convertToString()
 			if(parentData == this.text.get()) {
 				//親のフィールドの値と自分のフィールドが同じなので
@@ -885,6 +936,61 @@ class FieldBarCode(
 	}
 }
 
+class FieldEvent(
+	context: Context,
+	layoutInflater: LayoutInflater,
+	fieldNumber: Int,
+	field: LdbFieldRecord
+): FieldModel(context, layoutInflater, fieldNumber, field) {
+
+	var layout: InputField23Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field23, null, false)
+
+	init {
+		layout.model = this
+	}
+
+	override fun setValue(value: String?) {
+		text.set(value)
+		if(value != "処理中") {
+			//layout.button.text = value
+			layout.button.visibility = View.VISIBLE
+			layout.progessImg.visibility = View.GONE
+			layout.status.visibility = View.VISIBLE
+			layout.status.text = value
+		}
+		else {
+			animationStart(layout)
+			layout.button.visibility = View.GONE
+			layout.progessImg.visibility = View.VISIBLE
+			layout.status.visibility = View.GONE
+		}
+
+	}
+
+	@RequiresApi(Build.VERSION_CODES.P)
+	private fun getGifAnimationDrawable(): AnimatedImageDrawable {
+		//画像ソースを取得(assets直下)
+		val source = ImageDecoder.createSource(BlasSQLDataBase.context.assets,"run.gif" )
+		return ImageDecoder.decodeDrawable(source) as? AnimatedImageDrawable
+			?: throw ClassCastException()
+	}
+
+
+	//gifを表示する処理＋動かす処理
+	private fun animationStart(binding: InputField23Binding){
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+			//pie以降はこっちの処理を使用する
+			val drawable = getGifAnimationDrawable()
+			binding.progessImg.setImageDrawable(drawable)
+			drawable.start()
+		}else {
+			//pieより前はこっちの処理を使用する
+			//後々ここの処理は削除したい。
+			Glide.with(BlasSQLDataBase.context).load(R.drawable.run).into(binding.progessImg)
+		}
+	}
+}
+
 class FieldBarCodeWithKenpin(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -1012,7 +1118,7 @@ class FieldBarCodeWithCheckText(
 	//親データとの整合チェック
 	override fun parentValidate():Boolean {
 		var ret = true
-		parentField?.let{parent->
+		parentFieldList.forEach{parent->
 			val parentData = parent.convertToString()
 			if(parentData == this.text.get()) {
 				//親のフィールドの値と自分のフィールドが同じなので

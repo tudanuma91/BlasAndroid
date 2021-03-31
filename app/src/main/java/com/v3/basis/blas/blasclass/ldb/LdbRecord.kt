@@ -329,7 +329,9 @@ class LdbFieldRecord(
     var update_date:String? = null,
     var unique_chk:Int? = 0,
     var work_day:Int? = 0,
-    var edit_id:Int? = 0
+    var edit_id:Int? = 0,
+    var case_required:String? = null,
+    var use_summary:Int? = 0
 )
 
 /* project_imagesテーブルと、imagesテーブルの検索結果を

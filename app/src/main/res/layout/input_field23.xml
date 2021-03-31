@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="vm"
+            type="com.v3.basis.blas.ui.item.common.ItemViewModel" />
+        <variable
+            name="model"
+            type="com.v3.basis.blas.ui.item.common.FieldEvent" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="left"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/colname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{model.field.name}"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            />
+
+        <LinearLayout
+            android:id="@+id/eventLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="left"
+            android:orientation="horizontal"
+            android:padding="6dp">
+            <Button
+                android:id="@+id/button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+
+                android:padding="6dp"
+                />
+
+            <ImageView
+                android:id="@+id/progess_img"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:padding="6dp"
+                android:scaleType="fitStart" />
+
+            <TextView
+                android:id="@+id/status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:padding="6dp"
+                android:textSize="16sp"
+
+                />
+        </LinearLayout>
+        <TextView
+            android:textColor="@color/colorAccent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="@{model.validationMsg != null ? View.VISIBLE : View.INVISIBLE}"
+            android:text="@{model.validationMsg}"
+            />
+    </LinearLayout>
+
+</layout>

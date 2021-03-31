@@ -29,6 +29,7 @@ import com.v3.basis.blas.databinding.InputField23BtnBinding
 import com.v3.basis.blas.databinding.ListItemBinding
 import com.v3.basis.blas.ui.item.common.FieldText
 import com.xwray.groupie.databinding.BindableItem
+import com.xwray.groupie.databinding.GroupieViewHolder
 import io.reactivex.*
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -45,24 +46,57 @@ import kotlin.concurrent.withLock
 
 class ItemsListCell(private val viewModel: ItemsListViewModel, val model: ItemsCellModel, val fields:List<LdbFieldRecord>) : BindableItem<ListItemBinding>() {
 
-    var eventLayout:InputField23BtnBinding? = null
+    //var eventLayout:InputField23BtnBinding? = null
 
     override fun getLayout(): Int = R.layout.list_item
+
+    override fun createViewHolder(itemView: View): GroupieViewHolder<ListItemBinding> {
+        val holder = super.createViewHolder(itemView)
+        //addPingForm(holder.binding)
+        return holder
+    }
 
     @RequiresApi(Build.VERSION_CODES.P)//GIFアニメーションを表示するのに必要
     override fun bind(viewBinding: ListItemBinding, position: Int) {
         viewBinding.vm = viewModel
         viewBinding.model = model
-        /*
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun getGifAnimationDrawable():AnimatedImageDrawable{
+        //画像ソースを取得(assets直下)
+        val source = ImageDecoder.createSource(context.assets,"run.gif" )
+        return ImageDecoder.decodeDrawable(source) as? AnimatedImageDrawable
+            ?: throw ClassCastException()
+    }
+
+
+    //gifを表示する処理＋動かす処理
+    private fun animationStart(binding: InputField23BtnBinding){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            //pie以降はこっちの処理を使用する
+            val drawable = getGifAnimationDrawable()
+            binding.imageView.setImageDrawable(drawable)
+            drawable.start()
+        }else {
+            //pieより前はこっちの処理を使用する
+            //後々ここの処理は削除したい。
+            Glide.with(context).load(R.drawable.run).into(binding.imageView)
+        }
+    }
+
+    fun addPingForm(viewBinding: ListItemBinding) {
+
         fields.forEach {field->
             if(field.type == FieldType.EVENT_FIELD.toInt()) {
                 //レイアウトをバインドする
-                eventLayout = DataBindingUtil.inflate(
+                val eventLayout:InputField23BtnBinding = DataBindingUtil.inflate(
                     LayoutInflater.from(context),
                     R.layout.input_field23_btn,
                     null,
                     false
                 )
+
                 val itemController = ItemsController(context, model.project_id.toString())
                 val itemRecord = itemController.findByItemId(model.item_id.toString())
                 val eventFld = "fld${field.col.toString()}"
@@ -124,29 +158,6 @@ class ItemsListCell(private val viewModel: ItemsListViewModel, val model: ItemsC
                     viewBinding.eventLayout.addView(binding.root)
                 }
             }
-        }*/
-    }
-
-    @RequiresApi(Build.VERSION_CODES.P)
-    private fun getGifAnimationDrawable():AnimatedImageDrawable{
-        //画像ソースを取得(assets直下)
-        val source = ImageDecoder.createSource(context.assets,"run.gif" )
-        return ImageDecoder.decodeDrawable(source) as? AnimatedImageDrawable
-            ?: throw ClassCastException()
-    }
-
-
-    //gifを表示する処理＋動かす処理
-    private fun animationStart(binding: InputField23BtnBinding){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            //pie以降はこっちの処理を使用する
-            val drawable = getGifAnimationDrawable()
-            binding.imageView.setImageDrawable(drawable)
-            drawable.start()
-        }else {
-            //pieより前はこっちの処理を使用する
-            //後々ここの処理は削除したい。
-            Glide.with(context).load(R.drawable.run).into(binding.imageView)
         }
     }
 }
@@ -161,6 +172,8 @@ class ItemEventListener(override val itemId: Long, val fieldIndex:String, val la
     override fun callBack(itemRecord: MutableMap<String, String>) {
         //ここがスレッドからの呼び出しになるため、エラー…。
         //rxkotlinに切り替えを検討するか、はてさて…
+        /*BlasLog.trace("I","callbackが呼ばれました")
+        BlasLog.trace("I", itemRecord.toString())
         guiHandler.post{
             if(itemRecord[fieldIndex] != "処理中") {
                 binding.button.text = label
@@ -174,7 +187,7 @@ class ItemEventListener(override val itemId: Long, val fieldIndex:String, val la
                 binding.imageView.visibility = View.VISIBLE
                 binding.status.visibility = View.GONE
             }
-        }
+        }*/
     }
 }
 
