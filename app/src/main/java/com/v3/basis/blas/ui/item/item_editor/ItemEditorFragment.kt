@@ -448,12 +448,14 @@ class ItemEditorFragment : Fragment() {
                         val extra = "colNumber" to (inputField as FieldQRCodeWithKenpin).fieldNumber.toString()
                         startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE_KENPIN, extra) { r ->
                             val qr = r.data?.getStringExtra("qr_code")
-                            try {
-                                itemsController.qrCodeCheck(qr)
-                                (inputField as FieldQRCodeWithKenpin).text.set(qr)
-                            } catch (ex: ItemsController.ItemCheckException) {
-                                // 設置不可の時
-                                Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                            qr?.let{
+                                try {
+                                    itemsController.qrCodeCheck(qr)
+                                    (inputField as FieldQRCodeWithKenpin).text.set(qr)
+                                } catch (ex: ItemsController.ItemCheckException) {
+                                    // 設置不可の時
+                                    Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                                }
                             }
                         }
                     }
@@ -488,13 +490,15 @@ class ItemEditorFragment : Fragment() {
                         val extra = "colNumber" to (inputField as FieldQRCodeWithTekkyo).fieldNumber.toString()
                         startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE_TEKKYO, extra) { r ->
                             val qr = r.data?.getStringExtra("qr_code")
-                            try {
-                                // itemsController.qrCodeCheck(qr)
-                                itemsController.rmQrCodeCheck(qr)
-                                (inputField as FieldQRCodeWithTekkyo).text.set(qr)
-                            } catch (ex: ItemsController.ItemCheckException) {
-                                // 設置不可の時
-                                Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                            qr?.let{
+                                try {
+                                    // itemsController.qrCodeCheck(qr)
+                                    itemsController.rmQrCodeCheck(qr)
+                                    (inputField as FieldQRCodeWithTekkyo).text.set(qr)
+                                } catch (ex: ItemsController.ItemCheckException) {
+                                    // 設置不可の時
+                                    Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                                }
                             }
                         }
                     }
@@ -545,13 +549,14 @@ class ItemEditorFragment : Fragment() {
                         val extra = "colNumber" to (inputField as FieldQRWithCheckText).fieldNumber.toString()
                         startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
                             val qr = r.data?.getStringExtra("qr_code")
-
-                            try {
-                                itemsController.qrCodeCheck(qr)
-                                (inputField as FieldQRWithCheckText).text.set(qr)
-                            } catch (ex: ItemsController.ItemCheckException) {
-                                // 設置不可の時
-                                Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                            qr?.let{
+                                try {
+                                    itemsController.qrCodeCheck(qr)
+                                    (inputField as FieldQRWithCheckText).text.set(qr)
+                                } catch (ex: ItemsController.ItemCheckException) {
+                                    // 設置不可の時
+                                    Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                                }
                             }
                         }
                     }
@@ -680,12 +685,14 @@ class ItemEditorFragment : Fragment() {
                         //QRコードでバーコードも読む。
                         startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
                             val qr = r.data?.getStringExtra("qr_code")
-                            try {
-                                itemsController.qrCodeCheck(qr)
-                                (inputField as FieldBarCodeWithKenpin).text.set(qr)
-                            } catch (ex: ItemsController.ItemCheckException) {
-                                // 設置不可の時
-                                Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                            qr?.let{
+                                try {
+                                    itemsController.qrCodeCheck(qr)
+                                    (inputField as FieldBarCodeWithKenpin).text.set(qr)
+                                } catch (ex: ItemsController.ItemCheckException) {
+                                    // 設置不可の時
+                                    Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                                }
                             }
                         }
                     }
@@ -704,12 +711,14 @@ class ItemEditorFragment : Fragment() {
                         val extra = "colNumber" to (inputField as FieldBarCodeWithTekkyo).fieldNumber.toString()
                         startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE_TEKKYO, extra) { r ->
                             val qr = r.data?.getStringExtra("qr_code")
-                            try {
-                                itemsController.rmQrCodeCheck(qr)
-                                (inputField as FieldBarCodeWithTekkyo).text.set(qr)
-                            } catch (ex: ItemsController.ItemCheckException) {
-                                // 設置不可の時
-                                Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                            qr?.let{
+                                try {
+                                    itemsController.rmQrCodeCheck(qr)
+                                    (inputField as FieldBarCodeWithTekkyo).text.set(qr)
+                                } catch (ex: ItemsController.ItemCheckException) {
+                                    // 設置不可の時
+                                    Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                                }
                             }
                         }
                     }
@@ -734,13 +743,14 @@ class ItemEditorFragment : Fragment() {
 
                         startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
                             val qr = r.data?.getStringExtra("qr_code")
-
-                            try {
-                                itemsController.qrCodeCheck(qr)
-                                (inputField as FieldBarCodeWithCheckText).text.set(qr)
-                            } catch (ex: ItemsController.ItemCheckException) {
-                                // 設置不可の時
-                                Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                            qr?.let{
+                                try {
+                                    itemsController.qrCodeCheck(qr)
+                                    (inputField as FieldBarCodeWithCheckText).text.set(qr)
+                                } catch (ex: ItemsController.ItemCheckException) {
+                                    // 設置不可の時
+                                    Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                                }
                             }
                         }
                     }
