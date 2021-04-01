@@ -27,6 +27,10 @@ import org.json.JSONObject
 /**
  * ItemEditorViewに表示する各型のフィールド
  */
+
+/**
+ * 自由入力(1行)フォーム
+ */
 class FieldText(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -41,7 +45,9 @@ class FieldText(
 	}
 }
 
-
+/**
+ * 自由入力(複数行)フォーム
+ */
 class FieldMultiText(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -56,7 +62,9 @@ class FieldMultiText(
 	}
 }
 
-
+/**
+ * 日付フォーム
+ */
 class FieldDate(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -71,6 +79,9 @@ class FieldDate(
 	}
 }
 
+/**
+ * 時刻フォーム
+ */
 class FieldTime(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -85,7 +96,9 @@ class FieldTime(
 	}
 }
 
-
+/**
+ * 単一選択フォーム
+ */
 class FieldSingleSelect (
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -208,7 +221,7 @@ class FieldSingleSelect (
 		adapter.notifyDataSetChanged()
 	}
 
-	override fun validate(): Boolean {
+	override fun validate(itemId:String): Boolean {
 		var ret = true
 		if(!this.field.case_required.isNullOrBlank()) {
 			val durtyText = this.field.case_required
@@ -253,6 +266,9 @@ class FieldSingleSelect (
 	}
 }
 
+/**
+ * 複数選択フォーム
+ */
 class FieldMultiSelect(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -298,10 +314,37 @@ class FieldMultiSelect(
 		}
 	}
 
+	//値不正のチェック
+	override fun validate(itemId:String):Boolean{
+		val inputData = convertToString()
+		// 必須チェック
+		if( 1 == field.essential && inputData.isNullOrEmpty() ) {
+			val msg = field.name + "を入力してください"
+			this.validationMsg.set(msg)
+			return false
+		}
+
+		// 重複チェック
+		if( 1 == field.unique_chk ) {
+			val itemsController = ItemsController(context, field.project_id.toString())
+
+			if( !itemsController.checkUnique(field,text.get()) ) {
+				val msg = text.get() + "は既に登録されています"
+				this.validationMsg.set(msg)
+				return false
+			}
+		}
+
+		return true
+	}
+
 	override fun notifyedFromParent(value: String) {
 	}
 }
 
+/**
+ * 緯度フォーム
+ */
 class FieldLat(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -316,7 +359,9 @@ class FieldLat(
 	}
 }
 
-
+/**
+ * 経度フォーム
+ */
 class FieldLng(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -331,6 +376,9 @@ class FieldLng(
 	}
 }
 
+/**
+ * 場所フォーム
+ */
 class FieldLocation(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -345,7 +393,9 @@ class FieldLocation(
 	}
 }
 
-
+/**
+ * QRコード(検品と連動)
+ */
 class FieldQRCodeWithKenpin(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -359,23 +409,24 @@ class FieldQRCodeWithKenpin(
 		layout.model = this
 	}
 
-	override fun validate(): Boolean {
+	override fun validate(itemId:String): Boolean {
 
-		if(!super.validate()) {
+		if(!super.validate(itemId)) {
 			return false
 		}
 
-		// 検品連動
-		if( !validateKenpinRendou() ) {
+		//検品チェック
+		if(!validateKenpinRendou(itemId)) {
 			return false
 		}
-
 		return true
 	}
 
 }
 
-
+/**
+ * QRコードフォーム
+ */
 class FieldQRCode(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -390,7 +441,9 @@ class FieldQRCode(
 	}
 }
 
-
+/**
+ * QRコード(撤去と連動)フォーム
+ */
 class FieldQRCodeWithTekkyo(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -404,14 +457,14 @@ class FieldQRCodeWithTekkyo(
 		layout.model = this
 	}
 
-	override fun validate(): Boolean {
+	override fun validate(itemId:String): Boolean {
 
-		if(!super.validate()) {
+		if(!super.validate(itemId)) {
 			return false
 		}
 
 		// 撤去連動
-		if( !validateTekkyoRendou() ) {
+		if( !validateTekkyoRendou(itemId) ) {
 			return false
 		}
 
@@ -421,7 +474,9 @@ class FieldQRCodeWithTekkyo(
 
 }
 
-
+/**
+ * アカウント名フォーム
+ */
 class FieldAccount(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -437,6 +492,9 @@ class FieldAccount(
 
 }
 
+/**
+ * シグフォックス型。現在使用していない
+ */
 class FieldSigFox(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -447,6 +505,9 @@ class FieldSigFox(
 	//使う気のないクラス
 }
 
+/**
+ * 入力値チェック連動
+ */
 class FieldCheckText(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -527,6 +588,9 @@ class FieldCheckText(
 
 }
 
+/**
+ * 入力値チェック連動_QRコード(検品と連動)
+ */
 class FieldQRWithCheckText(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -581,17 +645,16 @@ class FieldQRWithCheckText(
 	override fun notifyedFromParent(value: String) {
 	}
 
-	override fun validate(): Boolean {
+	override fun validate(itemId:String): Boolean {
 
-		if(!super.validate()) {
+		if(!super.validate(itemId)) {
 			return false
 		}
 
-		// 検品連動
-		if( !validateKenpinRendou() ) {
+		//検品チェック
+		if(!validateKenpinRendou(itemId)) {
 			return false
 		}
-
 		return true
 	}
 
@@ -629,6 +692,9 @@ class FieldQRWithCheckText(
 }
 
 
+/**
+ * 現在日時型フォーム
+ */
 class FieldCurrentDateTime(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -643,6 +709,9 @@ class FieldCurrentDateTime(
 	}
 }
 
+/**
+ * カテゴリフォーム
+ */
 class FieldCategorySelect(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -711,8 +780,35 @@ class FieldCategorySelect(
 	override fun notifyedFromParent(value: String) {
 		//親からの変更を受信する
 	}
+
+	//値不正のチェック
+	override fun validate(itemId:String):Boolean{
+		val inputData = convertToString()
+		// 必須チェック
+		if( 1 == field.essential && inputData.isNullOrEmpty() ) {
+			val msg = field.name + "を入力してください"
+			this.validationMsg.set(msg)
+			return false
+		}
+
+		// 重複チェック
+		if( 1 == field.unique_chk ) {
+			val itemsController = ItemsController(context, field.project_id.toString())
+
+			if( !itemsController.checkUnique(field,text.get()) ) {
+				val msg = text.get() + "は既に登録されています"
+				this.validationMsg.set(msg)
+				return false
+			}
+		}
+
+		return true
+	}
 }
 
+/**
+ * 作業者フォーム
+ */
 class FieldWorkerNameAutoComplete(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -787,24 +883,29 @@ class FieldWorkerNameAutoComplete(
 
 	}
 
-/*
-	override fun validate():Boolean {
-		//選択肢にある名前以外が指定された場合
-
-		val inputName = layout.autocomplete.text.toString()
-		var ret = false
-		val name = choiceList.find { it == inputName }
-		if(name != null) {
-			ret = true
+	//値不正のチェック
+	override fun validate(itemId:String):Boolean{
+		val inputData = convertToString()
+		// 必須チェック
+		if( 1 == field.essential && inputData.isNullOrEmpty() ) {
+			val msg = field.name + "を入力してください"
+			this.validationMsg.set(msg)
+			return false
 		}
 
-		if(!ret) {
-			validationMsg.set("${inputName}は指定できない名前です")
+		// 重複チェック
+		if( 1 == field.unique_chk ) {
+			val itemsController = ItemsController(context, field.project_id.toString())
+
+			if( !itemsController.checkUnique(field,text.get()) ) {
+				val msg = text.get() + "は既に登録されています"
+				this.validationMsg.set(msg)
+				return false
+			}
 		}
 
-		return ret
+		return true
 	}
-*/
 
 	/**
 	 * 親フィールドからの変更を受信する
@@ -826,7 +927,9 @@ class FieldWorkerNameAutoComplete(
 	}
 }
 
-
+/**
+ * 予定日フォーム
+ */
 class FieldScheduleDate(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -842,7 +945,9 @@ class FieldScheduleDate(
 
 }
 
-
+/**
+ * 作業内容フォーム
+ */
 class FieldWorkContentSelect(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -911,9 +1016,35 @@ class FieldWorkContentSelect(
 	override fun notifyedFromParent(value: String) {
 		//親からの変更を受信する
 	}
+
+	//値不正のチェック
+	override fun validate(itemId:String):Boolean{
+		val inputData = convertToString()
+		// 必須チェック
+		if( 1 == field.essential && inputData.isNullOrEmpty() ) {
+			val msg = field.name + "を入力してください"
+			this.validationMsg.set(msg)
+			return false
+		}
+
+		// 重複チェック
+		if( 1 == field.unique_chk ) {
+			val itemsController = ItemsController(context, field.project_id.toString())
+
+			if( !itemsController.checkUnique(field,text.get()) ) {
+				val msg = text.get() + "は既に登録されています"
+				this.validationMsg.set(msg)
+				return false
+			}
+		}
+
+		return true
+	}
 }
 
-
+/**
+ * 住所フォーム
+ */
 class FieldAddress(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -928,7 +1059,9 @@ class FieldAddress(
 	}
 }
 
-
+/**
+ * バーコードフォーム
+ */
 class FieldBarCode(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -943,6 +1076,9 @@ class FieldBarCode(
 	}
 }
 
+/**
+ * イベント型フォーム
+ */
 class FieldEvent(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -998,6 +1134,9 @@ class FieldEvent(
 	}
 }
 
+/**
+ * バーコード(検品と連動)
+ */
 class FieldBarCodeWithKenpin(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -1011,22 +1150,23 @@ class FieldBarCodeWithKenpin(
 		layout.model = this
 	}
 
-	override fun validate(): Boolean {
+	override fun validate(itemId:String): Boolean {
 
-		if(!super.validate()) {
+		if(!super.validate(itemId)) {
 			return false
 		}
-
-		// 検品連動
-		if( !validateKenpinRendou() ) {
+		//検品チェック
+		if(!validateKenpinRendou(itemId)) {
 			return false
 		}
-
 		return true
 	}
 
 }
 
+/**
+ * バーコード(撤去と連動)フォーム
+ */
 class FieldBarCodeWithTekkyo(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -1040,14 +1180,14 @@ class FieldBarCodeWithTekkyo(
 		layout.model = this
 	}
 
-	override fun validate(): Boolean {
+	override fun validate(itemId:String): Boolean {
 
-		if(!super.validate()) {
+		if(!super.validate(itemId)) {
 			return false
 		}
 
 		// 撤去連動
-		if( !validateTekkyoRendou() ) {
+		if( !validateTekkyoRendou(itemId) ) {
 			return false
 		}
 
@@ -1056,6 +1196,9 @@ class FieldBarCodeWithTekkyo(
 
 }
 
+/**
+ * 入力値チェック連動_バーコード(検品と連動)用フォーム
+ */
 class FieldBarCodeWithCheckText(
 	context: Context,
 	layoutInflater: LayoutInflater,
@@ -1108,17 +1251,15 @@ class FieldBarCodeWithCheckText(
 	override fun notifyedFromParent(value: String) {
 	}
 
-	override fun validate(): Boolean {
+	override fun validate(itemId:String): Boolean {
 
-		if(!super.validate()) {
+		if(!super.validate(itemId)) {
 			return false
 		}
-
-		// 検品連動
-		if( !validateKenpinRendou() ) {
+		//検品チェック
+		if(!validateKenpinRendou(itemId)) {
 			return false
 		}
-
 		return true
 	}
 
