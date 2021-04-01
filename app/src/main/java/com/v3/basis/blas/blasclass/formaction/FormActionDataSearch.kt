@@ -34,7 +34,7 @@ class FormActionDataSearch(setToken: String, setActivity: FragmentActivity) : Fo
 
     fun createFreeWordSearchTitle(params: LinearLayout.LayoutParams?): TextView {
         val view = TextView(baseActivity)
-        val title = "フリーワード検索"
+        val title = "検索キーワード"
         view.setText(title)
         //文字の色変更したい。
         view.setTextColor(Color.BLACK)

@@ -53,10 +53,11 @@ class ItemViewModel: ViewModel() {
         var validateFlg = true
         fields.forEach {
             //バリデーション
-            var ret = it.validate()
+            var ret = it.validate(itemId.toString())
             validateFlg = ret and validateFlg
             ret = it.parentValidate()
             validateFlg = ret and validateFlg
+            
         }
 
         if(!validateFlg) {
