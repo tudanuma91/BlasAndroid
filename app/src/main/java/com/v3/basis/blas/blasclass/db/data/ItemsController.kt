@@ -502,6 +502,11 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
      */
     fun qrCodeCheck(serialNumber: String?) {
 
+        if(serialNumber.isNullOrBlank()) {
+            //未入力の場合はチェックしない
+            return
+        }
+
         val sql = "select * from fixtures where serial_number = ?"
         val cursor = db?.rawQuery(sql, arrayOf(serialNumber))
 

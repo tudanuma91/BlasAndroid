@@ -448,7 +448,7 @@ class ItemEditorFragment : Fragment() {
                         val extra = "colNumber" to (inputField as FieldQRCodeWithKenpin).fieldNumber.toString()
                         startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE_KENPIN, extra) { r ->
                             val qr = r.data?.getStringExtra("qr_code")
-                            qr?.let{
+                            if(!qr.isNullOrEmpty()){
                                 try {
                                     itemsController.qrCodeCheck(qr)
                                     (inputField as FieldQRCodeWithKenpin).text.set(qr)
@@ -490,7 +490,7 @@ class ItemEditorFragment : Fragment() {
                         val extra = "colNumber" to (inputField as FieldQRCodeWithTekkyo).fieldNumber.toString()
                         startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE_TEKKYO, extra) { r ->
                             val qr = r.data?.getStringExtra("qr_code")
-                            qr?.let{
+                            if(!qr.isNullOrEmpty()){
                                 try {
                                     // itemsController.qrCodeCheck(qr)
                                     itemsController.rmQrCodeCheck(qr)
@@ -549,7 +549,7 @@ class ItemEditorFragment : Fragment() {
                         val extra = "colNumber" to (inputField as FieldQRWithCheckText).fieldNumber.toString()
                         startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
                             val qr = r.data?.getStringExtra("qr_code")
-                            qr?.let{
+                            if(!qr.isNullOrEmpty()){
                                 try {
                                     itemsController.qrCodeCheck(qr)
                                     (inputField as FieldQRWithCheckText).text.set(qr)
@@ -685,7 +685,7 @@ class ItemEditorFragment : Fragment() {
                         //QRコードでバーコードも読む。
                         startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
                             val qr = r.data?.getStringExtra("qr_code")
-                            qr?.let{
+                            if(!qr.isNullOrEmpty()){
                                 try {
                                     itemsController.qrCodeCheck(qr)
                                     (inputField as FieldBarCodeWithKenpin).text.set(qr)
@@ -711,7 +711,7 @@ class ItemEditorFragment : Fragment() {
                         val extra = "colNumber" to (inputField as FieldBarCodeWithTekkyo).fieldNumber.toString()
                         startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE_TEKKYO, extra) { r ->
                             val qr = r.data?.getStringExtra("qr_code")
-                            qr?.let{
+                            if(!qr.isNullOrEmpty()){
                                 try {
                                     itemsController.rmQrCodeCheck(qr)
                                     (inputField as FieldBarCodeWithTekkyo).text.set(qr)
@@ -743,7 +743,7 @@ class ItemEditorFragment : Fragment() {
 
                         startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
                             val qr = r.data?.getStringExtra("qr_code")
-                            qr?.let{
+                            if(!qr.isNullOrEmpty()){
                                 try {
                                     itemsController.qrCodeCheck(qr)
                                     (inputField as FieldBarCodeWithCheckText).text.set(qr)
