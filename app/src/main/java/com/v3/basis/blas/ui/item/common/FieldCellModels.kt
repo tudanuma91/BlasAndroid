@@ -314,6 +314,30 @@ class FieldMultiSelect(
 		}
 	}
 
+	//値不正のチェック
+	override fun validate(itemId:String):Boolean{
+		val inputData = convertToString()
+		// 必須チェック
+		if( 1 == field.essential && inputData.isNullOrEmpty() ) {
+			val msg = field.name + "を入力してください"
+			this.validationMsg.set(msg)
+			return false
+		}
+
+		// 重複チェック
+		if( 1 == field.unique_chk ) {
+			val itemsController = ItemsController(context, field.project_id.toString())
+
+			if( !itemsController.checkUnique(field,text.get()) ) {
+				val msg = text.get() + "は既に登録されています"
+				this.validationMsg.set(msg)
+				return false
+			}
+		}
+
+		return true
+	}
+
 	override fun notifyedFromParent(value: String) {
 	}
 }
@@ -756,6 +780,30 @@ class FieldCategorySelect(
 	override fun notifyedFromParent(value: String) {
 		//親からの変更を受信する
 	}
+
+	//値不正のチェック
+	override fun validate(itemId:String):Boolean{
+		val inputData = convertToString()
+		// 必須チェック
+		if( 1 == field.essential && inputData.isNullOrEmpty() ) {
+			val msg = field.name + "を入力してください"
+			this.validationMsg.set(msg)
+			return false
+		}
+
+		// 重複チェック
+		if( 1 == field.unique_chk ) {
+			val itemsController = ItemsController(context, field.project_id.toString())
+
+			if( !itemsController.checkUnique(field,text.get()) ) {
+				val msg = text.get() + "は既に登録されています"
+				this.validationMsg.set(msg)
+				return false
+			}
+		}
+
+		return true
+	}
 }
 
 /**
@@ -828,24 +876,29 @@ class FieldWorkerNameAutoComplete(
 
 	}
 
-/*
-	override fun validate():Boolean {
-		//選択肢にある名前以外が指定された場合
-
-		val inputName = layout.autocomplete.text.toString()
-		var ret = false
-		val name = choiceList.find { it == inputName }
-		if(name != null) {
-			ret = true
+	//値不正のチェック
+	override fun validate(itemId:String):Boolean{
+		val inputData = convertToString()
+		// 必須チェック
+		if( 1 == field.essential && inputData.isNullOrEmpty() ) {
+			val msg = field.name + "を入力してください"
+			this.validationMsg.set(msg)
+			return false
 		}
 
-		if(!ret) {
-			validationMsg.set("${inputName}は指定できない名前です")
+		// 重複チェック
+		if( 1 == field.unique_chk ) {
+			val itemsController = ItemsController(context, field.project_id.toString())
+
+			if( !itemsController.checkUnique(field,text.get()) ) {
+				val msg = text.get() + "は既に登録されています"
+				this.validationMsg.set(msg)
+				return false
+			}
 		}
 
-		return ret
+		return true
 	}
-*/
 
 	/**
 	 * 親フィールドからの変更を受信する
@@ -955,6 +1008,30 @@ class FieldWorkContentSelect(
 	 */
 	override fun notifyedFromParent(value: String) {
 		//親からの変更を受信する
+	}
+
+	//値不正のチェック
+	override fun validate(itemId:String):Boolean{
+		val inputData = convertToString()
+		// 必須チェック
+		if( 1 == field.essential && inputData.isNullOrEmpty() ) {
+			val msg = field.name + "を入力してください"
+			this.validationMsg.set(msg)
+			return false
+		}
+
+		// 重複チェック
+		if( 1 == field.unique_chk ) {
+			val itemsController = ItemsController(context, field.project_id.toString())
+
+			if( !itemsController.checkUnique(field,text.get()) ) {
+				val msg = text.get() + "は既に登録されています"
+				this.validationMsg.set(msg)
+				return false
+			}
+		}
+
+		return true
 	}
 }
 
