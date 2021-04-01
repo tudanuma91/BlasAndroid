@@ -2,6 +2,7 @@ package com.v3.basis.blas.ui.item.common
 
 import android.content.Context
 import android.view.LayoutInflater
+import android.widget.Toast
 import androidx.databinding.ObservableField
 import androidx.lifecycle.ViewModel
 import com.v3.basis.blas.blasclass.db.data.ItemsController
@@ -95,6 +96,7 @@ open class FieldQRBaseModel(
         catch ( ex: ItemsController.ItemCheckException) {
             val msg = ex.message
             this.validationMsg.set(msg)
+            Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
             return false
         }
 
@@ -111,6 +113,7 @@ open class FieldQRBaseModel(
         catch ( ex: ItemsController.ItemCheckException ) {
             val msg = ex.message
             this.validationMsg.set(msg)
+            Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
             return false
         }
 

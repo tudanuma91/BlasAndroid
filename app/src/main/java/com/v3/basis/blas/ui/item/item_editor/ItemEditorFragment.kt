@@ -682,7 +682,7 @@ class ItemEditorFragment : Fragment() {
                             val qr = r.data?.getStringExtra("qr_code")
                             try {
                                 itemsController.qrCodeCheck(qr)
-                                (inputField as FieldQRCodeWithKenpin).text.set(qr)
+                                (inputField as FieldBarCodeWithKenpin).text.set(qr)
                             } catch (ex: ItemsController.ItemCheckException) {
                                 // 設置不可の時
                                 Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
