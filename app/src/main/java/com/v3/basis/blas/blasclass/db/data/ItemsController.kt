@@ -517,7 +517,19 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         val  count = cursor.count
         if( 0 == count ) {
             cursor.close()
-            throw ItemCheckException("検品されていないシリアル番号です")
+
+            val sql_rm = "select * from rm_fixtures where serial_number = ?"
+            val cursor_rm = db?.rawQuery(sql_rm, arrayOf(serialNumber))
+            if ( null == cursor_rm ) {
+                throw Exception("sqlite error!!!!")
+            }
+
+            BlasLog.trace("I","rm count::::" + cursor_rm.count)
+            if( cursor_rm.count > 0 ) {
+                throw ItemCheckException("撤去してきた端末です")
+            }
+            // MEMO:「別会社で使用する機器です」についてはAndroidでは実装しない
+            throw ItemCheckException("該当レコードがありません")
         }
         else {
             cursor.moveToFirst()
@@ -525,13 +537,23 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
             cursor.close()
 
             if( KENPIN_FIN == fixture.status || RTN == fixture.status ) {
-                throw ItemCheckException("持ち出されていないシリアル番号です")
+                throw ItemCheckException("持出確認を行っていない機器を登録しようとしています")
             }
             else if( SET_FIN == fixture.status ){
-                throw ItemCheckException("設置済みのシリアル番号です")
+                throw ItemCheckException("すでに設置されています")
             }
             else if( DONT_TAKE_OUT == fixture.status ) {
-                throw ItemCheckException("持出不可のシリアル番号です")
+                throw ItemCheckException("持出不可の機器を登録しようとしています")
+            }
+
+            val user = this.getUserInfo()
+            if( null == user ) {
+                throw Exception("sqlite error!!!!")
+            }
+            val rightDataEditQrcode = getGroupsValue( user.group_id,"data_edit_qrcode" )
+
+            if( user.user_id != fixture.takeout_user_id && 1 == rightDataEditQrcode ) {
+                throw ItemCheckException("持出者と設置者が異なります")
             }
         }
 
