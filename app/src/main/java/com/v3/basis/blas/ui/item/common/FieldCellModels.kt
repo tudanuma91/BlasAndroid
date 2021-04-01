@@ -844,6 +844,13 @@ class FieldWorkerNameAutoComplete(
 		//SpinnerViewのアダプターに接続
 		layout.spinner.adapter = adapter
 
+		// セレクタの初期値はログインユーザーを入れる
+		// 他の値が登録されているときはsetValueで修正される
+		val itemsController = ItemsController(context, field.project_id.toString())
+		val user = itemsController.getUserInfo()
+		if (user != null) {
+			this.setValue( user.name )
+		}
 
 		//AutoCompleteTextViewのアダプターに接続
 /*
