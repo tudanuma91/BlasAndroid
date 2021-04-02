@@ -190,6 +190,10 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
                 if( syncFlg ) {
                     addList += " sync_status > 0 "
                 }
+                else if(isErrorOnly) {
+                    addList += " sync_status > 0 "
+                }
+
 
                 // where文作成
                 if( addList.count() > 0 ) {
@@ -204,9 +208,7 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
                     }
                 }
 
-                if(isErrorOnly) {
-                    addition += " sync_status >0 "
-                }
+
 
                 var addingPager = ""
                 //var plHolder = arrayOf<String>()

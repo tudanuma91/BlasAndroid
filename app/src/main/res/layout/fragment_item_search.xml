@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.item.item_search.ItemSearchFragment">
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="viewmodel"
+            type="com.v3.basis.blas.ui.item.item_search.ItemSearchViewModel" />
+    </data>
+
 
     <ScrollView
         android:id="@+id/search_scroller"
@@ -26,8 +30,58 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="通信エラーのレコードだけ表示する" />
+
+            <TextView
+                android:textColor="@color/colorText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="検索"
+                tools:text="検索"
+                />
+            <LinearLayout
+                android:id="@+id/item_search_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <EditText
+                    android:id="@+id/freeWordText"
+                    android:layout_width="300dp"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:text="@={viewmodel.freeWord}"
+                    tools:text="フリーワード" />
+
+
+                <ImageView
+                    android:id="@+id/QrBarCodeButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="right"
+                    android:layout_weight="1"
+                    android:src="@drawable/code_camera_32" />
+
+                <ImageView
+                    android:id="@+id/AddressButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="right"
+                    android:layout_weight="1"
+                    android:src="@drawable/map_camera_32" />
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/freeWordButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="検索する"
+                />
+
+
         </LinearLayout>
+
     </ScrollView>
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

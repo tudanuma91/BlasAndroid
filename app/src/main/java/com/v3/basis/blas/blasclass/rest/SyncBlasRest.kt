@@ -35,7 +35,7 @@ open class SyncBlasRest() {
         const val URL = BuildConfig.API_URL
 //        const val URL = "https://www.basis-service.com/blas70/api/v1/"
 
-        const val CONNECT_TIME_OUT = 100000
+        const val CONNECT_TIME_OUT = 10000
         const val READ_TIME_OUT = 1000000
         var queuefuncList = mutableListOf<FuncList>()
         val context = BlasApp.applicationContext()

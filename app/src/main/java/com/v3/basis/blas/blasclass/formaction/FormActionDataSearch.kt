@@ -23,7 +23,7 @@ class FormActionDataSearch(setToken: String, setActivity: FragmentActivity) : Fo
         }
 
 
-    fun createFreeWordSearch(params: LinearLayout.LayoutParams?): EditText {
+    fun createFreeWordTextBox(params: LinearLayout.LayoutParams?): EditText {
         val edit = EditText(baseActivity)
         edit.setText("")
         edit.inputType =1

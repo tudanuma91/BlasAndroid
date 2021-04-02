@@ -821,10 +821,16 @@ class GPSLocationListener(val resources:Resources, val field: ObservableField<St
         val CONTINUE = 1
 
     }
+    var endflg = false
+
     override fun onLocationChanged(location: Location?) {
         val lat = location?.latitude.toString()
         val lng = location?.longitude.toString()
 
+        if(endflg) {
+            return
+        }
+        endflg = true
         when(kind) {
             ADDRESS->{
                 try {
@@ -846,8 +852,6 @@ class GPSLocationListener(val resources:Resources, val field: ObservableField<St
                 field.set("%.6f".format(lng.toFloat()))
             }
         }
-
-
     }
 
     override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {

@@ -34,12 +34,7 @@ import org.json.JSONObject
  */
 class ItemSearchResultFragment : Fragment() {
 
-    //var token:String? = null
-    //var projectId:String? = null
-   // var freeWord :String? = ""
-    //var fldSize : String? = null
-    //var dateTimeCol:String = ""
-    //var checkValueCol:String = ""
+
     private var endShow = false
     private var progressBarFlg = false
     private lateinit var rootView:View
@@ -130,6 +125,7 @@ class ItemSearchResultFragment : Fragment() {
         }
 
         viewBtn.setOnClickListener{
+            //ここのパスは通らない konishi
             if(!progressBarFlg){
                 createCardManager(baseList,fieldMap.size,"Update")
             }
