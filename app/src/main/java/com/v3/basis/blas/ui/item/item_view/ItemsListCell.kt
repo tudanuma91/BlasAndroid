@@ -44,7 +44,12 @@ import java.lang.Exception
 
 import kotlin.concurrent.withLock
 
-class ItemsListCell(private val viewModel: ItemsListViewModel, val model: ItemsCellModel, val fields:List<LdbFieldRecord>) : BindableItem<ListItemBinding>() {
+class ItemsListCell(
+    private val viewModel: ItemsListViewModel
+    , val model: ItemsCellModel
+    , val fields:List<LdbFieldRecord>
+    , val goneEditButton:Boolean = false
+) : BindableItem<ListItemBinding>() {
 
     //var eventLayout:InputField23BtnBinding? = null
 
@@ -60,6 +65,10 @@ class ItemsListCell(private val viewModel: ItemsListViewModel, val model: ItemsC
     override fun bind(viewBinding: ListItemBinding, position: Int) {
         viewBinding.vm = viewModel
         viewBinding.model = model
+
+        if( goneEditButton ) {
+            viewBinding.editButton.visibility = View.GONE
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
