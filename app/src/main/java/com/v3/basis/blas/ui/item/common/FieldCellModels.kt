@@ -721,13 +721,13 @@ class FieldCategorySelect(
 
 	val layout: InputField18Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field18, null, false)
 	var selectedItemStr = ""
-	var choiceList: MutableList<String>
+	var choiceList: MutableList<String> = mutableListOf("")
 	var adapter:ArrayAdapter<String>
 
 	init {
-		choiceList = field.choice!!.split(",").toMutableList()
-		if(choiceList == null) {
-			choiceList = mutableListOf("")
+		if( !field.choice.isNullOrBlank() ) {
+			choiceList = field.choice!!.split(",").toMutableList()
+			choiceList.add(0,"")
 		}
 
 		//アダプター作成
@@ -756,22 +756,21 @@ class FieldCategorySelect(
 
 
 	override fun convertToString(): String? {
-		return layout.spinner.selectedItem.toString()
+		var ret = layout.spinner.selectedItem.toString()
+
+		return ret
 	}
 
 	override fun setValue(value: String?) {
 		//親子関係のないシングルセレクト
-		val tokens = field.choice?.split(",")?.toMutableList()
-		if(tokens != null) {
-			for(i in 0 until tokens.size) {
-				if(tokens[i] == value) {
+		if(choiceList != null) {
+			for(i in 0 until choiceList.size) {
+				if(choiceList[i] == value) {
 					layout.spinner.setSelection(i)
 					break
 				}
 			}
 		}
-		BlasLog.trace("I","end convertToString()")
-
 	}
 
 	/**
@@ -823,15 +822,10 @@ class FieldWorkerNameAutoComplete(
 
 	init {
 
-/*
-		if(field.choice != null) {
-			val tokens = field.choice?.split(",")
-			if(tokens != null) {
-				choiceList = tokens.toMutableList()
-			}
+		if( null != workers ) {
+			choiceList = workers as MutableList<String>
+			choiceList.add(0,"")
 		}
-*/
-		choiceList = workers as MutableList<String>
 
 		//アダプター作成
 		adapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, choiceList)
@@ -843,44 +837,23 @@ class FieldWorkerNameAutoComplete(
 
 		//SpinnerViewのアダプターに接続
 		layout.spinner.adapter = adapter
-
-		// セレクタの初期値はログインユーザーを入れる
-		// 他の値が登録されているときはsetValueで修正される
-		val itemsController = ItemsController(context, field.project_id.toString())
-		val user = itemsController.getUserInfo()
-		if (user != null) {
-			this.setValue( user.name )
-		}
-
-		//AutoCompleteTextViewのアダプターに接続
-/*
-		layout.autocomplete.threshold = 1
-		layout.autocomplete.setAdapter(adapter)
-*/
 	}
 
 
 	override fun convertToString(): String? {
-//		return layout.autocomplete.text.toString()
 		return layout.spinner.selectedItem.toString()
-
 	}
 
 	override fun setValue(value: String?) {
-//		layout.autocomplete.setText(value)
 		//親子関係のないシングルセレクト
-//		val tokens = field.choice?.split(",")?.toMutableList()
-		val tokens = workers
-		if(tokens != null) {
-			for(i in 0 until tokens.size) {
-				if(tokens[i] == value) {
+		if(choiceList != null) {
+			for(i in 0 until choiceList.size) {
+				if(choiceList[i] == value) {
 					layout.spinner.setSelection(i)
 					break
 				}
 			}
 		}
-		BlasLog.trace("I","end convertToString()")
-
 	}
 
 	//値不正のチェック
@@ -957,13 +930,14 @@ class FieldWorkContentSelect(
 
 	val layout: InputField21Binding =  DataBindingUtil.inflate(layoutInflater, R.layout.input_field21, null, false)
 	var selectedItemStr = ""
-	var choiceList: MutableList<String>
+	var choiceList: MutableList<String> = mutableListOf("")
 	var adapter:ArrayAdapter<String>
 
 	init {
-		choiceList = field.choice!!.split(",").toMutableList()
-		if(choiceList == null) {
-			choiceList = mutableListOf("")
+
+		if( !field.choice.isNullOrBlank() ) {
+			choiceList = field.choice!!.split(",").toMutableList()
+			choiceList.add(0,"")
 		}
 
 		//アダプター作成
@@ -997,17 +971,14 @@ class FieldWorkContentSelect(
 
 	override fun setValue(value: String?) {
 		//親子関係のないシングルセレクト
-		val tokens = field.choice?.split(",")?.toMutableList()
-		if(tokens != null) {
-			for(i in 0 until tokens.size) {
-				if(tokens[i] == value) {
+		if(choiceList != null) {
+			for(i in 0 until choiceList.size) {
+				if(choiceList[i] == value) {
 					layout.spinner.setSelection(i)
 					break
 				}
 			}
 		}
-		BlasLog.trace("I","end convertToString()")
-
 	}
 
 	/**
