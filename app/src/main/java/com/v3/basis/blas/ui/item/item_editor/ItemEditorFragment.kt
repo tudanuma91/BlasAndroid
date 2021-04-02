@@ -217,7 +217,7 @@ class ItemEditorFragment : Fragment() {
                         }
                     }
 
-                    //親子関係構築(条件付き(武内Ver)
+                    //親子関係構築(条件付き(武内Ver))
                     formModel.fields.forEach {me->
                         //武内データ型(条件付き必須の場合)
                         if(!me.field.case_required.isNullOrBlank()) {
@@ -248,52 +248,6 @@ class ItemEditorFragment : Fragment() {
             .addTo(disposables)
     }
 
-
-    /**
-     * シングルセレクトの編集フィールド処理
-     */
-    private fun whenSingleSelect(singleColCnt:Int, fieldValue:String? ,parentFieldId:Int) {
-        var choice = singleSelectChoiceMap[singleColCnt]
-        val model = singleSelectMap[singleColCnt]
-
-        if( model != null ) {
-
-            var position = 0
-            var choiceIndex = 0
-            if( null != choice ) {
-
-
-                if( 0 != parentFieldId ) {
-                    // 連動パラメータの時
-                    val parentSpinner = singleSelectSpinner[parentFieldId]
-                    val parentValue = parentSpinner?.selectedItem as String
-
-                    Log.d("parentValue",parentValue)
-
-                    val json = JSONObject(choice)
-                    choice = json.getString(parentValue)
-                }
-                val aChoice = choice?.split(",")
-
-                run loop@ {
-                    if (aChoice != null) {
-                        aChoice.forEachIndexed { index, s ->
-                            if( s == fieldValue ) {
-                                choiceIndex = index
-                                return@loop
-                            }
-                        }
-                    }
-                }
-
-                position = choiceIndex
-            }
-
-            model.spinner.setSelection(position)
-        }
-
-
-    }
 
 
     private fun setValue() {
@@ -455,6 +409,9 @@ class ItemEditorFragment : Fragment() {
                                 } catch (ex: ItemsController.ItemCheckException) {
                                     // 設置不可の時
                                     Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+                                }
+                                catch(e:Exception) {
+                                    BlasLog.trace("E", "例外が発生しました", e)
                                 }
                             }
                         }
@@ -819,7 +776,7 @@ class ItemEditorFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        ItemActivity.setRestartFlag()
+        //ItemActivity.setRestartFlag()  新規作成時にQRコードを読み取ると画面がリセットされるバグの対応
         //requireActivity().finish()
         super.onDestroyView()
         disposables.dispose()

@@ -98,7 +98,7 @@ class QrFragment : QRCameraFragment() {
      * カメラがQRコードを読み込んだときにコールバックされる
      */
     private fun QRCallBack(code: String) {
-        //検品データをLDBに保存する
+        //検品データをLDBに保存するl
         requireActivity().setResult(
             Activity.RESULT_OK,
             Intent().apply { putExtra("qr_code", code) })
