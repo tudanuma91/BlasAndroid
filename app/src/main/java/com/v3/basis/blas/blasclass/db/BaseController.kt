@@ -159,7 +159,7 @@ abstract class BaseController(
                 }
                 val value = map[prop.name]
 
-                if( value.isNullOrEmpty() ) {
+                if( null == value ) {
                     return@forEach
                 }
 
