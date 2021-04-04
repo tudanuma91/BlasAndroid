@@ -44,6 +44,16 @@
                         android:orientation="vertical"
                         android:padding="6dp">
 
+                        <TextView
+                            android:id="@+id/row_status"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:drawableLeft="@android:drawable/ic_dialog_alert"
+                            android:drawableTint="#E91E63"
+                            android:gravity="center_vertical"
+                            android:text="@{model.errorMessage}"
+                            android:visibility="@{model.dispErrorMessage ? View.VISIBLE : View.INVISIBLE}"
+                            tools:text="データ管理の状態" />
 
                         <TextView
                             android:id="@+id/row_title"

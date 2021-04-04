@@ -166,6 +166,7 @@ class ItemViewFragment : Fragment() {
         }
 
         isErrorOnly = ItemActivity.isErrorOnly
+        ItemActivity.isErrorOnly = false
 
         return root
     }
@@ -314,10 +315,13 @@ class ItemViewFragment : Fragment() {
 
     private fun searchASync() {
 
-        Single.fromCallable { itemsController.search(offset = offset, paging = CREATE_UNIT, findValueMap = findValueMap, isErrorOnly = isErrorOnly) }
+        Single.fromCallable {
+            itemsController.search(offset = offset, paging = CREATE_UNIT, findValueMap = findValueMap, isErrorOnly = isErrorOnly)
+        }
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy {
+                isErrorOnly = false
                 if (it.isNotEmpty()) {
 //                    itemListAll.clear()
                     itemListAll.addAll(it)

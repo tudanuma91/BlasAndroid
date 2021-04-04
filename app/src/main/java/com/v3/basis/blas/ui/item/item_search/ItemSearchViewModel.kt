@@ -5,4 +5,5 @@ import androidx.lifecycle.ViewModel
 
 class ItemSearchViewModel(): ViewModel() {
     val freeWord = ObservableField<String>("")
+    val isErrorOnly = ObservableField<Boolean>(false)
 }

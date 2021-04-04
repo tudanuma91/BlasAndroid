@@ -394,6 +394,7 @@ class ImagesController (context: Context, projectId: String): BaseController(con
                         from project_images 
                         left outer join (select * from images where item_id=?) AS images
                         on project_images.project_image_id = images.project_image_id where project_images.project_id=?
+                        and project_images.list=1
                         order by project_images.rank asc"""
 
             val cursor = db?.rawQuery(sql, arrayOf(itemId, projectId))

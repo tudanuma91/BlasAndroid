@@ -29,6 +29,7 @@
                 android:id="@+id/network_error_switch"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:checked="@={viewmodel.isErrorOnly()}"
                 android:text="通信エラーのレコードだけ表示する" />
 
             <TextView

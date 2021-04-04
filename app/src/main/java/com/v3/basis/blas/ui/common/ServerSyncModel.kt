@@ -13,6 +13,7 @@ open class ServerSyncModel(
 ) {
 
     val errorMessage: ObservableField<String> = ObservableField("")
+    val dispErrorMessage: ObservableField<Boolean> = ObservableField(false)
     val progress: ObservableBoolean = ObservableBoolean(false)
     val status: ObservableField<String> = ObservableField("サーバーに登録待ちです")
     val syncEnable: ObservableBoolean = ObservableBoolean(true)
