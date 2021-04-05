@@ -82,10 +82,16 @@ class ItemViewModel: ViewModel() {
                         }
                         FieldType.WORKER_NAME -> {
 
-                            map.set(
-                                "worker_user_id"
-                                , itemsController!!.getWorkerUserId( fieldModel.convertToString() ).toString()
-                            )
+                            if( fieldModel.convertToString().isNullOrEmpty() ) {
+                                map.set("worker_user_id",null)
+                            }
+                            else{
+                                map.set(
+                                    "worker_user_id"
+                                    , itemsController!!.getWorkerUserId( fieldModel.convertToString() ).toString()
+                                )
+                            }
+
                         }
                         FieldType.SCHEDULE_DATE -> {
                             map.set("schedule_date",fieldModel.convertToString())
@@ -121,7 +127,6 @@ class ItemViewModel: ViewModel() {
                 catch ( ex : ItemsController.ItemCheckException ) {
                     // バリデートエラー
                     Log.d("item save validate error!!!",ex.message)
-
                     throw Exception(ex.message)       // TODO:??????
                 }
 
