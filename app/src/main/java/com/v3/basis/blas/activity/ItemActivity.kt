@@ -50,12 +50,12 @@ import kotlinx.android.synthetic.main.fragment_terminal.view.*
 class ItemActivity : AppCompatActivity() {
 
     companion object {
-        var reloard: Boolean = false
+        var reload: Boolean = false
         var searchFreeWord: String? = null
         var isErrorOnly:Boolean = false
 
         fun setRestartFlag() {
-            reloard = true
+            reload = true
         }
     }
 
@@ -109,7 +109,7 @@ class ItemActivity : AppCompatActivity() {
                             // DrawingSearchActivityの実行結果から検索フリーワードを取得し、アイテムの検索を実行する
                             val freeWord = data.getStringExtra(DrawingSearchActivity.SEARCH_FREEWORD)
                             searchFreeWord = freeWord
-                            reloard()
+                            reload()
                         }
                     }
                 }
@@ -168,9 +168,9 @@ class ItemActivity : AppCompatActivity() {
 
     override fun onRestart() {
         super.onRestart()
-        if (reloard) {
-            reloard = false
-            reloard()
+        if (reload) {
+            reload = false
+            reload()
         }
     }
 
@@ -184,7 +184,7 @@ class ItemActivity : AppCompatActivity() {
         return true
     }
 
-    fun reloard(){
+    fun reload(){
         val intent = intent
         overridePendingTransition(0, 0)
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)

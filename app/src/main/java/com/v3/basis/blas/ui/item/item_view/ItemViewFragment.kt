@@ -25,6 +25,7 @@ import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.helper.RestHelper
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
+import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.ui.ext.addTitle
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.databinding.GroupieViewHolder
@@ -514,13 +515,41 @@ class ItemViewFragment : Fragment() {
             throw Exception("user情報が取得できませんでした")
         }
 
-        var goneEdit = false
-        // TODO:とりあえず　　自分の登録したデータ以外は編集ボタンが押せないようにしてみる
-        if( item["worker_user_id"] != user.user_id.toString() ) {
-            goneEdit = true
+        var editEnabled = true
+        if(user.group_id == 1 || user.group_id == 2) {
+            //システム管理者、統括監理者は無条件に編集できる
+            editEnabled = true
+        }
+        else {
+            //一般管理者、作業者の場合
+            val worker = itemsController.getUserInfo(item["worker_user_id"])
+            if(worker == null ) {
+                BlasLog.trace("E", "作業者IDが不正です")
+                //本来ならfalseにするが、現場が作業できないと困るので現時点ではtrueにしておく
+                editEnabled = true
+            }
+            else {
+
+                if (!item["worker_user_id"].isNullOrBlank()) {
+                    val loginOrgId = user.org_id
+                    val loginGroup = user.group_id
+                    val workerOrgId = worker.org_id
+                    val workerGroup = worker.group_id
+                    if(loginGroup <= workerGroup) {
+                        if (loginOrgId == workerOrgId) {
+                            editEnabled = true
+                        } else {
+                            editEnabled = false
+                        }
+                    }
+                } else {
+                    //作業者がない場合は無条件に編集できる
+                    editEnabled = true
+                }
+            }
         }
 
-        val itemCell = ItemsListCell(viewModel, model, fields,goneEdit)
+        val itemCell = ItemsListCell(viewModel, model, fields, editEnabled)
         dataList.add(itemCell)
     }
 

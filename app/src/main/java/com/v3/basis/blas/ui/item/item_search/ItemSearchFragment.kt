@@ -154,7 +154,7 @@ class ItemSearchFragment : Fragment() {
             ItemActivity.searchFreeWord = freeWordText
             ItemActivity.isErrorOnly = network_error_switch.isChecked
             val parent = (requireActivity() as ItemActivity)
-            parent.reloard()
+            parent.reload()
         }
 
         QrBarCodeButton.setOnClickListener {
@@ -475,7 +475,7 @@ class ItemSearchFragment : Fragment() {
                 ItemActivity.searchFreeWord = searchValue["freeWord"]
                 ItemActivity.isErrorOnly = network_error_switch.isChecked
                 val parent = (requireActivity() as ItemActivity)
-                parent.reloard()
+                parent.reload()
             }
 
         }

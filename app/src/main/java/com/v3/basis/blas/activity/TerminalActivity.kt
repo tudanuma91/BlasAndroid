@@ -115,10 +115,10 @@ class TerminalActivity : AppCompatActivity() {
 
     override fun onRestart() {
         super.onRestart()
-        reloard()
+        reload()
     }
 
-    fun reloard(){
+    fun reload(){
         val intent = intent
         overridePendingTransition(0, 0)
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
