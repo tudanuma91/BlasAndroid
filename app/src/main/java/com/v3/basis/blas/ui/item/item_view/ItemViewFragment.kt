@@ -408,7 +408,7 @@ class ItemViewFragment : Fragment() {
                 val syncStatus = it["sync_status"]?.toInt() ?: 0
                 var text: String? = ""
                 text = createCardText(text, it, colMax)
-                createCard(item_id, text,valueFlg, syncStatus,it["error_msg"])
+                createCard(item_id, text,valueFlg, syncStatus,it["error_msg"],it)
             }
         } else {
             Log.d("cardManager","ゴミ箱非表示")
@@ -419,7 +419,7 @@ class ItemViewFragment : Fragment() {
                     val syncStatus = it["sync_status"]?.toInt() ?: 0
                     var text: String? = ""
                     text = createCardText(text, it, colMax)
-                    createCard(item_id, text, valueFlg, syncStatus,it["error_msg"])
+                    createCard(item_id, text, valueFlg, syncStatus,it["error_msg"],it)
                 }
             }
         }
@@ -464,7 +464,7 @@ class ItemViewFragment : Fragment() {
     /**
      * カードビューを作成する関数
      */
-    fun createCard(item_id:String,text: String?,valueFlg : String, syncStatus: Int,errMsg:String?){
+    fun createCard(item_id:String,text: String?,valueFlg : String, syncStatus: Int,errMsg:String?,item:MutableMap<String,String?>){
         val rowModel = RowModel().also {
             if(valueFlg == FieldType.END) {
                 it.title = "${item_id}${FieldType.ENDTEXT}"
@@ -488,11 +488,6 @@ class ItemViewFragment : Fragment() {
             }
         }
 
-        val valueList = itemList.filter { it["item_id"] == rowModel.itemId }.first().let {
-            val list = arrayListOf<String?>()
-            list
-        }
-
         val model = ItemsCellModel(
             token,
             projectId.toInt(),
@@ -503,12 +498,6 @@ class ItemViewFragment : Fragment() {
             syncStatus,
             requireContext()
         )
-
-        // TODO:マジ？！
-        val item = rowModel.itemId?.let { itemsController.findByItemId(it) }
-        if( null == item ) {
-            throw Exception("item情報が取得できませんでした")
-        }
 
         val user = itemsController.getUserInfo()
         if( null == user ) {
