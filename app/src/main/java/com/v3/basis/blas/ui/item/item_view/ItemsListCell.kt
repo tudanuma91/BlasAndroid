@@ -66,7 +66,7 @@ class ItemsListCell(
         viewBinding.vm = viewModel
         viewBinding.model = model
 
-        if( editEnabled ) {
+        if( !editEnabled ) {
             viewBinding.editButton.visibility = View.GONE
         }
     }
