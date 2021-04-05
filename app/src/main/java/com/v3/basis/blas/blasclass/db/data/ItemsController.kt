@@ -807,5 +807,20 @@ class ItemsController(context: Context, projectId: String): BaseController(conte
         return ret
     }
 
+    // TODO:ここでいいのか？
+    fun getWorkerUserId( workerName : String? ) : Int {
+
+        val sql = "select user_id from users where name = ?"
+        val cursor = db?.rawQuery(sql, arrayOf(workerName))
+
+        if( null == cursor ) {
+            throw Exception("sqlite error!!")
+        }
+
+        cursor.moveToFirst()
+        val user_id = cursor.getInt( cursor.getColumnIndex("user_id") )
+
+        return user_id
+    }
 
 }

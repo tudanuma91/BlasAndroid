@@ -82,9 +82,10 @@ class ItemViewModel: ViewModel() {
                         }
                         FieldType.WORKER_NAME -> {
 
-                            // TODO:とりあえず自分のIDを入れている
-                            // map.set("worker_user_id",fieldModel.convertToString())
-                            map.set("worker_user_id", BlasApp.userId.toString())
+                            map.set(
+                                "worker_user_id"
+                                , itemsController!!.getWorkerUserId( fieldModel.convertToString() ).toString()
+                            )
                         }
                         FieldType.SCHEDULE_DATE -> {
                             map.set("schedule_date",fieldModel.convertToString())
