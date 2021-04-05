@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableBoolean
@@ -211,22 +212,32 @@ class FieldSingleSelect (
 		//親からの変更を受信する
 		//{"野菜":"キャベツ,ニンジン","果物":"みかん,リンゴ","肉":"牛肉,鶏肉"}
 		val choiceJson = JSONObject(field.choice)
-		val childChoiceList = choiceJson.getString(value)
-		val tokens = childChoiceList.split(",").toMutableList()
-		//親項目が変更されたため、リストの差し替えを行う
-		choiceList.clear()
-		tokens.forEach {
-			choiceList.add(it)
+		try {
+			val childChoiceList = choiceJson.getString(value)
+			val tokens = childChoiceList.split(",").toMutableList()
+			//親項目が変更されたため、リストの差し替えを行う
+			choiceList.clear()
+			tokens.forEach {
+				choiceList.add(it)
+			}
+		}
+		catch(e:Exception) {
+			choiceList.clear()
 		}
 		adapter.notifyDataSetChanged()
 	}
 
 	override fun validate(itemId:String): Boolean {
 		var ret = true
+		// 必須チェック
+		if(!super.validate(itemId)) {
+			return false
+		}
+
 		if(!this.field.case_required.isNullOrBlank()) {
 			val durtyText = this.field.case_required
 			val json = durtyText?.replace("\\", "")
-			var parentFieldName = ""
+			var parentFieldNames = listOf<String>()
 			val choice = convertToString()
 			if(choice.isNullOrBlank()) {
 				//選択肢が選ばれていないときはＯＫとする
@@ -237,28 +248,38 @@ class FieldSingleSelect (
 				val obj = JSONObject(json)
 				try{
 					//指定された選択肢に対応するフィールド名を取得する
-					parentFieldName = obj.getString(choice)
+					parentFieldNames = obj.getString(choice).split(",")
 				}
 				catch(e:Exception) {
-					validationMsg.set("不正な親フィールド名です")
+					validationMsg.set("親フィールドが不正です")
 					ret = false
 					return ret
 				}
 
 				//親フィールドの値を取得する
 				try{
-					val parentFieldModel = parentFieldList.first { parentFieldName == it.field.name }
-					if(parentFieldModel.text.get().isNullOrBlank()) {
-						validationMsg.set("${choice}の場合は、${parentFieldName}を入力してください")
-						ret = false
+					val parentFieldModels = parentFieldList.filter {
+						val ret = parentFieldNames.firstOrNull{parentFieldName->
+							BlasLog.trace("E", "src:${parentFieldName} dst:${it.field.name}")
+							parentFieldName == it.field.name
+						}
+						ret != null
+					}
+
+					parentFieldModels.forEach {parentFieldModel->
+						if(parentFieldModel.convertToString().isNullOrBlank()) {
+							BlasLog.trace("E", "${choice}の場合は、${parentFieldNames}を入力してください")
+							validationMsg.set("${choice}の場合は、${parentFieldNames}を入力してください")
+							ret = false
+						}
 					}
 				}
 				catch(e:Exception) {
 					//親フィールドが見つからない場合
 					BlasLog.trace("E", "親フィールドが見つかりません", e)
+					validationMsg.set("${choice}の場合は、${parentFieldNames}を入力してください")
 					ret = false
 				}
-
 			}
 		}
 
@@ -528,14 +549,20 @@ class FieldCheckText(
 		var tmpText:String? = ""
 		var tmpMemo:String? = ""
 
-		if(!RestHelper().isBlank(text.get())) {
+		if(text.get().isNullOrBlank()) {
+			tmpText = ""
+		}
+		else {
 			tmpText = text.get()
 		}
-		if(!RestHelper().isBlank(memo.get())) {
+		if(memo.get().isNullOrBlank()) {
+			tmpMemo = ""
+		}
+		else {
 			tmpMemo = memo.get()
 		}
 		//ここって備考が入力されていないとデータが保存できないようになっていない？
-		retStr = "{\"value\":\"${text.get()}\",\"memo\":\"${memo.get()}\"}"
+		retStr = "{\"value\":\"${tmpText}\",\"memo\":\"${tmpMemo}\"}"
 		return retStr;
 	}
 
@@ -547,8 +574,18 @@ class FieldCheckText(
 			val obj = JSONObject(json)
 			val value1 = obj.get("value")
 			val value2 = obj.get("memo")
-			text.set(value1.toString())
-			memo.set(value2.toString())
+			if(value1 != null) {
+				text.set(value1.toString())
+			}
+			else {
+				text.set("")
+			}
+			if(value2 != null) {
+				memo.set(value2.toString())
+			}
+			else {
+				memo.set("")
+			}
 		}
 	}
 

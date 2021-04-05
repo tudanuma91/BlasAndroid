@@ -226,11 +226,13 @@ class ItemEditorFragment : Fragment() {
                                 val json = JSONObject(jsonText)
                                 json.keys().forEach {choice->
                                     //選択肢に紐づく親フィールド名を取得する
-                                    val parentFieldName = json.getString(choice)
+                                    val parentFieldNames = json.getString(choice)
 
                                     formModel.fields.forEach {fModel->
-                                        if(parentFieldName == fModel.field.name) {
-                                            me.addParentField(fModel)
+                                        parentFieldNames.split(",").forEach {parentFieldName->
+                                            if(parentFieldName == fModel.field.name) {
+                                                me.addParentField(fModel)
+                                            }
                                         }
                                     }
                                 }

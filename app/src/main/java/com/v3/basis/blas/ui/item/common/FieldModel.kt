@@ -58,7 +58,7 @@ open class FieldModel(
     open fun validate(itemId:String):Boolean{
 
         // 必須チェック
-        if( 1 == field.essential && "" == text.get() ) {
+        if( 1 == field.essential && "" == convertToString() ) {
             val msg = field.name + "を入力してください"
             this.validationMsg.set(msg)
             return false

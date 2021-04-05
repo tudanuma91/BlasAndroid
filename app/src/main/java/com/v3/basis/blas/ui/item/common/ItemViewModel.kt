@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import com.v3.basis.blas.blasclass.app.BlasApp
 import com.v3.basis.blas.blasclass.config.FieldType
+import com.v3.basis.blas.blasclass.db.BlasSQLDataBase.Companion.context
 import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.log.BlasLog
 import com.v3.basis.blas.blasclass.rest.BlasRest
@@ -62,6 +63,7 @@ class ItemViewModel: ViewModel() {
 
         if(!validateFlg) {
             //エラーメッセージはvalidate内でセットしている
+            Toast.makeText(context, "入力に誤りがあります。項目上部に表示されるエラーメッセージを確認してください", Toast.LENGTH_LONG).show()
             return
         }
 

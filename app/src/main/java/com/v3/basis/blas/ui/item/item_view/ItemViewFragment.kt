@@ -512,7 +512,8 @@ class ItemViewFragment : Fragment() {
 
         val user = itemsController.getUserInfo()
         if( null == user ) {
-            throw Exception("user情報が取得できませんでした")
+            BlasLog.trace("E", "user情報が取得できませんでした")
+            return
         }
 
         var editEnabled = true
