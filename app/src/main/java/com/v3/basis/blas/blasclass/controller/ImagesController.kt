@@ -431,13 +431,57 @@ class ImagesController (context: Context, projectId: String): BaseController(con
         return resultList
     }
 
+    fun getImage(token:String, item_id:String, project_image_id:String, size:Int=SMALL_IMAGE):Pair<Bitmap?, Long> {
+        var json:JSONObject? = null
+        var bitmap:Bitmap? = null
+        val payload = mutableMapOf<String, String>()
+        var imageId = 0L
+
+        payload["token"] = token
+        payload["item_id"] = item_id
+        payload["project_image_id"] = project_image_id
+
+        //キャッシュファイルの読み込み
+        bitmap = getCacheBitmap(item_id, project_image_id, size)
+        if(bitmap == null) {
+            //キャッシュファイルがない場合
+            //画像のURLを取得する
+            if(size == SMALL_IMAGE) {
+                json = SyncBlasRestImage().download230(payload)
+            }
+            else {
+                json = SyncBlasRestImage().download(payload)
+            }
+            if (json?.getInt("error_code") != 0) {
+                val msg = json?.getString("message")
+                Log.d("konishi", msg)
+                return Pair(null, -1)
+            }
+
+            //画像をダウンロードする
+            val jsonRecord = json?.getJSONArray("records").getJSONObject(0)
+            val jsonImage = jsonRecord.getJSONObject("Image")
+            var base64Img = jsonImage.getString("image")
+
+            val bytes = SyncBlasRestImage().decodeBase64(base64Img)
+            bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size )
+            if(bitmap != null) {
+                //画像を所定のパスに保存する
+                saveBitmap(bitmap, item_id, project_image_id, size)
+            }
+        }
+
+        //imageIdが0Lのときは、キャッシュから読み込んだとき。
+        return Pair(bitmap, imageId)
+    }
+
     /**
      * BLASから画像を取得する。
      * ローカルにキャッシュがあれば、キャッシュを返却する。
      * キャッシュがない場合は、BLASからダウンロードする
      * ダウンロードした画像はキャッシュする点に注意
      */
-    fun getImage(token:String, item_id:String, project_image_id:String, size:Int=SMALL_IMAGE):Pair<Bitmap?, Long> {
+    fun getImageOld(token:String, item_id:String, project_image_id:String, size:Int=SMALL_IMAGE):Pair<Bitmap?, Long> {
         var json:JSONObject? = null
         var bitmap:Bitmap? = null
         val payload = mutableMapOf<String, String>()
