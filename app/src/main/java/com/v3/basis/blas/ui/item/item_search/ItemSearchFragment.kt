@@ -25,6 +25,7 @@ import com.v3.basis.blas.activity.QRActivity
 import com.v3.basis.blas.blasclass.app.BlasDef.Companion.BTN_FIND
 import com.v3.basis.blas.blasclass.app.BlasMsg
 import com.v3.basis.blas.blasclass.config.FieldType
+import com.v3.basis.blas.blasclass.controller.FixtureController
 import com.v3.basis.blas.blasclass.db.data.ItemsController
 import com.v3.basis.blas.blasclass.db.field.FieldController
 import com.v3.basis.blas.blasclass.formaction.FormActionDataSearch
@@ -137,7 +138,7 @@ class ItemSearchFragment : Fragment() {
         //rootView = view.findViewById<LinearLayout>(R.id.item_search_liner)
         //検索ボタン押下時の処理
         freeWordButton.setOnClickListener {
-            val freeWordText = viewModel.freeWord.get()
+            var freeWordText = viewModel.freeWord.get()
             val intent = Intent(activity, ItemSearchResultActivity::class.java)
             val fldSize = 1 //freeword分
             intent.putExtra("token", token)
@@ -160,10 +161,18 @@ class ItemSearchFragment : Fragment() {
         QrBarCodeButton.setOnClickListener {
             //QR/バーコードで検索するボタンを押されたとき
             val extra = Pair("","")
+            val fixtureController = context?.let { con -> FixtureController(con, projectId) }
             startActivityWithResult(QRActivity::class.java, QRActivity.QR_CODE, extra) { r ->
-                val qr = r.data?.getStringExtra("qr_code")
+                var qr = r.data?.getStringExtra("qr_code")
                 if(!qr.isNullOrEmpty()){
-                    viewModel.freeWord.set(qr)
+                    val qrCodes = fixtureController?.passPurser(qr)
+                    if(!qrCodes.isNullOrEmpty()) {
+                        val qrOrBarCode = qrCodes[0]
+                        viewModel.freeWord.set(qrOrBarCode)
+                    }
+                    else {
+                        viewModel.freeWord.set(qr)
+                    }
                 }
             }
         }
@@ -215,8 +224,6 @@ class ItemSearchFragment : Fragment() {
         val space = formAction.createSpace(layoutParamsSpace)
         val title = formAction.createFreeWordSearchTitle(layoutParams)
         val freeWordTextBox = formAction.createFreeWordTextBox(layoutParams)
-
-        freeWordTextBox.setText("aaa")
 
         editMap.set(key = "col_${0}", value = freeWordTextBox)
         rootView.addView(space)
