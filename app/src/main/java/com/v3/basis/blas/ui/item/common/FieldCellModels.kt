@@ -251,9 +251,9 @@ class FieldSingleSelect (
 					parentFieldNames = obj.getString(choice).split(",")
 				}
 				catch(e:Exception) {
-					validationMsg.set("親フィールドが不正です")
-					ret = false
-					return ret
+					//validationMsg.set("親フィールドが不正です")
+					//親フィールド省略できるらしい
+					return true
 				}
 
 				//親フィールドの値を取得する
@@ -589,6 +589,20 @@ class FieldCheckText(
 		}
 	}
 
+	override fun validate(itemId: String): Boolean {
+
+		if(!super.validate(itemId)) {
+			return false
+		}
+
+		if(!memo.get().isNullOrBlank()) {
+			//備考欄に入力があれば無条件OK
+			return true
+		}
+
+		return true
+	}
+
 	override fun notifyedFromParent(value: String) {
 	}
 
@@ -689,6 +703,10 @@ class FieldQRWithCheckText(
 		}
 
 		//検品チェック
+		if(!memo.get().isNullOrBlank()) {
+			//備考があれば無条件OK
+			return true
+		}
 		if(!validateKenpinRendou(itemId)) {
 			return false
 		}
@@ -1263,6 +1281,11 @@ class FieldBarCodeWithCheckText(
 
 		if(!super.validate(itemId)) {
 			return false
+		}
+
+		if(!memo.get().isNullOrBlank()) {
+			//メモが入っていれば無条件OK
+			return true
 		}
 		//検品チェック
 		if(!validateKenpinRendou(itemId)) {

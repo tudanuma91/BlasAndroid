@@ -3,6 +3,7 @@ package com.v3.basis.blas.blasclass.helper
 import android.util.Log
 import com.google.gson.JsonObject
 import com.v3.basis.blas.blasclass.ldb.LdbFieldRecord
+import com.v3.basis.blas.blasclass.log.BlasLog
 import org.json.JSONArray
 import org.json.JSONObject
 import java.lang.Exception
@@ -295,12 +296,18 @@ class RestHelper {
         var newValue = ""
         val json = value?.replace("\\", "")
         if (json != null && json.isNotBlank()) {
-            val obj = JSONObject(json)
-            val text = obj.get("value")
-            val memo = obj.get("memo")
-            newValue = text.toString()
-            if(this.isBlank(memo.toString())) {
-                newValue += "(備考)"+memo
+            try {
+                val obj = JSONObject(json)
+                val text = obj.get("value")
+                val memo = obj.get("memo")
+                newValue = text.toString()
+                if (this.isBlank(memo.toString())) {
+                    newValue += "(備考)" + memo
+                }
+            }
+            catch(e:Exception) {
+                BlasLog.trace("E", "${json}のパースに失敗しました")
+                newValue = json.toString()
             }
         }
 

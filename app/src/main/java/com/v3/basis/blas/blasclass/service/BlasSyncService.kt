@@ -161,9 +161,9 @@ class SenderHandler(val context: Context): Handler() {
      */
     private fun syncItems(context: Context, token: String, projectId: String): Int {
         var ret = BaseController.RETRY_NORMAL
-        val controller = ItemsController(context, projectId)
+        val itemController = ItemsController(context, projectId)
         //未送信データ改修
-        val records = controller.search(syncFlg = true)
+        val records = itemController.search(syncFlg = true)
 
         BlasLog.trace("I", "itemList size:${records.size}")
 
@@ -208,7 +208,7 @@ class SenderHandler(val context: Context): Handler() {
                     val new_item_id = records.getString("new_item_id")
                     val org_item_id = records.getString("temp_item_id")
 
-                    controller.updateItemId(org_item_id, new_item_id)
+                    itemController.updateItemId(org_item_id, new_item_id)
                 } else {
                     //BLAS側でエラーが返された場合(論理エラー)
                     if (errorMsg == null) {
@@ -216,7 +216,7 @@ class SenderHandler(val context: Context): Handler() {
                     }
 
                     //論理エラー
-                    controller.updateItemRecordStatus(
+                    itemController.updateItemRecordStatus(
                         item_id,
                         BaseController.NETWORK_LOGICAL_ERROR,
                         sendCnt,
@@ -228,7 +228,7 @@ class SenderHandler(val context: Context): Handler() {
             } else {
                 //通信そのものができなかった場合(物理エラー)
                 BlasLog.trace("E", "データの送信に失敗しました")
-                controller.updateItemRecordStatus(
+                itemController.updateItemRecordStatus(
                     item_id,
                     BaseController.NETWORK_ERROR,
                     sendCnt,
@@ -632,6 +632,8 @@ class BlasSyncService() : Service() {
         //論理エラーだけ通知したい
         //通信エラーは自動回復するので、いちいち通知しない
         //一回通知したら、もう表示したくないのだが…。別タイマーで10分間隔で表示するというのも一つの手かな…。
+        /*
+        不安をあおるだけなので消す
         if(itemRecords.size > 0) {
             notifyMsg("BLASJ ", "データ管理に未送信データがあります")
         }
@@ -642,7 +644,7 @@ class BlasSyncService() : Service() {
 
         if(imageRecords.size > 0) {
             notifyMsg("BLASJ ", "画像データに未送信データがあります")
-        }
+        }*/
 
 
         return ret
