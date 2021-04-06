@@ -4,7 +4,11 @@
         android:id="@+id/navi_item_view"
         android:icon="@drawable/ic_format_list_bulleted_black_24dp"
         android:title="@string/navi_title_item_view"/>
-
+    <!--
+    <item
+        android:id="@+id/navi_item_create"
+        android:icon="@drawable/ic_add_circle_outline_black_24dp"
+        android:title="@string/navi_title_item_create"/>　-->
     <item
         android:id="@+id/navi_item_seach"
         android:icon="@drawable/ic_search_black_24dp"
